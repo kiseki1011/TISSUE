@@ -16,6 +16,7 @@ public class IssueProperties {
     @Data
     public static class Field {
         private int maxSelectOptions = 50;
+        private int shortTextMaxLength = 50;
         private final Decimal decimal = new Decimal();
 
         @Data

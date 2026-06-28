@@ -56,8 +56,6 @@ public class ProjectService implements ProjectUseCase {
     @Override
     @Transactional(readOnly = true)
     public void checkProjectKeyAvailability(String projectKey) {
-        // Same key invariants as create (format + reserved prefix), then global
-        // uniqueness — so an "available" result matches "creatable".
         ProjectKey.validate(projectKey);
         projectValidator.ensureUniqueProjectKey(projectKey.toUpperCase(Locale.ENGLISH));
     }
@@ -65,7 +63,6 @@ public class ProjectService implements ProjectUseCase {
     @Override
     public void update(ProjectIdentifier pid, UpdateProjectCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
-
         Project project = projectFinder.getByProjectKey(pid.projectKey());
 
         projectAuthorizationService.requireProjectManager(actor);
@@ -78,7 +75,6 @@ public class ProjectService implements ProjectUseCase {
     @Override
     public void delete(ProjectIdentifier pid, Long actorMemberId) {
         ProjectMember actor = projectAccessResolver.resolveWithProject(pid.projectKey(), actorMemberId);
-
         Project project = actor.getProject();
 
         projectAuthorizationService.requireSystemAdmin(actor);

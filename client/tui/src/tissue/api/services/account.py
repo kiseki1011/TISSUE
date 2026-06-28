@@ -28,6 +28,8 @@ from tissue.api.generated.models.verification_status import VerificationStatus
 from tissue.api.generated.models.withdraw_member_request import WithdrawMemberRequest
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable
+
     from tissue.api.client import TissueClient
 
 
@@ -43,25 +45,26 @@ class AccountService:
     def _set_cached_profile(self, profile: MemberProfile | None) -> None:
         self._profile = profile
 
-    async def check_email_available(self, email: str) -> bool:
+    async def _check_available(self, request: Awaitable[object]) -> bool:
+        """True when the name or email is free. A 409 means taken, returned as False."""
         try:
-            await self._client.member_account_api.check_email_availability(email)
+            await request
             return True
-        except (ApiException, httpx.HTTPError) as e:
-            err = translate(e)
-            if err.status == 409:
+        except (ApiException, httpx.HTTPError) as error:
+            translated = translate(error)
+            if translated.status == 409:
                 return False
-            raise err from e
+            raise translated from error
+
+    async def check_email_available(self, email: str) -> bool:
+        return await self._check_available(
+            self._client.member_account_api.check_email_availability(email)
+        )
 
     async def check_username_available(self, username: str) -> bool:
-        try:
-            await self._client.member_account_api.check_username_availability(username)
-            return True
-        except (ApiException, httpx.HTTPError) as e:
-            err = translate(e)
-            if err.status == 409:
-                return False
-            raise err from e
+        return await self._check_available(
+            self._client.member_account_api.check_username_availability(username)
+        )
 
     async def signup(
         self,
@@ -81,16 +84,16 @@ class AccountService:
         )
         try:
             await self._client.signup_api.signup(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error
 
     async def request_signup_verification(self, email: str) -> str:
         try:
             response = await self._client.signup_api.request_signup_verification(
                 EmailVerificationRequest(email=email)
             )
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error
 
         if response.verification_id is None:
             raise TissueApiError("Server returned no verification id")
@@ -103,8 +106,8 @@ class AccountService:
             return await self._client.signup_api.check_signup_verification(
                 verification_id
             )
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error
 
     async def update_name(self, new_name: str) -> None:
         """Update the current member's display name and refresh the cache."""
@@ -156,5 +159,5 @@ class AccountService:
         request = RestoreMemberRequest(identifier=identifier, password=password)
         try:
             await self._client.member_account_api.restore_member(request)
-        except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+        except (ApiException, httpx.HTTPError) as error:
+            raise translate(error) from error

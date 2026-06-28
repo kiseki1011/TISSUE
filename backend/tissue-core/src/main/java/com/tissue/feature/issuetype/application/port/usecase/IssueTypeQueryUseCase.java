@@ -10,8 +10,5 @@ public interface IssueTypeQueryUseCase {
 
     IssueTypeDetail getIssueTypeDetail(Long issueTypeId, Long actorMemberId);
 
-    /**
-     * Every issue type with its full custom field definitions (and options).
-     */
     List<IssueTypeDetail> getIssueTypeDetails(Long actorMemberId);
 }

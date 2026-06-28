@@ -66,7 +66,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
-                .map(parentKey -> issueFinder.getWithProjectByIssueKey(parentKey))
+                .map(issueFinder::getWithProjectByIssueKey)
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
@@ -84,6 +84,8 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
                 cmd.priority(),
                 cmd.storyPoint(),
                 parent);
+
+        issue.ensureParentPresentWhenRequired();
 
         customFieldSchemaProcessor.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);

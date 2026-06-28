@@ -1,5 +1,3 @@
-"""Modal for changing the current member's password."""
-
 import logging
 import re
 
@@ -11,7 +9,12 @@ from textual.validation import Length, Regex, ValidationResult, Validator
 from textual.widgets import Button, Input, Label
 
 from tissue.api.errors import TissueApiError
+from tissue.screens.account._helpers import failure_reason, set_field_status
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import (
+    first_empty_required_field,
+    render_validation_status,
+)
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +28,11 @@ _REQUIRED_FIELDS = (
 
 
 class ChangePasswordModal(TissueModal[bool | None]):
+    """Modal for changing the current member's password.
+
+    Dismisses with `True` after a successful change, `None` on cancel.
+    """
+
     CSS_PATH = "change_password_modal.tcss"
 
     BINDINGS = [
@@ -86,6 +94,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="change_password_cancel_btn",
+                classes="-btn-error",
             ),
             Button(
                 "Change password",
@@ -146,7 +155,8 @@ class ChangePasswordModal(TissueModal[bool | None]):
         if not (
             8 <= len(new_password) <= 30 and re.fullmatch(_PASSWORD_REGEX, new_password)
         ):
-            self._set_status(
+            set_field_status(
+                self,
                 "change_password_new",
                 "Must include letter and digit",
                 "error",
@@ -154,7 +164,8 @@ class ChangePasswordModal(TissueModal[bool | None]):
             return
 
         if new_password != confirm:
-            self._set_status(
+            set_field_status(
+                self,
                 "change_password_confirm",
                 "Passwords do not match",
                 "error",
@@ -172,9 +183,11 @@ class ChangePasswordModal(TissueModal[bool | None]):
             await client.account.update_password(
                 original_password=current_password, new_password=new_password
             )
-        except TissueApiError as e:
-            log.warning("Password change failed: %s", e)
-            reason = self._failure_reason(e)
+        except TissueApiError as error:
+            log.warning("Password change failed: %s", error)
+            reason = failure_reason(
+                error, password_message="Current password is incorrect"
+            )
             self.app.notify(
                 f"Failed to change password: {reason}",
                 severity="error",
@@ -184,23 +197,8 @@ class ChangePasswordModal(TissueModal[bool | None]):
         self.app.notify("Password changed")
         self.dismiss(True)
 
-    @staticmethod
-    def _failure_reason(exc: TissueApiError) -> str:
-        if exc.title in ("INVALID_PASSWORD", "PASSWORD_MISMATCH"):
-            return "Current password is incorrect"
-        return exc.detail or exc.title or str(exc)
-
     def _check_required_fields(self) -> Input | None:
-        first_empty: Input | None = None
-        for fid in _REQUIRED_FIELDS:
-            inp = self.query_one(f"#{fid}", Input)
-            if not inp.value:
-                self._set_status(fid, "Required field", "error")
-                if first_empty is None:
-                    first_empty = inp
-        if first_empty is not None:
-            first_empty.focus()
-        return first_empty
+        return first_empty_required_field(self, _REQUIRED_FIELDS)
 
     def _render_status(
         self,
@@ -208,24 +206,11 @@ class ChangePasswordModal(TissueModal[bool | None]):
         value: str,
         result: ValidationResult | None,
     ) -> None:
-        if not value or result is None or result.is_valid:
-            self._set_status(input_id)
-            return
-        msgs = result.failure_descriptions
-        self._set_status(input_id, msgs[0] if msgs else "", "error")
-
-    def _set_status(
-        self, input_id: str, message: str = "", kind: str | None = None
-    ) -> None:
-        label = self.query_one(f"#{input_id}_status", Label)
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        render_validation_status(self, input_id, value, result)
 
 
 class _MatchValidator(Validator):
-    """Confirm field must match `#change_password_new` at validate time."""
+    """Confirm field must match the current value of `#change_password_new`."""
 
     def __init__(self, modal: ChangePasswordModal, failure_description: str) -> None:
         super().__init__(failure_description=failure_description)

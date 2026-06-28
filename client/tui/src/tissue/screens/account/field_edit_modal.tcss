@@ -1,0 +1,55 @@
+FieldEditModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+#field-edit-dialog {
+    width: 66;
+    max-width: 90%;
+    min-width: 50;
+    height: auto;
+    padding: 0;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+#field-edit-form {
+    width: 100%;
+    height: auto;
+    padding: 2 4;
+
+    .input-field {
+        width: 100%;
+    }
+
+    .email-row {
+        width: 100%;
+        height: 3;
+
+        #field_edit_input {
+            width: 5fr;
+            margin: 0;
+        }
+
+        #field_edit_verify_btn {
+            width: 1fr;
+            min-width: 8;
+            height: 3;
+            margin-left: 1;
+        }
+    }
+
+    #field-edit-buttons {
+        width: 100%;
+        height: auto;
+        align-horizontal: right;
+        margin-top: 1;
+
+        Button {
+            margin-left: 1;
+            min-width: 12;
+        }
+    }
+}

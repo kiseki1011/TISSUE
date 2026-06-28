@@ -1,8 +1,12 @@
 package com.tissue.feature.issue.adapter.web;
 
+import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
+import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.issue.adapter.web.request.IssueSearchRequest;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetailView;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -29,6 +33,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +49,7 @@ public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
     private final IssueFullTextSearchUseCase issueFtsUseCase;
+    private final CommentQueryUseCase commentQueryUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
                     Search issues in a project by keyword. The keyword is matched against the issue's \
@@ -142,6 +148,44 @@ public class IssueQueryController {
             @PathVariable String issueKey, @CurrentMember MemberDetails memberDetails) {
         IssueCommonDetail response = issueQueryUseCase.getCommonFieldValues(
                 IssueIdentifier.ofIssueKey(issueKey), memberDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "getIssueDetailView", summary = "Get aggregated issue detail", description = """
+                Get everything the issue detail view needs in one response: common fields, custom \
+                fields (with option names resolved), available transitions (with their target state), \
+                parent, children, relations, and the first page of comments. Lets a client render the \
+                whole detail screen without a separate call per section.
+
+                **Pagination:**
+                - `commentSize` is how many root comments to embed (default 20).
+
+                **Requirements:**
+                - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Issue detail retrieved"),
+        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+    })
+    @GetMapping("/issues/{issueKey}/detail")
+    public ResponseEntity<IssueDetailView> getIssueDetailView(
+            @PathVariable String issueKey,
+            @RequestParam(value = "commentSize", defaultValue = "20") int commentSize,
+            @CurrentMember MemberDetails memberDetails) {
+        IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
+        Long actorMemberId = memberDetails.getMemberId();
+
+        IssueDetail detail = issueQueryUseCase.getDetail(iid, actorMemberId);
+        Page<CommentDetailResponse> comments =
+                commentQueryUseCase.getIssueComments(iid, PageRequest.of(0, commentSize), actorMemberId);
+
+        IssueDetailView response = new IssueDetailView(
+                detail.common(),
+                detail.customFields(),
+                issueQueryUseCase.getAvailableTransitions(iid, actorMemberId),
+                issueQueryUseCase.getParent(iid, actorMemberId),
+                issueQueryUseCase.getChildren(iid, actorMemberId),
+                issueQueryUseCase.getRelations(iid, actorMemberId),
+                PageResponse.from(comments));
         return ResponseEntity.ok(response);
     }
 

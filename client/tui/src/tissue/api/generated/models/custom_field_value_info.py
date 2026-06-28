@@ -20,6 +20,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
+from tissue.api.generated.models.field_option_detail import FieldOptionDetail
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -30,10 +31,11 @@ class CustomFieldValueInfo(BaseModel):
     """ # noqa: E501
     field_id: Optional[StrictInt] = Field(default=None, alias="fieldId")
     field_label: Optional[StrictStr] = Field(default=None, alias="fieldLabel")
-    issue_field_type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.", alias="issueFieldType")
+    issue_field_type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.", alias="issueFieldType")
+    options: Optional[List[FieldOptionDetail]] = None
     required: Optional[StrictBool] = None
     value: Optional[Any] = None
-    __properties: ClassVar[List[str]] = ["fieldId", "fieldLabel", "issueFieldType", "required", "value"]
+    __properties: ClassVar[List[str]] = ["fieldId", "fieldLabel", "issueFieldType", "options", "required", "value"]
 
     @field_validator('issue_field_type')
     def issue_field_type_validate_enum(cls, value):
@@ -41,8 +43,8 @@ class CustomFieldValueInfo(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
-            raise ValueError("must be one of enum values ('TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
+        if value not in set(['TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
+            raise ValueError("must be one of enum values ('TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
         return value
 
     model_config = ConfigDict(
@@ -84,6 +86,13 @@ class CustomFieldValueInfo(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in options (list)
+        _items = []
+        if self.options:
+            for _item_options in self.options:
+                if _item_options:
+                    _items.append(_item_options.to_dict())
+            _dict['options'] = _items
         # set to None if value (nullable) is None
         # and model_fields_set contains the field
         if self.value is None and "value" in self.model_fields_set:
@@ -104,6 +113,7 @@ class CustomFieldValueInfo(BaseModel):
             "fieldId": obj.get("fieldId"),
             "fieldLabel": obj.get("fieldLabel"),
             "issueFieldType": obj.get("issueFieldType"),
+            "options": [FieldOptionDetail.from_dict(_item) for _item in obj["options"]] if obj.get("options") is not None else None,
             "required": obj.get("required"),
             "value": obj.get("value")
         })

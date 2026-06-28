@@ -1,0 +1,49 @@
+IssuePickerModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+IssuePickerModal #picker-dialog {
+    width: 64;
+    max-width: 90%;
+    height: 26;
+    max-height: 90%;
+    padding: 1 2;
+    layout: vertical;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+IssuePickerModal #picker-search {
+    width: 100%;
+}
+
+IssuePickerModal #picker-list {
+    width: 100%;
+    height: 1fr;
+    margin-top: 1;
+    border: none;
+    background: $panel;
+    padding: 0 1;
+    scrollbar-size-vertical: 1;
+}
+
+IssuePickerModal .picker-count {
+    width: 100%;
+    color: $text-muted;
+    margin-top: 1;
+}
+
+IssuePickerModal #picker-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+
+IssuePickerModal #picker-buttons Button {
+    margin-left: 1;
+    min-width: 11;
+}

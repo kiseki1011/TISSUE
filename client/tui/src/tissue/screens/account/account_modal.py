@@ -5,12 +5,16 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
+from textual.css.query import NoMatches
 from textual.widgets import Button, Label, Rule
 
 from tissue.api.generated.models.member_profile import MemberProfile
 from tissue.rendering.icon import make_icon_widget
+from tissue.screens.account._helpers import is_oidc_mode
 from tissue.screens.base import TissueModal
 from tissue.util.datetime_fmt import format_relative
+from tissue.widgets.spatial_focus import focus_in_direction
+from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
     from tissue.app import TissueApp
@@ -19,12 +23,26 @@ _PROFILE_ASSET_DIR = Path(__file__).parent.parent.parent / "assets" / "profile"
 
 
 class AccountModal(TissueModal[None]):
-    """View account info and launch profile / password / delete / logout actions."""
+    """View account info and launch profile / password / delete / logout actions.
+
+    Each editable field (name, username, email) carries a pencil icon that opens
+    a single-field edit modal. In OIDC mode the identity provider owns name and
+    email, so only username is editable and only its pencil is shown.
+    """
 
     CSS_PATH = "account_modal.tcss"
 
     BINDINGS = [
         Binding("escape", "close", "close"),
+        # Arrow / hjkl navigate the focusable controls by position
+        # (widgets/spatial_focus).
+        # - edit pencils are a vertical column (j/k)
+        # - bottom actions are a horizontal row (h/l)
+        # - j/k cross between the two
+        Binding("up,k", "focus_dir('up')", show=False),
+        Binding("down,j", "focus_dir('down')", show=False),
+        Binding("left,h", "focus_dir('left')", show=False),
+        Binding("right,l", "focus_dir('right')", show=False),
     ]
 
     if TYPE_CHECKING:
@@ -34,17 +52,17 @@ class AccountModal(TissueModal[None]):
         image = make_icon_widget(self._profile_image_path())
         image.add_class("account-image")
 
-        password_btn = Button("Change password", id="account-password-btn")
-        password_btn.disabled = self._is_oidc_mode()
+        password_button = Button("Change password", id="account-password-btn")
+        password_button.disabled = is_oidc_mode(self.app)
 
         with VerticalScroll(id="account-dialog", classes="dialog"):
             with Vertical(id="account-inner"):
-                yield Container(image, classes="account-image-wrap")
-                yield Container(*self._info_rows(), classes="account-info")
+                with Horizontal(id="account-top"):
+                    yield Container(image, classes="account-image-wrap")
+                    yield Container(*self._info_rows(), classes="account-info")
                 yield Rule(classes="account-divider")
-                with Vertical(classes="account-actions"):
-                    yield Button("Edit profile", id="account-edit-btn")
-                    yield password_btn
+                with Horizontal(classes="account-actions"):
+                    yield password_button
                     yield Button(
                         "Delete account",
                         id="account-delete-btn",
@@ -60,17 +78,40 @@ class AccountModal(TissueModal[None]):
         dialog = self.query_one("#account-dialog", VerticalScroll)
         dialog.border_title = "Account"
         dialog.border_subtitle = "Esc to close"
-        self.query_one("#account-edit-btn", Button).focus()
+        self._focus_first_action()
+
+    def _focus_first_action(self) -> None:
+        """Land on the first pencil if any field is editable, else the first action."""
+        edit_icons = self.query(".account-edit-icon")
+        target = (
+            edit_icons.first()
+            if edit_icons
+            else self.query_one("#account-password-btn")
+        )
+        target.focus()
 
     def _info_rows(self) -> list[Horizontal]:
         profile = self._cached_profile()
+        oidc = is_oidc_mode(self.app)
         return [
-            _account_row("Name", profile.name if profile and profile.name else "-"),
+            _account_row(
+                "Name",
+                profile.name if profile and profile.name else "-",
+                field="name",
+                editable=not oidc,
+            ),
             _account_row(
                 "Username",
                 profile.username if profile and profile.username else "-",
+                field="username",
+                editable=True,
             ),
-            _account_row("Email", profile.email if profile and profile.email else "-"),
+            _account_row(
+                "Email",
+                profile.email if profile and profile.email else "-",
+                field="email",
+                editable=not oidc and self._email_required(),
+            ),
             _account_row("Role", profile.role if profile and profile.role else "-"),
             _account_row(
                 "Joined", format_relative(profile.joined_at) if profile else "-"
@@ -86,6 +127,16 @@ class AccountModal(TissueModal[None]):
         client = self.app.client
         return client.account.cached_profile if client is not None else None
 
+    def _field_value(self, field: str) -> str:
+        profile = self._cached_profile()
+        if profile is None:
+            return ""
+        return {
+            "name": profile.name,
+            "username": profile.username,
+            "email": profile.email,
+        }.get(field) or ""
+
     def _profile_image_path(self) -> Path:
         name = (
             "default_profile_dark.png"
@@ -100,11 +151,6 @@ class AccountModal(TissueModal[None]):
             return True
         return bool(getattr(theme, "dark", True))
 
-    def _is_oidc_mode(self) -> bool:
-        info = self.app.system_info
-        setup = info.setup if info is not None else None
-        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
-
     def _email_required(self) -> bool:
         info = self.app.system_info
         setup = info.setup if info is not None else None
@@ -113,18 +159,37 @@ class AccountModal(TissueModal[None]):
     def action_close(self) -> None:
         self.dismiss(None)
 
-    @on(Button.Pressed, "#account-edit-btn")
-    def _on_edit(self) -> None:
-        from tissue.screens.account.edit_profile_modal import EditProfileModal
+    def action_focus_dir(self, direction: str) -> None:
+        focus_in_direction(self, direction)
 
+    @on(Button.Pressed, ".account-edit-icon")
+    def _on_edit_field(self, event: Button.Pressed) -> None:
+        from tissue.screens.account.field_edit_modal import FieldEditModal
+
+        field = (event.button.id or "").removeprefix("account-edit-")
         self.app.push_screen(
-            EditProfileModal(email_required=self._email_required()),
-            self._on_edit_closed,
+            FieldEditModal(field=field, current_value=self._field_value(field)),
+            lambda updated: self._on_edit_closed(updated, field),
         )
+
+    def _on_edit_closed(self, updated: bool | None, field: str) -> None:
+        if not updated:
+            return
+        self._repaint_info_rows()
+        # Refocus only after the repaint settles. remove_children defers its
+        # removal, so the old pencil (same id) lingers in the DOM until the
+        # next refresh.
+        self.call_after_refresh(self._focus_pencil, field)
+
+    def _focus_pencil(self, field: str) -> None:
+        try:
+            self.query_one(f"#account-edit-{field}", TextButton).focus()
+        except NoMatches:
+            pass
 
     @on(Button.Pressed, "#account-password-btn")
     def _on_password(self) -> None:
-        if self._is_oidc_mode():
+        if is_oidc_mode(self.app):
             return
         from tissue.screens.account.change_password_modal import ChangePasswordModal
 
@@ -146,14 +211,16 @@ class AccountModal(TissueModal[None]):
         if confirmed:
             self.app.logout()
 
-    def _on_edit_closed(self, updated: bool | None) -> None:
-        if updated:
-            self._repaint_info_rows()
 
-
-def _account_row(key: str, value: str) -> Horizontal:
-    return Horizontal(
+def _account_row(
+    key: str, value: str, *, field: str | None = None, editable: bool = False
+) -> Horizontal:
+    children: list = [
         Label(f"{key}:", classes="account-info-key"),
         Label(value, classes="account-info-value"),
-        classes="account-info-row",
-    )
+    ]
+    if editable and field:
+        children.append(
+            TextButton("✎", id=f"account-edit-{field}", classes="account-edit-icon")
+        )
+    return Horizontal(*children, classes="account-info-row")

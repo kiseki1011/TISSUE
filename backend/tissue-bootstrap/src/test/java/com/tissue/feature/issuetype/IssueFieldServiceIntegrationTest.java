@@ -54,13 +54,13 @@ class IssueFieldServiceIntegrationTest extends IntegrationTestSupport {
     void setUp() {
         admin = memberRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "HongGilDong"));
 
-        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.YELLOW);
-        workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
-        workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.ANSI_YELLOW);
+        workflow.addState(Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflow.addState(Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Bug"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Bug"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 

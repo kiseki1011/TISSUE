@@ -1,0 +1,37 @@
+ConfirmModal {
+    align: center middle;
+    background: $background 60%;
+}
+#confirm-dialog {
+    width: 56;
+    max-width: 90%;
+    min-width: 40;
+    height: auto;
+    max-height: 90%;
+    padding: 0;
+    border-title-align: center;
+    border-title-color: $warning;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+#confirm-body {
+    width: 100%;
+    height: auto;
+    padding: 2 4;
+}
+#confirm-message {
+    width: 100%;
+    height: auto;
+    color: $warning;
+    padding-bottom: 1;
+}
+#confirm-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+#confirm-buttons Button {
+    margin-left: 1;
+    min-width: 12;
+}

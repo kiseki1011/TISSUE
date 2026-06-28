@@ -15,11 +15,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 /**
- * Relevance-ranked FTS adapter. Uses {@link IssueSearchSpecs#ftsKeywordMatches} for the
- * keyword predicate and {@link IssueSearchSpecs#orderByRelevance} for the {@code ts_rank}
- * ordering, and reuses the other filter specs (priority, state, assignee, sprint, tags,
- * date ranges) without modification. Both the project-scoped and instance-wide searches
- * share the same {@link #filters} chain, differing only in the project predicate.
+ * Relevance-ranked FTS adapter.
+ *
+ * <p>Uses {@link IssueSearchSpecs#ftsKeywordMatches} for the keyword predicate and
+ * {@link IssueSearchSpecs#orderByRelevance}
+ * for the {@code ts_rank} ordering, and reuses the other filter specs (priority, state, assignee, sprint,
+ * tags, date ranges) without modification. Both the project-scoped and instance-wide searches share
+ * the same {@link #filters} chain, differing only in the project predicate.
  */
 @LLMGenerated(
         llmInvolvement = LLMInvolvement.ASSISTED,
@@ -56,7 +58,7 @@ public class IssueFullTextSearchAdapter implements IssueFullTextSearchRepository
                 .and(IssueSearchSpecs.hasCurrentStateIds(condition.currentStateIds()))
                 .and(IssueSearchSpecs.hasAuthors(condition.authorMemberIds()))
                 .and(IssueSearchSpecs.hasAssignees(condition.assigneeMemberIds()))
-                .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds()))
+                .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds(), condition.reviewerStatuses()))
                 .and(IssueSearchSpecs.hasSubscribers(condition.subscriberMemberIds()))
                 .and(IssueSearchSpecs.inSprints(condition.sprintIds()))
                 .and(IssueSearchSpecs.dueAtBetween(condition.dueAtFrom(), condition.dueAtTo()))

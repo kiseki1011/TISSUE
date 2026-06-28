@@ -51,9 +51,9 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     void setUp() {
         gildong = memberRepository.save(Member.create("gildong@tissue.com", "gildong", "Hong Gildong"));
 
-        workflow = Workflow.create(Name.of("Default Workflow"), null, ColorType.YELLOW);
-        workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
-        workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
+        workflow = Workflow.create(Name.of("Default Workflow"), null, ColorType.ANSI_YELLOW);
+        workflow.addState(Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflow.addState(Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         em.flush();
@@ -63,7 +63,12 @@ class IssueTypeQueryServiceIntegrationTest extends IntegrationTestSupport {
     private IssueType saveIssueType(String name) {
         Workflow managedWorkflow = em.find(Workflow.class, workflow.getId());
         IssueType issueType = IssueType.create(
-                Name.of(name), "desc", ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, managedWorkflow);
+                Name.of(name),
+                "desc",
+                ColorType.ANSI_RED,
+                IconType.CIRCLE_FILLED,
+                IssueHierarchy.STANDARD,
+                managedWorkflow);
         return issueTypeRepository.save(issueType);
     }
 

@@ -10,7 +10,7 @@ public interface CommentQueryUseCase {
 
     /**
      * Returns root comments on an issue, paginated. Each root carries its replies inline
-     * (depth is constrained to 1 by domain rules, so no deeper nesting needs paging).
+     * (max-depth is 1 by domain rules, so no deeper nesting needs paging).
      */
     Page<CommentDetailResponse> getIssueComments(IssueIdentifier iid, Pageable pageable, Long actorMemberId);
 

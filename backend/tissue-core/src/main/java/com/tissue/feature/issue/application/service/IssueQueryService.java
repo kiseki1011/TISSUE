@@ -22,6 +22,7 @@ import com.tissue.feature.issue.domain.IssueRelation;
 import com.tissue.feature.issue.domain.IssueReviewer;
 import com.tissue.feature.issue.domain.IssueSubscriber;
 import com.tissue.feature.issue.domain.exception.IssueNotFoundException;
+import com.tissue.feature.issuetype.application.dto.response.FieldOptionDetail;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -203,7 +204,10 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     private CustomFieldValueInfo toCustomFieldValueInfo(IssueField field, @Nullable Object rawValue) {
+        List<FieldOptionDetail> options = field.getIssueFieldType().canHaveOptions()
+                ? field.getOptions().stream().map(FieldOptionDetail::from).toList()
+                : List.of();
         return new CustomFieldValueInfo(
-                field.getId(), field.getName(), field.getIssueFieldType(), field.isRequired(), rawValue);
+                field.getId(), field.getName(), field.getIssueFieldType(), field.isRequired(), rawValue, options);
     }
 }

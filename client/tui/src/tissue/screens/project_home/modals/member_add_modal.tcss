@@ -1,0 +1,41 @@
+MemberAddModal {
+    align: center middle;
+    background: $background 60%;
+}
+MemberAddModal #mam-dialog {
+    width: 62;
+    max-width: 90%;
+    height: auto;
+    max-height: 85%;
+    padding: 1 2;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+MemberAddModal #mam-search {
+    width: 100%;
+}
+MemberAddModal #mam-results {
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    border: none;
+    background: $panel;
+    margin-top: 1;
+}
+MemberAddModal .mam-status {
+    width: 100%;
+    height: auto;
+    color: $text-muted;
+    padding-left: 1;
+}
+MemberAddModal #mam-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+}
+MemberAddModal #mam-buttons Button {
+    margin-left: 1;
+    min-width: 11;
+}

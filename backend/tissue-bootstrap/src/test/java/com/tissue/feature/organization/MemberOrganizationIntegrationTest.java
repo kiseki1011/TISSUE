@@ -55,7 +55,7 @@ class MemberOrganizationIntegrationTest extends IntegrationTestSupport {
         void assignAndClear() {
             // given
             Member member = memberCommandRepository.save(Member.create("dev@tissue.com", "dev", "Dev"));
-            Position position = positionRepository.save(Position.create(Name.of("Backend"), null, ColorType.BLUE));
+            Position position = positionRepository.save(Position.create(Name.of("Backend"), null, ColorType.ANSI_BLUE));
             em.flush();
             em.clear();
 
@@ -90,7 +90,7 @@ class MemberOrganizationIntegrationTest extends IntegrationTestSupport {
             // given
             Member admin = memberCommandRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "Admin"));
             Member target = memberCommandRepository.save(Member.create("dev@tissue.com", "dev", "Dev"));
-            Team team = teamRepository.save(Team.create(Name.of("Platform"), null, ColorType.GREEN));
+            Team team = teamRepository.save(Team.create(Name.of("Platform"), null, ColorType.ANSI_GREEN));
             em.flush();
             em.clear();
 
@@ -124,8 +124,8 @@ class MemberOrganizationIntegrationTest extends IntegrationTestSupport {
         void profileIncludesOrganization() {
             // given
             Member member = memberCommandRepository.save(Member.createAsAdmin("admin@tissue.com", "admin", "Admin"));
-            Position position = positionRepository.save(Position.create(Name.of("PM"), null, ColorType.PURPLE));
-            Team team = teamRepository.save(Team.create(Name.of("Core"), null, ColorType.TEAL));
+            Position position = positionRepository.save(Position.create(Name.of("PM"), null, ColorType.MAGENTA));
+            Team team = teamRepository.save(Team.create(Name.of("Core"), null, ColorType.MEDIUMBLUE));
             member.assignPosition(position);
             member.assignTeam(team);
             memberCommandRepository.save(member);

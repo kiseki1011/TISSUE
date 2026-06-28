@@ -64,7 +64,7 @@ class PositionServiceTest {
             CreatePositionCommand cmd = CreatePositionCommand.builder()
                     .name(name)
                     .description("backend")
-                    .color(ColorType.BLUE)
+                    .color(ColorType.ANSI_BLUE)
                     .build();
 
             given(positionRepository.save(any(Position.class))).willReturn(position);
@@ -86,7 +86,7 @@ class PositionServiceTest {
             CreatePositionCommand cmd = CreatePositionCommand.builder()
                     .name(name)
                     .description(null)
-                    .color(ColorType.BLUE)
+                    .color(ColorType.ANSI_BLUE)
                     .build();
 
             willThrow(new ResourceConflictException(DUPLICATE_POSITION_NAME))

@@ -349,13 +349,17 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
             em.flush();
 
             Long tagA = wikiTagService
-                    .attachTag(doc1.getId(), new AttachWikiTagCommand(Name.of("alpha"), ColorType.BLUE), actor.getId())
+                    .attachTag(
+                            doc1.getId(),
+                            new AttachWikiTagCommand(Name.of("alpha"), ColorType.ANSI_BLUE),
+                            actor.getId())
                     .tagId();
             Long tagB = wikiTagService
-                    .attachTag(doc2.getId(), new AttachWikiTagCommand(Name.of("beta"), ColorType.BLUE), actor.getId())
+                    .attachTag(
+                            doc2.getId(), new AttachWikiTagCommand(Name.of("beta"), ColorType.ANSI_BLUE), actor.getId())
                     .tagId();
             wikiTagService.attachTag(
-                    doc3.getId(), new AttachWikiTagCommand(Name.of("gamma"), ColorType.BLUE), actor.getId());
+                    doc3.getId(), new AttachWikiTagCommand(Name.of("gamma"), ColorType.ANSI_BLUE), actor.getId());
             em.flush();
             em.clear();
 
@@ -378,10 +382,12 @@ class WikiQueryServiceIntegrationTest extends IntegrationTestSupport {
 
             Long tag = wikiTagService
                     .attachTag(
-                            matching.getId(), new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE), actor.getId())
+                            matching.getId(),
+                            new AttachWikiTagCommand(Name.of("ops"), ColorType.ANSI_BLUE),
+                            actor.getId())
                     .tagId();
             wikiTagService.attachTag(
-                    wrongKeyword.getId(), new AttachWikiTagCommand(Name.of("ops"), ColorType.BLUE), actor.getId());
+                    wrongKeyword.getId(), new AttachWikiTagCommand(Name.of("ops"), ColorType.ANSI_BLUE), actor.getId());
             em.flush();
             em.clear();
 

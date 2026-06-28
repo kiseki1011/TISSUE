@@ -122,6 +122,7 @@ __all__ = [
     "IssueCommonDetail",
     "IssueCreateResponse",
     "IssueCustomDetail",
+    "IssueDetailView",
     "IssueFieldDetail",
     "IssueFieldResponse",
     "IssueIdentifierResponse",
@@ -143,6 +144,7 @@ __all__ = [
     "LinkEmailAuthRequest",
     "LoginRequest",
     "LoginResponse",
+    "MemberCandidateSummary",
     "MemberProfile",
     "MemberSignupResponse",
     "MemberStats",
@@ -156,6 +158,7 @@ __all__ = [
     "PageResponseAdminMemberSummary",
     "PageResponseCommentDetailResponse",
     "PageResponseIssueSummary",
+    "PageResponseMemberCandidateSummary",
     "PageResponseMyCommentResponse",
     "PageResponseProjectMemberSummary",
     "PageResponseProjectSummary",
@@ -368,6 +371,7 @@ from tissue.api.generated.models.issue_basic_info import IssueBasicInfo as Issue
 from tissue.api.generated.models.issue_common_detail import IssueCommonDetail as IssueCommonDetail
 from tissue.api.generated.models.issue_create_response import IssueCreateResponse as IssueCreateResponse
 from tissue.api.generated.models.issue_custom_detail import IssueCustomDetail as IssueCustomDetail
+from tissue.api.generated.models.issue_detail_view import IssueDetailView as IssueDetailView
 from tissue.api.generated.models.issue_field_detail import IssueFieldDetail as IssueFieldDetail
 from tissue.api.generated.models.issue_field_response import IssueFieldResponse as IssueFieldResponse
 from tissue.api.generated.models.issue_identifier_response import IssueIdentifierResponse as IssueIdentifierResponse
@@ -389,6 +393,7 @@ from tissue.api.generated.models.json_nullable_string import JsonNullableString 
 from tissue.api.generated.models.link_email_auth_request import LinkEmailAuthRequest as LinkEmailAuthRequest
 from tissue.api.generated.models.login_request import LoginRequest as LoginRequest
 from tissue.api.generated.models.login_response import LoginResponse as LoginResponse
+from tissue.api.generated.models.member_candidate_summary import MemberCandidateSummary as MemberCandidateSummary
 from tissue.api.generated.models.member_profile import MemberProfile as MemberProfile
 from tissue.api.generated.models.member_signup_response import MemberSignupResponse as MemberSignupResponse
 from tissue.api.generated.models.member_stats import MemberStats as MemberStats
@@ -402,6 +407,7 @@ from tissue.api.generated.models.page_response_admin_audit_log_response import P
 from tissue.api.generated.models.page_response_admin_member_summary import PageResponseAdminMemberSummary as PageResponseAdminMemberSummary
 from tissue.api.generated.models.page_response_comment_detail_response import PageResponseCommentDetailResponse as PageResponseCommentDetailResponse
 from tissue.api.generated.models.page_response_issue_summary import PageResponseIssueSummary as PageResponseIssueSummary
+from tissue.api.generated.models.page_response_member_candidate_summary import PageResponseMemberCandidateSummary as PageResponseMemberCandidateSummary
 from tissue.api.generated.models.page_response_my_comment_response import PageResponseMyCommentResponse as PageResponseMyCommentResponse
 from tissue.api.generated.models.page_response_project_member_summary import PageResponseProjectMemberSummary as PageResponseProjectMemberSummary
 from tissue.api.generated.models.page_response_project_summary import PageResponseProjectSummary as PageResponseProjectSummary

@@ -7,6 +7,9 @@ import com.tissue.feature.wiki.domain.vo.SnapshotVersion;
 import com.tissue.shared.entity.SoftDeleteEntity;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
+import com.tissue.shared.meta.Evaluation;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -24,6 +27,14 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
+@LLMGenerated(
+        llmInvolvement = LLMInvolvement.ASSISTED,
+        model = "claude-opus-4-8",
+        evaluation = Evaluation.ACCEPTABLE,
+        evaluationReason = "(Only the searchVector part was assisted with AI) Manually tested, Tested with "
+                + "human written integration tests. But still needs inspection. Also a load test for performance "
+                + "check will be good to do.",
+        reviewedBy = "kiseki1011")
 @Entity
 @Getter
 @SQLRestriction("soft_deleted = false")

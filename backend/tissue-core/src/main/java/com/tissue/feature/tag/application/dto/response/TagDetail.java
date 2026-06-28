@@ -10,7 +10,7 @@ public record TagDetail(Long tagId, String name, String color, String descriptio
         return TagDetail.builder()
                 .tagId(tag.getId())
                 .name(tag.getName().getDisplayName())
-                .color(tag.getColor().getDisplayName())
+                .color(tag.getColor().name())
                 .description(tag.getDescription())
                 .build();
     }

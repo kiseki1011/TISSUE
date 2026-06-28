@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 class IssueFieldChangeTrackerTest {
 
-    public static final String CUSTOM_FIELDS = "customFields.";
+    // field id (string) -> field name
+    private static final Map<String, String> NAMES = Map.of("1", "version", "2", "environment", "3", "severity");
     private final IssueFieldChangeTracker sut = new IssueFieldChangeTracker();
 
     @Nested
@@ -20,16 +21,16 @@ class IssueFieldChangeTrackerTest {
     class CompareChanges {
 
         @Test
-        @DisplayName("success: detects created field")
+        @DisplayName("success: detects created field, keyed by capitalised field name")
         void successDetectCreatedField() {
             // given
             Map<String, Object> oldSnapshot = new HashMap<>();
             Map<String, Object> newSnapshot = new HashMap<>(Map.of("1", "new value"));
 
             // when
-            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot);
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
 
-            assertThat(changes).containsExactly(entry(CUSTOM_FIELDS + "1", new FieldChange(null, "new value")));
+            assertThat(changes).containsExactly(entry("Version", new FieldChange(null, "new value")));
         }
 
         @Test
@@ -40,10 +41,10 @@ class IssueFieldChangeTrackerTest {
             Map<String, Object> newSnapshot = new HashMap<>(Map.of("1", "new value"));
 
             // when
-            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot);
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
 
             // then
-            assertThat(changes).containsExactly(entry(CUSTOM_FIELDS + "1", new FieldChange("old value", "new value")));
+            assertThat(changes).containsExactly(entry("Version", new FieldChange("old value", "new value")));
         }
 
         @Test
@@ -54,10 +55,10 @@ class IssueFieldChangeTrackerTest {
             Map<String, Object> newSnapshot = new HashMap<>();
 
             // when
-            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot);
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
 
             // then
-            assertThat(changes).containsExactly(entry(CUSTOM_FIELDS + "1", new FieldChange("old value", null)));
+            assertThat(changes).containsExactly(entry("Version", new FieldChange("old value", null)));
         }
 
         @Test
@@ -68,7 +69,7 @@ class IssueFieldChangeTrackerTest {
             Map<String, Object> newSnapshot = new HashMap<>(Map.of("1", "same"));
 
             // when
-            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot);
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
 
             // then
             assertThat(changes).isEmpty();
@@ -82,14 +83,28 @@ class IssueFieldChangeTrackerTest {
             Map<String, Object> newSnapshot = new HashMap<>(Map.of("1", "new", "3", "created"));
 
             // when
-            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot);
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
 
             // then
             assertThat(changes)
                     .containsOnly(
-                            entry(CUSTOM_FIELDS + "1", new FieldChange("old", "new")),
-                            entry(CUSTOM_FIELDS + "2", new FieldChange("deleted", null)),
-                            entry(CUSTOM_FIELDS + "3", new FieldChange(null, "created")));
+                            entry("Version", new FieldChange("old", "new")),
+                            entry("Environment", new FieldChange("deleted", null)),
+                            entry("Severity", new FieldChange(null, "created")));
+        }
+
+        @Test
+        @DisplayName("success: falls back to the id when the field name is unknown")
+        void successFallbackToId() {
+            // given
+            Map<String, Object> oldSnapshot = new HashMap<>();
+            Map<String, Object> newSnapshot = new HashMap<>(Map.of("99", "value"));
+
+            // when
+            Map<String, FieldChange> changes = sut.compareChanges(oldSnapshot, newSnapshot, NAMES);
+
+            // then
+            assertThat(changes).containsExactly(entry("99", new FieldChange(null, "value")));
         }
     }
 }

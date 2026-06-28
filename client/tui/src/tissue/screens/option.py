@@ -71,7 +71,7 @@ class OptionModal(TissueModal[None]):
                 classes="info-line",
             ),
         ]
-        # Server fields only rendered after successful ping
+        # Server name and version are known only after a successful ping.
         info = self.app.system_info
         if info is not None:
             lines.append(
@@ -108,7 +108,7 @@ class OptionModal(TissueModal[None]):
                     classes="info-line",
                 )
             )
-        # username is the identifier when email is not required
+        # Username stands in as the identifier when email is not required.
         if not email_required and profile is not None and profile.username:
             children.append(
                 Label(
@@ -124,7 +124,9 @@ class OptionModal(TissueModal[None]):
     def action_nav_up(self) -> None:
         focused = self.focused
 
-        # First picker → jump to tab headers
+        # Wrap focus at the pane edges instead of leaving it.
+        # The first picker hands focus up to the tab headers, and the tab
+        # headers hand it back down to the last picker.
         if isinstance(focused, OptionPicker):
             pickers = self._pickers_in_active_pane()
             if pickers and pickers[0] is focused:
@@ -132,7 +134,6 @@ class OptionModal(TissueModal[None]):
                 if tabs is not None:
                     tabs.focus()
                     return
-        # Tab headers → jump to last picker in active pane
         if isinstance(focused, Tabs):
             pickers = self._pickers_in_active_pane()
             if pickers:
@@ -143,13 +144,14 @@ class OptionModal(TissueModal[None]):
     def action_nav_down(self) -> None:
         focused = self.focused
 
-        # Tab headers → jump to first picker in active pane
+        # Wrap focus at the pane edges instead of leaving it.
+        # The tab headers hand focus down to the first picker, and the last
+        # picker hands it back up to the tab headers.
         if isinstance(focused, Tabs):
             pickers = self._pickers_in_active_pane()
             if pickers:
                 pickers[0].focus()
                 return
-        # Last picker → jump to tab headers
         if isinstance(focused, OptionPicker):
             pickers = self._pickers_in_active_pane()
             if pickers and pickers[-1] is focused:

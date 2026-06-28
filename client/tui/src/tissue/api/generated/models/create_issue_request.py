@@ -35,11 +35,12 @@ class CreateIssueRequest(BaseModel):
     custom_fields: Optional[Dict[str, Any]] = Field(default=None, description="Custom fields are passed as a map of field ID to value.", alias="customFields")
     due_at: Optional[datetime] = Field(default=None, alias="dueAt")
     issue_type_id: StrictInt = Field(alias="issueTypeId")
+    parent_issue_key: Optional[StrictStr] = Field(default=None, description="Key of the parent issue. Required when the issue type's hierarchy is SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly one hierarchy level above.", alias="parentIssueKey")
     priority: StrictStr = Field(description="Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)")
     story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
     summary: Optional[Annotated[str, Field(min_length=0, strict=True, max_length=2000)]] = None
-    title: Annotated[str, Field(min_length=2, strict=True, max_length=100)]
-    __properties: ClassVar[List[str]] = ["assigneeMemberId", "content", "customFields", "dueAt", "issueTypeId", "priority", "storyPoint", "summary", "title"]
+    title: Annotated[str, Field(min_length=2, strict=True, max_length=50)]
+    __properties: ClassVar[List[str]] = ["assigneeMemberId", "content", "customFields", "dueAt", "issueTypeId", "parentIssueKey", "priority", "storyPoint", "summary", "title"]
 
     @field_validator('priority')
     def priority_validate_enum(cls, value):
@@ -104,6 +105,7 @@ class CreateIssueRequest(BaseModel):
             "customFields": obj.get("customFields"),
             "dueAt": obj.get("dueAt"),
             "issueTypeId": obj.get("issueTypeId"),
+            "parentIssueKey": obj.get("parentIssueKey"),
             "priority": obj.get("priority"),
             "storyPoint": obj.get("storyPoint"),
             "summary": obj.get("summary"),

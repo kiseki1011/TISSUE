@@ -7,8 +7,11 @@ import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.service.IssueFullTextSearchService;
 import com.tissue.feature.issue.application.service.IssueLifecycleService;
+import com.tissue.feature.issue.application.service.IssueParticipantService;
+import com.tissue.feature.issue.application.service.IssueReviewService;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -24,6 +27,7 @@ import com.tissue.feature.workflow.domain.Workflow;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
@@ -81,6 +85,12 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private IssueTypeRepository issueTypeRepository;
 
+    @Autowired
+    private IssueParticipantService participantService;
+
+    @Autowired
+    private IssueReviewService reviewService;
+
     private Member actor;
     private Member other;
     private Long issueTypeId;
@@ -95,15 +105,15 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         projectMemberRepository.save(ProjectMember.createManager(proj, actor));
         projectMemberRepository.save(ProjectMember.create(proj, other));
 
-        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
-        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.ANSI_YELLOW);
+        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
-                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
+                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
         workflow.addTransition(Name.of("Start"), null, todo, inProgress);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         IssueField goalField = issueType.addField(Name.of("goal"), "Goal", IssueFieldType.TEXT, true, 0);
 
@@ -220,13 +230,15 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
 
         @Test
-        @DisplayName("success: blank keyword returns empty")
+        @DisplayName("success: a blank keyword lists all project issues (the hub's no-keyword load)")
         void blankKeyword() {
             // given
-            createIssue("Deployment guide", "body", actor.getId());
+            String issue = createIssue("Deployment guide", "body", actor.getId());
 
-            // when & then
-            assertThat(search(" ").getContent()).isEmpty();
+            // when & then - the project hub loads its issue list with no keyword
+            assertThat(search(" ").getContent())
+                    .extracting(IssueSummary::issueKey)
+                    .containsExactly(issue);
         }
     }
 
@@ -287,6 +299,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
                     null,
                     null,
                     null,
+                    null,
                     "deployment");
 
             // when
@@ -304,7 +317,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("success: scopes results to the caller's project memberships")
         void scopedToMemberships() {
-            // given - actor is a member of PROJ (setUp); PROJ2 has only 'other' as a member
+            // given - actor is a member of PROJ, PROJ2 has only 'other' as a member
             createProject("PROJ2", other);
             String mine = createIssue("deployment guide", "body", actor.getId());
             String theirs = createIssueIn(ProjectIdentifier.ofProjectKey("PROJ2"), "deployment runbook", "body", other);
@@ -331,6 +344,49 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             // then
             assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactlyInAnyOrder(a, b);
         }
+
+        @Test
+        @DisplayName("success: a keyword-less assignee filter still returns the assigned issues (My Work)")
+        void filterOnlyAssigneeWithoutKeyword() {
+            // given - one issue assigned to the actor, one to someone else, no keyword
+            String mine = createIssue("Deployment guide", "body", actor.getId());
+            createIssue("Random note", "body", other.getId());
+
+            IssueSearchCondition condition = new IssueSearchCondition(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    Set.of(actor.getId()),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+
+            // when - the dashboard's "My Work" sends assigneeMemberIds=[me] with no keyword
+            Page<IssueSummary> page = sut.ftsAllRanked(condition, 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(mine);
+        }
+
+        @Test
+        @DisplayName("behavior: no keyword and no filter returns empty (not every issue)")
+        void noKeywordNoFilterReturnsEmpty() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when - neither keyword nor any filter
+            Page<IssueSummary> page = sut.ftsAllRanked(IssueSearchCondition.empty(), 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).isEmpty();
+        }
     }
 
     @LLMGenerated(
@@ -343,16 +399,16 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
     class EmptyPagesArePaged {
 
         @Test
-        @DisplayName("success: blank keyword returns a paged empty page, not an unpaged one")
+        @DisplayName("success: a blank-keyword result is paged, not unpaged")
         void blankKeywordIsPaged() {
             // given
-            createIssue("Deployment guide", "body", actor.getId());
+            String issue = createIssue("Deployment guide", "body", actor.getId());
 
             // when
             Page<IssueSummary> page = sut.ftsByProjectRanked(PROJ, condition(" "), 0, 20, actor.getId());
 
-            // then
-            assertThat(page.getContent()).isEmpty();
+            // then - lists all (no keyword), returned as a proper paged result
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(issue);
             assertThat(page.getPageable().isPaged()).isTrue();
             assertThat(page.getPageable()).isEqualTo(PageRequest.of(0, 20));
         }
@@ -373,13 +429,186 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
     }
 
+    @Nested
+    @DisplayName("reviewer status filter")
+    class ReviewerStatusFilter {
+
+        @Test
+        @DisplayName("success: reviewerStatuses narrows to the actor's reviews in those statuses")
+        void narrowsByStatus() {
+            // given - actor reviews two issues
+            String pending = createIssue("Login flow", "body", other.getId());
+            String approved = createIssue("Logout flow", "body", other.getId());
+            review(pending, false);
+            review(approved, true);
+
+            // when - reviewer = me, status = PENDING
+            Page<IssueSummary> page = sut.ftsByProjectRanked(
+                    PROJ, reviewerCondition(Set.of(actor.getId()), Set.of(ReviewStatus.PENDING)), 0, 20, actor.getId());
+
+            // then - only the still-pending one
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(pending);
+        }
+
+        @Test
+        @DisplayName("success: a different status (APPROVED) returns only the approved review")
+        void approvedStatus() {
+            // given
+            String pending = createIssue("Login flow", "body", other.getId());
+            String approved = createIssue("Logout flow", "body", other.getId());
+            review(pending, false);
+            review(approved, true);
+
+            // when
+            Page<IssueSummary> page = sut.ftsByProjectRanked(
+                    PROJ,
+                    reviewerCondition(Set.of(actor.getId()), Set.of(ReviewStatus.APPROVED)),
+                    0,
+                    20,
+                    actor.getId());
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(approved);
+        }
+
+        @Test
+        @DisplayName("success: no reviewerStatuses returns every issue the actor reviews")
+        void noStatusReturnsAll() {
+            // given
+            String pending = createIssue("Login flow", "body", other.getId());
+            String approved = createIssue("Logout flow", "body", other.getId());
+            review(pending, false);
+            review(approved, true);
+
+            // when - reviewer is me
+            Page<IssueSummary> page =
+                    sut.ftsByProjectRanked(PROJ, reviewerCondition(Set.of(actor.getId()), null), 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent())
+                    .extracting(IssueSummary::issueKey)
+                    .containsExactlyInAnyOrder(pending, approved);
+        }
+
+        // Add the actor as a reviewer of issueKey.
+        // Approve it when `approved`, otherwise leave the review PENDING.
+        private void review(String issueKey, boolean approved) {
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
+            participantService.addReviewer(iid, actor.getId(), actor.getId());
+            if (approved) {
+                reviewService.submitReview(iid, true, actor.getId());
+            }
+            em.flush();
+            em.clear();
+        }
+
+        private IssueSearchCondition reviewerCondition(Set<Long> reviewerIds, Set<ReviewStatus> statuses) {
+            return new IssueSearchCondition(
+                    null, null, null, null, null, null, reviewerIds, statuses, null, null, null, null, null, null);
+        }
+    }
+
+    @Nested
+    @DisplayName("issue type projection")
+    class IssueTypeProjection {
+
+        @Test
+        @DisplayName("success: a summary carries the issue type's id, name and colour")
+        void carriesIssueType() {
+            // given
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("deployment");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            IssueSummary summary = page.getContent().get(0);
+            assertThat(summary.issueTypeId()).isEqualTo(issueTypeId);
+            assertThat(summary.issueTypeName()).isEqualTo("Story");
+            assertThat(summary.issueTypeColor()).isEqualTo(ColorType.ANSI_RED);
+        }
+    }
+
+    @Nested
+    @DisplayName("my review status projection")
+    class MyReviewStatus {
+
+        @Test
+        @DisplayName("success: a pending review of mine is reflected on the summary")
+        void reflectsPendingReview() {
+            // given - someone else's issue that i'm asked to review
+            String key = createIssue("Login flow", "body", other.getId());
+            participantService.addReviewer(IssueIdentifier.ofIssueKey(key), actor.getId(), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isEqualTo(ReviewStatus.PENDING);
+        }
+
+        @Test
+        @DisplayName("success: an approved review of mine is reflected on the summary")
+        void reflectsApprovedReview() {
+            // given
+            String key = createIssue("Login flow", "body", other.getId());
+            IssueIdentifier iid = IssueIdentifier.ofIssueKey(key);
+            participantService.addReviewer(iid, actor.getId(), actor.getId());
+            reviewService.submitReview(iid, true, actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isEqualTo(ReviewStatus.APPROVED);
+        }
+
+        @Test
+        @DisplayName("success: null when I am not a reviewer of the issue")
+        void nullWhenNotReviewer() {
+            // given - my own issue, no reviewers
+            createIssue("Login flow", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isNull();
+        }
+
+        @Test
+        @DisplayName("success: another member's review does not leak into my status")
+        void otherMembersReviewDoesNotLeak() {
+            // given - the issue is not reviewed by me (the searcher)
+            String key = createIssue("Login flow", "body", actor.getId());
+            participantService.addReviewer(IssueIdentifier.ofIssueKey(key), other.getId(), actor.getId());
+            em.flush();
+            em.clear();
+
+            // when
+            Page<IssueSummary> page = search("login");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().myReviewStatus()).isNull();
+        }
+    }
+
     private Page<IssueSummary> search(String keyword) {
         return sut.ftsByProjectRanked(PROJ, condition(keyword), 0, 20, actor.getId());
     }
 
     private IssueSearchCondition condition(String keyword) {
         return new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, keyword);
+                null, null, null, null, null, null, null, null, null, null, null, null, null, keyword);
     }
 
     private void createProject(String key, Member manager) {

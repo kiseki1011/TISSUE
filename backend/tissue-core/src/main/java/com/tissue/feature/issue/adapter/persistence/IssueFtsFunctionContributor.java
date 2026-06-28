@@ -25,7 +25,7 @@ import org.hibernate.type.StandardBasicTypes;
 public class IssueFtsFunctionContributor implements FunctionContributor {
 
     /**
-     * {@code ?2} is a to_tsquery string (prefix terms like "depl:* & gui:*"), built by {@link FtsQuery}.
+     * {@code ?2} is a {@code to_tsquery} string (prefix terms like "depl:* & gui:*"), built by {@link FtsQuery}.
      * {@code to_tsquery} is what enables the ':*' prefix matching.
      */
     @Override

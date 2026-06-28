@@ -248,7 +248,9 @@ class ProjectMemberServiceTest {
             // when
             ProjectMemberResponse result = sut.join(pid, actorMemberId);
 
-            // then
+            // then: an already-active member is a no-op and is NOT join-permission
+            // checked, so re-entering a PRIVATE project they belong to never fails.
+            then(projectAuthorizationService).should(never()).requireJoinPermission(any(), any());
             then(projectMemberRepository).should(never()).save(any());
             assertThat(result.projectKey()).isEqualTo(projectKey);
             assertThat(result.memberId()).isEqualTo(actorMemberId);
@@ -276,7 +278,9 @@ class ProjectMemberServiceTest {
             // when
             ProjectMemberResponse result = sut.join(pid, actorMemberId);
 
-            // then: the soft-deleted membership is restored, not inserted as a duplicate
+            // then: re-joining (restoring) IS gated by join permission, then the
+            // soft-deleted membership is restored, not inserted as a duplicate
+            then(projectAuthorizationService).should().requireJoinPermission(actor, project);
             then(softDeleted).should().restoreSoftDeleted();
             then(softDeleted).should().changeRole(ProjectRole.MEMBER);
             then(agentProjectJoinService).should().includeAgentsOfMember(actorMemberId, project);

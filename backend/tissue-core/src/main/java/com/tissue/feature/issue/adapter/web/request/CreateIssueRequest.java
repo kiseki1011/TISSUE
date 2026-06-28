@@ -31,7 +31,14 @@ public record CreateIssueRequest(
         @Schema(description = "Custom fields are passed as a map of field ID to value.") @Nullable @Size(max = 50)
         Map<Long, Object> customFields,
 
-        @Nullable Long assigneeMemberId) {
+        @Nullable Long assigneeMemberId,
+
+        @Schema(
+                description = "Key of the parent issue. Required when the issue type's hierarchy is "
+                        + "SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly "
+                        + "one hierarchy level above.")
+        @Nullable
+        String parentIssueKey) {
 
     public CreateIssueCommand toCommand() {
         return CreateIssueCommand.builder()
@@ -44,6 +51,7 @@ public record CreateIssueRequest(
                 .issueTypeId(issueTypeId)
                 .customFields(customFields == null ? Map.of() : customFields)
                 .assigneeMemberId(assigneeMemberId)
+                .parentKey(parentIssueKey)
                 .build();
     }
 }

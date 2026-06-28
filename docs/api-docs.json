@@ -461,37 +461,41 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
           "name": {
-            "maxLength": 50,
+            "maxLength": 18,
             "minLength": 1,
             "type": "string"
           }
@@ -515,6 +519,9 @@
           },
           "displayLabel": {
             "type": "string"
+          },
+          "targetState": {
+            "$ref": "#/components/schemas/StateInfo"
           },
           "transitionId": {
             "format": "int64",
@@ -850,9 +857,10 @@
             "type": "boolean"
           },
           "type": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -896,6 +904,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "parentIssueKey": {
+            "description": "Key of the parent issue. Required when the issue type's hierarchy is SUBTASK or MICROTASK (those cannot be created standalone); the parent must be exactly one hierarchy level above.",
+            "type": "string"
+          },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
             "enum": [
@@ -918,7 +930,7 @@
             "type": "string"
           },
           "title": {
-            "maxLength": 100,
+            "maxLength": 50,
             "minLength": 2,
             "type": "string"
           }
@@ -934,32 +946,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1063,32 +1079,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1166,32 +1186,36 @@
           },
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1222,32 +1246,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1272,32 +1300,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1412,32 +1444,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -1541,9 +1577,10 @@
             "type": "string"
           },
           "issueFieldType": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -1554,6 +1591,12 @@
               "CHECKLIST"
             ],
             "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionDetail"
+            },
+            "type": "array"
           },
           "required": {
             "type": "boolean"
@@ -1973,6 +2016,42 @@
         },
         "type": "object"
       },
+      "IssueDetailView": {
+        "description": "Aggregated issue detail view.",
+        "properties": {
+          "availableTransitions": {
+            "items": {
+              "$ref": "#/components/schemas/AvailableTransition"
+            },
+            "type": "array"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/IssueIdentifierResponse"
+            },
+            "type": "array"
+          },
+          "comments": {
+            "$ref": "#/components/schemas/PageResponseCommentDetailResponse"
+          },
+          "common": {
+            "$ref": "#/components/schemas/IssueCommonDetail"
+          },
+          "customFields": {
+            "items": {
+              "$ref": "#/components/schemas/CustomFieldValueInfo"
+            },
+            "type": "array"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/IssueIdentifierResponse"
+          },
+          "relations": {
+            "$ref": "#/components/schemas/IssueRelationsDetail"
+          }
+        },
+        "type": "object"
+      },
       "IssueFieldDetail": {
         "properties": {
           "description": {
@@ -1999,9 +2078,10 @@
             "type": "boolean"
           },
           "type": {
-            "description": "Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
+            "description": "Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.",
             "enum": [
               "TEXT",
+              "SHORT_TEXT",
               "INTEGER",
               "DECIMAL",
               "TIMESTAMP",
@@ -2031,11 +2111,14 @@
       },
       "IssueIdentifierResponse": {
         "properties": {
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
           "issueKey": {
             "type": "string"
           },
-          "issueTypeLabel": {
-            "type": "string"
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
           }
         },
         "type": "object"
@@ -2049,6 +2132,18 @@
             "type": "array"
           },
           "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "causedBy": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedIssueInfo"
+            },
+            "type": "array"
+          },
+          "causes": {
             "items": {
               "$ref": "#/components/schemas/RelatedIssueInfo"
             },
@@ -2143,6 +2238,56 @@
           "issueKey": {
             "type": "string"
           },
+          "issueTypeColor": {
+            "enum": [
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
+              "PINK",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
+              "INDIGO",
+              "MAGENTA",
+              "BROWN",
+              "TAN"
+            ],
+            "type": "string"
+          },
+          "issueTypeId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "issueTypeName": {
+            "type": "string"
+          },
+          "myReviewStatus": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "CHANGES_REQUESTED"
+            ],
+            "type": "string"
+          },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
             "enum": [
@@ -2172,32 +2317,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -2277,32 +2426,36 @@
           },
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -2359,32 +2512,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -2549,6 +2706,25 @@
             "type": "string"
           },
           "refreshToken": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MemberCandidateSummary": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address (`null` if `email-required` is disabled)",
+            "type": "string"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "username": {
             "type": "string"
           }
         },
@@ -2999,6 +3175,43 @@
         },
         "type": "object"
       },
+      "PageResponseMemberCandidateSummary": {
+        "description": "Offset-based paginated response.",
+        "properties": {
+          "content": {
+            "description": "Items in this page",
+            "items": {
+              "$ref": "#/components/schemas/MemberCandidateSummary"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether a next page is available",
+            "type": "boolean"
+          },
+          "page": {
+            "description": "Zero-based index of this page",
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "description": "Requested page size",
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "description": "Total number of matching elements across all pages",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "Total number of pages",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageResponseMyCommentResponse": {
         "description": "Offset-based paginated response.",
         "properties": {
@@ -3362,32 +3575,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -3539,6 +3756,10 @@
           "displayName": {
             "type": "string"
           },
+          "email": {
+            "description": "Email address (`null` if `email-required` is disabled)",
+            "type": "string"
+          },
           "joinedAt": {
             "format": "date-time",
             "type": "string"
@@ -3551,6 +3772,14 @@
             "enum": [
               "MEMBER",
               "MANAGER"
+            ],
+            "type": "string"
+          },
+          "systemRole": {
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "USER"
             ],
             "type": "string"
           },
@@ -3657,8 +3886,14 @@
       },
       "RelatedIssueInfo": {
         "properties": {
+          "currentState": {
+            "$ref": "#/components/schemas/StateInfo"
+          },
           "issueKey": {
             "type": "string"
+          },
+          "issueType": {
+            "$ref": "#/components/schemas/IssueTypeInfo"
           },
           "priority": {
             "description": "Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)",
@@ -3669,9 +3904,6 @@
               "P3",
               "P4"
             ],
-            "type": "string"
-          },
-          "stateDisplayLabel": {
             "type": "string"
           },
           "title": {
@@ -3756,32 +3988,36 @@
           },
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -4275,32 +4511,36 @@
           },
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -4331,32 +4571,36 @@
           },
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -4467,32 +4711,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -4577,7 +4825,7 @@
           },
           "title": {
             "$ref": "#/components/schemas/JsonNullableString",
-            "maxLength": 100,
+            "maxLength": 50,
             "minLength": 2
           }
         },
@@ -5344,32 +5592,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -5424,32 +5676,36 @@
         "properties": {
           "color": {
             "enum": [
-              "BLACK",
-              "RED",
-              "GREEN",
-              "YELLOW",
-              "BLUE",
-              "MAGENTA",
-              "CYAN",
-              "WHITE",
-              "GRAY",
-              "BRIGHT_RED",
-              "BRIGHT_GREEN",
-              "BRIGHT_YELLOW",
-              "BRIGHT_BLUE",
-              "BRIGHT_MAGENTA",
-              "BRIGHT_CYAN",
-              "BRIGHT_WHITE",
+              "ANSI_BLACK",
+              "ANSI_RED",
+              "ANSI_GREEN",
+              "ANSI_YELLOW",
+              "ANSI_BLUE",
+              "ANSI_MAGENTA",
+              "ANSI_CYAN",
+              "ANSI_WHITE",
+              "ANSI_BRIGHT_BLACK",
+              "ANSI_BRIGHT_RED",
+              "ANSI_BRIGHT_GREEN",
+              "ANSI_BRIGHT_YELLOW",
+              "ANSI_BRIGHT_BLUE",
+              "ANSI_BRIGHT_MAGENTA",
+              "ANSI_BRIGHT_CYAN",
+              "ANSI_BRIGHT_WHITE",
               "PINK",
-              "ORANGE",
-              "LIME",
-              "TEAL",
-              "NAVY",
+              "MAROON",
+              "RED",
+              "ORANGERED",
+              "DARKORANGE",
+              "LIMEGREEN",
+              "LIGHTGREEN",
+              "LIGHTYELLOW",
+              "MEDIUMBLUE",
+              "MIDNIGHTBLUE",
               "INDIGO",
-              "PURPLE",
+              "MAGENTA",
               "BROWN",
-              "TAN",
-              "OLIVE"
+              "TAN"
             ],
             "type": "string"
           },
@@ -7819,6 +8075,51 @@
         ]
       }
     },
+    "/api/v1/issues/{issueKey}/detail": {
+      "get": {
+        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20).\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "getIssueDetailView",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issueKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "commentSize",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDetailView"
+                }
+              }
+            },
+            "description": "Issue detail retrieved"
+          },
+          "404": {
+            "description": "Issue not found"
+          }
+        },
+        "summary": "Get aggregated issue detail",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
     "/api/v1/issues/{issueKey}/parent": {
       "delete": {
         "description": "Remove the parent issue assignment.\n\n**Requirements:**\n- Requires project membership",
@@ -8655,6 +8956,23 @@
             "required": false,
             "schema": {
               "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "reviewerStatuses",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "PENDING",
+                  "APPROVED",
+                  "CHANGES_REQUESTED"
+                ],
                 "type": "string"
               },
               "type": "array",
@@ -10377,6 +10695,23 @@
           },
           {
             "in": "query",
+            "name": "reviewerStatuses",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "PENDING",
+                  "APPROVED",
+                  "CHANGES_REQUESTED"
+                ],
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
             "name": "subscriberMemberIds",
             "required": false,
             "schema": {
@@ -10652,6 +10987,60 @@
           }
         },
         "summary": "Add members in batch",
+        "tags": [
+          "Project Member"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/members/candidates": {
+      "get": {
+        "description": "Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.\n\n**Requirements:**\n- Requires project manager role",
+        "operationId": "listMemberCandidates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseMemberCandidateSummary"
+                }
+              }
+            },
+            "description": "Candidates retrieved"
+          },
+          "403": {
+            "description": "Not a project manager"
+          },
+          "404": {
+            "description": "Project or member not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "Search members to add",
         "tags": [
           "Project Member"
         ]
@@ -13448,7 +13837,7 @@
       "name": "Authorization"
     },
     {
-      "description": "Issues follow a multi level hierarchy that determines parent-child relationships.\n\n## Hierarchy Levels\n\n| Level | Type         | Description                    |\n|-------|--------------|--------------------------------|\n| 1     | `EPIC`       | Highest level grouping of work |\n| 2     | `STANDARD`   | Regular issue                  |\n| 3     | `SUBTASK`    | Sub unit of a standard issue   |\n| 4     | `MICROTASK`  | Smallest unit of work          |\n\n## Parent-Child Rules\n\n- A parent must be **exactly one level above** the child (ex: `EPIC` → `STANDARD`, `STANDARD` → `SUBTASK`)\n- An issue **cannot be its own parent**\n- `SUBTASK` and `MICROTASK` can only have parents within the **same project**\n- `STANDARD` issues allow **cross-project parents** (ex: an EPIC in project A can parent a STANDARD in project B)\n- `SUBTASK` and `MICROTASK` **always require a parent** and cannot be orphaned\n- `EPIC` and `STANDARD` can exist without a parent\n\n## Story Points\n\n- Only `STANDARD` issues can modify story points directly\n- `EPIC` and `STANDARD` issues can display story points\n- The story point of `EPIC` is automatically calculated using the sum of its child issues\n",
+      "description": "Issues follow a multi level hierarchy that determines parent-child relationships.\n\n## Hierarchy Levels\n\n| Level | Type         | Description                    |\n|-------|--------------|--------------------------------|\n| 1     | `EPIC`       | Highest level grouping of work |\n| 2     | `STANDARD`   | Regular issue                  |\n| 3     | `SUBTASK`    | Sub unit of a standard issue   |\n| 4     | `MICROTASK`  | Smallest unit of work          |\n\n## Parent-Child Rules\n\n- A parent must be **exactly one level above** the child (ex: `EPIC` → `STANDARD`, `STANDARD` → `SUBTASK`)\n- An issue **cannot be its own parent**\n- `SUBTASK` and `MICROTASK` can only have parents within the **same project**\n- `STANDARD` issues allow **cross-project parents** (ex: an EPIC in project A can parent a STANDARD in project B)\n- `SUBTASK` and `MICROTASK` **always require a parent** and cannot be orphaned\n- `EPIC` and `STANDARD` can exist without a parent\n\n## Story Points\n\n- Only `STANDARD` issues can modify story points directly\n- `EPIC` and `STANDARD` issues can display story points\n- The story point of `EPIC` is automatically calculated using the sum of its child issues\n\n## Progress\n\n- Progress is **automatically calculated from child issues** and cannot be set manually\n- **Count-based progress** = percentage of child issues that are resolved (`COMPLETED` or `ABORTED`)\n  out of all children — available for any issue that can have children (`EPIC`, `STANDARD`, `SUBTASK`)\n- **Point-based progress** = percentage of resolved child **story points** — `EPIC` only\n- `MICROTASK` has no progress (it cannot have children)\n- An issue has no progress until it actually has children\n",
       "name": "Issue Hierarchy"
     },
     {

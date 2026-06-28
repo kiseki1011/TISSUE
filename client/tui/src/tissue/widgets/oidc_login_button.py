@@ -11,10 +11,12 @@ _IDP_ASSET_DIR = Path(__file__).parent.parent / "assets" / "idp"
 
 
 class OidcLoginButton(Button):
-    """Login button for OIDC mode. A provider logo on the left, label on the right.
+    """Login button for OIDC mode, with a provider logo left and label right.
 
-    The logo is picked from the bundled IdP assets by `icon_key` for the current theme,
-    falling back to a generic icon, then to text only.
+    The logo is chosen by `icon_key` for the current theme, with fallbacks:
+    - a matching bundled IdP asset
+    - a generic icon
+    - text only
     """
 
     DEFAULT_CSS = """
@@ -52,14 +54,16 @@ class OidcLoginButton(Button):
         self.border_title = "SSO"
         self._label_text = label_text
         key = (icon_key or "").strip().lower()
-        if key and not all(c.isalnum() or c in "-_" for c in key):
+        if key and not all(
+            character.isalnum() or character in "-_" for character in key
+        ):
             key = ""
         self._icon_key = key
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes="oidc-btn-row"):
-            # Only render the logo on terminals with the Kitty graphics protocol (TGP)
-            # Half-block fallback looks horrbile here!!
+            # Render the logo only under the Kitty graphics protocol (TGP),
+            # since the half-block fallback looks bad here.
             icon_path = self._icon_path() if TGP_AVAILABLE else None
             if icon_path is not None:
                 icon = make_icon_widget(icon_path)

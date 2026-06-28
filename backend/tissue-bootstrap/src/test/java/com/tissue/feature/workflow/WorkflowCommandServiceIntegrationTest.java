@@ -61,11 +61,11 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             // given
             List<CreateStateDefinition> stateDefinitions = List.of(
                     new CreateStateDefinition(
-                            "state-1", Name.of("To Do"), null, ColorType.GREEN, StateCategory.INITIAL),
+                            "state-1", Name.of("To Do"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
                     new CreateStateDefinition(
-                            "state-2", Name.of("In Progress"), null, ColorType.BLUE, StateCategory.ACTIVE),
+                            "state-2", Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE),
                     new CreateStateDefinition(
-                            "state-3", Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED));
+                            "state-3", Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED));
 
             List<CreateTransitionDefinition> transitionDefinitions = List.of(
                     new CreateTransitionDefinition(Name.of("Start"), null, "state-1", "state-2"),
@@ -73,7 +73,7 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
 
             CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Test Workflow"))
-                    .color(ColorType.YELLOW)
+                    .color(ColorType.ANSI_YELLOW)
                     .stateDefinitions(stateDefinitions)
                     .transitionDefinitions(transitionDefinitions)
                     .build();
@@ -101,12 +101,12 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             // given
             CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Invalid Workflow"))
-                    .color(ColorType.YELLOW)
+                    .color(ColorType.ANSI_YELLOW)
                     .stateDefinitions(List.of(
                             new CreateStateDefinition(
-                                    "s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),
+                                    "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
                             new CreateStateDefinition(
-                                    "s2", Name.of("In Progress"), null, ColorType.BLUE, StateCategory.ACTIVE)))
+                                    "s2", Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE)))
                     .transitionDefinitions(List.of(new CreateTransitionDefinition(Name.of("Start"), null, "s1", "s2")))
                     .build();
 
@@ -128,12 +128,12 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             // given
             CreateWorkflowCommand createCmd = CreateWorkflowCommand.builder()
                     .name(Name.of("Guard Workflow"))
-                    .color(ColorType.YELLOW)
+                    .color(ColorType.ANSI_YELLOW)
                     .stateDefinitions(List.of(
                             new CreateStateDefinition(
-                                    "s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),
+                                    "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
                             new CreateStateDefinition(
-                                    "s2", Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED)))
+                                    "s2", Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED)))
                     .transitionDefinitions(
                             List.of(new CreateTransitionDefinition(Name.of("Complete"), null, "s1", "s2")))
                     .build();

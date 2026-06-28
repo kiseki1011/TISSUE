@@ -1,0 +1,54 @@
+IssueFieldEditModal {
+    align: center middle;
+}
+/* Default dialog. Per-field widths below size each editor to its content,
+   a wide calendar for dueAt, a narrow Select for priority, etc. */
+IssueFieldEditModal #ife-dialog {
+    width: 80;
+    max-width: 90%;
+    height: auto;
+    padding: 1 2;
+}
+IssueFieldEditModal #ife-dialog.-datetime { width: 85; }
+IssueFieldEditModal #ife-dialog.-title { width: 70; }
+IssueFieldEditModal #ife-dialog.-priority { width: 40; }
+IssueFieldEditModal #ife-dialog.-sp { width: 40; }
+/* While the due-date calendar/time overlay is open, grow the dialog so the
+   overlay stays inside the box, and dock the buttons below it. */
+IssueFieldEditModal #ife-dialog.-datetime.-expanded {
+    height: 28;
+}
+IssueFieldEditModal #ife-dialog.-datetime.-expanded .ife-actions {
+    dock: bottom;
+}
+IssueFieldEditModal #ife-input,
+IssueFieldEditModal #ife-select,
+IssueFieldEditModal #ife-datetime {
+    width: 100%;
+    margin-bottom: 1;
+}
+/* Priority is a Select that's always valid with no error row, so drop the gap
+   between it and the action buttons. */
+IssueFieldEditModal #ife-dialog.-priority #ife-select,
+IssueFieldEditModal #ife-dialog.-priority #ife-status {
+    margin-bottom: 0;
+}
+IssueFieldEditModal #ife-status {
+    width: 100%;
+    height: auto;
+    color: $error;
+    margin-bottom: 1;
+}
+IssueFieldEditModal .ife-actions {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+}
+/* Size each button to its label rather than a uniform min-width, with a little
+   breathing room on the sides. */
+IssueFieldEditModal .ife-actions Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    margin-left: 1;
+}

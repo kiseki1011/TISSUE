@@ -1,5 +1,6 @@
 package com.tissue.feature.project.adapter.web;
 
+import com.tissue.feature.project.application.dto.response.MemberCandidateSummary;
 import com.tissue.feature.project.application.dto.response.ProjectMemberSummary;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberQueryUseCase;
 import com.tissue.feature.project.domain.ProjectRole;
@@ -53,6 +54,30 @@ public class ProjectMemberQueryController {
             @CurrentMember MemberDetails memberDetails) {
         Page<ProjectMemberSummary> response = projectMemberQueryUseCase.getProjectMembers(
                 ProjectIdentifier.ofProjectKey(projectKey), role, keyword, pageable, memberDetails.getMemberId());
+        return ResponseEntity.ok(PageResponse.from(response));
+    }
+
+    @Operation(operationId = "listMemberCandidates", summary = "Search members to add", description = """
+                    Search global members who can be added to the project (not already \
+                    active members of it), matching the keyword on username, name or email \
+                    (case-insensitive). A blank keyword returns all candidates.
+
+                    **Requirements:**
+                    - Requires project manager role""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Candidates retrieved"),
+        @ApiResponse(responseCode = "403", description = "Not a project manager", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Project or member not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @GetMapping("/candidates")
+    public ResponseEntity<PageResponse<MemberCandidateSummary>> listMemberCandidates(
+            @PathVariable String projectKey,
+            @RequestParam(required = false) @Nullable String keyword,
+            Pageable pageable,
+            @CurrentMember MemberDetails memberDetails) {
+        Page<MemberCandidateSummary> response = projectMemberQueryUseCase.getMemberCandidates(
+                ProjectIdentifier.ofProjectKey(projectKey), keyword, pageable, memberDetails.getMemberId());
         return ResponseEntity.ok(PageResponse.from(response));
     }
 }

@@ -61,13 +61,14 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
     private Workflow createWorkflow() {
         CreateWorkflowCommand cmd = CreateWorkflowCommand.builder()
                 .name(Name.of("Test Workflow"))
-                .color(ColorType.YELLOW)
+                .color(ColorType.ANSI_YELLOW)
                 .stateDefinitions(List.of(
-                        new CreateStateDefinition("s1", Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL),
                         new CreateStateDefinition(
-                                "s2", Name.of("In Progress"), null, ColorType.BLUE, StateCategory.ACTIVE),
+                                "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
                         new CreateStateDefinition(
-                                "s3", Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED)))
+                                "s2", Name.of("In Progress"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE),
+                        new CreateStateDefinition(
+                                "s3", Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED)))
                 .transitionDefinitions(List.of(
                         new CreateTransitionDefinition(Name.of("Start"), null, "s1", "s2"),
                         new CreateTransitionDefinition(Name.of("Complete"), null, "s2", "s3")))
@@ -117,7 +118,7 @@ class WorkflowGraphReplaceServiceIntegrationTest extends IntegrationTestSupport 
                                     new NodeIdentifier.TempKey("review"),
                                     Name.of("Review"),
                                     null,
-                                    ColorType.YELLOW,
+                                    ColorType.ANSI_YELLOW,
                                     StateCategory.ACTIVE),
                             new StateDefinition(
                                     new NodeIdentifier.ExistingId(done.getId()),

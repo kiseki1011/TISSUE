@@ -2,6 +2,7 @@ package com.tissue.feature.issue.domain;
 
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
 import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_ALREADY_EXISTS;
+import static com.tissue.feature.issue.domain.exception.IssueErrorCode.RELATION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -9,6 +10,7 @@ import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.shared.exception.base.BadRequestException;
+import com.tissue.shared.exception.base.ResourceNotFoundException;
 import com.tissue.support.TestFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -83,6 +85,62 @@ class IssueRelationTest {
                     .isInstanceOf(BadRequestException.class)
                     .extracting("errorCode")
                     .isEqualTo(RELATION_ALREADY_EXISTS);
+        }
+    }
+
+    @Nested
+    @DisplayName("remove relation")
+    class RemoveRelation {
+
+        @Test
+        @DisplayName("success: a RELEVANT relation can be removed from the target side")
+        void successRemoveRelevant_FromTargetSide() {
+            // given
+            Project project = TestFixtures.project("PROJ");
+            Issue source = TestFixtures.issue(project, "source issue", IssueHierarchy.STANDARD);
+            Issue target = TestFixtures.issue(project, "target issue", IssueHierarchy.STANDARD);
+            source.addRelation(target, IssueRelationType.RELEVANT);
+
+            // when: removed from the target side (target is not the relation's source)
+            target.removeRelation(source);
+
+            // then
+            assertThat(source.getRelations().getOutgoingRelations()).isEmpty();
+            assertThat(target.getRelations().getIncomingRelations()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("fail: a directional BLOCKS relation cannot be removed from the target side")
+        void failRemoveBlocks_FromTargetSide() {
+            // given
+            Project project = TestFixtures.project("PROJ");
+            Issue source = TestFixtures.issue(project, "source issue", IssueHierarchy.STANDARD);
+            Issue target = TestFixtures.issue(project, "target issue", IssueHierarchy.STANDARD);
+            source.addRelation(target, IssueRelationType.BLOCKS);
+
+            // when & then: only the source may remove a directional relation
+            assertThatThrownBy(() -> target.removeRelation(source))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RELATION_NOT_FOUND);
+            assertThat(source.getRelations().getOutgoingRelations()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("success: a BLOCKS relation is removed from the source side")
+        void successRemoveBlocks_FromSourceSide() {
+            // given
+            Project project = TestFixtures.project("PROJ");
+            Issue source = TestFixtures.issue(project, "source issue", IssueHierarchy.STANDARD);
+            Issue target = TestFixtures.issue(project, "target issue", IssueHierarchy.STANDARD);
+            source.addRelation(target, IssueRelationType.BLOCKS);
+
+            // when
+            source.removeRelation(target);
+
+            // then
+            assertThat(source.getRelations().getOutgoingRelations()).isEmpty();
+            assertThat(target.getRelations().getIncomingRelations()).isEmpty();
         }
     }
 }

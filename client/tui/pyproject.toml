@@ -12,9 +12,11 @@ dependencies = [
     "keyring>=25.7.0",
     "pydantic>=2.13.3",
     "python-dateutil>=2.9.0.post0",
+    "pyyaml>=6.0.3",
     "textual>=8.2.5",
     "textual-autocomplete>=4.0.6",
     "textual-image>=0.12.0",
+    "textual-timepiece>=0.7.0",
     "typing-extensions>=4.15.0",
 ]
 

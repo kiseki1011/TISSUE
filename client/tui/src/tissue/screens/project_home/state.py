@@ -1,0 +1,151 @@
+from __future__ import annotations
+
+from collections.abc import Collection, Mapping
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+from tissue.screens.project_home.issue_filter import DEFAULT_ISSUE_FILTER, IssueFilter
+from tissue.screens.project_home.member_filter import (
+    DEFAULT_MEMBER_FILTER,
+    MemberFilter,
+)
+from tissue.screens.project_home.sprint_filter import (
+    DEFAULT_SPRINT_FILTER,
+    SprintFilter,
+)
+
+if TYPE_CHECKING:
+    from tissue.api.generated.models.custom_field_value_info import (
+        CustomFieldValueInfo,
+    )
+    from tissue.api.generated.models.field_option_detail import FieldOptionDetail
+    from tissue.api.generated.models.issue_detail_view import IssueDetailView
+    from tissue.api.generated.models.issue_identifier_response import (
+        IssueIdentifierResponse,
+    )
+    from tissue.api.generated.models.issue_relations_detail import (
+        IssueRelationsDetail,
+    )
+    from tissue.api.generated.models.issue_summary import IssueSummary
+    from tissue.api.generated.models.project_member_summary import (
+        ProjectMemberSummary,
+    )
+    from tissue.api.generated.models.sprint_summary import SprintSummary
+
+
+@dataclass
+class ProjectHomeFilters:
+    issue: IssueFilter = field(default_factory=lambda: DEFAULT_ISSUE_FILTER)
+    sprint: SprintFilter = field(default_factory=lambda: DEFAULT_SPRINT_FILTER)
+    member: MemberFilter = field(default_factory=lambda: DEFAULT_MEMBER_FILTER)
+
+
+@dataclass
+class IssueListState:
+    issues: list[IssueSummary] = field(default_factory=list)
+    keyword: str | None = None
+    total: int = 0
+    page: int = 0
+    has_next: bool = False
+    loading_more: bool = False
+
+
+@dataclass
+class ProjectMemberListState:
+    members: list[ProjectMemberSummary] = field(default_factory=list)
+    displayed: list[ProjectMemberSummary] = field(default_factory=list)
+
+
+@dataclass
+class SprintState:
+    sprints: list[SprintSummary] = field(default_factory=list)
+    detail_id: int | None = None
+    detail_issues: list[IssueSummary] = field(default_factory=list)
+    detail_status: str | None = None
+    edit_current: dict[str, str] = field(default_factory=dict)
+    by_id: dict[int, SprintSummary] | None = None
+
+
+@dataclass
+class AgentWorkState:
+    issues: list[IssueSummary] = field(default_factory=list)
+    names: dict[int, str] = field(default_factory=dict)
+
+
+@dataclass
+class IssueDetailState:
+    issue_key: str | None = None
+    cache: dict[str, IssueDetailView] = field(default_factory=dict)
+    assigned: bool = False
+    edit_current: dict[str, str] = field(default_factory=dict)
+    custom_fields: dict[int, CustomFieldValueInfo] = field(default_factory=dict)
+    field_options: dict[int, list[FieldOptionDetail]] = field(default_factory=dict)
+
+
+@dataclass
+class IssueReviewState:
+    reviewer_ids: list[int] = field(default_factory=list)
+    assignee_id: int | None = None
+    busy: bool = False
+    picker_issue_key: str | None = None
+    picker_baseline: list[int] = field(default_factory=list)
+
+
+@dataclass
+class IssueHierarchyState:
+    hierarchy: str | None = None
+    children: list[IssueIdentifierResponse] = field(default_factory=list)
+    issue_type_hierarchy: dict[int, str] = field(default_factory=dict)
+    busy: bool = False
+    picker_issue_key: str | None = None
+
+
+@dataclass
+class IssueRelationState:
+    relations: IssueRelationsDetail | None = None
+    busy: bool = False
+    picker_issue_key: str | None = None
+
+
+@dataclass
+class IssueCommentState:
+    reply_to: int | None = None
+    reply_targets: dict[int, str] = field(default_factory=dict)
+    generation: int = 0
+
+
+@dataclass
+class ProjectHomeUiState:
+    expanded: bool = False
+    collapsed_box: str | None = None
+    view_mode: str = "issues"
+    agent_mode: str = "work"
+
+    def restore(
+        self,
+        saved: Mapping[str, object],
+        *,
+        valid_view_modes: Collection[str],
+        valid_agent_modes: Collection[str],
+    ) -> None:
+        self.expanded = bool(saved.get("expanded", self.expanded))
+
+        collapsed = saved.get("collapsed_box")
+        if collapsed in {"issues-box", "agent-box"}:
+            self.collapsed_box = str(collapsed)
+
+        view_mode = saved.get("view_mode")
+        if isinstance(view_mode, str) and view_mode in valid_view_modes:
+            self.view_mode = view_mode
+
+        agent_mode = saved.get("agent_mode")
+        if isinstance(agent_mode, str) and agent_mode in valid_agent_modes:
+            self.agent_mode = agent_mode
+
+    def to_config(self) -> dict[str, object | None]:
+        return {
+            "expanded": self.expanded,
+            "collapsed_box": self.collapsed_box,
+            "view_mode": self.view_mode,
+            "agent_mode": self.agent_mode,
+        }

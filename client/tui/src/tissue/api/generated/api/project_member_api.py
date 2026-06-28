@@ -20,6 +20,7 @@ from pydantic import StrictInt, StrictStr, field_validator
 from typing import Optional
 from tissue.api.generated.models.add_project_members_request import AddProjectMembersRequest
 from tissue.api.generated.models.change_role_request import ChangeRoleRequest
+from tissue.api.generated.models.page_response_member_candidate_summary import PageResponseMemberCandidateSummary
 from tissue.api.generated.models.page_response_project_member_summary import PageResponseProjectMemberSummary
 from tissue.api.generated.models.pageable import Pageable
 from tissue.api.generated.models.project_member_response import ProjectMemberResponse
@@ -1128,6 +1129,307 @@ class ProjectMemberApi:
         return self.api_client.param_serialize(
             method='DELETE',
             resource_path='/api/v1/projects/{projectKey}/members',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    async def list_member_candidates(
+        self,
+        project_key: StrictStr,
+        pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> PageResponseMemberCandidateSummary:
+        """Search members to add
+
+        Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.  **Requirements:** - Requires project manager role
+
+        :param project_key: (required)
+        :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_member_candidates_serialize(
+            project_key=project_key,
+            pageable=pageable,
+            keyword=keyword,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageResponseMemberCandidateSummary",
+            '403': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    async def list_member_candidates_with_http_info(
+        self,
+        project_key: StrictStr,
+        pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[PageResponseMemberCandidateSummary]:
+        """Search members to add
+
+        Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.  **Requirements:** - Requires project manager role
+
+        :param project_key: (required)
+        :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_member_candidates_serialize(
+            project_key=project_key,
+            pageable=pageable,
+            keyword=keyword,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageResponseMemberCandidateSummary",
+            '403': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        await response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    async def list_member_candidates_without_preload_content(
+        self,
+        project_key: StrictStr,
+        pageable: Pageable,
+        keyword: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Search members to add
+
+        Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.  **Requirements:** - Requires project manager role
+
+        :param project_key: (required)
+        :type project_key: str
+        :param pageable: (required)
+        :type pageable: Pageable
+        :param keyword:
+        :type keyword: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._list_member_candidates_serialize(
+            project_key=project_key,
+            pageable=pageable,
+            keyword=keyword,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "PageResponseMemberCandidateSummary",
+            '403': None,
+            '404': None,
+        }
+        response_data = await self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _list_member_candidates_serialize(
+        self,
+        project_key,
+        pageable,
+        keyword,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if project_key is not None:
+            _path_params['projectKey'] = project_key
+        # process the query parameters
+        if keyword is not None:
+            
+            _query_params.append(('keyword', keyword))
+            
+        if pageable is not None:
+            
+            _query_params.append(('pageable', pageable))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+            'bearerAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/projects/{projectKey}/members/candidates',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

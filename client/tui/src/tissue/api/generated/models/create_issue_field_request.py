@@ -34,14 +34,14 @@ class CreateIssueFieldRequest(BaseModel):
     name: Annotated[str, Field(min_length=1, strict=True)]
     position: Annotated[int, Field(strict=True, ge=0)] = Field(description="Display order among fields in the issue type. Starts from 0.")
     required: Optional[StrictBool] = None
-    type: StrictStr = Field(description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
+    type: StrictStr = Field(description="Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
     __properties: ClassVar[List[str]] = ["description", "initialOptions", "name", "position", "required", "type"]
 
     @field_validator('type')
     def type_validate_enum(cls, value):
         """Validates the enum"""
-        if value not in set(['TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
-            raise ValueError("must be one of enum values ('TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
+        if value not in set(['TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
+            raise ValueError("must be one of enum values ('TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
         return value
 
     model_config = ConfigDict(

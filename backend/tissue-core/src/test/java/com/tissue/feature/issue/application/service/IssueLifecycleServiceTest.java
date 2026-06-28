@@ -1,6 +1,7 @@
 package com.tissue.feature.issue.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -35,7 +36,10 @@ import com.tissue.shared.dto.BatchOperationResponse;
 import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.exception.ErrorCode;
+import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ForbiddenException;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -182,6 +186,7 @@ class IssueLifecycleServiceTest {
             given(issueTypeFinder.getWithWorkflowBy(issueTypeId)).willReturn(issueType);
             given(issueType.getWorkflow()).willReturn(mockWorkflow);
             given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
+            given(issueType.getIssueHierarchy()).willReturn(IssueHierarchy.STANDARD);
             given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
 
             // when
@@ -191,6 +196,88 @@ class IssueLifecycleServiceTest {
             then(sprintFinder).shouldHaveNoInteractions();
             then(issueFinder).shouldHaveNoInteractions();
             then(issueCommandRepository).should().save(any(Issue.class));
+        }
+
+        @Test
+        @DisplayName("fail: a parent-required hierarchy (SUBTASK) without a parent is rejected")
+        @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+        void failCreateParentRequiredHierarchyWithoutParent() {
+            // given
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
+            Long actorMemberId = 1L;
+            Long issueTypeId = 400L;
+
+            CreateIssueCommand cmd = CreateIssueCommand.builder()
+                    .parentKey(null)
+                    .title("orphan subtask")
+                    .priority(IssuePriority.P2)
+                    .issueTypeId(issueTypeId)
+                    .build();
+
+            ProjectMember actor = mock(ProjectMember.class);
+            IssueType issueType = mock(IssueType.class);
+            Project project = mock(Project.class);
+            Workflow mockWorkflow = mock(Workflow.class);
+            WorkflowState mockInitialState = mock(WorkflowState.class);
+
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueTypeFinder.getWithWorkflowBy(issueTypeId)).willReturn(issueType);
+            given(issueType.getWorkflow()).willReturn(mockWorkflow);
+            given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
+            given(issueType.getIssueHierarchy()).willReturn(IssueHierarchy.SUBTASK);
+            given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
+
+            // when & then
+            assertThatThrownBy(() -> sut.create(pid, cmd, actorMemberId)).isInstanceOf(BadRequestException.class);
+            then(issueCommandRepository).should(never()).save(any(Issue.class));
+            then(eventPublisher).shouldHaveNoInteractions();
+        }
+
+        @Test
+        @DisplayName("success: a parent-required hierarchy (SUBTASK) with a valid parent is created")
+        @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+        void successCreateParentRequiredHierarchyWithParent() {
+            // given
+            ProjectIdentifier pid = new ProjectIdentifier("PROJ");
+            Long actorMemberId = 1L;
+            String parentKey = "PROJ-1";
+            Long issueTypeId = 400L;
+
+            CreateIssueCommand cmd = CreateIssueCommand.builder()
+                    .parentKey(parentKey)
+                    .title("subtask with parent")
+                    .priority(IssuePriority.P2)
+                    .issueTypeId(issueTypeId)
+                    .build();
+
+            ProjectMember actor = mock(ProjectMember.class);
+            IssueType issueType = mock(IssueType.class);
+            Project project = mock(Project.class);
+            Workflow mockWorkflow = mock(Workflow.class);
+            WorkflowState mockInitialState = mock(WorkflowState.class);
+            Issue parent = mock(Issue.class);
+
+            given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueTypeFinder.getWithWorkflowBy(issueTypeId)).willReturn(issueType);
+            given(issueType.getWorkflow()).willReturn(mockWorkflow);
+            given(mockWorkflow.getInitialState()).willReturn(mockInitialState);
+            given(issueType.getIssueHierarchy()).willReturn(IssueHierarchy.SUBTASK);
+            given(projectFinder.getWithLockByProjectKey(pid.projectKey())).willReturn(project);
+            given(issueFinder.getWithProjectByIssueKey(parentKey)).willReturn(parent);
+            given(parent.getHierarchy()).willReturn(IssueHierarchy.STANDARD);
+            // A SUBTASK can't have a cross-project parent, so the same-project check
+            // runs — give the new issue and its parent the same project key.
+            given(project.getKey()).willReturn("PROJ");
+            given(parent.getProjectKey()).willReturn("PROJ");
+
+            // when
+            sut.create(pid, cmd, actorMemberId);
+
+            // then
+            then(issueCommandRepository).should().save(any(Issue.class));
+            then(eventPublisher).should().publishIssueCreated(any(Issue.class), eq(actor));
         }
     }
 

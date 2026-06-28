@@ -68,14 +68,14 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
      *
      * <p><b>Processing order</b> (order matters for referential integrity):
      * <ol>
-     *   <li>Version check — reject if another user modified the workflow</li>
-     *   <li>Build state resolver — index existing states by ID, create new states from TempKeys</li>
-     *   <li>Sync transitions — delete removed, rewire existing, create new transitions</li>
-     *   <li>Apply category changes — update categories for existing states</li>
-     *   <li>Set initial state — resolve and assign the single {@link StateCategory#INITIAL} state</li>
-     *   <li>Migrate issues — bulk-move issues from states being deleted to mapped targets</li>
-     *   <li>Delete removed states — remove states not referenced in the command</li>
-     *   <li>Validate graph — validate the final graph structure</li>
+     *   <li>Version check - reject if another user modified the workflow</li>
+     *   <li>Build state resolver - index existing states by ID, create new states from TempKeys</li>
+     *   <li>Sync transitions - delete removed, rewire existing, create new transitions</li>
+     *   <li>Apply category changes - update categories for existing states</li>
+     *   <li>Set initial state - resolve and assign the single {@link StateCategory#INITIAL} state</li>
+     *   <li>Migrate issues - bulk-move issues from states being deleted to mapped targets</li>
+     *   <li>Delete removed states - remove states not referenced in the command</li>
+     *   <li>Validate graph - validate the final graph structure</li>
      * </ol>
      *
      * <p><b>Example command shape:</b>

@@ -46,13 +46,13 @@ public final class TestFixtures {
     }
 
     public static Workflow workflow() {
-        return Workflow.create(Name.of("Workflow"), null, ColorType.BLUE);
+        return Workflow.create(Name.of("Workflow"), null, ColorType.ANSI_BLUE);
     }
 
     public static IssueType issueType(IssueHierarchy hierarchy) {
-        Workflow wf = Workflow.create(Name.of("Issue Workflow"), null, ColorType.BLUE);
-        wf.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
-        return IssueType.create(Name.of("Story"), null, ColorType.BLACK, IconType.CIRCLE_DOT, hierarchy, wf);
+        Workflow wf = Workflow.create(Name.of("Issue Workflow"), null, ColorType.ANSI_BLUE);
+        wf.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        return IssueType.create(Name.of("Story"), null, ColorType.ANSI_BLACK, IconType.CIRCLE_DOT, hierarchy, wf);
     }
 
     public static Issue issue(Project project, String title, IssueHierarchy hierarchy) {
@@ -74,7 +74,7 @@ public final class TestFixtures {
     }
 
     public static Tag tag(Project project, String name) {
-        return Tag.create(project, Name.of(name), null, ColorType.RED);
+        return Tag.create(project, Name.of(name), null, ColorType.ANSI_RED);
     }
 
     public static Comment comment(Member author, Issue issue) {

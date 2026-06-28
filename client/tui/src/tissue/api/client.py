@@ -4,16 +4,24 @@ from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
 import httpx
+import pydantic
 
 from tissue.api.errors import NotTissueServer, TissueApiError, translate
+from tissue.api.generated.api.activity_log_api import ActivityLogApi
+from tissue.api.generated.api.agents_api import AgentsApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
+from tissue.api.generated.api.comment_api import CommentApi
+from tissue.api.generated.api.custom_issue_type_api import CustomIssueTypeApi
 from tissue.api.generated.api.issue_api import IssueApi
 from tissue.api.generated.api.member_account_api import MemberAccountApi
 from tissue.api.generated.api.member_profile_api import MemberProfileApi
 from tissue.api.generated.api.member_signup_api import MemberSignupApi
 from tissue.api.generated.api.project_api import ProjectApi
+from tissue.api.generated.api.project_member_api import ProjectMemberApi
+from tissue.api.generated.api.sprint_api import SprintApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi
 from tissue.api.generated.api.wiki_document_api import WikiDocumentApi
+from tissue.api.generated.api.workflow_api import WorkflowApi
 from tissue.api.generated.api_client import ApiClient
 from tissue.api.generated.configuration import Configuration
 from tissue.api.generated.exceptions import ApiException
@@ -21,11 +29,17 @@ from tissue.api.generated.models.refresh_token_request import RefreshTokenReques
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.api.models.auth import TokenPair
 from tissue.api.services.account import AccountService
+from tissue.api.services.activity import ActivityService
+from tissue.api.services.agents import AgentService
 from tissue.api.services.auth import AuthService
+from tissue.api.services.comments import CommentService
 from tissue.api.services.issues import IssueService
+from tissue.api.services.project_members import ProjectMemberService
 from tissue.api.services.projects import ProjectService
+from tissue.api.services.sprints import SprintService
 from tissue.api.services.wiki import WikiService
-from tissue.auth.token_store import TokenStore, TokenStoreError
+from tissue.api.services.workflows import WorkflowService
+from tissue.domain.auth.token_store import TokenStore, TokenStoreError
 
 log = logging.getLogger(__name__)
 
@@ -33,11 +47,7 @@ T = TypeVar("T")
 
 
 class TissueClient:
-    """Wrapper over the generated API.
-
-    `TissueClient` is responsible for tokens, refresh, retry, ping, lifecycle.
-    It delegates domain operations to services exposed as fields.
-    """
+    """Wrapper over the generated API."""
 
     def __init__(
         self,
@@ -59,15 +69,27 @@ class TissueClient:
         self._member_account_api: MemberAccountApi | None = None
         self._member_profile_api: MemberProfileApi | None = None
         self._project_api: ProjectApi | None = None
+        self._project_member_api: ProjectMemberApi | None = None
         self._wiki_document_api: WikiDocumentApi | None = None
         self._issue_api: IssueApi | None = None
+        self._custom_issue_type_api: CustomIssueTypeApi | None = None
+        self._workflow_api: WorkflowApi | None = None
+        self._comment_api: CommentApi | None = None
+        self._activity_log_api: ActivityLogApi | None = None
+        self._sprint_api: SprintApi | None = None
+        self._agents_api: AgentsApi | None = None
 
-        # Domain services
         self.auth = AuthService(self)
         self.account = AccountService(self)
         self.projects = ProjectService(self)
+        self.project_members = ProjectMemberService(self)
         self.wiki = WikiService(self)
         self.issues = IssueService(self)
+        self.workflows = WorkflowService(self)
+        self.comments = CommentService(self)
+        self.activity = ActivityService(self)
+        self.sprints = SprintService(self)
+        self.agents = AgentService(self)
 
     @property
     def host(self) -> str:
@@ -114,6 +136,12 @@ class TissueClient:
         return self._project_api
 
     @property
+    def project_member_api(self) -> ProjectMemberApi:
+        if self._project_member_api is None:
+            self._project_member_api = ProjectMemberApi(self._api_client)
+        return self._project_member_api
+
+    @property
     def wiki_document_api(self) -> WikiDocumentApi:
         if self._wiki_document_api is None:
             self._wiki_document_api = WikiDocumentApi(self._api_client)
@@ -125,8 +153,43 @@ class TissueClient:
             self._issue_api = IssueApi(self._api_client)
         return self._issue_api
 
+    @property
+    def custom_issue_type_api(self) -> CustomIssueTypeApi:
+        if self._custom_issue_type_api is None:
+            self._custom_issue_type_api = CustomIssueTypeApi(self._api_client)
+        return self._custom_issue_type_api
+
+    @property
+    def workflow_api(self) -> WorkflowApi:
+        if self._workflow_api is None:
+            self._workflow_api = WorkflowApi(self._api_client)
+        return self._workflow_api
+
+    @property
+    def comment_api(self) -> CommentApi:
+        if self._comment_api is None:
+            self._comment_api = CommentApi(self._api_client)
+        return self._comment_api
+
+    @property
+    def activity_log_api(self) -> ActivityLogApi:
+        if self._activity_log_api is None:
+            self._activity_log_api = ActivityLogApi(self._api_client)
+        return self._activity_log_api
+
+    @property
+    def sprint_api(self) -> SprintApi:
+        if self._sprint_api is None:
+            self._sprint_api = SprintApi(self._api_client)
+        return self._sprint_api
+
+    @property
+    def agents_api(self) -> AgentsApi:
+        if self._agents_api is None:
+            self._agents_api = AgentsApi(self._api_client)
+        return self._agents_api
+
     def set_tokens(self, token_pair: TokenPair) -> None:
-        """Store the token pair and configure the access token for outgoing requests."""
         self._token_pair = token_pair
         self._config.access_token = token_pair.access_token
         self._persist_tokens()
@@ -147,7 +210,6 @@ class TissueClient:
             log.warning("Failed to persist tokens for %s: %s", self.host, e)
 
     async def refresh(self) -> None:
-        """Use current refresh token for a new token pair."""
         if self._token_pair is None:
             raise TissueApiError("No refresh token available")
         request = RefreshTokenRequest(refreshToken=self._token_pair.refresh_token)
@@ -169,11 +231,7 @@ class TissueClient:
     async def _call_with_retry(
         self, fn: Callable[..., Awaitable[T]], *args, **kwargs
     ) -> T:
-        """Wrapper for authenticated API calls.
-
-        On 401, refresh tokens once and retry. Use this to wrap any endpoint that
-        requires authentication. Public endpoints should call generated APIs directly.
-        """
+        """Call an authenticated endpoint, refreshing once on 401."""
         token_at_call = self._token_pair.access_token if self._token_pair else None
         try:
             return await fn(*args, **kwargs)
@@ -181,22 +239,25 @@ class TissueClient:
             err = translate(e)
             if err.status != 401 or self._token_pair is None:
                 raise err from e
+        except pydantic.ValidationError as e:
+            raise TissueApiError("Couldn't read the server response.") from e
 
         await self._refresh_for_retry(token_at_call)
 
         try:
             return await fn(*args, **kwargs)
         except (ApiException, httpx.HTTPError) as e:
-            raise translate(e) from e
+            err = translate(e)
+            if err.status == 401:
+                self.clear_tokens()
+                if self._on_session_expired is not None:
+                    self._on_session_expired()
+            raise err from e
+        except pydantic.ValidationError as e:
+            raise TissueApiError("Couldn't read the server response.") from e
 
     async def _refresh_for_retry(self, token_at_call: str | None) -> None:
-        """Refresh once for a 401 retry, serialized via a lock.
-
-        If a concurrent caller already refreshed while we waited for the lock,
-        our access token will have changed. Skip refreshing and let the caller
-        retry with the current token. This stops two callers from spending
-        the same (rotating) refresh token, which the server treats as token reuse.
-        """
+        """Refresh once, unless another caller already did."""
         async with self._refresh_lock:
             current = self._token_pair.access_token if self._token_pair else None
             if current != token_at_call:
@@ -224,7 +285,6 @@ class TissueClient:
         await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
-        """Fetch the member profile."""
         try:
             profile = await self.member_profile_api.get_my_profile()
         except (ApiException, httpx.HTTPError) as e:

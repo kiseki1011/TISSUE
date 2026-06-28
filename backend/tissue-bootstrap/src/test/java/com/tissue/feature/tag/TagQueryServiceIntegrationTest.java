@@ -130,7 +130,7 @@ class TagQueryServiceIntegrationTest extends IntegrationTestSupport {
                 CreateTagCommand.builder()
                         .name(Name.of(name))
                         .description(null)
-                        .color(ColorType.BLUE)
+                        .color(ColorType.ANSI_BLUE)
                         .build(),
                 member.getId());
     }

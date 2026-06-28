@@ -2,6 +2,7 @@ package com.tissue.feature.issue.adapter.web.request;
 
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import java.time.Instant;
 import java.util.LinkedHashSet;
@@ -30,6 +31,7 @@ public record IssueSearchRequest(
         @Nullable Set<String> authorMemberIds,
         @Nullable Set<String> assigneeMemberIds,
         @Nullable Set<String> reviewerMemberIds,
+        @Nullable Set<ReviewStatus> reviewerStatuses,
         @Nullable Set<String> subscriberMemberIds,
         @Nullable Set<Long> sprintIds,
         @Nullable Boolean currentSprintOnly,
@@ -48,6 +50,7 @@ public record IssueSearchRequest(
                 resolveMe(authorMemberIds, currentMemberId),
                 resolveMe(assigneeMemberIds, currentMemberId),
                 resolveMe(reviewerMemberIds, currentMemberId),
+                reviewerStatuses,
                 resolveMe(subscriberMemberIds, currentMemberId),
                 sprintIds,
                 currentSprintOnly,

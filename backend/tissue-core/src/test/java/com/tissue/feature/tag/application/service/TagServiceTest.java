@@ -73,7 +73,7 @@ class TagServiceTest {
             Project project = mock(Project.class);
             Name tagName = Name.of("deployment");
 
-            CreateTagCommand cmd = new CreateTagCommand(tagName, "release and deployment related", ColorType.BLUE);
+            CreateTagCommand cmd = new CreateTagCommand(tagName, "release and deployment related", ColorType.ANSI_BLUE);
 
             given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
@@ -99,7 +99,7 @@ class TagServiceTest {
             Project project = mock(Project.class);
             Name tagName = Name.of("deployment");
 
-            CreateTagCommand cmd = new CreateTagCommand(tagName, "desc", ColorType.BLUE);
+            CreateTagCommand cmd = new CreateTagCommand(tagName, "desc", ColorType.ANSI_BLUE);
 
             given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);

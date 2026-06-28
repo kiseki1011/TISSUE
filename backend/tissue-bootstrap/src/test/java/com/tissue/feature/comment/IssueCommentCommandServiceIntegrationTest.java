@@ -81,13 +81,13 @@ class IssueCommentCommandServiceIntegrationTest extends IntegrationTestSupport {
         Project project = projectRepository.save(Project.create("PROJ", "Test Project", null));
         projectMemberRepository.save(ProjectMember.createManager(project, member));
 
-        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.BRIGHT_CYAN);
-        workflow.addState(Name.of("Open"), null, ColorType.GREEN, StateCategory.INITIAL);
-        workflow.addState(Name.of("Done"), null, ColorType.BLACK, StateCategory.COMPLETED);
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.ANSI_BRIGHT_CYAN);
+        workflow.addState(Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflow.addState(Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 public final class IssueConstraintPolicy {
 
     public static final int TITLE_MIN_LENGTH = 2;
-    public static final int TITLE_MAX_LENGTH = 100;
+    public static final int TITLE_MAX_LENGTH = 50;
 
     public static final int CONTENT_MAX_LENGTH = 65535;
 

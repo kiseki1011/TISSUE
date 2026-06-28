@@ -75,3 +75,5 @@ dist/
 ### openapi-generator ###
 **/.openapi-generator/
 
+### file storage ###
+**/tissue-storage/

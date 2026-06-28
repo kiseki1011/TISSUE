@@ -16,7 +16,9 @@ import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.application.service.validator.CustomFieldSchemaProcessor;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.IssueFields;
 import com.tissue.feature.issue.domain.service.IssueFieldChangeTracker;
+import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.BatchOperationResponse;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -121,6 +124,41 @@ class IssueUpdateServiceTest {
             // then
             then(eventPublisher).shouldHaveNoInteractions();
         }
+
+        @Test
+        @DisplayName("success: a content change is logged without its before/after text")
+        @SuppressWarnings("unchecked")
+        void contentChangeLoggedWithoutValues() {
+            // given
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
+            Long actorMemberId = 1L;
+
+            UpdateCommonFieldsCommand cmd = UpdateCommonFieldsCommand.builder()
+                    .title(JsonNullable.undefined())
+                    .content(JsonNullable.of("a new long body"))
+                    .summary(JsonNullable.undefined())
+                    .priority(JsonNullable.undefined())
+                    .dueAt(JsonNullable.undefined())
+                    .build();
+
+            ProjectMember actor = mock(ProjectMember.class);
+            Issue issue = mock(Issue.class);
+            given(issue.getContent()).willReturn("the old body");
+
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+
+            // when
+            sut.updateCommonFields(iid, cmd, actorMemberId);
+
+            // then
+            then(issue).should().updateContent("a new long body");
+
+            ArgumentCaptor<Map<String, FieldChange>> changesCaptor = ArgumentCaptor.forClass(Map.class);
+            then(eventPublisher).should().publishIssueFieldsUpdated(eq(issue), changesCaptor.capture(), eq(actor));
+            assertThat(changesCaptor.getValue().get(IssueFields.CONTENT)).isEqualTo(new FieldChange(null, null));
+        }
     }
 
     @Nested
@@ -137,18 +175,22 @@ class IssueUpdateServiceTest {
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
+            IssueType issueType = mock(IssueType.class);
 
             given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
+            given(issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey()))
                     .willReturn(issue);
+            given(issue.getIssueType()).willReturn(issueType);
+            given(issueType.getFields()).willReturn(List.of());
 
             Map<String, Object> oldSnapshot = Map.of("1", "old value");
             Map<String, Object> newSnapshot = Map.of("1", "new value");
             given(fieldChangeTracker.captureSnapshot(issue)).willReturn(oldSnapshot, newSnapshot);
 
             Map<String, FieldChange> changes = Map.of("1", FieldChange.of("old value", "new value"));
-            given(fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot)).willReturn(changes);
+            given(fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot, Map.of()))
+                    .willReturn(changes);
 
             // when
             sut.updateCustomFields(iid, customFields, actorMemberId);
@@ -168,15 +210,19 @@ class IssueUpdateServiceTest {
 
             ProjectMember actor = mock(ProjectMember.class);
             Issue issue = mock(Issue.class);
+            IssueType issueType = mock(IssueType.class);
 
             given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getWithProjectAndIssueTypeByIssueKey(iid.issueKey()))
+            given(issueFinder.getWithProjectIssueTypeAndFieldsByIssueKey(iid.issueKey()))
                     .willReturn(issue);
+            given(issue.getIssueType()).willReturn(issueType);
+            given(issueType.getFields()).willReturn(List.of());
 
             Map<String, Object> snapshot = Map.of("1", "same");
             given(fieldChangeTracker.captureSnapshot(issue)).willReturn(snapshot);
-            given(fieldChangeTracker.compareChanges(snapshot, snapshot)).willReturn(Map.of());
+            given(fieldChangeTracker.compareChanges(snapshot, snapshot, Map.of()))
+                    .willReturn(Map.of());
 
             // when
             sut.updateCustomFields(iid, customFields, actorMemberId);

@@ -84,11 +84,11 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
         projectMemberRepository.save(ProjectMember.createManager(project, member));
 
         // setup global Workflow
-        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.YELLOW);
-        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+        Workflow workflow = Workflow.create(Name.of("Test Workflow"), null, ColorType.ANSI_YELLOW);
+        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
-                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
-        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.BLACK, StateCategory.COMPLETED);
+                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
+        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflow.addTransition(Name.of("Start"), null, todo, inProgress);
         workflow.addTransition(Name.of("Complete"), null, inProgress, done);
 
@@ -97,7 +97,7 @@ public class IssueLifecycleServiceIntegrationTest extends IntegrationTestSupport
 
         // setup global issue configuration
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         issueTypeId = issueType.getId();
 

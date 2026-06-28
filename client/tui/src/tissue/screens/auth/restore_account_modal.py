@@ -8,6 +8,7 @@ from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import first_empty_required_field, set_field_status
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class RestoreAccountModal(TissueModal[str | None]):
             id="restore_warning",
         )
         buttons = Horizontal(
-            Button("Cancel", id="restore_cancel_btn"),
+            Button("Cancel", id="restore_cancel_btn", classes="-btn-error"),
             Button(
                 "Restore",
                 id="restore_submit_btn",
@@ -108,10 +109,10 @@ class RestoreAccountModal(TissueModal[str | None]):
             return
         try:
             await client.account.restore(identifier, password)
-        except TissueApiError as e:
-            log.warning("Restore failed: %s", e)
+        except TissueApiError as error:
+            log.warning("Restore failed: %s", error)
             self.app.notify(
-                f"Restore failed: {self._failure_reason(e)}",
+                f"Restore failed: {self._failure_reason(error)}",
                 severity="error",
             )
             return
@@ -128,22 +129,9 @@ class RestoreAccountModal(TissueModal[str | None]):
         return exc.detail or exc.title or str(exc)
 
     def _check_required_fields(self) -> Input | None:
-        first_empty: Input | None = None
-        for fid in _REQUIRED_FIELDS:
-            inp = self.query_one(f"#{fid}", Input)
-            if not inp.value.strip():
-                self._set_status(fid, "Required field", "error")
-                if first_empty is None:
-                    first_empty = inp
-        if first_empty is not None:
-            first_empty.focus()
-        return first_empty
+        return first_empty_required_field(self, _REQUIRED_FIELDS, strip=True)
 
     def _set_status(
         self, input_id: str, message: str = "", kind: str | None = None
     ) -> None:
-        label = self.query_one(f"#{input_id}_status", Label)
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        set_field_status(self, input_id, message, kind)

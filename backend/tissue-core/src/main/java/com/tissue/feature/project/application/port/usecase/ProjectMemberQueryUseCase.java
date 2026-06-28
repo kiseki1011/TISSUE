@@ -1,5 +1,6 @@
 package com.tissue.feature.project.application.port.usecase;
 
+import com.tissue.feature.project.application.dto.response.MemberCandidateSummary;
 import com.tissue.feature.project.application.dto.response.ProjectMemberSummary;
 import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.shared.dto.ProjectIdentifier;
@@ -16,6 +17,13 @@ public interface ProjectMemberQueryUseCase {
             @Nullable String keyword,
             Pageable pageable,
             Long actorMemberId);
+
+    /**
+     * Active members a manager can add to the project (not already active members of it).
+     * Restricted to project managers.
+     */
+    Page<MemberCandidateSummary> getMemberCandidates(
+            ProjectIdentifier pid, @Nullable String keyword, Pageable pageable, Long actorMemberId);
 
     // TODO: Single project member detail getProjectMemberDetail
 }

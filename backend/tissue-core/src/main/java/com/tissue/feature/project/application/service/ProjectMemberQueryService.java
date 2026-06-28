@@ -1,11 +1,14 @@
 package com.tissue.feature.project.application.service;
 
+import com.tissue.feature.project.application.dto.response.MemberCandidateSummary;
 import com.tissue.feature.project.application.dto.response.ProjectMemberSummary;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.port.usecase.ProjectMemberQueryUseCase;
+import com.tissue.feature.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.project.domain.ProjectRole;
 import com.tissue.shared.dto.ProjectIdentifier;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ public class ProjectMemberQueryService implements ProjectMemberQueryUseCase {
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @Override
     public Page<ProjectMemberSummary> getProjectMembers(
@@ -39,5 +43,20 @@ public class ProjectMemberQueryService implements ProjectMemberQueryUseCase {
                 ? projectMemberQueryRepository.findAllByProject(project, role, pageable)
                 : projectMemberQueryRepository.findAllByProjectAndKeyword(project, role, normalized, pageable);
         return page.map(ProjectMemberSummary::from);
+    }
+
+    @Override
+    public Page<MemberCandidateSummary> getMemberCandidates(
+            ProjectIdentifier pid, @Nullable String keyword, Pageable pageable, Long actorMemberId) {
+        Project project = projectFinder.getByProjectKey(pid.projectKey());
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        projectAuthorizationService.requireProjectManager(actor);
+
+        String normalized = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        var page = (normalized == null)
+                ? projectMemberQueryRepository.findActiveMemberCandidatesByProject(project, pageable)
+                : projectMemberQueryRepository.findActiveMemberCandidatesByProjectAndKeyword(
+                        project, normalized, pageable);
+        return page.map(MemberCandidateSummary::from);
     }
 }

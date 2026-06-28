@@ -11,9 +11,9 @@ from textual.screen import Screen
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
-from tissue.auth.token_store import create_token_store
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
+from tissue.domain.auth.token_store import create_token_store
 from tissue.screens.auth.connecting import ConnectingScreen
 from tissue.screens.auth.login import LoginScreen
 from tissue.screens.home.home import HomeScreen
@@ -39,7 +39,7 @@ class TissueApp(App):
         self.system_info: SystemInfoDetails | None = None
         self._session_expiring = False
 
-    INITIAL_PING_TIMEOUT = 0.5  # 500ms before showing the connecting screen
+    INITIAL_PING_TIMEOUT = 0.5
 
     async def on_mount(self) -> None:
         if self._debug:
@@ -57,7 +57,6 @@ class TissueApp(App):
             )
             return
 
-        # Current server url exists
         client = TissueClient(
             host=saved_url,
             token_store=self.token_store,
@@ -67,19 +66,16 @@ class TissueApp(App):
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # If unreachable within the `INITIAL_PING_TIMEOUT`, retry with spinner
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
             self.push_screen(ConnectingScreen(saved_url, self.config))
             return
 
-        # Connection succeeds
         self.client = client
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
@@ -90,16 +86,23 @@ class TissueApp(App):
                 log.debug("Session restore (login) failed: %s", e)
             client.clear_tokens()
 
-        # If restore fails, go to login screen
         self.push_screen(LoginScreen(system_info, self.config))
 
     def _route_to_last_screen(self) -> None:
-        """Restore the screen the user was on before they closed the app."""
+        """Restore the last screen without flashing the dashboard first."""
         if self.client is None:
             return
-
-        # TODO: recall the last-opened project via state.current_project_key
         self.push_screen(HomeScreen())
+        self._push_last_project()
+
+    def _push_last_project(self) -> None:
+        """Stack the last-open project hub on top of Home, if any."""
+        key = self.config.last_project()
+        if not key:
+            return
+        from tissue.screens.project_home.project_home import ProjectHomeScreen
+
+        self.push_screen(ProjectHomeScreen(key))
 
     async def on_unmount(self) -> None:
         if self.client is not None:
@@ -111,14 +114,14 @@ class TissueApp(App):
         self.config.update_settings(theme=theme)
 
     def get_key_display(self, binding: Binding) -> str:
-        """Spell out the ctrl modifier ("ctrl+q") instead of the caret ("^q").
-
-        Mirrors Textual's default but skips its ctrl→caret conversion.
-        """
+        """Format a shortcut for the footer."""
         if binding.key_display:
-            return binding.key_display
+            return binding.key_display.upper()
         modifiers, key = binding.parse_key()
-        return "+".join([*modifiers, format_key(key)])
+        key = format_key(key)
+        if modifiers:
+            return "+".join([m.upper() for m in modifiers] + [key.upper()])
+        return key.upper() if len(key) == 1 else key
 
     _HIDDEN_SYSTEM_COMMANDS = ("theme", "maximize", "screenshot", "keys", "quit")
 
@@ -144,28 +147,18 @@ class TissueApp(App):
         self.push_screen(AccountModal())
 
     def show_home(self) -> None:
-        """Navigate to the home screen (command palette)."""
+        """Navigate to the dashboard from the command palette."""
+        # Save before navigation finishes so quitting mid-load still restores Home.
+        self.config.set_last_project(None)
         self._navigate_to_screen(HomeScreen())
 
-    def show_wiki(self) -> None:
-        """Navigate to the wiki screen (command palette)."""
-        from tissue.screens.wiki.wiki import WikiScreen
-
-        self._navigate_to_screen(WikiScreen())
-
     def _navigate_to_screen(self, screen: Screen) -> None:
-        """Palette navigation: collapse drill-in screens/modals, then show `screen`.
-
-        Pop everything stacked on top of the base content screen, then replace
-        that content screen with `screen`. We never pop past index 1: the App's
-        auto-created default screen at index 0 was never `push_screen`-ed, so it
-        has no result callback and `switch_screen` would raise trying to pop one.
-        """
+        """Collapse drill-in screens/modals, then show `screen`."""
         while len(self.screen_stack) > 2:
             self.pop_screen()
         if len(self.screen_stack) > 1:
             self.switch_screen(screen)
-        else:  # defensive: nothing pushed yet (shouldn't happen post-login)
+        else:  # defensive, nothing pushed yet (shouldn't happen post-login)
             self.push_screen(screen)
 
     def logout(self) -> None:
@@ -178,19 +171,13 @@ class TissueApp(App):
         self._reset_to_login()
 
     def _reset_to_login(self) -> None:
-        """Collapse any stacked screens/modals, then land on the login screen.
-
-        Reuses `_navigate_to_screen` so the same stack-collapse rule applies:
-        never pop past the base screen before `switch_screen` (which would
-        IndexError on the callback-less default screen).
-        """
+        """Collapse stacked screens/modals, then land on login."""
         if self.system_info is None:
             return
         self._navigate_to_screen(LoginScreen(self.system_info, self.config))
 
     def _on_session_expired(self) -> None:
-        """Called when a token refresh fails. Route back to login once, with a notice,
-        instead of leaving the user stuck on a screen."""
+        """Route back to login once when token refresh fails."""
         if self.system_info is None or self._session_expiring:
             return
         self._session_expiring = True
@@ -211,17 +198,30 @@ class TissueApp(App):
 
         self._session_expiring = False
 
-        # Record (server, username) to determine first-time login
         profile = client.account.cached_profile
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
+        self.config.set_last_project(None)
         self.switch_screen(HomeScreen())
 
-    def _async_exc_handler(self, loop, context: dict) -> None:
-        """asyncio uncaught-task exception hook.
+    def _handle_exception(self, error: Exception) -> None:
+        # Textual tears down the alt screen, so persist the traceback first.
+        log.critical("Unhandled exception, app is exiting", exc_info=error)
+        super()._handle_exception(error)
 
-        Only active in `--debug` mode."""
+    async def _flush_next_callbacks(self) -> None:
+        # A cancelled widget swap can leak a non-task CancelledError here.
+        try:
+            await super()._flush_next_callbacks()
+        except asyncio.CancelledError:
+            task = asyncio.current_task()
+            if task is not None and task.cancelling() > 0:
+                raise
+            log.warning("Recovered a stray CancelledError from a next-callback")
+
+    def _async_exc_handler(self, loop, context: dict) -> None:
+        """asyncio uncaught-task exception hook, only active in `--debug` mode."""
         exc = context.get("exception")
         msg = context.get("message", str(exc))
         log.error("Unhandled async exception", exc_info=exc)

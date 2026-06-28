@@ -1,5 +1,3 @@
-"""Modal for permanently withdrawing the current member."""
-
 import logging
 
 from textual import on, work
@@ -9,6 +7,11 @@ from textual.containers import Container, Horizontal
 from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
+from tissue.screens.account._helpers import (
+    failure_reason,
+    is_oidc_mode,
+    set_field_status,
+)
 from tissue.screens.base import TissueModal
 
 log = logging.getLogger(__name__)
@@ -33,6 +36,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
             Button(
                 "Cancel",
                 id="delete_account_cancel_btn",
+                classes="-btn-secondary",
             ),
             Button(
                 "Delete account",
@@ -44,7 +48,7 @@ class DeleteAccountModal(TissueModal[bool | None]):
 
         form_children: list = [warning]
 
-        if not self._is_oidc_mode():
+        if not is_oidc_mode(self.app):
             password_input = Input(
                 password=True,
                 placeholder="********",
@@ -75,18 +79,13 @@ class DeleteAccountModal(TissueModal[bool | None]):
         yield dialog
 
     def on_mount(self) -> None:
-        if self._is_oidc_mode():
+        if is_oidc_mode(self.app):
             self.query_one("#delete_account_confirm_btn", Button).focus()
         else:
             self.query_one("#delete_account_password", Input).focus()
 
     def action_close(self) -> None:
         self.dismiss(None)
-
-    def _is_oidc_mode(self) -> bool:
-        info = self.app.system_info
-        setup = info.setup if info is not None else None
-        return bool(setup and (setup.auth_mode or "").upper() == "OIDC")
 
     @on(Button.Pressed, "#delete_account_cancel_btn")
     def _on_cancel(self) -> None:
@@ -95,12 +94,13 @@ class DeleteAccountModal(TissueModal[bool | None]):
     @on(Button.Pressed, "#delete_account_confirm_btn")
     @on(Input.Submitted, "#delete_account_password")
     def _on_confirm(self) -> None:
-        if self._is_oidc_mode():
+        if is_oidc_mode(self.app):
             self._do_withdraw(None)
             return
         password = self.query_one("#delete_account_password", Input).value
         if not password:
-            self._set_status(
+            set_field_status(
+                self,
                 "delete_account_password",
                 "Required field",
                 "error",
@@ -115,9 +115,9 @@ class DeleteAccountModal(TissueModal[bool | None]):
             return
         try:
             await client.account.withdraw(password)
-        except TissueApiError as e:
-            log.warning("Account withdrawal failed: %s", e)
-            reason = self._failure_reason(e)
+        except TissueApiError as error:
+            log.warning("Account withdrawal failed: %s", error)
+            reason = failure_reason(error)
             self.app.notify(
                 f"Failed to delete account: {reason}",
                 severity="error",
@@ -141,18 +141,3 @@ class DeleteAccountModal(TissueModal[bool | None]):
             "days. Afterward, it is permanently deleted and cannot be "
             "recovered."
         )
-
-    @staticmethod
-    def _failure_reason(exc: TissueApiError) -> str:
-        if exc.title in ("INVALID_PASSWORD", "PASSWORD_MISMATCH"):
-            return "Password is incorrect"
-        return exc.detail or exc.title or str(exc)
-
-    def _set_status(
-        self, input_id: str, message: str = "", kind: str | None = None
-    ) -> None:
-        label = self.query_one(f"#{input_id}_status", Label)
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")

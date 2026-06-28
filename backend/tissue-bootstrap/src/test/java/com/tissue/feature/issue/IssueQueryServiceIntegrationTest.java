@@ -3,20 +3,25 @@ package com.tissue.feature.issue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.tissue.feature.issue.adapter.web.IssueQueryController;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueDetail;
+import com.tissue.feature.issue.application.dto.response.IssueDetailView;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
+import com.tissue.feature.issue.application.dto.response.info.RelatedIssueInfo;
 import com.tissue.feature.issue.application.service.IssueLifecycleService;
 import com.tissue.feature.issue.application.service.IssueQueryService;
+import com.tissue.feature.issue.application.service.IssueRelationService;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
+import com.tissue.feature.issue.domain.enums.IssueRelationType;
 import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.issuetype.domain.IssueField;
 import com.tissue.feature.issuetype.domain.IssueType;
@@ -37,6 +42,8 @@ import com.tissue.shared.dto.IssueIdentifier;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.enums.ColorType;
 import com.tissue.shared.enums.IconType;
+import com.tissue.shared.meta.LLMGenerated;
+import com.tissue.shared.meta.LLMInvolvement;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Instant;
@@ -59,7 +66,13 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
     private IssueQueryService sut;
 
     @Autowired
+    private IssueQueryController issueQueryController;
+
+    @Autowired
     private IssueLifecycleService issueLifecycleService;
+
+    @Autowired
+    private IssueRelationService issueRelationService;
 
     @Autowired
     private MemberCommandRepository memberRepository;
@@ -91,17 +104,17 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         Project project = projectRepository.save(Project.create("PROJ", "Proj", null));
         projectMemberRepository.save(ProjectMember.createManager(project, actor));
 
-        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.YELLOW);
-        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.GREEN, StateCategory.INITIAL);
+        Workflow workflow = Workflow.create(Name.of("Default"), null, ColorType.ANSI_YELLOW);
+        WorkflowState todo = workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
         WorkflowState inProgress =
-                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.BLUE, StateCategory.ACTIVE);
-        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.BLACK, StateCategory.COMPLETED);
+                workflow.addState(Name.of("IN PROGRESS"), null, ColorType.ANSI_BLUE, StateCategory.ACTIVE);
+        WorkflowState done = workflow.addState(Name.of("DONE"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED);
         workflow.addTransition(Name.of("Start"), null, todo, inProgress);
         workflow.addTransition(Name.of("Complete"), null, inProgress, done);
         workflowRepository.save(workflow);
 
         IssueType issueType = IssueType.create(
-                Name.of("Story"), null, ColorType.RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+                Name.of("Story"), null, ColorType.ANSI_RED, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
         issueTypeRepository.save(issueType);
         IssueField goalField = issueType.addField(Name.of("goal"), "Goal", IssueFieldType.TEXT, true, 0);
 
@@ -240,6 +253,62 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @DisplayName(
+            "getAvailableTransitions includes each transition's target state, so the client needs no workflow call")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+    void getAvailableTransitions_includesTargetState() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P2, Map.of(fieldId, "g"));
+
+        // when
+        List<TransitionDetail> transitions = sut.getAvailableTransitions(iid, actor.getId());
+
+        // then
+        assertThat(transitions).isNotEmpty();
+        TransitionDetail start = transitions.getFirst();
+        assertThat(start.targetState()).isNotNull();
+        assertThat(start.targetState().displayName()).isEqualTo("IN PROGRESS");
+        assertThat(start.targetState().color()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("getIssueDetailView aggregates common, transitions, custom fields, hierarchy, relations,"
+            + " comments in one call")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
+    void getIssueDetailView_returnsAllSections() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P1, Map.of(fieldId, "the goal"));
+        MemberDetails actorDetails = new MemberDetails(actor.getId(), actor.getEmail(), actor.getUsername(), List.of());
+
+        // when
+        IssueDetailView view = issueQueryController
+                .getIssueDetailView(iid.issueKey(), 20, actorDetails)
+                .getBody();
+
+        // then
+        assertThat(view).isNotNull();
+        assertThat(view.common().issueKey()).isEqualTo(iid.issueKey());
+        assertThat(view.common().title()).isEqualTo("ticket");
+        assertThat(view.common().assignee().memberId()).isEqualTo(actor.getId());
+
+        assertThat(view.availableTransitions()).isNotEmpty();
+        assertThat(view.availableTransitions().getFirst().targetState().displayName())
+                .isEqualTo("IN PROGRESS");
+
+        assertThat(view.customFields()).hasSize(1);
+        assertThat(view.customFields().getFirst().fieldLabel()).isEqualTo("goal");
+        assertThat(view.customFields().getFirst().value()).isEqualTo("the goal");
+        // A TEXT field has no options, so the resolved option list is empty.
+        assertThat(view.customFields().getFirst().options()).isEmpty();
+
+        assertThat(view.parent().issueKey()).isNull();
+        assertThat(view.children()).isEmpty();
+        assertThat(view.relations().blocks()).isEmpty();
+        assertThat(view.comments().content()).isEmpty();
+        assertThat(view.comments().totalElements()).isZero();
+    }
+
+    @Test
     @DisplayName("getChildren returns empty for issues without children")
     void getChildren_emptyList() {
         // given
@@ -263,7 +332,8 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
 
         // then
         assertThat(parent.issueKey()).isNull();
-        assertThat(parent.issueTypeLabel()).isNull();
+        assertThat(parent.issueType()).isNull();
+        assertThat(parent.currentState()).isNull();
     }
 
     @Test
@@ -280,7 +350,31 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(relations.blockedBy()).isEmpty();
         assertThat(relations.duplicates()).isEmpty();
         assertThat(relations.duplicatedBy()).isEmpty();
+        assertThat(relations.causes()).isEmpty();
+        assertThat(relations.causedBy()).isEmpty();
         assertThat(relations.relevant()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getRelations surfaces CAUSES relations (causes for source, causedBy for target)")
+    @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED)
+    void getRelations_causes() {
+        // given
+        IssueIdentifier source = createIssue("cause-src", IssuePriority.P2, Map.of(fieldId, "v"));
+        IssueIdentifier target = createIssue("cause-tgt", IssuePriority.P2, Map.of(fieldId, "v"));
+        issueRelationService.add(source, target.issueKey(), IssueRelationType.CAUSES, actor.getId());
+        em.flush();
+        em.clear();
+
+        // when
+        IssueRelationsDetail fromSource = sut.getRelations(source, actor.getId());
+        IssueRelationsDetail fromTarget = sut.getRelations(target, actor.getId());
+
+        // then
+        assertThat(fromSource.causes()).extracting(RelatedIssueInfo::issueKey).containsExactly(target.issueKey());
+        assertThat(fromSource.causedBy()).isEmpty();
+        assertThat(fromTarget.causedBy()).extracting(RelatedIssueInfo::issueKey).containsExactly(source.issueKey());
+        assertThat(fromTarget.causes()).isEmpty();
     }
 
     @Test

@@ -25,16 +25,14 @@ class Spinner:
         self._frames = frames
         self._interval = interval
         self._timer: Timer | None = None
-        self._idx = 0
+        self._frame_index = 0
         self._text = ""
 
     def start(self, text: str = "") -> None:
-        """Begin animating.
-
-        Replaces any prior content in the target."""
+        """Begin animating, replacing any prior content in the target."""
         self.stop()
         self._text = text
-        self._idx = 0
+        self._frame_index = 0
         self._tick()
         self._timer = self._owner.set_interval(self._interval, self._tick)
 
@@ -48,7 +46,7 @@ class Spinner:
         return self._timer is not None
 
     def _tick(self) -> None:
-        char = self._frames[self._idx]
-        self._idx = (self._idx + 1) % len(self._frames)
+        char = self._frames[self._frame_index]
+        self._frame_index = (self._frame_index + 1) % len(self._frames)
         rendered = f"{char} {self._text}" if self._text else char
         self._target.update(rendered)

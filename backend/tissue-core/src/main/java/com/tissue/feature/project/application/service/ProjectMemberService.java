@@ -77,15 +77,21 @@ public class ProjectMemberService implements ProjectMemberUseCase {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
 
         Member actor = memberFinder.getActiveById(actorMemberId);
-        projectAuthorizationService.requireJoinPermission(actor, project);
 
         Optional<ProjectMember> existing = projectMemberFinder.findOptionalIncludingSoftDeleted(project, actorMemberId);
+
+        boolean joinedAndNotSoftDeleted =
+                existing.isPresent() && !existing.get().isSoftDeleted();
+        if (joinedAndNotSoftDeleted) {
+            return ProjectMemberResponse.of(existing.get());
+        }
+
+        projectAuthorizationService.requireJoinPermission(actor, project);
+
         if (existing.isPresent()) {
             ProjectMember projectMember = existing.get();
-            if (projectMember.isSoftDeleted()) {
-                restoreProjectMember(projectMember);
-                agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
-            }
+            restoreProjectMember(projectMember);
+            agentProjectJoinService.includeAgentsOfMember(actorMemberId, project);
             return ProjectMemberResponse.of(projectMember);
         }
 

@@ -6,7 +6,7 @@ from pydantic import HttpUrl, TypeAdapter, ValidationError
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.widgets import Footer, Static
+from textual.widgets import Static
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import (
@@ -18,6 +18,7 @@ from tissue.api.errors import (
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.screens.base import TissueScreen
+from tissue.widgets.footer import TissueFooter
 from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class ConnectingScreen(TissueScreen):
             Static("", id="connect_progress"),
             id="connecting-dialog",
         )
-        yield Footer()
+        yield TissueFooter()
 
     def on_mount(self) -> None:
         self._spinner = Spinner(self, self.query_one("#connect_spinner", Static))
@@ -98,8 +99,8 @@ class ConnectingScreen(TissueScreen):
                 error_key = "connect_error_unreachable"
             except ServerError:
                 error_key = "connect_error_server"
-            except TissueApiError as e:
-                log.warning("CLI connect attempt %d failed: %s", attempt, e)
+            except TissueApiError as error:
+                log.warning("CLI connect attempt %d failed: %s", attempt, error)
                 error_key = "connect_error_generic"
             else:
                 spinner.stop()
@@ -124,20 +125,18 @@ class ConnectingScreen(TissueScreen):
             await self.app.client.close()
         self.app.client = client
         self.app.system_info = system_info
-        self.config_manager.update_state(
-            current_server_url=client.host,
-            last_connected_at=datetime.now().astimezone(),
-        )
+        self.config_manager.set_current_server(client.host)
+        self.config_manager.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Skip login screen when a stored session can be restored
         saved_token = self.app.token_store.load(client.host)
         if saved_token is not None:
             try:
                 if await client.auth.restore_session(saved_token):
                     self.app.switch_screen(HomeScreen())
+                    self.app._push_last_project()
                     return
-            except TissueApiError as e:
-                log.debug("Session restore failed: %s", e)
+            except TissueApiError as error:
+                log.debug("Session restore failed: %s", error)
             client.clear_tokens()
 
         self.app.switch_screen(LoginScreen(system_info, self.config_manager))

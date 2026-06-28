@@ -35,7 +35,7 @@ class IssueFieldDetail(BaseModel):
     options: Optional[List[FieldOptionDetail]] = None
     position: Optional[StrictInt] = None
     required: Optional[StrictBool] = None
-    type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
+    type: Optional[StrictStr] = Field(default=None, description="Data type for a custom issue field. TEXT is multi-line free text (rendered as Markdown); SHORT_TEXT is single-line and length-limited. SELECT_OPTION and CHECKLIST support predefined options; other types accept direct values.")
     __properties: ClassVar[List[str]] = ["description", "id", "name", "options", "position", "required", "type"]
 
     @field_validator('type')
@@ -44,8 +44,8 @@ class IssueFieldDetail(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
-            raise ValueError("must be one of enum values ('TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
+        if value not in set(['TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST']):
+            raise ValueError("must be one of enum values ('TEXT', 'SHORT_TEXT', 'INTEGER', 'DECIMAL', 'TIMESTAMP', 'DATE', 'BOOLEAN', 'SELECT_OPTION', 'PERCENTAGE', 'CHECKLIST')")
         return value
 
     model_config = ConfigDict(

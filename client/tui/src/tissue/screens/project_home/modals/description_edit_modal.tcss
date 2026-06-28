@@ -1,0 +1,48 @@
+DescriptionEditModal {
+    align: center middle;
+    background: $background 60%;
+}
+
+DescriptionEditModal #ded-dialog {
+    width: 84;
+    max-width: 95%;
+    height: 30;
+    max-height: 90%;
+    padding: 1 2;
+    layout: vertical;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-align: center;
+    border-subtitle-color: $text-muted;
+}
+
+DescriptionEditModal #ded-editor {
+    width: 100%;
+    height: 1fr;
+    border: round $panel;
+}
+
+DescriptionEditModal #ded-preview {
+    width: 100%;
+    height: 1fr;
+    background: $panel;
+    padding: 0 1;
+}
+
+DescriptionEditModal #ded-status {
+    width: 100%;
+    height: auto;
+    color: $error;
+}
+
+DescriptionEditModal #ded-actions {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+
+DescriptionEditModal #ded-actions Button {
+    margin-left: 1;
+    min-width: 11;
+}
