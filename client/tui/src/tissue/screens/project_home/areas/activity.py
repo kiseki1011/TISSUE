@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.containers import Vertical
-from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -33,11 +32,10 @@ class ActivityMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to load activity for %s: %s", issue_key, error)
             activities = []
-        if self._detail_issue_key != issue_key:
+        if self._detail_state.issue_key != issue_key:
             return
-        try:
-            timeline_inner = self.query_one("#hub-detail-timeline-inner")
-        except NoMatches:
+        panel = self._detail_panel()
+        if panel is None:
             return
         widgets: list[Widget] = [Static("Activity", classes="hub-timeline-title")]
         if not activities:
@@ -45,9 +43,7 @@ class ActivityMixin(ProjectHomeBase):
         else:
             for entry in activities:
                 widgets.extend(self._activity_widgets(entry))
-        with self.app.batch_update():
-            await timeline_inner.remove_children()
-            await timeline_inner.mount(*widgets)
+        await panel.replace_timeline(widgets)
 
     def _activity_widgets(self, activity: ActivityLogResponse) -> list[Widget]:
         accent = color_hex(self.app.theme_variables.get("accent"))
@@ -69,7 +65,7 @@ class ActivityMixin(ProjectHomeBase):
         ]
         field_names = {
             str(field_id): custom_field.field_label
-            for field_id, custom_field in self._detail_custom_fields.items()
+            for field_id, custom_field in self._detail_state.custom_fields.items()
             if custom_field.field_label
         }
         for line in _activity_details(activity, field_names):
@@ -81,7 +77,7 @@ class ActivityMixin(ProjectHomeBase):
     def _member_label(self, member_id: int | None) -> str | None:
         if member_id is None:
             return None
-        for member in self._members:
+        for member in self._member_list.members:
             if member.member_id == member_id:
                 return member.display_name or member.username
         return None

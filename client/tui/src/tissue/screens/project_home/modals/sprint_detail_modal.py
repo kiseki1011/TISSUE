@@ -5,16 +5,13 @@ from typing import TYPE_CHECKING
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical, VerticalScroll
-from textual.widgets import Rule, Static
+from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import ScrollableModal
-from tissue.screens.home.widgets import _DashTable
-from tissue.screens.project_home.areas.sprints import (
-    sprint_goal_widgets,
-    sprint_meta_widgets,
+from tissue.screens.project_home.sprint_rendering import (
+    sprint_detail_widgets,
 )
-from tissue.screens.project_home.rendering import _issue_rows
 
 if TYPE_CHECKING:
     from textual.widget import Widget
@@ -72,45 +69,19 @@ class SprintDetailModal(ScrollableModal[None]):
         self.query_one("#sdm-dialog", Container).border_title = (
             sprint.sprint_key or "Sprint"
         )
-        widgets: list[Widget] = sprint_meta_widgets(
+        widgets: list[Widget] = sprint_detail_widgets(
             sprint,
+            issues,
+            self._state_colors,
             self.app.theme_variables,
             title_class="sdm-title",
+            content_class="sdm-content",
+            muted_class="sdm-muted",
+            issue_title_class="sdm-section-title",
+            issue_table_id="sdm-issues",
+            issue_table_classes="hub-table",
             spacer_class="sdm-spacer",
         )
-        widgets.extend(
-            sprint_goal_widgets(
-                sprint.goal,
-                with_edit=False,
-                title_class="sdm-title",
-                content_class="sdm-content",
-                muted_class="sdm-muted",
-            )
-        )
-        widgets.append(Rule())
-        widgets.append(Static(f"Issues ({len(issues)})", classes="sdm-section-title"))
-        if issues:
-            widgets.append(
-                _DashTable(
-                    [
-                        ("Key", 10),
-                        ("Title", None),
-                        ("Status", 11),
-                        ("Priority", 8),
-                        ("Due", 11),
-                    ],
-                    _issue_rows(
-                        issues,
-                        self._state_colors,
-                        self.app.theme_variables,
-                        with_due=True,
-                    ),
-                    id="sdm-issues",
-                    classes="hub-table",
-                )
-            )
-        else:
-            widgets.append(Static("No issues.", classes="sdm-muted"))
         await self._mount(widgets)
 
     async def _mount(self, widgets: list[Widget]) -> None:

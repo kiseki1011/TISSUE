@@ -5,13 +5,13 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.css.query import NoMatches
 from textual.timer import Timer
-from textual.validation import Length, Regex, Validator
+from textual.validation import Length, Regex, ValidationResult, Validator
 from textual.widgets import Button, Input, Label
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import set_status_label
 from tissue.widgets.spinner import Spinner
 
 log = logging.getLogger(__name__)
@@ -334,7 +334,7 @@ class FieldEditModal(TissueModal[bool | None]):
                 new_email=value, verification_token=self._verified_token
             )
 
-    def _render_status(self, value: str, result) -> None:
+    def _render_status(self, value: str, result: ValidationResult | None) -> None:
         if not value or result is None or result.is_valid:
             self._set_status()
             return
@@ -342,14 +342,7 @@ class FieldEditModal(TissueModal[bool | None]):
         self._set_status(failure_messages[0] if failure_messages else "", "error")
 
     def _set_status(self, message: str = "", kind: str | None = None) -> None:
-        try:
-            label = self.query_one("#field_edit_status", Label)
-        except NoMatches:  # worker finished after the modal closed
-            return
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        set_status_label(self, "field_edit_status", message, kind)
 
     def _stop_poll(self) -> None:
         if self._poll_timer is not None:

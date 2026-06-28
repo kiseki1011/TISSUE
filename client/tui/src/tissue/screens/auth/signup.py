@@ -13,6 +13,11 @@ from tissue.api.generated.models.system_info_details import SystemInfoDetails
 from tissue.assets.logo import TISSUE_LOGO
 from tissue.config.manager import ConfigManager
 from tissue.screens.base import TissueScreen
+from tissue.screens.form_helpers import (
+    first_empty_required_field,
+    render_validation_status,
+    set_field_status,
+)
 from tissue.widgets.footer import TissueFooter
 from tissue.widgets.spinner import Spinner
 
@@ -271,14 +276,7 @@ class SignupScreen(TissueScreen):
         value: str,
         result: ValidationResult | None,
     ) -> None:
-        """Render the validation result on the label."""
-        if not value or result is None or result.is_valid:
-            self._set_status(input_id)
-            return
-        failure_messages = result.failure_descriptions
-        self._set_status(
-            input_id, failure_messages[0] if failure_messages else "", "error"
-        )
+        render_validation_status(self, input_id, value, result)
 
     def _on_email_changed(self, event: Input.Changed) -> None:
         """Reset verification state, restart availability check, lock submit."""
@@ -378,21 +376,7 @@ class SignupScreen(TissueScreen):
     def _set_status(
         self, input_id: str, message: str = "", kind: str | None = None
     ) -> None:
-        """Replace a field's status label content and state class.
-
-        `kind`:
-            - `"error"`
-            - `"waiting"`
-            - `"success"`
-            - `None` clears both the message and any state class
-        """
-        label = self._status_label(input_id)
-        if label is None:
-            return
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        set_field_status(self, input_id, message, kind)
 
     def _status_label(self, input_id: str) -> Label | None:
         try:
@@ -502,18 +486,7 @@ class SignupScreen(TissueScreen):
         ids = ["username", "name", "password", "password_confirm"]
         if self.email_required:
             ids.insert(0, "email")
-
-        first_empty: Input | None = None
-        for field_id in ids:
-            field_input = self.query_one(f"#{field_id}", Input)
-            if not field_input.value:
-                self._set_status(field_id, "Required field", "error")
-                if first_empty is None:
-                    first_empty = field_input
-
-        if first_empty is not None:
-            first_empty.focus()
-        return first_empty
+        return first_empty_required_field(self, ids)
 
     @work(exclusive=True, group="signup")
     async def _do_signup(self) -> None:

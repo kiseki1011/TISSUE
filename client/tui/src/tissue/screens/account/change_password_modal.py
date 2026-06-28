@@ -11,6 +11,10 @@ from textual.widgets import Button, Input, Label
 from tissue.api.errors import TissueApiError
 from tissue.screens.account._helpers import failure_reason, set_field_status
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import (
+    first_empty_required_field,
+    render_validation_status,
+)
 
 log = logging.getLogger(__name__)
 
@@ -194,16 +198,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
         self.dismiss(True)
 
     def _check_required_fields(self) -> Input | None:
-        first_empty: Input | None = None
-        for field_id in _REQUIRED_FIELDS:
-            field_input = self.query_one(f"#{field_id}", Input)
-            if not field_input.value:
-                set_field_status(self, field_id, "Required field", "error")
-                if first_empty is None:
-                    first_empty = field_input
-        if first_empty is not None:
-            first_empty.focus()
-        return first_empty
+        return first_empty_required_field(self, _REQUIRED_FIELDS)
 
     def _render_status(
         self,
@@ -211,13 +206,7 @@ class ChangePasswordModal(TissueModal[bool | None]):
         value: str,
         result: ValidationResult | None,
     ) -> None:
-        if not value or result is None or result.is_valid:
-            set_field_status(self, input_id)
-            return
-        failure_messages = result.failure_descriptions
-        set_field_status(
-            self, input_id, failure_messages[0] if failure_messages else "", "error"
-        )
+        render_validation_status(self, input_id, value, result)
 
 
 class _MatchValidator(Validator):

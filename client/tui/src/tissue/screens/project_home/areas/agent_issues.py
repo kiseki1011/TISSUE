@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 
 from textual import on
-from textual.css.query import NoMatches
 from textual.widgets import DataTable, Static
 
 from tissue.api.errors import TissueApiError
@@ -19,7 +18,7 @@ class AgentIssuesMixin(ProjectHomeBase):
     """The [3] Agent Work / Reviews box."""
 
     def _toggle_agent_mode(self) -> None:
-        self._agent_mode = "reviews" if self._agent_mode == "work" else "work"
+        self._ui.agent_mode = "reviews" if self._ui.agent_mode == "work" else "work"
         self._persist_project_ui()
         self._refresh_box_chrome()
         keep = self._agent_box_has_focus()
@@ -32,20 +31,18 @@ class AgentIssuesMixin(ProjectHomeBase):
         )
 
     def _agent_box_has_focus(self) -> bool:
-        focused = self.app.focused
-        return focused is not None and focused.id in (
-            "hub-agent-issues-table",
-            "hub-agent-issues-host",
+        panel = self._agent_work_panel()
+        return panel is not None and panel.has_focus_in(
+            {"hub-agent-issues-table", "hub-agent-issues-host"}
         )
 
     def _focus_agent_host(self) -> None:
-        try:
-            self.query_one("#hub-agent-issues-host").focus()
-        except NoMatches:
-            pass
+        panel = self._agent_work_panel()
+        if panel is not None:
+            panel.focus_host()
 
     async def _load_agent_issues(self, *, focus_list: bool = False) -> None:
-        if self._agent_mode == "reviews":
+        if self._ui.agent_mode == "reviews":
             await self._load_requested_reviews(focus_list=focus_list)
         else:
             await self._load_agent_work(focus_list=focus_list)
@@ -59,14 +56,14 @@ class AgentIssuesMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to list agents: %s", error)
             agents = []
-        self._agent_names = {
+        self._agent_work.names = {
             agent.id: (agent.name or agent.username or "-")
             for agent in agents
             if agent.id is not None
         }
         agent_ids = [str(agent.id) for agent in agents if agent.id is not None]
         if not agent_ids:
-            self._agent_issues = []
+            self._agent_work.issues = []
             await self._render_agent_issues(
                 empty_hint="No agents yet.",
                 focus_list=focus_list,
@@ -78,10 +75,10 @@ class AgentIssuesMixin(ProjectHomeBase):
                 assignee_member_ids=agent_ids,
                 **self._agent_issue_filter_kwargs(),
             )
-            self._agent_issues = list(page.content or [])
+            self._agent_work.issues = list(page.content or [])
         except TissueApiError as error:
             log.debug("Hub: failed to load agent issues: %s", error)
-            self._agent_issues = []
+            self._agent_work.issues = []
         await self._render_agent_issues(
             empty_hint="No agent work.", focus_list=focus_list
         )
@@ -94,52 +91,50 @@ class AgentIssuesMixin(ProjectHomeBase):
             page = await client.issues.search_project_issues(
                 self._project_key,
                 reviewer_member_ids=["me"],
-                reviewer_statuses=self._filter.reviewer_statuses_arg(),
+                reviewer_statuses=self._filters.issue.reviewer_statuses_arg(),
                 state_categories=_OPEN_STATE_CATEGORIES,
                 **self._agent_issue_filter_kwargs(include_state=False),
             )
-            self._agent_issues = list(page.content or [])
+            self._agent_work.issues = list(page.content or [])
         except TissueApiError as error:
             log.debug("Hub: failed to load requested reviews: %s", error)
-            self._agent_issues = []
+            self._agent_work.issues = []
         await self._render_agent_issues(
             empty_hint="No issues awaiting your review.", focus_list=focus_list
         )
 
     def _agent_issue_filter_kwargs(self, *, include_state: bool = True) -> dict:
-        if not self._filter.apply_to_agent:
+        if not self._filters.issue.apply_to_agent:
             return {}
         kwargs = {
-            "priorities": self._filter.priorities_arg(),
-            "sprint_ids": self._filter.sprint_ids_arg(),
-            "current_sprint_only": self._filter.current_sprint_only_arg(),
+            "priorities": self._filters.issue.priorities_arg(),
+            "sprint_ids": self._filters.issue.sprint_ids_arg(),
+            "current_sprint_only": self._filters.issue.current_sprint_only_arg(),
         }
         if include_state:
-            kwargs["state_categories"] = self._filter.state_categories_arg()
+            kwargs["state_categories"] = self._filters.issue.state_categories_arg()
         return kwargs
 
     async def _render_agent_issues(
         self, *, empty_hint: str = "No agent work.", focus_list: bool = False
     ) -> None:
-        try:
-            box = self.query_one("#hub-agent-issues-host")
-        except NoMatches:
+        panel = self._agent_work_panel()
+        if panel is None:
             return
-        await box.remove_children()
-        if not self._agent_issues:
-            await box.mount(Static(empty_hint, classes="hub-muted"))
+        if not self._agent_work.issues:
+            await panel.replace_content([Static(empty_hint, classes="hub-muted")])
             if focus_list:
                 self.action_focus_agent_issues()
             return
         member_names = {
             member.member_id: (member.display_name or member.username or "-")
-            for member in self._members
+            for member in self._member_list.members
             if member.member_id is not None
         }
-        member_names.update(self._agent_names)
-        reviews = self._agent_mode == "reviews"
+        member_names.update(self._agent_work.names)
+        reviews = self._ui.agent_mode == "reviews"
         rows = _issue_list_rows(
-            self._agent_issues,
+            self._agent_work.issues,
             self._state_colors,
             self.app.theme_variables,
             member_names,
@@ -161,13 +156,15 @@ class AgentIssuesMixin(ProjectHomeBase):
                 (last_col, 14),
             ]
         )
-        await box.mount(
-            _DashTable(
-                columns,
-                rows,
-                id="hub-agent-issues-table",
-                classes="hub-table",
-            )
+        await panel.replace_content(
+            [
+                _DashTable(
+                    columns,
+                    rows,
+                    id="hub-agent-issues-table",
+                    classes="hub-table",
+                )
+            ]
         )
         if focus_list:
             self.action_focus_agent_issues()
@@ -184,12 +181,12 @@ class AgentIssuesMixin(ProjectHomeBase):
     def _select_agent_issue(
         self, row_index: int, *, focus_detail: bool = False
     ) -> None:
-        if not (0 <= row_index < len(self._agent_issues)):
+        if not (0 <= row_index < len(self._agent_work.issues)):
             return
-        issue_key = self._agent_issues[row_index].issue_key
+        issue_key = self._agent_work.issues[row_index].issue_key
         if issue_key is None:
             return
-        if focus_detail and self._expanded:
+        if focus_detail and self._ui.expanded:
             self._open_issue_modal(issue_key)
             return
         self._debounce_detail(
@@ -202,12 +199,9 @@ class AgentIssuesMixin(ProjectHomeBase):
         )
 
     def action_focus_agent_issues(self) -> None:
-        try:
-            self.query_one("#hub-agent-issues-table", DataTable).focus()
+        panel = self._agent_work_panel()
+        if panel is None:
             return
-        except NoMatches:
-            pass
-        try:
-            self.query_one("#hub-agent-issues-host").focus()
-        except NoMatches:
-            pass
+        if panel.focus_first_table(("hub-agent-issues-table",)):
+            return
+        panel.focus_host()

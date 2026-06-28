@@ -8,7 +8,7 @@ from textual.widgets import DataTable, Label
 
 from tissue.screens.home.constants import _ISSUE_KEY_WIDTH, _SEARCH_PREFIXES
 from tissue.util.datetime_fmt import format_date
-from tissue.widgets.issue_render import color_chip, priority_chip, type_chip
+from tissue.widgets.issue_chips import color_chip, priority_chip, type_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary

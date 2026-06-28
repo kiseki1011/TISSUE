@@ -8,6 +8,7 @@ from textual.widgets import Button, Input, Label, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import first_empty_required_field, set_field_status
 
 log = logging.getLogger(__name__)
 
@@ -128,22 +129,9 @@ class RestoreAccountModal(TissueModal[str | None]):
         return exc.detail or exc.title or str(exc)
 
     def _check_required_fields(self) -> Input | None:
-        first_empty: Input | None = None
-        for field_id in _REQUIRED_FIELDS:
-            field_input = self.query_one(f"#{field_id}", Input)
-            if not field_input.value.strip():
-                self._set_status(field_id, "Required field", "error")
-                if first_empty is None:
-                    first_empty = field_input
-        if first_empty is not None:
-            first_empty.focus()
-        return first_empty
+        return first_empty_required_field(self, _REQUIRED_FIELDS, strip=True)
 
     def _set_status(
         self, input_id: str, message: str = "", kind: str | None = None
     ) -> None:
-        label = self.query_one(f"#{input_id}_status", Label)
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        set_field_status(self, input_id, message, kind)

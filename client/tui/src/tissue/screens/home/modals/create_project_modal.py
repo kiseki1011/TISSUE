@@ -1,5 +1,6 @@
 import logging
 import re
+from dataclasses import dataclass
 
 from textual import on, work
 from textual.app import ComposeResult
@@ -11,6 +12,7 @@ from textual.widgets import Button, Input, Label, TextArea
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
+from tissue.screens.form_helpers import render_validation_status, set_field_status
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +21,13 @@ _KEY_MIN, _KEY_MAX = 2, 10
 _TITLE_MIN, _TITLE_MAX = 2, 60
 _DESC_MAX = 255
 _AVAILABILITY_DEBOUNCE = 0.3
+
+
+@dataclass(frozen=True)
+class _ProjectFormValues:
+    key: str
+    title: str
+    description: str
 
 
 class CreateProjectModal(TissueModal[str | None]):
@@ -124,7 +133,11 @@ class CreateProjectModal(TissueModal[str | None]):
     def on_mount(self) -> None:
         self.query_one("#project_create_key", Input).focus()
 
+    def on_unmount(self) -> None:
+        self._stop_key_check_timer()
+
     def action_close(self) -> None:
+        self._stop_key_check_timer()
         self.dismiss(None)
 
     @on(Input.Changed)
@@ -161,13 +174,16 @@ class CreateProjectModal(TissueModal[str | None]):
         self._restart_key_check(schedule=format_ok)
 
     def _restart_key_check(self, *, schedule: bool) -> None:
-        if self._key_check_timer is not None:
-            self._key_check_timer.stop()
-            self._key_check_timer = None
+        self._stop_key_check_timer()
         if schedule:
             self._key_check_timer = self.set_timer(
                 _AVAILABILITY_DEBOUNCE, self._do_check_key
             )
+
+    def _stop_key_check_timer(self) -> None:
+        if self._key_check_timer is not None:
+            self._key_check_timer.stop()
+            self._key_check_timer = None
 
     @work(exclusive=True, group="check_project_key")
     async def _do_check_key(self) -> None:
@@ -224,38 +240,8 @@ class CreateProjectModal(TissueModal[str | None]):
     def _on_submit(self) -> None:
         if self._submitting:
             return
-        key = self.query_one("#project_create_key", Input).value.strip()
-        title = self.query_one("#project_create_title", Input).value.strip()
-        description = self.query_one("#project_create_desc", TextArea).text.strip()
-
-        is_valid = True
-        if not key:
-            self._set_status("project_create_key", "Required field", "error")
-            is_valid = False
-        elif not (_KEY_MIN <= len(key) <= _KEY_MAX and re.fullmatch(_KEY_REGEX, key)):
-            self._set_status(
-                "project_create_key",
-                "2-10 uppercase letters, optional digits (e.g. DEMO)",
-                "error",
-            )
-            is_valid = False
-
-        if not title:
-            self._set_status("project_create_title", "Required field", "error")
-            is_valid = False
-        elif not (_TITLE_MIN <= len(title) <= _TITLE_MAX):
-            self._set_status(
-                "project_create_title",
-                "2-60 characters",
-                "error",
-            )
-            is_valid = False
-
-        if len(description) > _DESC_MAX:
-            self._set_status("project_create_desc", "Up to 255 characters", "error")
-            is_valid = False
-
-        if not is_valid:
+        values = self._read_form_values()
+        if not self._validate_form(values):
             return
 
         # The debounce already confirmed this key is unusable.
@@ -265,7 +251,50 @@ class CreateProjectModal(TissueModal[str | None]):
 
         self._submitting = True
         self.query_one("#project_create_submit_btn", Button).disabled = True
-        self._do_create(key=key, title=title, description=description or None)
+        self._do_create(
+            key=values.key,
+            title=values.title,
+            description=values.description or None,
+        )
+
+    def _read_form_values(self) -> _ProjectFormValues:
+        return _ProjectFormValues(
+            key=self.query_one("#project_create_key", Input).value.strip(),
+            title=self.query_one("#project_create_title", Input).value.strip(),
+            description=self.query_one("#project_create_desc", TextArea).text.strip(),
+        )
+
+    def _validate_form(self, values: _ProjectFormValues) -> bool:
+        valid = True
+        if not values.key:
+            self._set_status("project_create_key", "Required field", "error")
+            valid = False
+        elif not (
+            _KEY_MIN <= len(values.key) <= _KEY_MAX
+            and re.fullmatch(_KEY_REGEX, values.key)
+        ):
+            self._set_status(
+                "project_create_key",
+                "2-10 uppercase letters, optional digits (e.g. DEMO)",
+                "error",
+            )
+            valid = False
+
+        if not values.title:
+            self._set_status("project_create_title", "Required field", "error")
+            valid = False
+        elif not (_TITLE_MIN <= len(values.title) <= _TITLE_MAX):
+            self._set_status(
+                "project_create_title",
+                "2-60 characters",
+                "error",
+            )
+            valid = False
+
+        if len(values.description) > _DESC_MAX:
+            self._set_status("project_create_desc", "Up to 255 characters", "error")
+            valid = False
+        return valid
 
     @work(exclusive=True, group="create_project")
     async def _do_create(
@@ -323,19 +352,9 @@ class CreateProjectModal(TissueModal[str | None]):
     def _render_status(
         self, input_id: str, value: str, result: ValidationResult | None
     ) -> None:
-        if not value or result is None or result.is_valid:
-            self._set_status(input_id)
-            return
-        failure_descriptions = result.failure_descriptions
-        self._set_status(
-            input_id, failure_descriptions[0] if failure_descriptions else "", "error"
-        )
+        render_validation_status(self, input_id, value, result)
 
     def _set_status(
         self, input_id: str, message: str = "", kind: str | None = None
     ) -> None:
-        label = self.query_one(f"#{input_id}_status", Label)
-        label.remove_class("-error", "-waiting", "-success")
-        label.update(message if kind is not None else "")
-        if kind is not None:
-            label.add_class(f"-{kind}")
+        set_field_status(self, input_id, message, kind)

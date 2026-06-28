@@ -10,7 +10,7 @@ from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.widgets.issue_render import _RELATION_ROWS, relation_rows
+from tissue.widgets.issue_refs import _RELATION_ROWS, relation_rows
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -35,7 +35,9 @@ class RelationsMixin(ProjectHomeBase):
             )
         ]
         widgets.extend(
-            relation_rows(self._detail_relations, remove_button=self._rel_remove_button)
+            relation_rows(
+                self._relation_state.relations, remove_button=self._rel_remove_button
+            )
         )
         return widgets
 
@@ -45,7 +47,7 @@ class RelationsMixin(ProjectHomeBase):
         )
 
     def _related_keys(self) -> set[str]:
-        relations = self._detail_relations
+        relations = self._relation_state.relations
         if relations is None:
             return set()
         keys: set[str] = set()
@@ -58,7 +60,7 @@ class RelationsMixin(ProjectHomeBase):
     @on(Button.Pressed, "#hub-rel-add")
     def _on_rel_add(self, event: Button.Pressed) -> None:
         event.stop()
-        if self._relations_busy:
+        if self._relation_state.busy:
             return
         self.run_worker(self._open_relation_modal(), exclusive=True, group="hub-rel")
 
@@ -66,10 +68,10 @@ class RelationsMixin(ProjectHomeBase):
     def _on_rel_remove(self, event: Button.Pressed) -> None:
         event.stop()
         target_key = event.button.name
-        issue_key = self._detail_issue_key
-        if self._relations_busy or not target_key or issue_key is None:
+        issue_key = self._detail_state.issue_key
+        if self._relation_state.busy or not target_key or issue_key is None:
             return
-        self._relations_busy = True
+        self._relation_state.busy = True
         self.run_worker(
             self._remove_relation(issue_key, target_key),
             exclusive=True,
@@ -106,25 +108,29 @@ class RelationsMixin(ProjectHomeBase):
             RelationAddModal,
         )
 
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         if issue_key is None:
             return
         candidates = await self._relation_candidates(issue_key)
-        if self._detail_issue_key != issue_key:
+        if self._detail_state.issue_key != issue_key:
             return
-        self._rel_picker_issue = issue_key
+        self._relation_state.picker_issue_key = issue_key
         self.app.push_screen(
             RelationAddModal(candidates=candidates), self._on_relation_picked
         )
 
     def _on_relation_picked(self, result: tuple[str, str] | None) -> None:
-        issue_key = self._rel_picker_issue
-        if result is None or issue_key is None or self._detail_issue_key != issue_key:
+        issue_key = self._relation_state.picker_issue_key
+        if (
+            result is None
+            or issue_key is None
+            or self._detail_state.issue_key != issue_key
+        ):
             return
-        if self._relations_busy:
+        if self._relation_state.busy:
             return
         relation_type, target_key = result
-        self._relations_busy = True
+        self._relation_state.busy = True
         self.run_worker(
             self._add_relation(issue_key, target_key, relation_type),
             exclusive=True,
@@ -145,13 +151,13 @@ class RelationsMixin(ProjectHomeBase):
             log.debug(
                 "Hub: failed to add relation %s->%s: %s", issue_key, target_key, error
             )
-            if self._detail_issue_key == issue_key:
+            if self._detail_state.issue_key == issue_key:
                 self.app.notify(
                     getattr(error, "detail", None) or "Couldn't add relation.",
                     severity="error",
                 )
         finally:
-            self._relations_busy = False
+            self._relation_state.busy = False
         self._refresh_detail(issue_key)
 
     async def _remove_relation(self, issue_key: str, target_key: str) -> None:
@@ -169,11 +175,11 @@ class RelationsMixin(ProjectHomeBase):
                 target_key,
                 error,
             )
-            if self._detail_issue_key == issue_key:
+            if self._detail_state.issue_key == issue_key:
                 self.app.notify(
                     getattr(error, "detail", None) or "Couldn't remove relation.",
                     severity="error",
                 )
         finally:
-            self._relations_busy = False
+            self._relation_state.busy = False
         self._refresh_detail(issue_key)

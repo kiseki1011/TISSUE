@@ -118,44 +118,47 @@ class MembersMixin(ProjectHomeBase):
         if client is None:
             return
         try:
-            self._members = await client.project_members.list_project_members(
-                self._project_key
+            self._member_list.members = (
+                await client.project_members.list_project_members(self._project_key)
             )
         except TissueApiError as error:
             log.debug("Hub: failed to load members: %s", error)
         self._update_create_button()
 
     async def _ensure_members_loaded(self) -> None:
-        if not self._members:
+        if not self._member_list.members:
             await self._load_members()
 
     async def _load_members_list(self, keyword: str | None = None) -> None:
         await self._load_members()
         await self._render_members_list(keyword)
-        if self._displayed_members:
+        if self._member_list.displayed:
             self._select_member(0)
 
     async def _render_members_list(self, keyword: str | None = None) -> None:
-        box = self.query_one("#hub-list-host")
-        await box.remove_children()
+        panel = self._issue_list_panel()
+        if panel is None:
+            return
         members = self._filtered_members(keyword)
-        self._displayed_members = members
+        self._member_list.displayed = members
         if not members:
-            await box.mount(
-                Static(self._empty_member_text(keyword), classes="hub-list-empty")
+            await panel.replace_content(
+                [Static(self._empty_member_text(keyword), classes="hub-list-empty")]
             )
             return
-        await box.mount(
-            _DashTable(
-                [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
-                self._member_rows(members),
-                id="hub-members-table",
-                classes="hub-table",
-            )
+        await panel.replace_content(
+            [
+                _DashTable(
+                    [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
+                    self._member_rows(members),
+                    id="hub-members-table",
+                    classes="hub-table",
+                )
+            ]
         )
 
     def _filtered_members(self, keyword: str | None) -> list[ProjectMemberSummary]:
-        members = self._members
+        members = self._member_list.members
         if keyword:
             keyword_folded = keyword.casefold()
             members = [
@@ -164,10 +167,10 @@ class MembersMixin(ProjectHomeBase):
                 if keyword_folded in (member.display_name or "").casefold()
                 or keyword_folded in (member.username or "").casefold()
             ]
-        return [member for member in members if self._member_filter.matches(member)]
+        return [member for member in members if self._filters.member.matches(member)]
 
     def _empty_member_text(self, keyword: str | None) -> str:
-        has_filter = bool(keyword) or self._member_filter != DEFAULT_MEMBER_FILTER
+        has_filter = bool(keyword) or self._filters.member != DEFAULT_MEMBER_FILTER
         return "No matching members." if has_filter else "No members."
 
     def _member_rows(
@@ -193,10 +196,10 @@ class MembersMixin(ProjectHomeBase):
         self._select_member(event.cursor_row, focus_detail=True)
 
     def _select_member(self, row_index: int, *, focus_detail: bool = False) -> None:
-        if not (0 <= row_index < len(self._displayed_members)):
+        if not (0 <= row_index < len(self._member_list.displayed)):
             return
-        member = self._displayed_members[row_index]
-        if focus_detail and self._expanded:
+        member = self._member_list.displayed[row_index]
+        if focus_detail and self._ui.expanded:
             self._open_member_modal(member)
             return
         self._debounce_detail(
@@ -211,7 +214,7 @@ class MembersMixin(ProjectHomeBase):
     async def _render_member_detail(
         self, member: ProjectMemberSummary, *, focus_detail: bool
     ) -> None:
-        self._detail_issue_key = None
+        self._detail_state.issue_key = None
         self.add_class("-no-timeline")
         widgets = member_read_view(
             member, title_class="hub-detail-title", spacer_class="hub-detail-spacer"
@@ -245,7 +248,7 @@ class MembersMixin(ProjectHomeBase):
         await self._mount_detail(widgets)
         await self._clear_timeline()
         if focus_detail:
-            self.query_one("#hub-detail-main").focus()
+            self._focus_detail_body()
 
     def _open_member_modal(self, member: ProjectMemberSummary) -> None:
         from tissue.screens.project_home.modals.member_detail_modal import (

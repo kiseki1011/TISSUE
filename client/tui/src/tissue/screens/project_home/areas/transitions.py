@@ -49,7 +49,7 @@ class TransitionsMixin(ProjectHomeBase):
         )
 
     def _on_transition_picked(self, transition_id: int | None) -> None:
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         if transition_id is None or issue_key is None:
             return
         self.run_worker(

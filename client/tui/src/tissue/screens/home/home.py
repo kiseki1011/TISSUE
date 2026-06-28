@@ -4,8 +4,8 @@ import logging
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Horizontal, Vertical
-from textual.widgets import Button, Input
+from textual.containers import Grid, Vertical
+from textual.widgets import Input
 from textual_autocomplete import AutoComplete
 
 from tissue.api.errors import TissueApiError
@@ -16,6 +16,12 @@ from tissue.screens.home.areas.projects import ProjectsMixin
 from tissue.screens.home.areas.search import SearchMixin
 from tissue.screens.home.constants import (
     _SEARCH_SIZE,
+)
+from tissue.screens.home.panels import (
+    DashboardSearchBar,
+    MyWorkPanel,
+    ProjectsPanel,
+    SearchResultsPanel,
 )
 
 log = logging.getLogger(__name__)
@@ -46,14 +52,14 @@ class HomeScreen(
     # - j/k (and the arrows) move rows inside the focused table
     # - c/p create a project / toggle pin while the [3] Projects box is focused
     BINDINGS = [
-        Binding("1", "focus_box('dash-searched')", show=False),
-        Binding("2", "focus_box('dash-mywork')", show=False),
-        Binding("3", "focus_box('dash-projects-box')", show=False),
+        Binding("1", f"focus_box('{SearchResultsPanel.BOX_ID}')", show=False),
+        Binding("2", f"focus_box('{MyWorkPanel.BOX_ID}')", show=False),
+        Binding("3", f"focus_box('{ProjectsPanel.BOX_ID}')", show=False),
         # ctrl+digit jumps too, but also works while the search input has focus,
         # where a plain digit is typed into the input instead of reaching us.
-        Binding("ctrl+1", "focus_box('dash-searched')", show=False),
-        Binding("ctrl+2", "focus_box('dash-mywork')", show=False),
-        Binding("ctrl+3", "focus_box('dash-projects-box')", show=False),
+        Binding("ctrl+1", f"focus_box('{SearchResultsPanel.BOX_ID}')", show=False),
+        Binding("ctrl+2", f"focus_box('{MyWorkPanel.BOX_ID}')", show=False),
+        Binding("ctrl+3", f"focus_box('{ProjectsPanel.BOX_ID}')", show=False),
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
@@ -73,9 +79,9 @@ class HomeScreen(
     ]
 
     _BOX_IDS = (
-        "dash-searched",
-        "dash-mywork",
-        "dash-projects-box",
+        SearchResultsPanel.BOX_ID,
+        MyWorkPanel.BOX_ID,
+        ProjectsPanel.BOX_ID,
     )
 
     def top_bar_breadcrumb(self) -> str:
@@ -88,21 +94,13 @@ class HomeScreen(
                 id="dashboard-search",
             )
             search.border_title = "Search"
-            yield Horizontal(
-                search,
-                Button("⚙", id="dashboard-filter", classes="search-filter-btn"),
-                id="dashboard-search-row",
-            )
+            yield DashboardSearchBar(search)
             yield AutoComplete(search, candidates=self._search_candidates)
             with Grid(id="dashboard-grid"):
-                yield self._box(
-                    "[1] Searched Items", "dash-searched", self._searched_widgets()
-                )
+                yield SearchResultsPanel(self._searched_widgets())
                 yield self._detail_box()
-                yield self._box("[2] My Work", "dash-mywork", self._mywork_widgets())
-                yield self._box(
-                    "[3] Projects", "dash-projects-box", self._projects_widgets()
-                )
+                yield MyWorkPanel(self._mywork_widgets())
+                yield ProjectsPanel(self._projects_widgets())
 
     def on_mount(self) -> None:
         self._apply_initial_breakpoints()
@@ -110,14 +108,11 @@ class HomeScreen(
 
     async def refresh_data(self) -> None:
         self._cancel_search_timer()
-        self._search_gen += 1  # invalidate any in-flight search
+        self._search.invalidate()
         # A full refresh recomposes and clears the search input, so clear the
         # results too. Otherwise the Searched Items box would keep stale
         # (highlighted) results while the input reads empty.
-        self._search_results = None
-        self._search_type = None
-        self._search_keyword = ""
-        self._searched_table_kind = None
+        self._search.clear_results()
         await self._load_dashboard()
 
     async def _load_dashboard(self) -> None:
@@ -127,10 +122,10 @@ class HomeScreen(
         await self._fetch_projects()
         try:
             mywork_page = await client.issues.my_work(size=_SEARCH_SIZE)
-            self._my_work = list(mywork_page.content or [])
+            self._my_work.items = list(mywork_page.content or [])
         except TissueApiError as error:
             log.debug("Dashboard: failed to load my work: %s", error)
-            self._my_work = []
+            self._my_work.items = []
         # Workflow state colors for the issue tables' Status chips. Skipped on failure.
         await self._load_state_colors()
         self.refresh(recompose=True)

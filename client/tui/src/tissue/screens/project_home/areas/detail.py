@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.containers import Horizontal
-from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Markdown, Rule, Static
 
@@ -14,24 +12,24 @@ from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
-from tissue.widgets.issue_render import (
+from tissue.widgets.issue_chips import (
     color_chip as _color_chip,
 )
-from tissue.widgets.issue_render import (
+from tissue.widgets.issue_chips import (
+    priority_chip as _priority_chip,
+)
+from tissue.widgets.issue_chips import (
+    type_chip as _type_chip,
+)
+from tissue.widgets.issue_chips import (
+    type_text as _type_text,
+)
+from tissue.widgets.issue_fields import (
     custom_field_section,
     progress_block,
 )
-from tissue.widgets.issue_render import (
+from tissue.widgets.issue_fields import (
     member_name as _member_name,
-)
-from tissue.widgets.issue_render import (
-    priority_chip as _priority_chip,
-)
-from tissue.widgets.issue_render import (
-    type_chip as _type_chip,
-)
-from tissue.widgets.issue_render import (
-    type_text as _type_text,
 )
 from tissue.widgets.text_button import TextButton
 
@@ -85,7 +83,7 @@ class DetailMixin(ProjectHomeBase):
         if not self._start_issue_detail(issue_key):
             return
 
-        cached = None if force else self._detail_cache.get(issue_key)
+        cached = None if force else self._detail_state.cache.get(issue_key)
         if cached is not None:
             await self._show_cached_detail(issue_key, cached, focus_detail=focus_detail)
             return
@@ -96,14 +94,14 @@ class DetailMixin(ProjectHomeBase):
         view = await self._load_detail_view(issue_key)
         if view is None:
             return
-        self._detail_cache[issue_key] = view
+        self._detail_state.cache[issue_key] = view
         await self._apply_detail_view(view, focus_detail=focus_detail)
 
     def _start_issue_detail(self, issue_key: str) -> bool:
         if self.app.client is None:
             return False
         self.remove_class("-no-timeline")
-        self._detail_issue_key = issue_key
+        self._detail_state.issue_key = issue_key
         self.run_worker(
             self._load_activity(issue_key), exclusive=True, group="hub-activity"
         )
@@ -132,7 +130,7 @@ class DetailMixin(ProjectHomeBase):
             return await client.issues.get_issue_detail(issue_key)
         except TissueApiError as error:
             log.debug("Hub: failed to load issue %s: %s", issue_key, error)
-            if self._detail_issue_key == issue_key:
+            if self._detail_state.issue_key == issue_key:
                 await self._mount_detail(
                     [Static("Couldn't load issue.", classes="hub-muted")]
                 )
@@ -143,14 +141,14 @@ class DetailMixin(ProjectHomeBase):
         if client is None:
             return
         for issue_key in issue_keys:
-            if issue_key in self._detail_cache:
+            if issue_key in self._detail_state.cache:
                 continue
             try:
                 view = await client.issues.get_issue_detail(issue_key)
             except TissueApiError as error:
                 log.debug("Hub: failed to prefetch issue %s: %s", issue_key, error)
                 continue
-            self._detail_cache[issue_key] = view
+            self._detail_state.cache[issue_key] = view
 
     async def _revalidate_detail(self, issue_key: str) -> None:
         client = self.app.client
@@ -161,13 +159,13 @@ class DetailMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to refresh issue %s: %s", issue_key, error)
             return
-        if fresh == self._detail_cache.get(issue_key):
+        if fresh == self._detail_state.cache.get(issue_key):
             return
-        self._detail_cache[issue_key] = fresh
+        self._detail_state.cache[issue_key] = fresh
         await self._apply_detail_view(fresh, focus_detail=False)
 
     def _summary_for(self, issue_key: str) -> IssueSummary | None:
-        for summary in (*self._issues, *self._agent_issues):
+        for summary in (*self._issue_list.issues, *self._agent_work.issues):
             if summary.issue_key == issue_key:
                 return summary
         return None
@@ -175,7 +173,7 @@ class DetailMixin(ProjectHomeBase):
     def _skeleton_widgets(self, summary: IssueSummary) -> list[Widget]:
         member_names = {
             member.member_id: (member.display_name or member.username or "-")
-            for member in self._members
+            for member in self._member_list.members
             if member.member_id is not None
         }
         return [
@@ -246,14 +244,14 @@ class DetailMixin(ProjectHomeBase):
         )
         await self._mount_detail(widgets)
         if focus_detail:
-            self.query_one("#hub-detail-main").focus()
+            self._focus_detail_body()
 
     async def _load_detail_dependencies(self) -> None:
         await self._ensure_issue_type_hierarchy()
         await self._ensure_sprint_index()
 
     def _is_current_detail(self, issue: IssueCommonDetail) -> bool:
-        return self._detail_issue_key == issue.issue_key
+        return self._detail_state.issue_key == issue.issue_key
 
     def _build_transition_target_labels(
         self, transitions: list[AvailableTransition]
@@ -289,25 +287,25 @@ class DetailMixin(ProjectHomeBase):
         children: list[IssueIdentifierResponse],
         view: IssueDetailView,
     ) -> None:
-        self._detail_assigned = issue.assignee is not None
+        self._detail_state.assigned = issue.assignee is not None
         self._transitions_by_id = {
             transition.transition_id: transition
             for transition in transitions
             if transition.transition_id is not None
         }
-        self._detail_custom_fields = {
+        self._detail_state.custom_fields = {
             custom_field.field_id: custom_field
             for custom_field in custom_fields
             if custom_field.field_id is not None
         }
-        self._detail_field_options = options_by_field
-        self._detail_hierarchy = (
-            self._issue_type_hierarchy.get(issue.issue_type.id)
+        self._detail_state.field_options = options_by_field
+        self._hierarchy_state.hierarchy = (
+            self._hierarchy_state.issue_type_hierarchy.get(issue.issue_type.id)
             if issue.issue_type and issue.issue_type.id is not None
             else None
         )
-        self._detail_children = children
-        self._detail_relations = view.relations
+        self._hierarchy_state.children = children
+        self._relation_state.relations = view.relations
 
     def _safe_issue_widgets(
         self,
@@ -354,7 +352,7 @@ class DetailMixin(ProjectHomeBase):
         state = detail.current_state
         issue_type = detail.issue_type
         current_state_label = (state.display_name if state else None) or "-"
-        self._edit_current = {
+        self._detail_state.edit_current = {
             "title": detail.title or "",
             "priority": detail.priority or "",
             "dueAt": detail.due_at.isoformat() if detail.due_at else "",
@@ -430,7 +428,7 @@ class DetailMixin(ProjectHomeBase):
 
     def _current_sprint_row(self, issue_key: str | None) -> Widget:
         summary = self._summary_for(issue_key) if issue_key else None
-        index = self._sprints_by_id or {}
+        index = self._sprint_state.by_id or {}
         current = (
             index.get(summary.sprint_id)
             if summary is not None and summary.sprint_id is not None
@@ -448,21 +446,12 @@ class DetailMixin(ProjectHomeBase):
         return detail_row("Current Sprint", name, action=add_button)
 
     async def _mount_detail(self, widgets: list[Widget]) -> None:
-        try:
-            inner = self.query_one("#hub-detail-main-inner")
-        except NoMatches:
-            return
-
-        async def swap() -> None:
-            async with self._detail_mount_lock:
-                with self.app.batch_update():
-                    await inner.remove_children()
-                    await inner.mount(*widgets)
-
-        await asyncio.shield(swap())
+        panel = self._detail_panel()
+        if panel is not None:
+            await panel.replace_body(widgets)
 
     async def _reset_detail_pane(self) -> None:
-        self._detail_issue_key = None
+        self._detail_state.issue_key = None
         self.remove_class("-no-timeline")
         await self._mount_detail(
             [Static("Select an issue to see details.", classes="hub-muted")]
@@ -470,4 +459,9 @@ class DetailMixin(ProjectHomeBase):
         await self._clear_timeline()
 
     def action_focus_detail(self) -> None:
-        self.query_one("#hub-detail-main").focus()
+        self._focus_detail_body()
+
+    def _focus_detail_body(self) -> None:
+        panel = self._detail_panel()
+        if panel is not None:
+            panel.focus_body()

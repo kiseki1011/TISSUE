@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 
 from textual.css.query import NoMatches
-from textual.widgets import DataTable, Input
+from textual.widgets import Input
 
 from tissue.screens.home._base import HomeScreenBase
+from tissue.screens.home.panels import MyWorkPanel, ProjectsPanel, SearchResultsPanel
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class NavigationMixin(HomeScreenBase):
         if focused is None or focused.id == "dashboard-search":
             # _focus_box previews the highlighted row's detail, so the first
             # project shows at once instead of waiting for a cursor move.
-            self._focus_box("dash-projects-box")
+            self._focus_box(ProjectsPanel.BOX_ID)
 
     def action_focus_search(self) -> None:
         try:
@@ -54,29 +55,23 @@ class NavigationMixin(HomeScreenBase):
         self._focus_box(order[(order.index(current) + step) % len(order)])
 
     def _focus_box(self, box_id: str) -> None:
-        try:
-            box = self.query_one(f"#{box_id}")
-        except NoMatches:
+        box = self._dashboard_box(box_id)
+        if box is None:
             return
-        table = next(iter(box.query(DataTable)), None)
-        if table is not None:
-            box.can_focus = False  # not a focus stop while it holds a table
-            table.focus()
+        row = box.focus_table_or_box()
+        if row is not None:
             # Focusing alone doesn't move the cursor, so RowHighlighted won't fire.
             # Drive the already-highlighted row's detail so it shows immediately on
             # every box switch, not only after a cursor move or Enter.
-            self._preview_focused_row(box_id, table.cursor_row)
-        else:  # focus the container for the highlight
-            box.can_focus = True
-            box.focus()
+            self._preview_focused_row(box_id, row)
 
     def _preview_focused_row(self, box_id: str, row: int) -> None:
         """Render the detail for the focused box's highlighted row."""
-        if box_id == "dash-projects-box":
+        if box_id == ProjectsPanel.BOX_ID:
             self._select_project(row)
-        elif box_id == "dash-mywork":
+        elif box_id == MyWorkPanel.BOX_ID:
             self._select_mywork(row)
-        elif box_id == "dash-searched":
+        elif box_id == SearchResultsPanel.BOX_ID:
             self._select_searched(row)
 
     def _current_box_id(self) -> str | None:

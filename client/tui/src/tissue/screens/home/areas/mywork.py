@@ -8,6 +8,7 @@ from textual.widget import Widget
 from textual.widgets import DataTable, Static
 
 from tissue.screens.home._base import HomeScreenBase
+from tissue.screens.home.panels import MyWorkPanel
 from tissue.screens.home.rendering import (
     _issue_dash_columns,
     _issue_dash_row,
@@ -26,41 +27,43 @@ class MyWorkMixin(HomeScreenBase):
     """
 
     def _mywork_widgets(self) -> list[Widget]:
-        if self._my_work is None:
+        my_work = self._my_work.items
+        if my_work is None:
             return [Static("Loading…", classes="dashboard-muted")]
-        if not self._my_work:
+        if not my_work:
             return [Static("Nothing assigned to you.", classes="dashboard-muted")]
         rows: list[list[str | Text]] = [
             _issue_dash_row(
                 issue,
-                self._state_colors,
+                self._workflows.state_colors,
                 self.app.theme_variables,
                 Text(_truncate(issue.title or "-", 13)),
             )
-            for issue in self._my_work
+            for issue in my_work
         ]
         return [
             _DashTable(
                 _issue_dash_columns(),
                 rows,
-                id="dash-mywork-table",
+                id=MyWorkPanel.TABLE_ID,
                 classes="dashboard-table",
             )
         ]
 
-    @on(DataTable.RowHighlighted, "#dash-mywork-table")
+    @on(DataTable.RowHighlighted, f"#{MyWorkPanel.TABLE_ID}")
     def _on_mywork_highlighted(self, event: DataTable.RowHighlighted) -> None:
         if event.data_table.has_focus:
             self._select_mywork(event.cursor_row)
 
-    @on(DataTable.RowSelected, "#dash-mywork-table")
+    @on(DataTable.RowSelected, f"#{MyWorkPanel.TABLE_ID}")
     def _on_mywork_selected(self, event: DataTable.RowSelected) -> None:
         self._select_mywork(event.cursor_row)
 
     def _select_mywork(self, index: int) -> None:
-        if not (self._my_work and 0 <= index < len(self._my_work)):
+        my_work = self._my_work.items
+        if not (my_work and 0 <= index < len(my_work)):
             return
-        issue_key = self._my_work[index].issue_key
+        issue_key = my_work[index].issue_key
         if issue_key is None:
             return
         self.run_worker(

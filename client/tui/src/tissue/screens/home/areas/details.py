@@ -3,14 +3,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from textual.containers import Vertical, VerticalScroll
-from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.project_summary import ProjectSummary
 from tissue.screens.home._base import HomeScreenBase
+from tissue.screens.home.panels import DashboardDetailPanel
 from tissue.screens.home.rendering import (
     _key_detail_row,
     _visibility_label,
@@ -18,7 +17,7 @@ from tissue.screens.home.rendering import (
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.color_type import color_hex
 from tissue.widgets.detail_row import detail_row
-from tissue.widgets.issue_render import issue_read_view
+from tissue.widgets.issue_read import issue_read_view
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.custom_field_value_info import (
@@ -40,20 +39,8 @@ class DetailsMixin(HomeScreenBase):
         - activity timeline
     """
 
-    def _box(self, title: str, box_id: str, children: list[Widget]) -> Vertical:
-        box = Vertical(*children, id=box_id, classes="dashboard-box panel")
-        box.border_title = title
-        return box
-
-    def _detail_box(self) -> VerticalScroll:
-        inner = Vertical(
-            Static("Select an item to see details.", classes="dashboard-muted"),
-            id="dashboard-detail-inner",
-        )
-        box = VerticalScroll(inner, id="dashboard-detail", classes="dashboard-box")
-        box.border_title = "Details"
-        box.can_focus = False
-        return box
+    def _detail_box(self) -> DashboardDetailPanel:
+        return DashboardDetailPanel()
 
     def _render_project_detail(
         self, project: ProjectSummary, *, show_open_hint: bool = False
@@ -193,7 +180,7 @@ class DetailsMixin(HomeScreenBase):
             workflow_id = summary.id
             if workflow_id is None:
                 continue
-            workflow = self._workflow_cache.get(workflow_id)
+            workflow = self._workflows.workflow_cache.get(workflow_id)
             if workflow is None:
                 try:
                     workflow = await client.workflows.get_workflow(workflow_id)
@@ -204,21 +191,15 @@ class DetailsMixin(HomeScreenBase):
                         error,
                     )
                     continue
-                self._workflow_cache[workflow_id] = workflow
+                self._workflows.workflow_cache[workflow_id] = workflow
             for state in workflow.states or []:
                 if state.id is not None and state.color:
                     hex_color = color_hex(state.color)
                     if hex_color:
                         colors[state.id] = hex_color
-        self._state_colors = colors
+        self._workflows.state_colors = colors
 
     def _mount_detail(self, widgets: list[Widget]) -> None:
-        try:
-            inner = self.query_one("#dashboard-detail-inner")
-        except NoMatches:
-            return
-        # Batch the clear and remount so the pane repaints once, not as an empty
-        # frame then a full one, which flickers when switching the selection.
-        with self.app.batch_update():
-            inner.remove_children()
-            inner.mount(*widgets)
+        panel = self._detail_panel()
+        if panel is not None:
+            panel.replace_content(widgets)

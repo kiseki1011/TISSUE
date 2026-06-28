@@ -7,9 +7,6 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.activity_log_response import ActivityLogResponse
 
 
-# VIBE-CODED
-# model: "claude-opus-4-8"
-# evaluation: NOT_REVIEWED
 class ActivityService:
     """Per-resource activity log reads."""
 
@@ -19,10 +16,7 @@ class ActivityService:
     async def list_issue_activities(
         self, issue_key: str, *, limit: int = 30
     ) -> list[ActivityLogResponse]:
-        """The most recent activity entries for an issue (newest first).
-
-        Only the first cursor page is fetched, enough for a recency timeline.
-        """
+        """Recent issue activity entries."""
         result = await self._client._call_with_retry(
             self._client.activity_log_api.list_issue_activities,
             issue_key,

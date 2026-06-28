@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual import on
-from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import DataTable, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.home._base import HomeScreenBase
+from tissue.screens.home.panels import ProjectsPanel
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.project_summary import ProjectSummary
@@ -32,9 +32,10 @@ class ProjectsMixin(HomeScreenBase):
     """[2] Projects box that loads, sorts, pins, creates, and opens projects."""
 
     def _projects_widgets(self) -> list[Widget]:
-        if self._projects is None:
+        projects = self._projects.items
+        if projects is None:
             return [Static("Loading…", classes="dashboard-muted")]
-        if not self._projects:
+        if not projects:
             return [
                 Static(
                     "No projects yet — press c to create.",
@@ -42,7 +43,7 @@ class ProjectsMixin(HomeScreenBase):
                 )
             ]
         rows: list[list[str | Text]] = []
-        for project in self._projects:
+        for project in projects:
             marker = "📌 " if self._is_pinned(project.key) else ""
             cells = [
                 _fit(project.key or "-", _PROJECT_KEY_WIDTH),
@@ -63,23 +64,23 @@ class ProjectsMixin(HomeScreenBase):
                     ("Created", 10),
                 ],
                 rows,
-                id="dash-projects",
+                id=ProjectsPanel.TABLE_ID,
                 classes="dashboard-table",
             )
         ]
 
     async def _fetch_projects(self) -> None:
-        """Load [2] Projects including archived into `_projects`, pinned first."""
+        """Load [2] Projects including archived, pinned first."""
         client = self.app.client
         if client is None:
             return
         try:
             page = await client.projects.list_projects(size=100, include_archived=True)
-            self._projects = list(page.content or [])
+            self._projects.items = list(page.content or [])
             self._sort_projects()
         except TissueApiError as error:
             log.debug("Dashboard: failed to load projects: %s", error)
-            self._projects = []
+            self._projects.items = []
 
     async def _render_projects(self, *, focus_key: str | None = None) -> None:
         """Re-render only the [2] Projects box after a pin toggle or create.
@@ -91,35 +92,31 @@ class ProjectsMixin(HomeScreenBase):
         and drive the detail preview ourselves to keep it on the acted-on
         project.
         """
-        try:
-            box = self.query_one("#dash-projects-box")
-        except NoMatches:
+        box = self._dashboard_box(ProjectsPanel.BOX_ID)
+        if box is None:
             return
-        # The table has a fixed id, so mounting a new one before the old is gone
-        # raises DuplicateIds.
-        await box.remove_children()
-        await box.mount(*self._projects_widgets())
+        await box.replace_content(self._projects_widgets())
         self.call_after_refresh(self._after_projects_render, focus_key)
 
     def _after_projects_render(self, focus_key: str | None) -> None:
-        self._focus_box("dash-projects-box")
-        try:
-            table = self.query_one("#dash-projects", DataTable)
-        except NoMatches:
+        self._focus_box(ProjectsPanel.BOX_ID)
+        box = self._dashboard_box(ProjectsPanel.BOX_ID)
+        if box is None:
             return
-        if not self._projects or not table.row_count:
+        projects = self._projects.items
+        if not projects or not box.table_row_count(ProjectsPanel.TABLE_ID):
             return
         row = 0
         if focus_key is not None:
             row = next(
                 (
                     index
-                    for index, project in enumerate(self._projects)
+                    for index, project in enumerate(projects)
                     if project.key == focus_key
                 ),
                 0,
             )
-            table.move_cursor(row=row, animate=False)
+            box.move_table_cursor(ProjectsPanel.TABLE_ID, row)
         self._select_project(row)
 
     def _pinned_keys(self) -> set[str]:
@@ -131,31 +128,34 @@ class ProjectsMixin(HomeScreenBase):
 
     def _sort_projects(self) -> None:
         """Float pinned projects to the top, preserving server order otherwise."""
-        if not self._projects:
+        projects = self._projects.items
+        if not projects:
             return
         pinned = self._pinned_keys()
-        self._projects.sort(key=lambda project: (project.key or "") not in pinned)
+        projects.sort(key=lambda project: (project.key or "") not in pinned)
 
-    @on(DataTable.RowHighlighted, "#dash-projects")
+    @on(DataTable.RowHighlighted, f"#{ProjectsPanel.TABLE_ID}")
     def _on_project_highlighted(self, event: DataTable.RowHighlighted) -> None:
         if event.data_table.has_focus:
             self._select_project(event.cursor_row)
 
-    @on(DataTable.RowSelected, "#dash-projects")
+    @on(DataTable.RowSelected, f"#{ProjectsPanel.TABLE_ID}")
     def _on_project_selected(self, event: DataTable.RowSelected) -> None:
         self._open_project(event.cursor_row)
 
     def _select_project(self, index: int) -> None:
-        if self._projects and 0 <= index < len(self._projects):
+        projects = self._projects.items
+        if projects and 0 <= index < len(projects):
             # Drop a pending issue-detail render (from My Work / search) so a slow
             # one can't land on top of this project's detail after a box switch.
             self.workers.cancel_group(self, "dash-detail")
-            self._render_project_detail(self._projects[index], show_open_hint=True)
+            self._render_project_detail(projects[index], show_open_hint=True)
 
     def _open_project(self, index: int) -> None:
-        if not self._projects or not (0 <= index < len(self._projects)):
+        projects = self._projects.items
+        if not projects or not (0 <= index < len(projects)):
             return
-        project = self._projects[index]
+        project = projects[index]
         if not project.key:
             return
         # Ensure membership off the UI thread, joining a PUBLIC project the user
@@ -215,7 +215,7 @@ class ProjectsMixin(HomeScreenBase):
         return True
 
     def _projects_box_focused(self) -> bool:
-        return self._current_box_id() == "dash-projects-box"
+        return self._current_box_id() == ProjectsPanel.BOX_ID
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         """Show `c` / `p` in the footer only while the [2] Projects box is focused."""
@@ -243,16 +243,18 @@ class ProjectsMixin(HomeScreenBase):
         await self._render_projects()
 
     def action_toggle_pin(self) -> None:
-        if not self._projects_box_focused() or not self._projects:
+        projects = self._projects.items
+        if not self._projects_box_focused() or not projects:
             return
-        try:
-            table = self.query_one("#dash-projects", DataTable)
-        except NoMatches:
+        box = self._dashboard_box(ProjectsPanel.BOX_ID)
+        if box is None:
             return
-        index = table.cursor_row
-        if not (0 <= index < len(self._projects)):
+        index = box.table_cursor_row(ProjectsPanel.TABLE_ID)
+        if index is None:
             return
-        key = self._projects[index].key
+        if not (0 <= index < len(projects)):
+            return
+        key = projects[index].key
         if not key:
             return
         server = self.app.config.state.current_server_url or ""

@@ -52,7 +52,7 @@ class CommentsMixin(ProjectHomeBase):
     def on_key(self, event: events.Key) -> None:
         if (
             event.key == "escape"
-            and self._reply_to is not None
+            and self._comment_state.reply_to is not None
             and self.app.focused is not None
             and self.app.focused.id == "hub-comment-input"
         ):
@@ -69,15 +69,17 @@ class CommentsMixin(ProjectHomeBase):
             Vertical(*loaded, id="hub-comments", classes="hub-comments"),
             Vertical(
                 Horizontal(comment_input, classes="hub-comment-form"),
-                MentionAutoComplete(comment_input, members=lambda: self._members),
+                MentionAutoComplete(
+                    comment_input, members=lambda: self._member_list.members
+                ),
                 id="hub-comment-compose",
             ),
         ]
 
     def _reset_comment_compose_state(self) -> None:
-        self._reply_to = None
-        self._reply_targets = {}
-        self._comment_gen += 1
+        self._comment_state.reply_to = None
+        self._comment_state.reply_targets = {}
+        self._comment_state.generation += 1
 
     def _loaded_comment_widgets(
         self, comments: list[CommentDetailResponse]
@@ -132,7 +134,7 @@ class CommentsMixin(ProjectHomeBase):
         if is_root and comment_id is not None:
             body.id = f"hub-comment-body-{comment_id}"
             if not comment.is_deleted:
-                self._reply_targets[comment_id] = author
+                self._comment_state.reply_targets[comment_id] = author
                 reply = TextButton(
                     "↳",
                     id=f"{_REPLY_PREFIX}{comment_id}",
@@ -163,8 +165,8 @@ class CommentsMixin(ProjectHomeBase):
         self._cancel_reply(refocus=True)
 
     def _begin_reply(self, comment_id: int) -> None:
-        self._reply_to = comment_id
-        author = self._reply_targets.get(comment_id, "?")
+        self._comment_state.reply_to = comment_id
+        author = self._comment_state.reply_targets.get(comment_id, "?")
         label = Text.assemble(("Replying to ", ""), (f"@{author}", "bold"))
         try:
             self.query_one("#hub-reply-target", Static).update(label)
@@ -188,7 +190,7 @@ class CommentsMixin(ProjectHomeBase):
             pass
 
     def _cancel_reply(self, *, refocus: bool = False) -> None:
-        self._reply_to = None
+        self._comment_state.reply_to = None
         for banner in self.query("#hub-reply-banner"):
             banner.remove()
         if refocus:
@@ -204,7 +206,7 @@ class CommentsMixin(ProjectHomeBase):
     def _extract_mentions(self, text: str) -> list[str]:
         by_username = {
             member.username.casefold(): member.username
-            for member in self._members
+            for member in self._member_list.members
             if member.username
         }
         seen: list[str] = []
@@ -217,7 +219,7 @@ class CommentsMixin(ProjectHomeBase):
         return seen
 
     def _submit_comment(self, text: str) -> None:
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         text = text.strip()
         if issue_key is None or not text:
             return
@@ -231,8 +233,8 @@ class CommentsMixin(ProjectHomeBase):
         return CommentDraft(
             issue_key=issue_key,
             text=text,
-            parent_id=self._reply_to,
-            comment_gen=self._comment_gen,
+            parent_id=self._comment_state.reply_to,
+            comment_gen=self._comment_state.generation,
             mentions=self._extract_mentions(text),
         )
 
@@ -249,11 +251,11 @@ class CommentsMixin(ProjectHomeBase):
             )
         except TissueApiError as error:
             log.debug("Hub: failed to add comment to %s: %s", draft.issue_key, error)
-            if self._detail_issue_key == draft.issue_key:
+            if self._detail_state.issue_key == draft.issue_key:
                 self.app.notify("Failed to add comment.", severity="error")
             return
-        self._detail_cache.pop(draft.issue_key, None)
-        if self._detail_issue_key != draft.issue_key:
+        self._detail_state.cache.pop(draft.issue_key, None)
+        if self._detail_state.issue_key != draft.issue_key:
             return
         await self._append_posted_comment(response, draft)
         self._reset_comment_input(draft)
@@ -261,7 +263,7 @@ class CommentsMixin(ProjectHomeBase):
     async def _append_posted_comment(
         self, response: CommentCreateResponse, draft: CommentDraft
     ) -> None:
-        if self._comment_gen != draft.comment_gen:
+        if self._comment_state.generation != draft.comment_gen:
             return
         if draft.parent_id is not None:
             await self._append_reply(response, draft.text, draft.parent_id)
@@ -269,7 +271,7 @@ class CommentsMixin(ProjectHomeBase):
             await self._append_comment(response, draft.text)
 
     def _reset_comment_input(self, draft: CommentDraft) -> None:
-        if self._reply_to == draft.parent_id:
+        if self._comment_state.reply_to == draft.parent_id:
             try:
                 self.query_one("#hub-comment-input", Input).value = ""
             except NoMatches:

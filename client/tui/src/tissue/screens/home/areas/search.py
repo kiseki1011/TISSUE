@@ -5,7 +5,6 @@ from typing import cast
 
 from rich.text import Text
 from textual import on
-from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import DataTable, Input, Static
 from textual_autocomplete import DropdownItem, TargetState
@@ -21,12 +20,12 @@ from tissue.screens.home.constants import (
     _SEARCH_PREFIXES,
     _SEARCH_SIZE,
 )
+from tissue.screens.home.panels import SearchResultsPanel
 from tissue.screens.home.rendering import (
     _fit,
     _issue_dash_columns,
     _issue_dash_row,
     _parse_search,
-    _refill_table,
     _truncate,
     _visibility_label,
 )
@@ -50,9 +49,9 @@ class SearchMixin(HomeScreenBase):
         return [DropdownItem(prefix) for prefix in _SEARCH_PREFIXES]
 
     def _cancel_search_timer(self) -> None:
-        if self._search_timer is not None:
-            self._search_timer.stop()
-            self._search_timer = None
+        if self._search.timer is not None:
+            self._search.timer.stop()
+            self._search.timer = None
 
     def on_unmount(self) -> None:
         # Don't let a pending debounce fire on a screen that's going away.
@@ -68,7 +67,7 @@ class SearchMixin(HomeScreenBase):
             self._reset_search()
             return
         kind, keyword = parsed
-        self._search_timer = self.set_timer(
+        self._search.timer = self.set_timer(
             _SEARCH_DEBOUNCE,
             lambda: self.run_worker(
                 self._run_search(kind, keyword),
@@ -104,19 +103,16 @@ class SearchMixin(HomeScreenBase):
         # so it can't render results for a query the user has already backspaced
         # away. _run_search re-checks the counter after its await and drops the
         # stale result.
-        self._search_gen += 1
-        if self._search_type is None and self._search_results is None:
+        self._search.invalidate()
+        if self._search.kind is None and self._search.results is None:
             # Nothing on screen to clear, so skip the re-render and avoid
             # rebuilding the box on every keystroke while typing the prefix.
             return
-        self._search_results = None
-        self._search_type = None
-        self._search_keyword = ""
+        self._search.clear_results()
         self.run_worker(self._render_searched(), exclusive=True, group="dash-search")
 
     async def _run_search(self, kind: str, keyword: str) -> None:
-        self._search_gen += 1
-        gen = self._search_gen
+        generation = self._search.invalidate()
         client = self.app.client
         if client is None:
             return
@@ -136,11 +132,11 @@ class SearchMixin(HomeScreenBase):
             log.debug("Dashboard search (%s) failed: %s", kind, error)
             self.app.notify("Search failed. Please try again.", severity="error")
             return
-        if gen != self._search_gen:  # replaced by a newer search or a reset
+        if generation != self._search.generation:
             return
-        self._search_results = results
-        self._search_type = kind
-        self._search_keyword = keyword
+        self._search.results = results
+        self._search.kind = kind
+        self._search.keyword = keyword
         await self._render_searched()
 
     def _searched_table_data(
@@ -150,13 +146,14 @@ class SearchMixin(HomeScreenBase):
 
         Returns None when a placeholder Static should be shown instead, either
         not yet searched or no results. Columns depend only on the search kind,
-        so two calls with the same `_search_type` always return the same column
+        so two calls with the same search kind always return the same column
         spec.
         """
-        if not self._search_results:  # None (not searched) or empty (no matches)
+        results = self._search.results
+        if not results:  # None (not searched) or empty (no matches)
             return None
-        if self._search_type == "project":
-            projects = cast("list[ProjectSummary]", self._search_results)
+        if self._search.kind == "project":
+            projects = cast("list[ProjectSummary]", results)
             columns: list[tuple[str, int | None]] = [
                 ("Key", _PROJECT_KEY_WIDTH),
                 ("Title", None),
@@ -174,12 +171,12 @@ class SearchMixin(HomeScreenBase):
             ]
             return columns, rows
         # issue
-        issues = cast("list[IssueSummary]", self._search_results)
+        issues = cast("list[IssueSummary]", results)
         columns = _issue_dash_columns()
         rows = [
             _issue_dash_row(
                 issue,
-                self._state_colors,
+                self._workflows.state_colors,
                 self.app.theme_variables,
                 self._highlight_title(issue.title or "-", 13),
             )
@@ -188,7 +185,7 @@ class SearchMixin(HomeScreenBase):
         return columns, rows
 
     def _searched_widgets(self) -> list[Widget]:
-        if self._search_results is None:
+        if self._search.results is None:
             return [Static("Search above (ctrl+/)", classes="dashboard-muted")]
         data = self._searched_table_data()
         if data is None:  # searched, but no matches
@@ -196,50 +193,49 @@ class SearchMixin(HomeScreenBase):
         columns, rows = data
         return [
             _DashTable(
-                columns, rows, id="dash-searched-table", classes="dashboard-table"
+                columns,
+                rows,
+                id=SearchResultsPanel.TABLE_ID,
+                classes="dashboard-table",
             )
         ]
 
     async def _render_searched(self) -> None:
-        try:
-            box = self.query_one("#dash-searched")
-        except NoMatches:
+        box = self._dashboard_box(SearchResultsPanel.BOX_ID)
+        if box is None:
             return
         data = self._searched_table_data()
         # When the search kind is unchanged and a table is already mounted, only
         # the rows differ. Refill them in place, since remounting the table would
         # flicker the column header on every keystroke.
-        if data is not None and self._search_type == self._searched_table_kind:
-            try:
-                table = box.query_one("#dash-searched-table", DataTable)
-            except NoMatches:
-                table = None
-            if table is not None:
-                _refill_table(table, data[1])
-                return
-        # Otherwise swap the whole box. The table has a fixed id, so the old one
-        # must be gone before the new one mounts, else DuplicateIds.
-        await box.remove_children()
-        await box.mount(*self._searched_widgets())
-        self._searched_table_kind = self._search_type if data is not None else None
+        if (
+            data is not None
+            and self._search.kind == self._search.mounted_table_kind
+            and box.refill_table(SearchResultsPanel.TABLE_ID, data[1])
+        ):
+            return
+        await box.replace_content(self._searched_widgets())
+        self._search.mounted_table_kind = (
+            self._search.kind if data is not None else None
+        )
 
-    @on(DataTable.RowHighlighted, "#dash-searched-table")
+    @on(DataTable.RowHighlighted, f"#{SearchResultsPanel.TABLE_ID}")
     def _on_searched_highlighted(self, event: DataTable.RowHighlighted) -> None:
         if event.data_table.has_focus:
             self._select_searched(event.cursor_row)
 
-    @on(DataTable.RowSelected, "#dash-searched-table")
+    @on(DataTable.RowSelected, f"#{SearchResultsPanel.TABLE_ID}")
     def _on_searched_selected(self, event: DataTable.RowSelected) -> None:
         self._select_searched(event.cursor_row)
 
     def _select_searched(self, idx: int) -> None:
-        results = self._search_results
+        results = self._search.results
         if not results or not (0 <= idx < len(results)):
             return
         item = results[idx]
-        if self._search_type == "project":
+        if self._search.kind == "project":
             self._render_project_detail(cast("ProjectSummary", item))
-        elif self._search_type == "issue":
+        elif self._search.kind == "issue":
             issue_key = cast("IssueSummary", item).issue_key
             if issue_key is not None:
                 self.run_worker(
@@ -256,7 +252,7 @@ class SearchMixin(HomeScreenBase):
         keyword the text is returned plain.
         """
         truncated = _truncate(title, limit)
-        keyword = self._search_keyword
+        keyword = self._search.keyword
         text = Text()
         if not keyword:
             text.append(truncated)

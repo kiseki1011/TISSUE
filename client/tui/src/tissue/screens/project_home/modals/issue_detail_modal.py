@@ -12,7 +12,7 @@ from textual.widgets import Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import ScrollableModal
 from tissue.widgets.issue_link import IssueLink
-from tissue.widgets.issue_render import issue_read_view
+from tissue.widgets.issue_read import issue_read_view
 
 if TYPE_CHECKING:
     from textual.widget import Widget

@@ -20,15 +20,17 @@ class AssignMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-assignee-edit")
     def _on_assignee_pressed(self) -> None:
-        if self._detail_issue_key is None:
+        if self._detail_state.issue_key is None:
             return
         self.app.push_screen(
-            MemberPickerModal(self._members, assigned=self._detail_assigned),
+            MemberPickerModal(
+                self._member_list.members, assigned=self._detail_state.assigned
+            ),
             self._on_member_picked,
         )
 
     def _on_member_picked(self, result: int | None) -> None:
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         if result is None or issue_key is None:
             return
         worker = (

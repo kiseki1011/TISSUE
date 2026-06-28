@@ -1,20 +1,27 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
+from textual.css.query import NoMatches
+
 from tissue.screens.base import RefreshableScreen
-from tissue.screens.project_home.issue_filter import (
-    DEFAULT_ISSUE_FILTER,
-    IssueFilter,
+from tissue.screens.project_home.panels import (
+    AgentWorkPanel,
+    IssueDetailPanel,
+    IssueListPanel,
 )
-from tissue.screens.project_home.member_filter import (
-    DEFAULT_MEMBER_FILTER,
-    MemberFilter,
-)
-from tissue.screens.project_home.sprint_filter import (
-    DEFAULT_SPRINT_FILTER,
-    SprintFilter,
+from tissue.screens.project_home.state import (
+    AgentWorkState,
+    IssueCommentState,
+    IssueDetailState,
+    IssueHierarchyState,
+    IssueListState,
+    IssueRelationState,
+    IssueReviewState,
+    ProjectHomeFilters,
+    ProjectHomeUiState,
+    ProjectMemberListState,
+    SprintState,
 )
 
 if TYPE_CHECKING:
@@ -27,21 +34,9 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.comment_detail_response import (
         CommentDetailResponse,
     )
-    from tissue.api.generated.models.custom_field_value_info import (
-        CustomFieldValueInfo,
-    )
-    from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
-    from tissue.api.generated.models.issue_detail_view import IssueDetailView
     from tissue.api.generated.models.issue_identifier_response import (
         IssueIdentifierResponse,
-    )
-    from tissue.api.generated.models.issue_relations_detail import (
-        IssueRelationsDetail,
-    )
-    from tissue.api.generated.models.issue_summary import IssueSummary
-    from tissue.api.generated.models.project_member_summary import (
-        ProjectMemberSummary,
     )
     from tissue.api.generated.models.sprint_summary import SprintSummary
     from tissue.api.generated.models.workflow_detail import WorkflowDetail
@@ -69,64 +64,29 @@ class ProjectHomeBase(RefreshableScreen):
         self._init_rendering_state()
 
     def _init_list_state(self) -> None:
-        self._issues: list[IssueSummary] = []
-        self._filter: IssueFilter = DEFAULT_ISSUE_FILTER
-        self._sprint_filter: SprintFilter = DEFAULT_SPRINT_FILTER
-        self._member_filter: MemberFilter = DEFAULT_MEMBER_FILTER
-        self._issues_keyword: str | None = None
-        self._issues_total = 0
-        self._issues_page = 0
-        self._issues_has_next = False
-        self._issues_loading_more = False
-        self._members: list[ProjectMemberSummary] = []
-        self._displayed_members: list[ProjectMemberSummary] = []
-        self._agent_issues: list[IssueSummary] = []
-        self._agent_names: dict[int, str] = {}
-        self._agent_mode = "work"
-        self._collapsed_box: str | None = None
-        self._expanded = False
-        self._view_mode = "issues"
+        self._filters = ProjectHomeFilters()
+        self._issue_list = IssueListState()
+        self._member_list = ProjectMemberListState()
+        self._agent_work = AgentWorkState()
+        self._ui = ProjectHomeUiState()
 
     def _init_sprint_state(self) -> None:
-        self._sprints: list[SprintSummary] = []
-        self._sprint_detail_id: int | None = None
-        self._sprint_detail_issues: list[IssueSummary] = []
-        self._sprint_detail_status: str | None = None
-        self._sprint_edit_current: dict[str, str] = {}
-        self._sprints_by_id: dict[int, SprintSummary] | None = None
+        self._sprint_state = SprintState()
 
     def _init_detail_state(self) -> None:
-        self._detail_issue_key: str | None = None
-        self._detail_cache: dict[str, IssueDetailView] = {}
-        self._detail_mount_lock = asyncio.Lock()
-        self._detail_assigned = False
-        self._edit_current: dict[str, str] = {}
-        self._detail_custom_fields: dict[int, CustomFieldValueInfo] = {}
-        self._detail_field_options: dict[int, list[FieldOptionDetail]] = {}
+        self._detail_state = IssueDetailState()
 
     def _init_review_state(self) -> None:
-        self._detail_reviewer_ids: list[int] = []
-        self._detail_assignee_id: int | None = None
-        self._reviewer_busy = False
-        self._reviewer_picker_issue: str | None = None
-        self._reviewer_picker_baseline: list[int] = []
+        self._review_state = IssueReviewState()
 
     def _init_hierarchy_state(self) -> None:
-        self._detail_hierarchy: str | None = None
-        self._detail_children: list[IssueIdentifierResponse] = []
-        self._issue_type_hierarchy: dict[int, str] = {}
-        self._hierarchy_busy = False
-        self._hier_picker_issue: str | None = None
+        self._hierarchy_state = IssueHierarchyState()
 
     def _init_relation_state(self) -> None:
-        self._detail_relations: IssueRelationsDetail | None = None
-        self._relations_busy = False
-        self._rel_picker_issue: str | None = None
+        self._relation_state = IssueRelationState()
 
     def _init_comment_state(self) -> None:
-        self._reply_to: int | None = None
-        self._reply_targets: dict[int, str] = {}
-        self._comment_gen: int = 0
+        self._comment_state = IssueCommentState()
 
     def _init_timer_state(self) -> None:
         self._detail_timer: Timer | None = None
@@ -138,6 +98,24 @@ class ProjectHomeBase(RefreshableScreen):
         self._transition_current_label = "-"
         self._transition_target_labels: dict[int, str] = {}
         self._state_colors: dict[int, str] = {}
+
+    def _detail_panel(self) -> IssueDetailPanel | None:
+        try:
+            return self.query_one(IssueDetailPanel)
+        except NoMatches:
+            return None
+
+    def _issue_list_panel(self) -> IssueListPanel | None:
+        try:
+            return self.query_one(IssueListPanel)
+        except NoMatches:
+            return None
+
+    def _agent_work_panel(self) -> AgentWorkPanel | None:
+        try:
+            return self.query_one(AgentWorkPanel)
+        except NoMatches:
+            return None
 
     if TYPE_CHECKING:
 
@@ -153,6 +131,7 @@ class ProjectHomeBase(RefreshableScreen):
         def _restore_project_ui(self) -> None: ...
         def _persist_project_ui(self) -> None: ...
         def _open_issue_modal(self, issue_key: str) -> None: ...
+        def _select_issue(self, index: int, *, focus_detail: bool = False) -> None: ...
         def _debounce_detail(
             self, render: Callable[[], object], *, immediate: bool
         ) -> None: ...
@@ -181,6 +160,7 @@ class ProjectHomeBase(RefreshableScreen):
         def _run_view_load(self, mode: str, *, focus_list: bool = False) -> None: ...
         def action_focus_issues(self) -> None: ...
         def action_focus_detail(self) -> None: ...
+        def _focus_detail_body(self) -> None: ...
         async def _render_issue_detail(
             self, issue_key: str, *, focus_detail: bool, force: bool = False
         ) -> None: ...

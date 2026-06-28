@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual.widgets import Label
+from tissue.screens.form_helpers import set_field_status as set_field_status
 
 if TYPE_CHECKING:
-    from textual.dom import DOMNode
-
     from tissue.api.errors import TissueApiError
     from tissue.app import TissueApp
 
@@ -25,14 +23,3 @@ def failure_reason(
     if error.title in ("INVALID_PASSWORD", "PASSWORD_MISMATCH"):
         return password_message
     return error.detail or error.title or str(error)
-
-
-def set_field_status(
-    modal: DOMNode, input_id: str, message: str = "", kind: str | None = None
-) -> None:
-    """Update the `#{input_id}_status` label that sits under a form field."""
-    label = modal.query_one(f"#{input_id}_status", Label)
-    label.remove_class("-error", "-waiting", "-success")
-    label.update(message if kind is not None else "")
-    if kind is not None:
-        label.add_class(f"-{kind}")

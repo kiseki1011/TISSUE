@@ -11,10 +11,10 @@ from tissue.screens.project_home.constants import (
     _SPRINT_STATUS_VAR,
 )
 from tissue.util.datetime_fmt import format_date
-from tissue.widgets.issue_render import color_chip as _color_chip
-from tissue.widgets.issue_render import priority_chip as _priority_chip
-from tissue.widgets.issue_render import review_status_chip as _review_status_chip
-from tissue.widgets.issue_render import type_chip as _type_chip
+from tissue.widgets.issue_chips import color_chip as _color_chip
+from tissue.widgets.issue_chips import priority_chip as _priority_chip
+from tissue.widgets.issue_chips import review_status_chip as _review_status_chip
+from tissue.widgets.issue_chips import type_chip as _type_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.activity_log_response import ActivityLogResponse

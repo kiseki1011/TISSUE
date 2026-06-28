@@ -11,7 +11,7 @@ from textual.widgets import Button, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.widgets.issue_link import IssueLink
-from tissue.widgets.issue_render import issue_ref_row
+from tissue.widgets.issue_refs import issue_ref_row
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class HierarchyMixin(ProjectHomeBase):
         parent: IssueIdentifierResponse | None,
         children: list[IssueIdentifierResponse],
     ) -> list[Widget]:
-        level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
+        level = _LEVEL_BY_HIERARCHY.get(self._hierarchy_state.hierarchy or "")
         known = level is not None
         can_have_parent = known and (level - 1) in _HIERARCHY_BY_LEVEL
         can_have_children = known and (level + 1) in _HIERARCHY_BY_LEVEL
@@ -97,24 +97,24 @@ class HierarchyMixin(ProjectHomeBase):
     @on(Button.Pressed, "#hub-hier-parent-add")
     def _on_parent_add(self, event: Button.Pressed) -> None:
         event.stop()
-        if self._hierarchy_busy:
+        if self._hierarchy_state.busy:
             return
         self.run_worker(self._open_parent_picker(), exclusive=True, group="hub-hier")
 
     @on(Button.Pressed, "#hub-hier-child-add")
     def _on_child_add(self, event: Button.Pressed) -> None:
         event.stop()
-        if self._hierarchy_busy:
+        if self._hierarchy_state.busy:
             return
         self.run_worker(self._open_children_picker(), exclusive=True, group="hub-hier")
 
     @on(Button.Pressed, "#hub-hier-parent-rm")
     def _on_parent_remove(self, event: Button.Pressed) -> None:
         event.stop()
-        issue_key = self._detail_issue_key
-        if self._hierarchy_busy or issue_key is None:
+        issue_key = self._detail_state.issue_key
+        if self._hierarchy_state.busy or issue_key is None:
             return
-        self._hierarchy_busy = True
+        self._hierarchy_state.busy = True
         self.run_worker(
             self._detach_hierarchy(issue_key, issue_key),
             exclusive=True,
@@ -125,10 +125,10 @@ class HierarchyMixin(ProjectHomeBase):
     def _on_child_remove(self, event: Button.Pressed) -> None:
         event.stop()
         child_key = event.button.name
-        issue_key = self._detail_issue_key
-        if self._hierarchy_busy or not child_key or issue_key is None:
+        issue_key = self._detail_state.issue_key
+        if self._hierarchy_state.busy or not child_key or issue_key is None:
             return
-        self._hierarchy_busy = True
+        self._hierarchy_state.busy = True
         self.run_worker(
             self._detach_hierarchy(child_key, issue_key),
             exclusive=True,
@@ -136,7 +136,7 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     async def _ensure_issue_type_hierarchy(self) -> None:
-        if self._issue_type_hierarchy:
+        if self._hierarchy_state.issue_type_hierarchy:
             return
         client = self.app.client
         if client is None:
@@ -146,7 +146,7 @@ class HierarchyMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to load issue type catalog: %s", error)
             return
-        self._issue_type_hierarchy = {
+        self._hierarchy_state.issue_type_hierarchy = {
             issue_type.id: issue_type.hierarchy
             for issue_type in types
             if issue_type.id is not None and issue_type.hierarchy
@@ -172,7 +172,10 @@ class HierarchyMixin(ProjectHomeBase):
                 continue
             if summary.issue_type_id is None:
                 continue
-            if self._issue_type_hierarchy.get(summary.issue_type_id) != hierarchy:
+            if (
+                self._hierarchy_state.issue_type_hierarchy.get(summary.issue_type_id)
+                != hierarchy
+            ):
                 continue
             candidates.append(
                 (
@@ -187,7 +190,7 @@ class HierarchyMixin(ProjectHomeBase):
         return issue_key + (f"  {title}" if title else "")
 
     async def _open_parent_picker(self) -> None:
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         if issue_key is None:
             return
         parent_hier = self._relative_hierarchy(-1)
@@ -197,9 +200,9 @@ class HierarchyMixin(ProjectHomeBase):
             )
             return
         candidates = await self._candidates(parent_hier, exclude={issue_key})
-        if self._detail_issue_key != issue_key:
+        if self._detail_state.issue_key != issue_key:
             return
-        self._hier_picker_issue = issue_key
+        self._hierarchy_state.picker_issue_key = issue_key
         self._push_hierarchy_picker(
             candidates=candidates,
             multi=False,
@@ -209,7 +212,7 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     async def _open_children_picker(self) -> None:
-        issue_key = self._detail_issue_key
+        issue_key = self._detail_state.issue_key
         if issue_key is None:
             return
         child_hier = self._relative_hierarchy(1)
@@ -220,9 +223,9 @@ class HierarchyMixin(ProjectHomeBase):
             )
             return
         candidates = await self._candidates(child_hier, exclude={issue_key})
-        if self._detail_issue_key != issue_key:
+        if self._detail_state.issue_key != issue_key:
             return
-        self._hier_picker_issue = issue_key
+        self._hierarchy_state.picker_issue_key = issue_key
         self._push_hierarchy_picker(
             candidates=self._without_existing_children(candidates),
             multi=True,
@@ -232,14 +235,16 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     def _relative_hierarchy(self, offset: int) -> str | None:
-        level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
+        level = _LEVEL_BY_HIERARCHY.get(self._hierarchy_state.hierarchy or "")
         return _HIERARCHY_BY_LEVEL.get((level or 0) + offset)
 
     def _without_existing_children(
         self, candidates: list[tuple[str, str]]
     ) -> list[tuple[str, str]]:
         existing = {
-            child.issue_key for child in self._detail_children if child.issue_key
+            child.issue_key
+            for child in self._hierarchy_state.children
+            if child.issue_key
         }
         return [(label, key) for label, key in candidates if key not in existing]
 
@@ -268,16 +273,16 @@ class HierarchyMixin(ProjectHomeBase):
 
     def _on_parent_picked(self, picked: list[str] | None) -> None:
         parent_key = picked[0] if picked else None
-        issue_key = self._hier_picker_issue
+        issue_key = self._hierarchy_state.picker_issue_key
         if (
             parent_key is None
             or issue_key is None
-            or self._detail_issue_key != issue_key
+            or self._detail_state.issue_key != issue_key
         ):
             return
-        if self._hierarchy_busy:
+        if self._hierarchy_state.busy:
             return
-        self._hierarchy_busy = True
+        self._hierarchy_state.busy = True
         self.run_worker(
             self._assign_parent(issue_key, parent_key),
             exclusive=True,
@@ -285,12 +290,12 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     def _on_children_picked(self, picked: list[str] | None) -> None:
-        issue_key = self._hier_picker_issue
-        if not picked or issue_key is None or self._detail_issue_key != issue_key:
+        issue_key = self._hierarchy_state.picker_issue_key
+        if not picked or issue_key is None or self._detail_state.issue_key != issue_key:
             return
-        if self._hierarchy_busy:
+        if self._hierarchy_state.busy:
             return
-        self._hierarchy_busy = True
+        self._hierarchy_state.busy = True
         self.run_worker(
             self._apply_add_children(issue_key, picked),
             exclusive=True,
@@ -304,13 +309,13 @@ class HierarchyMixin(ProjectHomeBase):
                 await client.issues.assign_parent(issue_key, parent_key)
         except TissueApiError as error:
             log.debug("Hub: failed to set parent of %s: %s", issue_key, error)
-            if self._detail_issue_key == issue_key:
+            if self._detail_state.issue_key == issue_key:
                 self.app.notify(
                     getattr(error, "detail", None) or "Couldn't set parent.",
                     severity="error",
                 )
         finally:
-            self._hierarchy_busy = False
+            self._hierarchy_state.busy = False
         self._refresh_detail(issue_key)
 
     async def _apply_add_children(self, issue_key: str, child_keys: list[str]) -> None:
@@ -321,20 +326,20 @@ class HierarchyMixin(ProjectHomeBase):
                     self._project_key, issue_key, child_keys
                 )
                 failed = result.fail_count or 0
-                if failed and self._detail_issue_key == issue_key:
+                if failed and self._detail_state.issue_key == issue_key:
                     self.app.notify(
                         f"{failed} of {len(child_keys)} couldn't be attached.",
                         severity="error",
                     )
         except TissueApiError as error:
             log.debug("Hub: failed to add children to %s: %s", issue_key, error)
-            if self._detail_issue_key == issue_key:
+            if self._detail_state.issue_key == issue_key:
                 self.app.notify(
                     getattr(error, "detail", None) or "Couldn't add children.",
                     severity="error",
                 )
         finally:
-            self._hierarchy_busy = False
+            self._hierarchy_state.busy = False
         self._refresh_detail(issue_key)
 
     async def _detach_hierarchy(self, target_key: str, refresh_key: str) -> None:
@@ -344,12 +349,12 @@ class HierarchyMixin(ProjectHomeBase):
                 await client.issues.remove_parent(target_key)
         except TissueApiError as error:
             log.debug("Hub: failed to detach %s: %s", target_key, error)
-            if self._detail_issue_key == refresh_key:
+            if self._detail_state.issue_key == refresh_key:
                 self.app.notify(
                     getattr(error, "detail", None)
                     or "Couldn't detach — this issue type requires a parent.",
                     severity="error",
                 )
         finally:
-            self._hierarchy_busy = False
+            self._hierarchy_state.busy = False
         self._refresh_detail(refresh_key)

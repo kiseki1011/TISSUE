@@ -11,7 +11,19 @@ from textual.widgets import Button, Input, Select, Static, TextArea
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import TissueModal
-from tissue.widgets.custom_field_input import UNSET, CustomFieldInput
+from tissue.screens.project_home.modals.create_issue_form import (
+    DEFAULT_PRIORITY,
+    PRIORITIES,
+    CreateIssueFormValues,
+    collect_custom_fields,
+    custom_field_inputs,
+    hierarchy_of,
+    member_choices,
+    parent_candidate_labels,
+    parent_hierarchy_of,
+    parent_required,
+)
+from tissue.widgets.custom_field_input import CustomFieldInput
 from tissue.widgets.datetime_pickers import DueDateTimePicker
 
 if TYPE_CHECKING:
@@ -26,27 +38,9 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-_PRIORITIES = ["P0", "P1", "P2", "P3", "P4"]
-# Major is the most common default, matching IssueFieldEditModal's priority default.
-_DEFAULT_PRIORITY = "P2"
-
-# Matches the backend hierarchy ladder, a parent sits one level above its child
-# and SUBTASK/MICROTASK can't be made on their own.
-_LEVEL_BY_HIERARCHY = {"EPIC": 1, "STANDARD": 2, "SUBTASK": 3, "MICROTASK": 4}
-_HIERARCHY_BY_LEVEL = {1: "EPIC", 2: "STANDARD", 3: "SUBTASK", 4: "MICROTASK"}
-_PARENT_REQUIRED_HIERARCHIES = {"SUBTASK", "MICROTASK"}
-
-
-def _cap(text: str) -> str:
-    """Uppercase the first letter, since the server stores labels lowercase."""
-    return text[:1].upper() + text[1:]
-
 
 class CreateIssueModal(TissueModal[str | None]):
-    """Create an issue in one scrollable form.
-
-    Closes with the new issue's key on success, or None on cancel.
-    """
+    """Create an issue in one scrollable form."""
 
     CSS_PATH = "create_issue_modal.tcss"
 
@@ -59,12 +53,7 @@ class CreateIssueModal(TissueModal[str | None]):
         self._project_key = project_key
         self._members = members
         self._issue_types: list[IssueTypeSummary] = []
-        # The type whose custom fields are on screen. Create is blocked until this
-        # matches the selection, so _collect never reads fields that are still
-        # loading or left over from another type.
         self._loaded_type_id: int | None = None
-        # Blocks a second submit while a create request is in flight. We can't take
-        # that request back, so a second issue would be created.
         self._submitting = False
         self._parent_key: str | None = None
         self._parent_label_by_key: dict[str, str] = {}
@@ -94,8 +83,8 @@ class CreateIssueModal(TissueModal[str | None]):
                     with Horizontal(id="cim-pa-row"):
                         yield self._titled(
                             Select(
-                                [(priority, priority) for priority in _PRIORITIES],
-                                value=_DEFAULT_PRIORITY,
+                                [(priority, priority) for priority in PRIORITIES],
+                                value=DEFAULT_PRIORITY,
                                 allow_blank=False,
                                 id="cim-priority",
                             ),
@@ -137,20 +126,11 @@ class CreateIssueModal(TissueModal[str | None]):
 
     @staticmethod
     def _titled(widget: Widget, title: str) -> Widget:
-        """Use the control's border title as its label, so it looks like a
-        labeled box."""
         widget.border_title = title
         return widget
 
     def _member_choices(self) -> list[tuple[str, int]]:
-        choices: list[tuple[str, int]] = []
-        for member in self._members:
-            if member.member_id is None:
-                continue
-            name = member.display_name or member.username or "-"
-            handle = f" (@{member.username})" if member.username else ""
-            choices.append((f"{name}{handle}", member.member_id))
-        return choices
+        return member_choices(self._members)
 
     def on_mount(self) -> None:
         dialog = self.query_one("#cim-dialog", Container)
@@ -180,8 +160,6 @@ class CreateIssueModal(TissueModal[str | None]):
 
     @on(Select.Changed, "#cim-type")
     def _on_type_changed(self, event: Select.Changed) -> None:
-        """Select values are type ids. A blank/NULL choice is the NoSelection special
-        value, which the isinstance check filters out."""
         value = event.value
         type_id = value if isinstance(value, int) else None
         self._apply_story_point_gate(type_id)
@@ -200,29 +178,14 @@ class CreateIssueModal(TissueModal[str | None]):
             detail = await client.issues.get_issue_type(type_id)
         except TissueApiError as error:
             log.debug("Create: failed to load issue type %s: %s", type_id, error)
-            # Mark the load done so the create guard doesn't wait forever on a
-            # type whose fetch failed. The server still checks required fields.
             if self._selected_type_id() == type_id:
                 self._error("Could not load this type's custom fields.")
                 self._loaded_type_id = type_id
             return
-        # Choice may have changed again during wait
         if self._selected_type_id() != type_id:
             return
-        fields = sorted(detail.fields or [], key=lambda field: field.position or 0)
-        inputs = [
-            CustomFieldInput(
-                field_id=field.id,
-                label=_cap(field.name or "Field"),
-                ftype=field.type or "TEXT",
-                required=bool(field.required),
-                options=list(field.options or []),
-            )
-            for field in fields
-            if field.id is not None
-        ]
+        inputs = custom_field_inputs(list(detail.fields or []))
         host = self.query_one("#cim-custom-fields", Vertical)
-        # Clear and re-add in one redraw to avoid flicker, same as the detail panes.
         with self.app.batch_update():
             await host.remove_children()
             if inputs:
@@ -234,36 +197,12 @@ class CreateIssueModal(TissueModal[str | None]):
         return value if isinstance(value, int) else None
 
     def _hierarchy_of(self, type_id: int | None) -> str | None:
-        if type_id is None:
-            return None
-        return next(
-            (
-                issue_type.hierarchy
-                for issue_type in self._issue_types
-                if issue_type.id == type_id
-            ),
-            None,
-        )
+        return hierarchy_of(self._issue_types, type_id)
 
     def _parent_hierarchy_of(self, type_id: int | None) -> str | None:
-        """The hierarchy a parent of this type must have, one level up.
-
-        `None` when the type can't have a parent (EPIC) or isn't known yet.
-        """
-        level = _LEVEL_BY_HIERARCHY.get(self._hierarchy_of(type_id) or "")
-        return _HIERARCHY_BY_LEVEL.get((level or 0) - 1)
+        return parent_hierarchy_of(self._issue_types, type_id)
 
     def _apply_parent_gate(self, type_id: int | None) -> None:
-        """Show and label the parent picker based on the chosen type's hierarchy.
-
-        Hierarchy:
-            - EPIC and no choice, hidden
-            - SUBTASK/MICROTASK, starred since a parent is required
-            - STANDARD, optional parent
-
-        Any earlier pick is cleared, since the valid parent level changes with
-        the type.
-        """
         self._parent_key = None
         self._parent_label_by_key = {}
         parent_button = self.query_one("#cim-parent-btn", Button)
@@ -272,8 +211,9 @@ class CreateIssueModal(TissueModal[str | None]):
             parent_button.display = False
             return
         parent_button.display = True
-        required = self._hierarchy_of(type_id) in _PARENT_REQUIRED_HIERARCHIES
-        parent_button.border_title = "Parent *" if required else "Parent"
+        parent_button.border_title = (
+            "Parent *" if parent_required(self._issue_types, type_id) else "Parent"
+        )
 
     @on(Button.Pressed, "#cim-parent-btn")
     def _on_parent_btn(self, event: Button.Pressed) -> None:
@@ -300,15 +240,9 @@ class CreateIssueModal(TissueModal[str | None]):
         )
 
     async def _parent_candidates(self, parent_hier: str) -> list[tuple[str, str]]:
-        """`(label, key)` for project issues of the required parent hierarchy."""
         client = self.app.client
         if client is None:
             return []
-        hier_by_type = {
-            issue_type.id: issue_type.hierarchy
-            for issue_type in self._issue_types
-            if issue_type.id is not None
-        }
         try:
             page = await client.issues.search_project_issues(
                 self._project_key, size=100
@@ -316,16 +250,9 @@ class CreateIssueModal(TissueModal[str | None]):
         except TissueApiError as error:
             log.debug("Create: failed to load parent candidates: %s", error)
             return []
-        candidates: list[tuple[str, str]] = []
-        self._parent_label_by_key = {}
-        for summary in page.content or []:
-            if summary.issue_key is None or summary.issue_type_id is None:
-                continue
-            if hier_by_type.get(summary.issue_type_id) != parent_hier:
-                continue
-            label = summary.issue_key + (f"  {summary.title}" if summary.title else "")
-            candidates.append((label, summary.issue_key))
-            self._parent_label_by_key[summary.issue_key] = label
+        candidates, self._parent_label_by_key = parent_candidate_labels(
+            self._issue_types, parent_hier, page.content or []
+        )
         return candidates
 
     def _on_parent_picked(self, picked: list[str] | None) -> None:
@@ -338,12 +265,6 @@ class CreateIssueModal(TissueModal[str | None]):
         )
 
     def _apply_story_point_gate(self, type_id: int | None) -> None:
-        """Turn on the story-point input only for STANDARD types.
-
-        The backend won't accept a point set by hand on any other hierarchy. EPIC
-        points add up from children, SUBTASK/MICROTASK have none, so an off, empty
-        input stops the form from sending a value the server would reject.
-        """
         story_point_input = self.query_one("#cim-sp", Input)
         if self._hierarchy_of(type_id) == "STANDARD":
             story_point_input.disabled = False
@@ -362,10 +283,6 @@ class CreateIssueModal(TissueModal[str | None]):
 
     @on(Button.Pressed, "#cim-create")
     def _on_create(self) -> None:
-        # Double-submit guard. A second press while a create is in flight is
-        # dropped here, since cancelling a worker can't take back a request that
-        # already went out. The worker clears the flag any time it ends without
-        # closing, so a failed attempt can be tried again.
         if self._submitting:
             return
         self._submitting = True
@@ -374,37 +291,18 @@ class CreateIssueModal(TissueModal[str | None]):
     def _error(self, message: str) -> None:
         self.query_one("#cim-status", Static).update(message)
 
-    def _collect(self) -> dict[str, Any]:
-        """Read and check every field into the arguments for create_issue.
+    def _create_issue_kwargs(self) -> dict[str, Any]:
+        return self._read_form_values().to_create_kwargs()
 
-        Raises `ValueError`, with a message for the user, on the first bad or
-        missing required field.
-        """
+    def _read_form_values(self) -> CreateIssueFormValues:
         type_id = self._selected_type_id()
-        if type_id is None:
-            raise ValueError("Select an issue type.")
-        if self._hierarchy_of(type_id) in _PARENT_REQUIRED_HIERARCHIES and (
-            not self._parent_key
-        ):
-            raise ValueError("Select a parent issue for this type.")
         title = self.query_one("#cim-title", Input).value.strip()
-        if not (2 <= len(title) <= 50):
-            raise ValueError("Title must be 2-50 characters.")
         priority = str(self.query_one("#cim-priority", Select).value)
 
         assignee = self.query_one("#cim-assignee", Select).value
         assignee_id = assignee if isinstance(assignee, int) else None
 
-        # An off input means the type can't have story points.
-        # Never send a value that may be left over, since the server would reject it.
         story_point_input = self.query_one("#cim-sp", Input)
-        if story_point_input.disabled:
-            story_point = None
-        else:
-            story_point_text = story_point_input.value.strip()
-            if story_point_text and not story_point_text.isdigit():
-                raise ValueError("Story points must be a non-negative integer.")
-            story_point = int(story_point_text) if story_point_text else None
 
         due = self.query_one("#cim-due", DueDateTimePicker).datetime
         due_at = due.assume_system_tz().to_instant().format_iso() if due else None
@@ -412,38 +310,32 @@ class CreateIssueModal(TissueModal[str | None]):
         summary = self.query_one("#cim-summary", Input).value.strip() or None
         content = self.query_one("#cim-content", TextArea).text.strip() or None
 
-        custom_fields: dict[str, Any] = {}
-        for field_input in self.query(CustomFieldInput):
-            value = field_input.get_value()
-            if value is UNSET:
-                continue
-            custom_fields[str(field_input.field_id)] = value
-
-        return {
-            "issue_type_id": type_id,
-            "title": title,
-            "priority": priority,
-            "content": content,
-            "summary": summary,
-            "assignee_member_id": assignee_id,
-            "story_point": story_point,
-            "due_at": due_at,
-            "custom_fields": custom_fields or None,
-            "parent_issue_key": self._parent_key,
-        }
+        return CreateIssueFormValues(
+            issue_type_id=type_id,
+            hierarchy=self._hierarchy_of(type_id),
+            title=title,
+            priority=priority,
+            assignee_member_id=assignee_id,
+            story_point_text=story_point_input.value.strip(),
+            story_points_enabled=not story_point_input.disabled,
+            due_at=due_at,
+            summary=summary,
+            content=content,
+            custom_fields=collect_custom_fields(self.query(CustomFieldInput)),
+            parent_issue_key=self._parent_key,
+        )
 
     async def _do_create(self) -> None:
         try:
             client = self.app.client
             if client is None:
                 return
-            # Stop until the chosen type's fields are on screen (see _loaded_type_id).
             selected = self._selected_type_id()
             if selected is not None and self._loaded_type_id != selected:
                 self._error("Still loading this type's fields — try again in a moment.")
                 return
             try:
-                kwargs = self._collect()
+                kwargs = self._create_issue_kwargs()
             except ValueError as error:
                 self._error(str(error))
                 return

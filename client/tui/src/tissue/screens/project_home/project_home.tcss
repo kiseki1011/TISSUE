@@ -291,6 +291,7 @@ ProjectHomeScreen .hub-desc-header {
     width: 100%;
     height: auto;
     align-horizontal: right;
+    padding-bottom: 1;
 }
 
 /* Comments section in the detail pane. A header, the loaded comments, and the

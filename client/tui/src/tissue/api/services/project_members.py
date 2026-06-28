@@ -20,9 +20,6 @@ if TYPE_CHECKING:
     )
 
 
-# VIBE-CODED
-# model: "claude-opus-4-8"
-# evaluation: NOT_REVIEWED
 class ProjectMemberService:
     """Project membership operations."""
 
@@ -38,11 +35,7 @@ class ProjectMemberService:
         page: int = 0,
         size: int = 100,
     ) -> list[ProjectMemberSummary]:
-        """All members of a project, flattened from the paged response.
-
-        A single page of `size` is fine for small or mid teams. Callers use the
-        result to look up member ids to names and to populate member pickers.
-        """
+        """Project members as a flat list."""
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
             self._client.project_member_api.list_project_members,
@@ -61,11 +54,7 @@ class ProjectMemberService:
         page: int = 0,
         size: int = 30,
     ) -> list[MemberCandidateSummary]:
-        """Members a manager can add to this project (not already active members).
-
-        Matches the keyword on username, name or email. A blank keyword returns
-        all candidates. Manager-only on the server.
-        """
+        """Users a manager can add to this project."""
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
             self._client.project_member_api.list_member_candidates,
@@ -87,12 +76,7 @@ class ProjectMemberService:
         )
 
     async def join_project(self, project_key: str) -> ProjectMemberResponse:
-        """Join a project as the current user.
-
-        For an existing member the server returns the membership unchanged.
-        Raises `TissueApiError` (403) when joining isn't allowed, such as a
-        PRIVATE project the user isn't already a member of.
-        """
+        """Join the project as the current user."""
         return await self._client._call_with_retry(
             self._client.project_member_api.join_project,
             project_key,
