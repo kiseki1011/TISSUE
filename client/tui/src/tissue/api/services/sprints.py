@@ -129,12 +129,7 @@ class SprintService:
         started_at: str | None = None,
         due_at: str | None = None,
     ) -> None:
-        """Partial update of a sprint's mutable fields (only provided ones are sent).
-
-        Same JsonNullable raw-dict workaround as `IssueService.update_common_fields`:
-        the backend wraps these in `JsonNullable<T>`, which the generator mis-modeled,
-        so we send the raw body the server expects instead of the broken model.
-        """
+        """Update only the provided sprint fields."""
         body: dict[str, object | None] = {}
         if title is not None:
             body["title"] = title
@@ -151,11 +146,11 @@ class SprintService:
     async def _patch_sprint(
         self, sprint_id: int, body: dict[str, object | None]
     ) -> None:
-        """Low-level PATCH that sends a raw dict body (see `update_sprint`)."""
+        """PATCH using a raw body for JsonNullable fields."""
         api = self._client.sprint_api
         param = api._update_sprint_serialize(
             sprint_id=sprint_id,
-            update_sprint_request=body,  # pyright: ignore[reportArgumentType]
+            update_sprint_request=body,
             _request_auth=None,
             _content_type=None,
             _headers=None,
@@ -163,3 +158,7 @@ class SprintService:
         )
         response = await api.api_client.call_api(*param)
         await response.read()
+        api.api_client.response_deserialize(
+            response_data=response,
+            response_types_map={"204": None, "400": None, "403": None, "404": None},
+        )

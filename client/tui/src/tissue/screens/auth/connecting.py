@@ -125,10 +125,8 @@ class ConnectingScreen(TissueScreen):
             await self.app.client.close()
         self.app.client = client
         self.app.system_info = system_info
-        self.config_manager.update_state(
-            current_server_url=client.host,
-            last_connected_at=datetime.now().astimezone(),
-        )
+        self.config_manager.set_current_server(client.host)
+        self.config_manager.update_state(last_connected_at=datetime.now().astimezone())
 
         saved_token = self.app.token_store.load(client.host)
         if saved_token is not None:

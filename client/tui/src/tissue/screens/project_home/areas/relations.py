@@ -24,11 +24,7 @@ _REL_RM_CLASS = "hub-rel-rm"
 
 
 class RelationsMixin(ProjectHomeBase):
-    """The issue detail's relations section, below the hierarchy.
-
-    Relations pointing in from another issue are read-only, since the other
-    issue owns them. The picker only shows issues from this project, even though
-    the backend allows targets in other projects."""
+    """Relations section in issue detail."""
 
     def _relations_section(self, detail: IssueCommonDetail) -> list[Widget]:
         widgets: list[Widget] = [
@@ -44,7 +40,6 @@ class RelationsMixin(ProjectHomeBase):
         return widgets
 
     def _rel_remove_button(self, target_key: str) -> TextButton:
-        """A ✕ that removes the relation between this issue and `target_key`."""
         return TextButton(
             "✕", name=target_key, classes=f"hub-row-action {_REL_RM_CLASS}"
         )
@@ -82,12 +77,6 @@ class RelationsMixin(ProjectHomeBase):
         )
 
     async def _relation_candidates(self, issue_key: str) -> list[tuple[str, str]]:
-        """`(label, key)` pairs for this project's issues to pick a relation from.
-
-        Leaves out the issue itself and any already-related one, since the
-        backend allows only one relation per pair. If the fetch fails we just
-        skip it, and the list is capped at `_CANDIDATE_LIMIT`.
-        """
         client = self.app.client
         if client is None:
             return []
@@ -99,13 +88,18 @@ class RelationsMixin(ProjectHomeBase):
             log.debug("Hub: failed to load relation candidates: %s", error)
             return []
         exclude = self._related_keys() | {issue_key}
-        candidates: list[tuple[str, str]] = []
-        for summary in page.content or []:
-            if not summary.issue_key or summary.issue_key in exclude:
-                continue
-            label = summary.issue_key + (f"  {summary.title}" if summary.title else "")
-            candidates.append((label, summary.issue_key))
-        return candidates
+        return [
+            (
+                self._relation_candidate_label(summary.issue_key, summary.title),
+                summary.issue_key,
+            )
+            for summary in page.content or []
+            if summary.issue_key and summary.issue_key not in exclude
+        ]
+
+    @staticmethod
+    def _relation_candidate_label(issue_key: str, title: str | None) -> str:
+        return issue_key + (f"  {title}" if title else "")
 
     async def _open_relation_modal(self) -> None:
         from tissue.screens.project_home.modals.relation_add_modal import (

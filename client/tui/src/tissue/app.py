@@ -110,7 +110,7 @@ class TissueApp(App):
         hub tolerates a now-inaccessible project (its loads fall back to empty),
         and navigating Home from the palette clears the saved key.
         """
-        key = self.config.state.current_project_key
+        key = self.config.last_project()
         if not key:
             return
         from tissue.screens.project_home.project_home import ProjectHomeScreen

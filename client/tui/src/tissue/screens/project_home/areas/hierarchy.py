@@ -22,13 +22,9 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-# Mirrors the backend enum. A parent sits exactly one level above its child,
-# level 1 the top (EPIC), 4 the bottom (MICROTASK).
 _LEVEL_BY_HIERARCHY = {"EPIC": 1, "STANDARD": 2, "SUBTASK": 3, "MICROTASK": 4}
 _HIERARCHY_BY_LEVEL = {1: "EPIC", 2: "STANDARD", 3: "SUBTASK", 4: "MICROTASK"}
 
-# The picker filters this page by hierarchy here in the TUI, so a project with
-# more matching issues than this won't show them all.
 _CANDIDATE_LIMIT = 100
 
 _PARENT_RM = "hub-hier-parent-rm"
@@ -36,16 +32,7 @@ _CHILD_RM_CLASS = "hub-hier-child-rm"
 
 
 class HierarchyMixin(ProjectHomeBase):
-    """The issue detail's parent/children hierarchy.
-
-    A section is shown ONLY when this issue's hierarchy can hold that relation.
-
-    - `EPIC` has no parent row, `MICROTASK` has no children section
-    - Pickers offer only issues exactly one hierarchy level above/below, and the
-      backend checks again
-    - Removing a parent can fail. `SUBTASK`/`MICROTASK` must keep one, so the
-      server says no and we show that as a notify
-    """
+    """Parent/children section in issue detail."""
 
     def _hierarchy_section(
         self,
@@ -54,8 +41,6 @@ class HierarchyMixin(ProjectHomeBase):
         children: list[IssueIdentifierResponse],
     ) -> list[Widget]:
         level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
-        # Unknown hierarchy (list_issue_types failed this time), so show a section
-        # only for a relation that already exists, never an empty one.
         known = level is not None
         can_have_parent = known and (level - 1) in _HIERARCHY_BY_LEVEL
         can_have_children = known and (level + 1) in _HIERARCHY_BY_LEVEL
@@ -151,10 +136,6 @@ class HierarchyMixin(ProjectHomeBase):
         )
 
     async def _ensure_issue_type_hierarchy(self) -> None:
-        """Load the list of issue types once, mapping type id to hierarchy.
-
-        IssueSummary carries only the type id, not its hierarchy.
-        """
         if self._issue_type_hierarchy:
             return
         client = self.app.client
@@ -174,8 +155,6 @@ class HierarchyMixin(ProjectHomeBase):
     async def _candidates(
         self, hierarchy: str, exclude: set[str]
     ) -> list[tuple[str, str]]:
-        """`(label, key)` pairs for the project's issues of the given hierarchy,
-        leaving out `exclude`, with at most `_CANDIDATE_LIMIT` of them."""
         client = self.app.client
         if client is None:
             return []
@@ -195,20 +174,23 @@ class HierarchyMixin(ProjectHomeBase):
                 continue
             if self._issue_type_hierarchy.get(summary.issue_type_id) != hierarchy:
                 continue
-            label = summary.issue_key + (f"  {summary.title}" if summary.title else "")
-            candidates.append((label, summary.issue_key))
+            candidates.append(
+                (
+                    self._candidate_label(summary.issue_key, summary.title),
+                    summary.issue_key,
+                )
+            )
         return candidates
 
-    async def _open_parent_picker(self) -> None:
-        from tissue.screens.project_home.modals.issue_picker_modal import (
-            IssuePickerModal,
-        )
+    @staticmethod
+    def _candidate_label(issue_key: str, title: str | None) -> str:
+        return issue_key + (f"  {title}" if title else "")
 
+    async def _open_parent_picker(self) -> None:
         issue_key = self._detail_issue_key
         if issue_key is None:
             return
-        level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
-        parent_hier = _HIERARCHY_BY_LEVEL.get((level or 0) - 1)
+        parent_hier = self._relative_hierarchy(-1)
         if parent_hier is None:
             self.app.notify(
                 "This issue is top-level and can't have a parent.", severity="warning"
@@ -218,26 +200,19 @@ class HierarchyMixin(ProjectHomeBase):
         if self._detail_issue_key != issue_key:
             return
         self._hier_picker_issue = issue_key
-        self.app.push_screen(
-            IssuePickerModal(
-                candidates=candidates,
-                multi=False,
-                title="Set parent",
-                subtitle=f"{parent_hier} issues · Esc to cancel",
-            ),
-            self._on_parent_picked,
+        self._push_hierarchy_picker(
+            candidates=candidates,
+            multi=False,
+            title="Set parent",
+            subtitle=f"{parent_hier} issues · Esc to cancel",
+            callback=self._on_parent_picked,
         )
 
     async def _open_children_picker(self) -> None:
-        from tissue.screens.project_home.modals.issue_picker_modal import (
-            IssuePickerModal,
-        )
-
         issue_key = self._detail_issue_key
         if issue_key is None:
             return
-        level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
-        child_hier = _HIERARCHY_BY_LEVEL.get((level or 0) + 1)
+        child_hier = self._relative_hierarchy(1)
         if child_hier is None:
             self.app.notify(
                 "This issue is at the lowest level and can't have children.",
@@ -247,21 +222,48 @@ class HierarchyMixin(ProjectHomeBase):
         candidates = await self._candidates(child_hier, exclude={issue_key})
         if self._detail_issue_key != issue_key:
             return
-        # Read after the candidate search finishes so a child removed during the
-        # search isn't wrongly left out and one added meanwhile isn't offered again.
+        self._hier_picker_issue = issue_key
+        self._push_hierarchy_picker(
+            candidates=self._without_existing_children(candidates),
+            multi=True,
+            title="Add children",
+            subtitle=f"{child_hier} issues · Esc to cancel",
+            callback=self._on_children_picked,
+        )
+
+    def _relative_hierarchy(self, offset: int) -> str | None:
+        level = _LEVEL_BY_HIERARCHY.get(self._detail_hierarchy or "")
+        return _HIERARCHY_BY_LEVEL.get((level or 0) + offset)
+
+    def _without_existing_children(
+        self, candidates: list[tuple[str, str]]
+    ) -> list[tuple[str, str]]:
         existing = {
             child.issue_key for child in self._detail_children if child.issue_key
         }
-        candidates = [(label, key) for label, key in candidates if key not in existing]
-        self._hier_picker_issue = issue_key
+        return [(label, key) for label, key in candidates if key not in existing]
+
+    def _push_hierarchy_picker(
+        self,
+        *,
+        candidates: list[tuple[str, str]],
+        multi: bool,
+        title: str,
+        subtitle: str,
+        callback,
+    ) -> None:
+        from tissue.screens.project_home.modals.issue_picker_modal import (
+            IssuePickerModal,
+        )
+
         self.app.push_screen(
             IssuePickerModal(
                 candidates=candidates,
-                multi=True,
-                title="Add children",
-                subtitle=f"{child_hier} issues · Esc to cancel",
+                multi=multi,
+                title=title,
+                subtitle=subtitle,
             ),
-            self._on_children_picked,
+            callback,
         )
 
     def _on_parent_picked(self, picked: list[str] | None) -> None:
@@ -336,11 +338,6 @@ class HierarchyMixin(ProjectHomeBase):
         self._refresh_detail(issue_key)
 
     async def _detach_hierarchy(self, target_key: str, refresh_key: str) -> None:
-        """Clear `target_key`'s parent.
-
-        SUBTASK/MICROTASK must keep a parent, so the server returns
-        PARENT_REQUIRED, which we show as a notify.
-        """
         client = self.app.client
         try:
             if client is not None:

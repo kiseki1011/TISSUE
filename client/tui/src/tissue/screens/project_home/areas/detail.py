@@ -57,18 +57,12 @@ log = logging.getLogger(__name__)
 
 
 def _edit_button(button_id: str) -> TextButton:
-    """A `✎` button (handled by EditsMixin) for an editable detail-row field."""
     return TextButton("✎", id=button_id, classes="hub-row-action hub-field-edit")
 
 
 class DetailMixin(ProjectHomeBase):
-    """The [2] Details pane.
+    """The [2] Details pane."""
 
-    Fetch an issue, build the read view, and show it.
-    """
-
-    # Wait a moment before rendering a highlighted row
-    # Holding ↓ scrolls past the rows in between without rendering each one
     _DETAIL_DEBOUNCE = 0.10
 
     def _cancel_detail_timer(self) -> None:
@@ -79,10 +73,6 @@ class DetailMixin(ProjectHomeBase):
     def _debounce_detail(
         self, render: Callable[[], object], *, immediate: bool
     ) -> None:
-        """Renders the [2] detail, but only after a short pause.
-
-        Only renders the row you stop on.
-        """
         self._cancel_detail_timer()
         if immediate:
             render()
@@ -92,62 +82,63 @@ class DetailMixin(ProjectHomeBase):
     async def _render_issue_detail(
         self, issue_key: str, *, focus_detail: bool, force: bool = False
     ) -> None:
-        """Draw the [2] detail, filling the pane as fast as the data allows.
-
-        By case:
-            - cached and not forced -> show it at once, then refresh in the
-              background (an edit elsewhere is caught on the next look)
-            - no cache -> a skeleton from the list row fills the pane instantly,
-              then the real bundle replaces it
-            - force (after an edit here) -> always refetch, skipping the cache
-        """
-        client = self.app.client
-        if client is None:
+        if not self._start_issue_detail(issue_key):
             return
-        # Re-show the timeline column, hidden for the timeline-less member view.
-        self.remove_class("-no-timeline")
-        self._detail_issue_key = issue_key
-        # Always load activity on its own
-        self.run_worker(
-            self._load_activity(issue_key), exclusive=True, group="hub-activity"
-        )
 
         cached = None if force else self._detail_cache.get(issue_key)
         if cached is not None:
-            await self._apply_detail_view(cached, focus_detail=focus_detail)
-            self.run_worker(
-                self._revalidate_detail(issue_key),
-                exclusive=True,
-                group="hub-detail-revalidate",
-            )
+            await self._show_cached_detail(issue_key, cached, focus_detail=focus_detail)
             return
 
-        # No cache:
-        # Skeleton from the list row we already have shows the structural fields with
-        # zero wait, so the pane is never blank while the bundle is in flight.
         if not force:
-            summary = self._summary_for(issue_key)
-            if summary is not None:
-                await self._mount_detail(self._skeleton_widgets(summary))
+            await self._show_skeleton(issue_key)
 
+        view = await self._load_detail_view(issue_key)
+        if view is None:
+            return
+        self._detail_cache[issue_key] = view
+        await self._apply_detail_view(view, focus_detail=focus_detail)
+
+    def _start_issue_detail(self, issue_key: str) -> bool:
+        if self.app.client is None:
+            return False
+        self.remove_class("-no-timeline")
+        self._detail_issue_key = issue_key
+        self.run_worker(
+            self._load_activity(issue_key), exclusive=True, group="hub-activity"
+        )
+        return True
+
+    async def _show_cached_detail(
+        self, issue_key: str, view: IssueDetailView, *, focus_detail: bool
+    ) -> None:
+        await self._apply_detail_view(view, focus_detail=focus_detail)
+        self.run_worker(
+            self._revalidate_detail(issue_key),
+            exclusive=True,
+            group="hub-detail-revalidate",
+        )
+
+    async def _show_skeleton(self, issue_key: str) -> None:
+        summary = self._summary_for(issue_key)
+        if summary is not None:
+            await self._mount_detail(self._skeleton_widgets(summary))
+
+    async def _load_detail_view(self, issue_key: str) -> IssueDetailView | None:
+        client = self.app.client
+        if client is None:
+            return None
         try:
-            view = await client.issues.get_issue_detail(issue_key)
+            return await client.issues.get_issue_detail(issue_key)
         except TissueApiError as error:
             log.debug("Hub: failed to load issue %s: %s", issue_key, error)
             if self._detail_issue_key == issue_key:
                 await self._mount_detail(
                     [Static("Couldn't load issue.", classes="hub-muted")]
                 )
-            return
-        self._detail_cache[issue_key] = view
-        await self._apply_detail_view(view, focus_detail=focus_detail)
+            return None
 
     async def _revalidate_detail(self, issue_key: str) -> None:
-        """Refetch a cached issue and redraw only when it actually changed.
-
-        Lets a cache hit show instantly while a quiet refetch corrects anything
-        an edit elsewhere has changed since.
-        """
         client = self.app.client
         if client is None:
             return
@@ -162,18 +153,12 @@ class DetailMixin(ProjectHomeBase):
         await self._apply_detail_view(fresh, focus_detail=False)
 
     def _summary_for(self, issue_key: str) -> IssueSummary | None:
-        """The already-loaded list row for `issue_key`, used to draw the skeleton."""
         for summary in (*self._issues, *self._agent_issues):
             if summary.issue_key == issue_key:
                 return summary
         return None
 
     def _skeleton_widgets(self, summary: IssueSummary) -> list[Widget]:
-        """The structural rows of a detail, built from the list row alone.
-
-        Drawn instantly while the full bundle loads. The full view repeats these
-        same rows, so the swap reads as the rest filling in, not a redraw.
-        """
         member_names = {
             member.member_id: (member.display_name or member.username or "-")
             for member in self._members
@@ -212,10 +197,6 @@ class DetailMixin(ProjectHomeBase):
     async def _apply_detail_view(
         self, view: IssueDetailView, *, focus_detail: bool
     ) -> None:
-        """Save the detail state and draw the full [2] read view from a bundle.
-
-        Used for both a cached and a freshly fetched bundle.
-        """
         issue = view.common
         if issue is None:
             await self._mount_detail(
@@ -228,20 +209,42 @@ class DetailMixin(ProjectHomeBase):
         comments = (view.comments.content or []) if view.comments else []
         parent = view.parent
         children = view.children or []
-        # The type list decides the +/✕ hierarchy controls. It's cached, so this
-        # only fetches on the first issue viewed.
-        await self._ensure_issue_type_hierarchy()
-        # The sprint index resolves the current sprint
-        await self._ensure_sprint_index()
 
-        # The user may have moved to another issue while we awaited above, so
-        # don't overwrite their pane (or its saved state) with a stale issue.
-        if self._detail_issue_key != issue.issue_key:
+        await self._load_detail_dependencies()
+        if not self._is_current_detail(issue):
             return
 
-        self._detail_assigned = issue.assignee is not None
-        # Each transition carries its own target state (no separate workflow call).
-        target_labels = {
+        target_labels = self._build_transition_target_labels(transitions)
+        options_by_field = self._custom_field_options(custom_fields)
+        self._store_detail_state(
+            issue, transitions, custom_fields, options_by_field, children, view
+        )
+
+        widgets = self._safe_issue_widgets(
+            issue,
+            transitions,
+            target_labels,
+            custom_fields,
+            options_by_field,
+            comments,
+            parent,
+            children,
+        )
+        await self._mount_detail(widgets)
+        if focus_detail:
+            self.query_one("#hub-detail-main").focus()
+
+    async def _load_detail_dependencies(self) -> None:
+        await self._ensure_issue_type_hierarchy()
+        await self._ensure_sprint_index()
+
+    def _is_current_detail(self, issue: IssueCommonDetail) -> bool:
+        return self._detail_issue_key == issue.issue_key
+
+    def _build_transition_target_labels(
+        self, transitions: list[AvailableTransition]
+    ) -> dict[int, str]:
+        return {
             transition.transition_id: (
                 (
                     transition.target_state.display_name
@@ -253,18 +256,31 @@ class DetailMixin(ProjectHomeBase):
             for transition in transitions
             if transition.transition_id is not None
         }
+
+    def _custom_field_options(
+        self, custom_fields: list[CustomFieldValueInfo]
+    ) -> dict[int, list[FieldOptionDetail]]:
+        return {
+            custom_field.field_id: list(custom_field.options or [])
+            for custom_field in custom_fields
+            if custom_field.field_id is not None
+        }
+
+    def _store_detail_state(
+        self,
+        issue: IssueCommonDetail,
+        transitions: list[AvailableTransition],
+        custom_fields: list[CustomFieldValueInfo],
+        options_by_field: dict[int, list[FieldOptionDetail]],
+        children: list[IssueIdentifierResponse],
+        view: IssueDetailView,
+    ) -> None:
+        self._detail_assigned = issue.assignee is not None
         self._transitions_by_id = {
             transition.transition_id: transition
             for transition in transitions
             if transition.transition_id is not None
         }
-        # Each custom field carries its own options (no separate issue-type call).
-        options_by_field = {
-            custom_field.field_id: list(custom_field.options or [])
-            for custom_field in custom_fields
-            if custom_field.field_id is not None
-        }
-        # EditsMixin reads these on a ✎ click to fill in the custom-field modal.
         self._detail_custom_fields = {
             custom_field.field_id: custom_field
             for custom_field in custom_fields
@@ -279,11 +295,19 @@ class DetailMixin(ProjectHomeBase):
         self._detail_children = children
         self._detail_relations = view.relations
 
-        # An unexpected issue shape shows a "couldn't render" note instead of
-        # taking the whole app down.
-        widgets: list[Widget]
+    def _safe_issue_widgets(
+        self,
+        issue: IssueCommonDetail,
+        transitions: list[AvailableTransition],
+        target_labels: dict[int, str],
+        custom_fields: list[CustomFieldValueInfo],
+        options_by_field: dict[int, list[FieldOptionDetail]],
+        comments: list[CommentDetailResponse],
+        parent: IssueIdentifierResponse | None,
+        children: list[IssueIdentifierResponse],
+    ) -> list[Widget]:
         try:
-            widgets = self._issue_widgets(
+            return self._issue_widgets(
                 issue,
                 transitions,
                 target_labels,
@@ -295,13 +319,9 @@ class DetailMixin(ProjectHomeBase):
             )
         except Exception:
             log.exception("Hub: failed to build issue detail for %s", issue.issue_key)
-            widgets = [Static("Couldn't render this issue.", classes="hub-muted")]
-        await self._mount_detail(widgets)
-        if focus_detail:
-            self.query_one("#hub-detail-main").focus()
+            return [Static("Couldn't render this issue.", classes="hub-muted")]
 
     def _cf_edit_button(self, field_id: int) -> TextButton:
-        """A ✎ button for a custom-field row (handled by EditsMixin)."""
         return TextButton(
             "✎", id=f"hub-cf-edit-{field_id}", classes="hub-row-action hub-cf-edit"
         )
@@ -320,11 +340,9 @@ class DetailMixin(ProjectHomeBase):
         state = detail.current_state
         issue_type = detail.issue_type
         current_state_label = (state.display_name if state else None) or "-"
-        # A field-edit (✎) modal fills in these current values.
         self._edit_current = {
             "title": detail.title or "",
             "priority": detail.priority or "",
-            # Full ISO instant (not a date) so the DateTimePicker shows the time too.
             "dueAt": detail.due_at.isoformat() if detail.due_at else "",
             "storyPoint": "" if detail.story_point is None else str(detail.story_point),
             "content": detail.content or "",
@@ -374,14 +392,10 @@ class DetailMixin(ProjectHomeBase):
             *custom_field_section(
                 custom_fields, options_by_field, edit_button=self._cf_edit_button
             ),
-            # Reviewers take the custom-field slot, one blank line below the last
-            # custom field, or below Updated when there are none.
             *self._reviewer_section(detail),
             *self._hierarchy_section(detail, parent, children),
             *self._relations_section(detail),
             Rule(),
-            # Plain ✎ at the description's top-right, lined up with the field-edit
-            # pencils above.
             Horizontal(
                 TextButton(
                     "✎",
@@ -401,10 +415,6 @@ class DetailMixin(ProjectHomeBase):
         return widgets
 
     def _current_sprint_row(self, issue_key: str | None) -> Widget:
-        """The issue's current sprint, with a `+` that adds it to the active sprint.
-
-        The `+` is enabled only when the project has an active sprint.
-        """
         summary = self._summary_for(issue_key) if issue_key else None
         index = self._sprints_by_id or {}
         current = (
@@ -427,30 +437,17 @@ class DetailMixin(ProjectHomeBase):
         try:
             inner = self.query_one("#hub-detail-main-inner")
         except NoMatches:
-            # Pane is gone (being torn down or rebuilt), so don't let NoMatches
-            # escape the worker and crash the app.
             return
 
         async def swap() -> None:
-            # Wait for the old widgets to go before adding new ones, or controls
-            # with the same id clash (DuplicateIds). Group the change so the pane
-            # repaints once, not empty-then-full. The lock keeps two fast renders
-            # from interleaving their swaps.
             async with self._detail_mount_lock:
                 with self.app.batch_update():
                     await inner.remove_children()
                     await inner.mount(*widgets)
 
-        # Shield so a render worker cancelled mid-swap (fast navigation) still
-        # finishes it. A half-done swap leaves the pane blank, and the cancelled
-        # removal leaks a CancelledError that quietly shuts the whole app down.
         await asyncio.shield(swap())
 
     async def _reset_detail_pane(self) -> None:
-        """Clear [2] back to its placeholder when the [1] list is empty.
-
-        Forgets the issue key so late comment/activity workers stop early.
-        """
         self._detail_issue_key = None
         self.remove_class("-no-timeline")
         await self._mount_detail(

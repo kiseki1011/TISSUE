@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from rich.text import Text
 from textual import on
 from textual.coordinate import Coordinate
 from textual.css.query import NoMatches
@@ -22,28 +23,35 @@ from tissue.widgets.color_type import color_hex
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
+    from tissue.api.generated.models.page_response_issue_summary import (
+        PageResponseIssueSummary,
+    )
 
 log = logging.getLogger(__name__)
 
 
 class IssuesMixin(ProjectHomeBase):
-    """The [1] Issues list.
-
-    Handles:
-        - Loading
-        - Searching
-        - Drawing
-        - Coloring Status
-        - Driving the detail
-    """
+    """The [1] Issues list."""
 
     async def _load_issues(self, keyword: str | None = None) -> None:
+        self._issues_keyword = keyword
+        page = await self._fetch_issue_page(keyword=keyword)
+        self._replace_issues(page)
+        self._issues_page = 0
+        if not self._members:
+            await self._load_members()
+        await self._render_issues()
+        self._refresh_box_chrome()
+        self._select_first_issue_or_reset_detail()
+
+    async def _fetch_issue_page(
+        self, *, keyword: str | None, page: int = 0
+    ) -> PageResponseIssueSummary | None:
         client = self.app.client
         if client is None:
-            return
-        self._issues_keyword = keyword
+            return None
         try:
-            page = await client.issues.search_project_issues(
+            return await client.issues.search_project_issues(
                 self._project_key,
                 keyword=keyword,
                 state_categories=self._filter.state_categories_arg(),
@@ -51,30 +59,30 @@ class IssuesMixin(ProjectHomeBase):
                 assignee_member_ids=self._filter.assignee_arg(),
                 sprint_ids=self._filter.sprint_ids_arg(),
                 current_sprint_only=self._filter.current_sprint_only_arg(),
+                page=page,
             )
-            self._issues = list(page.content or [])
-            self._issues_total = page.total_elements or len(self._issues)
-            self._issues_has_next = bool(page.has_next)
         except TissueApiError as error:
             log.debug("Hub: failed to load issues: %s", error)
+            return None
+
+    def _replace_issues(self, page: PageResponseIssueSummary | None) -> None:
+        if page is None:
             self._issues = []
             self._issues_total = 0
             self._issues_has_next = False
-        self._issues_page = 0
-        if not self._members:
-            await self._load_members()
-        await self._render_issues()
-        self._refresh_box_chrome()
+            return
+        self._issues = list(page.content or [])
+        self._issues_total = page.total_elements or len(self._issues)
+        self._issues_has_next = bool(page.has_next)
+
+    def _select_first_issue_or_reset_detail(self) -> None:
         if self._issues:
             self._select_issue(0)
-        else:
-            self._cancel_detail_timer()
-            self.run_worker(
-                self._reset_detail_pane(), exclusive=True, group="hub-detail"
-            )
+            return
+        self._cancel_detail_timer()
+        self.run_worker(self._reset_detail_pane(), exclusive=True, group="hub-detail")
 
     def _member_names(self) -> dict[int, str]:
-        """Member id to display name, for the Assignee column."""
         return {
             member.member_id: (member.display_name or member.username or "-")
             for member in self._members
@@ -82,20 +90,11 @@ class IssuesMixin(ProjectHomeBase):
         }
 
     async def _render_issues(self) -> None:
-        # Remove the old table before mounting the new one, or its fixed id collides
         list_host = self.query_one("#hub-list-host")
         await list_host.remove_children()
         if not self._issues:
             await list_host.mount(Static("No issues.", classes="hub-list-empty"))
             return
-        rows = _issue_list_rows(
-            self._issues,
-            self._state_colors,
-            self.app.theme_variables,
-            self._member_names(),
-        )
-        for index, row in enumerate(rows):
-            row.insert(0, str(index + 1))
         table = _DashTable(
             [
                 ("#", None),
@@ -108,45 +107,48 @@ class IssuesMixin(ProjectHomeBase):
                 ("Due", 12),
                 ("Assignee", 14),
             ],
-            rows,
+            self._numbered_issue_rows(self._issues),
             id="hub-issues-table",
             classes="hub-table",
         )
         await list_host.mount(table)
-        # Scrollbar scrolling moves the viewport without a cursor move,
-        # so watch the scroll position (to page in more)
         self.watch(table, "scroll_y", self._on_issues_scrolled, init=False)
 
+    def _numbered_issue_rows(
+        self, issues: list[IssueSummary], *, start: int = 0
+    ) -> list[list[str | Text]]:
+        rows = _issue_list_rows(
+            issues,
+            self._state_colors,
+            self.app.theme_variables,
+            self._member_names(),
+        )
+        for index, row in enumerate(rows):
+            row.insert(0, str(start + index + 1))
+        return rows
+
     async def _load_more_issues(self) -> None:
-        """Fetch the next page and append it to the [1] list."""
         if self._issues_loading_more or not self._issues_has_next:
-            return
-        client = self.app.client
-        if client is None:
             return
         self._issues_loading_more = True
         try:
-            page = await client.issues.search_project_issues(
-                self._project_key,
-                keyword=self._issues_keyword,
-                state_categories=self._filter.state_categories_arg(),
-                priorities=self._filter.priorities_arg(),
-                assignee_member_ids=self._filter.assignee_arg(),
-                sprint_ids=self._filter.sprint_ids_arg(),
-                current_sprint_only=self._filter.current_sprint_only_arg(),
-                page=self._issues_page + 1,
+            page = await self._fetch_issue_page(
+                keyword=self._issues_keyword, page=self._issues_page + 1
             )
-        except TissueApiError as error:
-            log.debug("Hub: failed to load more issues: %s", error)
+            if page is None:
+                return
+            self._append_issue_page(page)
+        finally:
             self._issues_loading_more = False
-            return
+
+    def _append_issue_page(self, page: PageResponseIssueSummary) -> None:
         new_issues = list(page.content or [])
         self._issues_page += 1
         self._issues_has_next = bool(page.has_next)
-        if new_issues:
-            self._issues.extend(new_issues)
-            self._append_issue_rows(new_issues)
-        self._issues_loading_more = False
+        if not new_issues:
+            return
+        self._issues.extend(new_issues)
+        self._append_issue_rows(new_issues)
 
     def _append_issue_rows(self, issues: list[IssueSummary]) -> None:
         try:
@@ -154,17 +156,11 @@ class IssuesMixin(ProjectHomeBase):
         except NoMatches:
             return
         start = len(self._issues) - len(issues)
-        rows = _issue_list_rows(
-            issues, self._state_colors, self.app.theme_variables, self._member_names()
-        )
-        for index, row in enumerate(rows):
-            row.insert(0, str(start + index + 1))
-        for row in rows:
+        for row in self._numbered_issue_rows(issues, start=start):
             table.add_row(*row)
         self._recolor_status_table("#hub-issues-table", self._issues)
 
     def _on_issues_scrolled(self, _scroll_y: float) -> None:
-        """Page in more when scrollbar scrolling nears the end."""
         if self._issues_loading_more or not self._issues_has_next:
             return
         try:
@@ -177,10 +173,6 @@ class IssuesMixin(ProjectHomeBase):
             )
 
     async def _load_state_colors(self) -> None:
-        """Build a state-id to color map from the project's workflows to color Status.
-
-        If it fails we just skip it, the table statuses stay uncolored.
-        """
         client = self.app.client
         if client is None:
             return
@@ -211,22 +203,10 @@ class IssuesMixin(ProjectHomeBase):
         self._recolor_table_status()
 
     def _recolor_table_status(self) -> None:
-        """Recolor Status cells of [1] Issues and [3] Agent Work once colors arrive.
-
-        Both tables can be built before the color map is ready, so both need
-        fixing up after the load. Done in place so it doesn't fight a load for the
-        same table id.
-        """
         self._recolor_status_table("#hub-issues-table", self._issues)
         self._recolor_status_table("#hub-agent-issues-table", self._agent_issues)
 
     def _recolor_status_table(self, table_id: str, issues: list[IssueSummary]) -> None:
-        """Recolor the Status column in one table from `_state_colors`.
-
-        Does nothing when the table isn't mounted yet. The Status column sits at a
-        different spot per view, so we find it by its header label, not a fixed
-        number.
-        """
         try:
             table = self.query_one(table_id, DataTable)
         except NoMatches:
@@ -242,8 +222,6 @@ class IssuesMixin(ProjectHomeBase):
         if status_col is None:
             return
         for row, issue in enumerate(issues):
-            # A reload may have made the table shorter since the color load,
-            # so never touch a row past its end.
             if row >= table.row_count:
                 break
             state_id = issue.current_state_id
@@ -258,7 +236,6 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
-        """Open the right form for the view: issue, sprint, or add-member."""
         if self._view_mode == "sprints":
             self._open_create_sprint()
         elif self._view_mode == "members":
@@ -267,7 +244,6 @@ class IssuesMixin(ProjectHomeBase):
             self._open_create_issue()
 
     def _open_add_member(self) -> None:
-        """Open the add-member search modal, reloading the list on a successful add."""
         from tissue.screens.project_home.modals.member_add_modal import MemberAddModal
 
         self.app.push_screen(
@@ -283,17 +259,12 @@ class IssuesMixin(ProjectHomeBase):
             )
 
     def _open_create_issue(self) -> None:
-        """Open the create-issue form, then on success reload and select the new one."""
         self.app.push_screen(
             CreateIssueModal(project_key=self._project_key, members=self._members),
             self._on_issue_created,
         )
 
     def _is_project_manager(self) -> bool:
-        """Whether the current user is a manager here, which gates sprint create.
-
-        Returns False when the member list or profile isn't loaded yet.
-        """
         client = self.app.client
         profile = client.account.cached_profile if client is not None else None
         username = profile.username if profile is not None else None
@@ -305,7 +276,6 @@ class IssuesMixin(ProjectHomeBase):
         return False
 
     def _update_create_button(self) -> None:
-        """Set the create button's label and enabled state to match the [1] view."""
         try:
             create_button = self.query_one("#hub-new-issue", Button)
         except NoMatches:
@@ -329,7 +299,6 @@ class IssuesMixin(ProjectHomeBase):
     def _on_issue_created(self, issue_key: str | None) -> None:
         if not issue_key:
             return
-        # Shared "hub-list" group so the reload can't clash on the host.
         self._set_view_chrome("issues")
         self.run_worker(
             self._reload_and_select(issue_key), exclusive=True, group="hub-list"
@@ -344,7 +313,6 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Input.Changed, "#hub-search")
     def _on_search_changed(self) -> None:
-        """Live search, restart the wait so the list filters when typing stops."""
         self._cancel_search_timer()
         if self._view_mode == "sprints":
             return
@@ -352,17 +320,10 @@ class IssuesMixin(ProjectHomeBase):
 
     @on(Input.Submitted, "#hub-search")
     def _on_search_submitted(self) -> None:
-        """Enter searches right away, skipping the short wait."""
         self._cancel_search_timer()
         self._run_search()
 
     def _run_search(self) -> None:
-        """Filter the active list by keyword.
-
-        Members are filtered on our side so the full member list stays around for
-        looking up names. Shared exclusive `hub-list` group so a search can't clash
-        with a view switch.
-        """
         try:
             keyword = self.query_one("#hub-search", Input).value.strip() or None
         except NoMatches:
@@ -384,11 +345,6 @@ class IssuesMixin(ProjectHomeBase):
             self._search_timer = None
 
     def _update_search_input(self) -> None:
-        """Set the search box to match the active view.
-
-        Each view gets its own placeholder, and the box is disabled on the Sprints
-        view since sprints aren't searchable.
-        """
         try:
             search_input = self.query_one("#hub-search", Input)
         except NoMatches:
@@ -425,11 +381,10 @@ class IssuesMixin(ProjectHomeBase):
         issue_key = self._issues[index].issue_key
         if issue_key is None:
             return
-        # Expanded mode hides [2], so a deliberate Enter opens the detail as a modal.
         if focus_detail and self._expanded:
             self._open_issue_modal(issue_key)
             return
-        # Moving the cursor waits a moment, Enter (focus_detail) draws right away.
+
         self._debounce_detail(
             lambda: self.run_worker(
                 self._render_issue_detail(issue_key, focus_detail=focus_detail),
@@ -440,10 +395,6 @@ class IssuesMixin(ProjectHomeBase):
         )
 
     def action_focus_issues(self) -> None:
-        """Focus the mounted list table, or the host box when the view is empty.
-
-        Keeps [1] reachable via 1 / CTRL+1 even when there's no table to focus.
-        """
         for table_id in (
             "#hub-issues-table",
             "#hub-sprints-table",
@@ -460,11 +411,6 @@ class IssuesMixin(ProjectHomeBase):
             pass
 
     def action_add_to_sprint(self) -> None:
-        """ctrl+s: add the focused [1] Issues issue to the project's active sprint.
-
-        Acts only while the issues table holds focus. Notifies when there is no active
-        sprint to add to.
-        """
         try:
             table = self.query_one("#hub-issues-table", DataTable)
         except NoMatches:
@@ -484,15 +430,10 @@ class IssuesMixin(ProjectHomeBase):
         )
 
     def action_focus_search(self) -> None:
-        """`/` (or Ctrl+/) jumps straight to the search input from the lists."""
         self.query_one("#hub-search", Input).focus()
 
     def action_leave_search(self) -> None:
-        """Esc in the search box sends focus back to the list, bringing back the
-        box-jump digits (1/2/3) that a focused Input would otherwise type."""
         focused = self.app.focused
         if focused is not None and focused.id == "hub-search":
-            # Drop a live search that hasn't fired yet so it can't rebuild the list
-            # and steal the focus we're about to set, just after we leave the box.
             self._cancel_search_timer()
             self.action_focus_issues()

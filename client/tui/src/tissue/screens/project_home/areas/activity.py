@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class ActivityMixin(ProjectHomeBase):
-    """The list of the issue's recent events, shown on the right of the detail."""
+    """Issue activity timeline."""
 
     async def _load_activity(self, issue_key: str) -> None:
         client = self.app.client
@@ -33,7 +33,6 @@ class ActivityMixin(ProjectHomeBase):
         except TissueApiError as error:
             log.debug("Hub: failed to load activity for %s: %s", issue_key, error)
             activities = []
-        # The detail may have been rebuilt for another issue while we awaited.
         if self._detail_issue_key != issue_key:
             return
         try:
@@ -46,22 +45,11 @@ class ActivityMixin(ProjectHomeBase):
         else:
             for entry in activities:
                 widgets.extend(self._activity_widgets(entry))
-        # Clear and add back in one step so the list draws once, not empty first.
         with self.app.batch_update():
             await timeline_inner.remove_children()
             await timeline_inner.mount(*widgets)
 
     def _activity_widgets(self, activity: ActivityLogResponse) -> list[Widget]:
-        """Build one event block.
-
-        Lines:
-            - A ● event line
-            - A │ details line
-            - A │ line for each field that changed
-        """
-        # ANSI themes give accent an `ansi_*` name that Rich's Text style parser
-        # won't take, so color_hex() turns it into a #hex.
-        # Hex themes pass through unchanged.
         accent = color_hex(self.app.theme_variables.get("accent"))
         event_line = Text()
         event_line.append("● ", style=accent)
@@ -79,7 +67,6 @@ class ActivityMixin(ProjectHomeBase):
             Static(event_line, classes="hub-timeline-event"),
             Static(f"│  {meta_line}", markup=False, classes="hub-timeline-meta"),
         ]
-        # Look up the field's label for old `customFields.{id}` change keys.
         field_names = {
             str(field_id): custom_field.field_label
             for field_id, custom_field in self._detail_custom_fields.items()

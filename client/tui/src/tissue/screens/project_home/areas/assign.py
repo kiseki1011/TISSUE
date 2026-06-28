@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class AssignMixin(ProjectHomeBase):
-    """Set or clear who the [2] issue is assigned to, using the member picker."""
+    """Issue assignee actions."""
 
     @on(Button.Pressed, "#hub-assignee-edit")
     def _on_assignee_pressed(self) -> None:

@@ -23,21 +23,11 @@ _REMOVE_PREFIX = "hub-reviewer-rm-"
 
 
 class ReviewersMixin(ProjectHomeBase):
-    """The issue detail's reviewers list, with edit, remove, and request-review
-    controls."""
+    """Reviewers section in issue detail."""
 
     def _reviewer_section(self, detail: IssueCommonDetail) -> list[Widget]:
         reviewers = detail.reviewers or []
-        # Saved to compare against the picker result and to know who to ping
-        # when requesting a review.
-        self._detail_assignee_id = (
-            detail.assignee.member_id if detail.assignee else None
-        )
-        self._detail_reviewer_ids = [
-            reviewer.participant.member_id
-            for reviewer in reviewers
-            if reviewer.participant and reviewer.participant.member_id is not None
-        ]
+        self._store_reviewer_state(detail, reviewers)
         widgets: list[Widget] = [
             Horizontal(
                 Static("Reviewers", classes="hub-reviewer-title"),
@@ -49,47 +39,60 @@ class ReviewersMixin(ProjectHomeBase):
             widgets.append(Static("No reviewers.", classes="hub-muted"))
             return widgets
         for reviewer in reviewers:
-            participant = reviewer.participant
-            member_id = participant.member_id if participant else None
-            row: list[Widget] = [
-                Static(
-                    member_name(participant), markup=False, classes="hub-reviewer-name"
-                ),
-                Static(
-                    review_status_chip(self.app.theme_variables, reviewer.status),
-                    classes="hub-reviewer-status",
-                ),
-            ]
-            if member_id is not None:
-                row.append(
-                    TextButton(
-                        "✕",
-                        id=f"{_REMOVE_PREFIX}{member_id}",
-                        classes="hub-row-action hub-reviewer-rm",
-                    )
-                )
-            widgets.append(Horizontal(*row, classes="hub-reviewer-row"))
-        # Matched by username, the saved profile has no member id to use.
+            widgets.append(self._reviewer_row(reviewer))
+        widgets.append(
+            Horizontal(self._review_action(reviewers), classes="hub-request-row")
+        )
+        return widgets
+
+    def _store_reviewer_state(
+        self, detail: IssueCommonDetail, reviewers: list[ReviewerInfo]
+    ) -> None:
+        self._detail_assignee_id = (
+            detail.assignee.member_id if detail.assignee else None
+        )
+        self._detail_reviewer_ids = [
+            reviewer.participant.member_id
+            for reviewer in reviewers
+            if reviewer.participant and reviewer.participant.member_id is not None
+        ]
+
+    def _reviewer_row(self, reviewer: ReviewerInfo) -> Widget:
+        participant = reviewer.participant
+        member_id = participant.member_id if participant else None
+        row: list[Widget] = [
+            Static(member_name(participant), markup=False, classes="hub-reviewer-name"),
+            Static(
+                review_status_chip(self.app.theme_variables, reviewer.status),
+                classes="hub-reviewer-status",
+            ),
+        ]
+        if member_id is not None:
+            row.append(self._remove_reviewer_button(member_id))
+        return Horizontal(*row, classes="hub-reviewer-row")
+
+    @staticmethod
+    def _remove_reviewer_button(member_id: int) -> TextButton:
+        return TextButton(
+            "✕",
+            id=f"{_REMOVE_PREFIX}{member_id}",
+            classes="hub-row-action hub-reviewer-rm",
+        )
+
+    def _review_action(self, reviewers: list[ReviewerInfo]) -> TextButton:
         if self._current_user_is_reviewer(reviewers):
-            action = TextButton(
+            return TextButton(
                 "Submit review",
                 id="hub-submit-review",
                 classes="hub-request-btn",
             )
-        else:
-            action = TextButton(
-                "Request review",
-                id="hub-request-review",
-                classes="hub-request-btn",
-            )
-        widgets.append(Horizontal(action, classes="hub-request-row"))
-        return widgets
+        return TextButton(
+            "Request review",
+            id="hub-request-review",
+            classes="hub-request-btn",
+        )
 
     def _current_user_is_reviewer(self, reviewers: list[ReviewerInfo]) -> bool:
-        """Whether the logged-in user is a reviewer, matched by username.
-
-        The saved profile has no member id to compare against the reviewer ids.
-        """
         client = self.app.client
         profile = client.account.cached_profile if client else None
         username = profile.username if profile else None
@@ -120,9 +123,7 @@ class ReviewersMixin(ProjectHomeBase):
             return
         await self._ensure_members_loaded()
         if self._detail_issue_key != issue_key:
-            return  # Detail moved on while members loaded
-        # Save the starting list so the picker result is compared with this issue,
-        # even if the detail redraws or switches while the picker is up.
+            return
         self._reviewer_picker_issue = issue_key
         self._reviewer_picker_baseline = list(self._detail_reviewer_ids)
         self.app.push_screen(
@@ -138,20 +139,18 @@ class ReviewersMixin(ProjectHomeBase):
         if picked is None:
             return
         issue_key = self._reviewer_picker_issue
-        # Apply only if still on the issue the picker was opened for.
         if issue_key is None or self._detail_issue_key != issue_key:
             return
         if self._reviewer_busy:
             return
         current = set(self._reviewer_picker_baseline)
         chosen = set(picked)
-        to_add = chosen - current
-        to_remove = current - chosen
-        if not to_add and not to_remove:
+        changes = (chosen - current, current - chosen)
+        if not changes[0] and not changes[1]:
             return
         self._reviewer_busy = True
         self.run_worker(
-            self._apply_reviewers(issue_key, to_add, to_remove),
+            self._apply_reviewers(issue_key, *changes),
             exclusive=True,
             group="hub-reviewer-mut",
         )
@@ -163,22 +162,8 @@ class ReviewersMixin(ProjectHomeBase):
         failed = 0
         try:
             if client is not None:
-                # Keep each call separate, one failure must not stop the rest
-                # (a network blip, or an add turned down by the 10-reviewer cap).
-                for member_id in to_remove:
-                    try:
-                        await client.issues.remove_reviewer(issue_key, member_id)
-                    except TissueApiError as error:
-                        failed += 1
-                        log.debug(
-                            "Hub: remove reviewer %s failed: %s", member_id, error
-                        )
-                for member_id in to_add:
-                    try:
-                        await client.issues.add_reviewer(issue_key, member_id)
-                    except TissueApiError as error:
-                        failed += 1
-                        log.debug("Hub: add reviewer %s failed: %s", member_id, error)
+                failed += await self._remove_reviewers(client, issue_key, to_remove)
+                failed += await self._add_reviewers(client, issue_key, to_add)
             if failed and self._detail_issue_key == issue_key:
                 self.app.notify(
                     f"{failed} reviewer change(s) didn't apply.", severity="error"
@@ -187,17 +172,35 @@ class ReviewersMixin(ProjectHomeBase):
             self._reviewer_busy = False
         self._refresh_detail(issue_key)
 
+    async def _remove_reviewers(
+        self, client, issue_key: str, member_ids: set[int]
+    ) -> int:
+        failed = 0
+        for member_id in member_ids:
+            try:
+                await client.issues.remove_reviewer(issue_key, member_id)
+            except TissueApiError as error:
+                failed += 1
+                log.debug("Hub: remove reviewer %s failed: %s", member_id, error)
+        return failed
+
+    async def _add_reviewers(self, client, issue_key: str, member_ids: set[int]) -> int:
+        failed = 0
+        for member_id in member_ids:
+            try:
+                await client.issues.add_reviewer(issue_key, member_id)
+            except TissueApiError as error:
+                failed += 1
+                log.debug("Hub: add reviewer %s failed: %s", member_id, error)
+        return failed
+
     @on(Button.Pressed, ".hub-reviewer-rm")
     def _on_reviewer_remove(self, event: Button.Pressed) -> None:
         event.stop()
         if self._reviewer_busy:
             return
-        button_id = event.button.id or ""
-        if not button_id.startswith(_REMOVE_PREFIX):
-            return
-        try:
-            member_id = int(button_id[len(_REMOVE_PREFIX) :])
-        except ValueError:
+        member_id = self._reviewer_id_from_button(event.button.id)
+        if member_id is None:
             return
         issue_key = self._detail_issue_key
         if issue_key is None:
@@ -208,6 +211,15 @@ class ReviewersMixin(ProjectHomeBase):
             exclusive=True,
             group="hub-reviewer-mut",
         )
+
+    @staticmethod
+    def _reviewer_id_from_button(button_id: str | None) -> int | None:
+        if not button_id or not button_id.startswith(_REMOVE_PREFIX):
+            return None
+        try:
+            return int(button_id[len(_REMOVE_PREFIX) :])
+        except ValueError:
+            return None
 
     async def _remove_reviewer(self, issue_key: str, member_id: int) -> None:
         client = self.app.client
@@ -269,7 +281,6 @@ class ReviewersMixin(ProjectHomeBase):
         def on_decision(approved: bool | None) -> None:
             if approved is None:
                 return
-            # Detail may have moved on (or a change started) while the modal was up
             if self._detail_issue_key != issue_key or self._reviewer_busy:
                 return
             self._reviewer_busy = True
@@ -294,8 +305,6 @@ class ReviewersMixin(ProjectHomeBase):
                 self.app.notify("Failed to submit review.", severity="error")
         finally:
             self._reviewer_busy = False
-        # A detail switch doesn't cancel this group, so only show the message if
-        # the user hasn't already moved away from this issue
         if succeeded and self._detail_issue_key == issue_key:
             self.app.notify(
                 "Review approved." if approved else "Changes requested.",
@@ -304,13 +313,6 @@ class ReviewersMixin(ProjectHomeBase):
         self._refresh_detail(issue_key)
 
     def _refresh_detail(self, issue_key: str) -> None:
-        """Re-render the detail after an edit here, in the shared group so a remove
-        and draw never overlap.
-
-        `force=True`:
-            The issue just changed (reviewers, relations, hierarchy), so skip the cache
-            and refetch.
-        """
         if self._detail_issue_key == issue_key:
             self.run_worker(
                 self._render_issue_detail(issue_key, focus_detail=False, force=True),

@@ -26,7 +26,7 @@ _ISSUE_LIST_TITLE_WIDTH = 18
 
 
 def _humanize_key(key: str) -> str:
-    """Turn an activity field/data key into a tidy label."""
+    """Turn an activity field/data key into a human friendly label."""
     if key[:1].isupper():
         return key
     base = re.sub(r"(Name|Key)$", "", key) or key
@@ -174,7 +174,6 @@ def _activity_details(
     for field, change in (activity.changes or {}).items():
         label = _change_label(field, field_names)
 
-        # Issue content can be big, so its activity entry carries no before/after
         if field == "content":
             lines.append(f"{label} updated")
             continue

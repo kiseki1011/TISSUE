@@ -49,12 +49,7 @@ if TYPE_CHECKING:
 
 
 class ProjectHomeBase(RefreshableScreen):
-    """Shared state and shared methods for the ProjectHomeScreen mixins.
-
-    Each mixin holds the real methods for one area. They are listed here
-    (under TYPE_CHECKING) so one mixin can call another and still pass type
-    checks.
-    """
+    """Shared state for ProjectHome mixins."""
 
     if TYPE_CHECKING:
         app: TissueApp
@@ -63,11 +58,20 @@ class ProjectHomeBase(RefreshableScreen):
         super().__init__()
         self._project_key = project_key
         self._title = title
+        self._init_list_state()
+        self._init_sprint_state()
+        self._init_detail_state()
+        self._init_review_state()
+        self._init_hierarchy_state()
+        self._init_relation_state()
+        self._init_comment_state()
+        self._init_timer_state()
+        self._init_rendering_state()
+
+    def _init_list_state(self) -> None:
         self._issues: list[IssueSummary] = []
         self._filter: IssueFilter = DEFAULT_ISSUE_FILTER
-        # Default hides finished sprints (Completed/Cancelled) in the [1] list.
         self._sprint_filter: SprintFilter = DEFAULT_SPRINT_FILTER
-        # Client-side filter for the [1] Members list (active status + role).
         self._member_filter: MemberFilter = DEFAULT_MEMBER_FILTER
         self._issues_keyword: str | None = None
         self._issues_total = 0
@@ -75,96 +79,65 @@ class ProjectHomeBase(RefreshableScreen):
         self._issues_has_next = False
         self._issues_loading_more = False
         self._members: list[ProjectMemberSummary] = []
-        # The full member list stays whole so we can look up names. This holds
-        # the part the [1] table shows (filtered while searching), and row
-        # clicks index into it, so the cursor and the table never get out of
-        # sync.
         self._displayed_members: list[ProjectMemberSummary] = []
         self._agent_issues: list[IssueSummary] = []
         self._agent_names: dict[int, str] = {}
-        # CTRL+T switches this while [3] is focused.
-        #   - "work" is issues assigned to the user's agents
-        #   - "reviews" is issues waiting for the user to review
         self._agent_mode = "work"
-        # Which stacked box is shrunk to a thin strip
         self._collapsed_box: str | None = None
-        # When expanded, [2] is hidden and Enter opens the detail modal instead
         self._expanded = False
         self._view_mode = "issues"
+
+    def _init_sprint_state(self) -> None:
         self._sprints: list[SprintSummary] = []
-        # Saved for sprint issue remove button
         self._sprint_detail_id: int | None = None
         self._sprint_detail_issues: list[IssueSummary] = []
-        # The [2] sprint's status + current field values
         self._sprint_detail_status: str | None = None
         self._sprint_edit_current: dict[str, str] = {}
-        # All sprints keyed by id, lazily loaded.
-        # None until first loaded; invalidated when a sprint transitions.
         self._sprints_by_id: dict[int, SprintSummary] | None = None
+
+    def _init_detail_state(self) -> None:
         self._detail_issue_key: str | None = None
-        # Loaded detail bundles kept by issue key.
-        # Revisit shows the cached one at once, then a background refetch corrects
-        # anything edited.
-        # An edit on this screen passes force=True to skip and refresh the cache.
         self._detail_cache: dict[str, IssueDetailView] = {}
-        # Runs the [2] detail remove+mount one at a time so two fast renders
-        # can't interleave and clash on a shared id. Paired with a shield in
-        # _mount_detail so a cancelled render can't leave the pane half-swapped.
         self._detail_mount_lock = asyncio.Lock()
         self._detail_assigned = False
-        # Saved when [2] is drawn. The assignee is left out of the reviewer
-        # picker, because the backend won't let the assignee be a reviewer too.
+        self._edit_current: dict[str, str] = {}
+        self._detail_custom_fields: dict[int, CustomFieldValueInfo] = {}
+        self._detail_field_options: dict[int, list[FieldOptionDetail]] = {}
+
+    def _init_review_state(self) -> None:
         self._detail_reviewer_ids: list[int] = []
         self._detail_assignee_id: int | None = None
-        # Reviewer changes run in their own worker group, so redrawing [2]
-        # can't cancel them halfway. This flag makes overlapping clicks run one
-        # by one.
         self._reviewer_busy = False
-        # Saved when the reviewer picker opens, so its result is compared with
-        # this set even if [2] redraws or switches issue while it is open.
         self._reviewer_picker_issue: str | None = None
         self._reviewer_picker_baseline: list[int] = []
-        # The [2] issue's parent and children, loaded on their own and not part
-        # of the issue data.
-        #   - _hierarchy_busy makes changes run one at a time
-        #   - _hier_picker_issue remembers which issue a picker is editing
+
+    def _init_hierarchy_state(self) -> None:
         self._detail_hierarchy: str | None = None
         self._detail_children: list[IssueIdentifierResponse] = []
         self._issue_type_hierarchy: dict[int, str] = {}
         self._hierarchy_busy = False
         self._hier_picker_issue: str | None = None
-        # The [2] issue's relations, loaded on their own. Same busy flag and
-        # remembered-issue pattern as the hierarchy above.
+
+    def _init_relation_state(self) -> None:
         self._detail_relations: IssueRelationsDetail | None = None
         self._relations_busy = False
         self._rel_picker_issue: str | None = None
-        # Which comment a new comment replies to, None for a top-level comment.
-        # _reply_targets maps a top comment id to its author name, for the
-        # "Replying to" banner.
+
+    def _init_comment_state(self) -> None:
         self._reply_to: int | None = None
         self._reply_targets: dict[int, str] = {}
-        # Goes up by one each time the comment list is rebuilt. The posting
-        # task remembers this number and skips adding its comment early if the
-        # list was rebuilt in between, since the rebuild already shows it.
         self._comment_gen: int = 0
-        # Short wait timers. Moving the cursor fast through a list, or typing in
-        # the search box, only does its work after you pause.
+
+    def _init_timer_state(self) -> None:
         self._detail_timer: Timer | None = None
         self._search_timer: Timer | None = None
-        # Current field values, saved so an edit modal can fill them in.
-        self._edit_current: dict[str, str] = {}
-        # Saved workflows, keyed by id, loaded only to show each transition's
-        # target state.
+
+    def _init_rendering_state(self) -> None:
         self._workflow_cache: dict[int, WorkflowDetail] = {}
         self._transitions_by_id: dict[int, AvailableTransition] = {}
         self._transition_current_label = "-"
         self._transition_target_labels: dict[int, str] = {}
-        # state id -> #rrggbb, so the issues table can color each Status with
-        # the color set in its workflow.
         self._state_colors: dict[int, str] = {}
-        # Custom-field info saved so a ✎ opens the right editor.
-        self._detail_custom_fields: dict[int, CustomFieldValueInfo] = {}
-        self._detail_field_options: dict[int, list[FieldOptionDetail]] = {}
 
     if TYPE_CHECKING:
 
@@ -177,6 +150,8 @@ class ProjectHomeBase(RefreshableScreen):
         def _update_filter_button(self) -> None: ...
         def _search_keyword(self) -> str | None: ...
         def _refresh_box_chrome(self) -> None: ...
+        def _restore_project_ui(self) -> None: ...
+        def _persist_project_ui(self) -> None: ...
         def _open_issue_modal(self, issue_key: str) -> None: ...
         def _debounce_detail(
             self, render: Callable[[], object], *, immediate: bool

@@ -23,10 +23,7 @@ _FIELD_BY_ID = {
 
 
 class EditsMixin(ProjectHomeBase):
-    """Edit button next to each issue field opens a one-field modal.
-
-    A successful save redraws the detail.
-    """
+    """Issue field edit actions."""
 
     @on(Button.Pressed, ".hub-field-edit")
     def _on_field_edit(self, event: Button.Pressed) -> None:
@@ -81,8 +78,6 @@ class EditsMixin(ProjectHomeBase):
         issue_key = self._detail_issue_key
         if not updated or issue_key is None:
             return
-        # `force=True`:
-        # A field was just edited, so skip the cache and refetch
         self.run_worker(
             self._render_issue_detail(issue_key, focus_detail=False, force=True),
             exclusive=True,

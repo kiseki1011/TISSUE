@@ -23,14 +23,12 @@ if TYPE_CHECKING:
         ProjectMemberSummary,
     )
 
-# USER is the plain default, so only these roles are shown on a member.
 _ELEVATED_SYSTEM_ROLES = ("ADMIN", "SUPER_ADMIN")
 
 log = logging.getLogger(__name__)
 
 
 def _active_label(active: bool | None) -> str:
-    """None means unknown ('-'), which is not the same as False."""
     if active is None:
         return "-"
     return "Yes" if active else "No"
@@ -39,10 +37,6 @@ def _active_label(active: bool | None) -> str:
 def member_read_view(
     member: ProjectMemberSummary, *, title_class: str, spacer_class: str
 ) -> list[Widget]:
-    """Build the member detail, shared so the pane and modal match.
-
-    Used by the hub's [2] detail pane and the MemberDetailModal.
-    """
     widgets: list[Widget] = [
         Static(
             member.display_name or member.username or "-",
@@ -76,7 +70,6 @@ def member_issue_section(
     title_class: str,
     muted_class: str,
 ) -> list[Widget]:
-    """Section title plus a read-only issues table, or a grey 'None.' if empty."""
     widgets: list[Widget] = [Static(f"{label} ({len(issues)})", classes=title_class)]
     if issues:
         widgets.append(
@@ -95,10 +88,6 @@ def member_issue_section(
 async def fetch_member_issues(
     client: TissueClient | None, project_key: str, member_id: int | None
 ) -> tuple[list[IssueSummary], list[IssueSummary]]:
-    """A member's (assigned, reviewing) issues.
-
-    A failed search is skipped and returns an empty list for that side.
-    """
     assigned: list[IssueSummary] = []
     reviewing: list[IssueSummary] = []
     if client is None or member_id is None:
@@ -122,11 +111,7 @@ async def fetch_member_issues(
 
 
 class MembersMixin(ProjectHomeBase):
-    """The [1] box's Members view, a member list with each member shown in [2].
-
-    `_load_members` also runs once at mount to look up assignee names, and the
-    Members view reuses it before drawing the list.
-    """
+    """Members list and member detail view."""
 
     async def _load_members(self) -> None:
         client = self.app.client
@@ -138,23 +123,13 @@ class MembersMixin(ProjectHomeBase):
             )
         except TissueApiError as error:
             log.debug("Hub: failed to load members: %s", error)
-            # Keep any member list already loaded, so a failed (re)load can't wipe
-            # out data an earlier good load fetched.
-        # The member list carries the current user's role, which controls the
-        # manager-only create button, so refresh now that the role is known.
         self._update_create_button()
 
     async def _ensure_members_loaded(self) -> None:
-        """Fill in `self._members` if not loaded yet.
-
-        The filter modal's Assignee picker can open before the Issues view has
-        loaded the member list.
-        """
         if not self._members:
             await self._load_members()
 
     async def _load_members_list(self, keyword: str | None = None) -> None:
-        # Refetch so the member list is fresh on each switch, like issues/sprints.
         await self._load_members()
         await self._render_members_list(keyword)
         if self._displayed_members:
@@ -163,8 +138,23 @@ class MembersMixin(ProjectHomeBase):
     async def _render_members_list(self, keyword: str | None = None) -> None:
         box = self.query_one("#hub-list-host")
         await box.remove_children()
-        # `self._members` stays whole so we can look up names, while
-        # `_displayed_members` is the filtered part that row clicks index into.
+        members = self._filtered_members(keyword)
+        self._displayed_members = members
+        if not members:
+            await box.mount(
+                Static(self._empty_member_text(keyword), classes="hub-list-empty")
+            )
+            return
+        await box.mount(
+            _DashTable(
+                [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
+                self._member_rows(members),
+                id="hub-members-table",
+                classes="hub-table",
+            )
+        )
+
+    def _filtered_members(self, keyword: str | None) -> list[ProjectMemberSummary]:
         members = self._members
         if keyword:
             keyword_folded = keyword.casefold()
@@ -174,14 +164,16 @@ class MembersMixin(ProjectHomeBase):
                 if keyword_folded in (member.display_name or "").casefold()
                 or keyword_folded in (member.username or "").casefold()
             ]
-        members = [member for member in members if self._member_filter.matches(member)]
-        self._displayed_members = members
-        if not members:
-            has_filter = bool(keyword) or self._member_filter != DEFAULT_MEMBER_FILTER
-            placeholder = "No matching members." if has_filter else "No members."
-            await box.mount(Static(placeholder, classes="hub-list-empty"))
-            return
-        rows: list[list[str | Text]] = [
+        return [member for member in members if self._member_filter.matches(member)]
+
+    def _empty_member_text(self, keyword: str | None) -> str:
+        has_filter = bool(keyword) or self._member_filter != DEFAULT_MEMBER_FILTER
+        return "No matching members." if has_filter else "No members."
+
+    def _member_rows(
+        self, members: list[ProjectMemberSummary]
+    ) -> list[list[str | Text]]:
+        return [
             [
                 str(index + 1),
                 Text(member.display_name or member.username or "-"),
@@ -190,14 +182,6 @@ class MembersMixin(ProjectHomeBase):
             ]
             for index, member in enumerate(members)
         ]
-        await box.mount(
-            _DashTable(
-                [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
-                rows,
-                id="hub-members-table",
-                classes="hub-table",
-            )
-        )
 
     @on(DataTable.RowHighlighted, "#hub-members-table")
     def _on_member_highlighted(self, event: DataTable.RowHighlighted) -> None:
@@ -212,12 +196,9 @@ class MembersMixin(ProjectHomeBase):
         if not (0 <= row_index < len(self._displayed_members)):
             return
         member = self._displayed_members[row_index]
-        # Expanded mode hides [2], so pressing Enter opens the detail as a modal.
         if focus_detail and self._expanded:
             self._open_member_modal(member)
             return
-        # Shares the issue-detail worker group so member, issue and sprint draws
-        # never end up in [2] at the same time.
         self._debounce_detail(
             lambda: self.run_worker(
                 self._render_member_detail(member, focus_detail=focus_detail),
@@ -230,11 +211,7 @@ class MembersMixin(ProjectHomeBase):
     async def _render_member_detail(
         self, member: ProjectMemberSummary, *, focus_detail: bool
     ) -> None:
-        # Clear the issue key so any late issue workers stop (they check
-        # _detail_issue_key). A member has no comments or activity.
         self._detail_issue_key = None
-        # Members have no timeline, so hide that column and its divider line and
-        # let the member fields take the full detail width.
         self.add_class("-no-timeline")
         widgets = member_read_view(
             member, title_class="hub-detail-title", spacer_class="hub-detail-spacer"
@@ -271,7 +248,6 @@ class MembersMixin(ProjectHomeBase):
             self.query_one("#hub-detail-main").focus()
 
     def _open_member_modal(self, member: ProjectMemberSummary) -> None:
-        """Open a read-only member detail modal (expanded mode, where [2] is hidden)."""
         from tissue.screens.project_home.modals.member_detail_modal import (
             MemberDetailModal,
         )

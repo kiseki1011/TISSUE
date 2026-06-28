@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -32,17 +33,23 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class CommentDraft:
+    issue_key: str
+    text: str
+    parent_id: int | None
+    comment_gen: int
+    mentions: list[str]
+
+
 class CommentsMixin(ProjectHomeBase):
-    """The detail's comment thread, a nested list plus an Enter-to-submit input."""
+    """Comment thread in issue detail."""
 
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
         if event.widget.id == "hub-comment-input":
             event.widget.scroll_visible(animate=False)
 
     def on_key(self, event: events.Key) -> None:
-        # While composing a reply, Esc backs out of reply mode rather than firing
-        # the screen's default Esc (leave search). Scoped so Esc is untouched
-        # when no reply is active.
         if (
             event.key == "escape"
             and self._reply_to is not None
@@ -53,29 +60,13 @@ class CommentsMixin(ProjectHomeBase):
             event.stop()
 
     def _comment_section(self, comments: list[CommentDetailResponse]) -> list[Widget]:
-        """Header, thread, and add form in one paint, avoiding a "Loading…" swap."""
-        # Bump the count so a still-running post worker that kept the old number
-        # skips adding its comment into this freshly rebuilt thread.
-        self._reply_to = None
-        self._reply_targets = {}
-        self._comment_gen += 1
-        if comments:
-            loaded: list[Widget] = []
-            for comment in comments:
-                loaded.extend(self._comment_widgets(comment))
-        else:
-            loaded = [Static("No comments yet.", classes="hub-muted")]
-        # Built once so MentionAutoComplete can target this exact Input instance.
-        comment_input = Input(
-            placeholder="Add a comment with enter…",
-            id="hub-comment-input",
-            classes="hub-comment-input",
-        )
+        self._reset_comment_compose_state()
+        loaded = self._loaded_comment_widgets(comments)
+        comment_input = self._comment_input()
         return [
             Rule(),
             Static("Comments", classes="hub-section-title"),
             Vertical(*loaded, id="hub-comments", classes="hub-comments"),
-            # Wrapper so the "Replying to @…" banner can mount above the input.
             Vertical(
                 Horizontal(comment_input, classes="hub-comment-form"),
                 MentionAutoComplete(comment_input, members=lambda: self._members),
@@ -83,8 +74,30 @@ class CommentsMixin(ProjectHomeBase):
             ),
         ]
 
+    def _reset_comment_compose_state(self) -> None:
+        self._reply_to = None
+        self._reply_targets = {}
+        self._comment_gen += 1
+
+    def _loaded_comment_widgets(
+        self, comments: list[CommentDetailResponse]
+    ) -> list[Widget]:
+        if not comments:
+            return [Static("No comments yet.", classes="hub-muted")]
+        loaded: list[Widget] = []
+        for comment in comments:
+            loaded.extend(self._comment_widgets(comment))
+        return loaded
+
+    @staticmethod
+    def _comment_input() -> Input:
+        return Input(
+            placeholder="Add a comment with enter…",
+            id="hub-comment-input",
+            classes="hub-comment-input",
+        )
+
     def _comment_widgets(self, comment: CommentDetailResponse) -> list[Widget]:
-        """A root comment plus its replies as indented blocks, one level deep."""
         head, body = self._head_body(comment, is_root=True)
         out: list[Widget] = [head, body]
         for reply in comment.replies or []:
@@ -92,18 +105,12 @@ class CommentsMixin(ProjectHomeBase):
         return out
 
     def _reply_block(self, comment: CommentDetailResponse) -> Vertical:
-        """A reply's head and body, with a left border line to show it's nested."""
         head, body = self._head_body(comment, is_root=False)
         return Vertical(head, body, classes="hub-reply-block")
 
     def _head_body(
         self, comment: CommentDetailResponse, *, is_root: bool
     ) -> tuple[Widget, Widget]:
-        """The meta line and body for one comment.
-
-        A live root also gets a ↳ Reply action and a tagged body. A reply we
-        show right away (before the server confirms) is added under it.
-        """
         author = (
             (comment.author.display_name or comment.author.username)
             if comment.author
@@ -111,8 +118,6 @@ class CommentsMixin(ProjectHomeBase):
         )
         author = author or "?"
         username = comment.author.username if comment.author else None
-        # Add "(@username)" to tell apart members with the same name, unless the
-        # display name already is the username.
         shown = f"{author} (@{username})" if username and username != author else author
         meta = " · ".join([shown, format_relative(comment.created_at)])
         if comment.is_edited:
@@ -125,7 +130,6 @@ class CommentsMixin(ProjectHomeBase):
         head: Widget = Static(meta, markup=False, classes="hub-comment-meta")
         comment_id = comment.comment_id
         if is_root and comment_id is not None:
-            # Anchor for replies we show right away, added right after this body.
             body.id = f"hub-comment-body-{comment_id}"
             if not comment.is_deleted:
                 self._reply_targets[comment_id] = author
@@ -159,7 +163,6 @@ class CommentsMixin(ProjectHomeBase):
         self._cancel_reply(refocus=True)
 
     def _begin_reply(self, comment_id: int) -> None:
-        """Aim the input at `comment_id`, showing the banner and taking focus."""
         self._reply_to = comment_id
         author = self._reply_targets.get(comment_id, "?")
         label = Text.assemble(("Replying to ", ""), (f"@{author}", "bold"))
@@ -199,11 +202,6 @@ class CommentsMixin(ProjectHomeBase):
         self._submit_comment(event.value)
 
     def _extract_mentions(self, text: str) -> list[str]:
-        """Real project members @-mentioned in `text`, no repeats, first-seen order.
-
-        Looking each one up in the member list keeps a stray '@word' or an
-        email from becoming a fake mention notification.
-        """
         by_username = {
             member.username.casefold(): member.username
             for member in self._members
@@ -211,8 +209,6 @@ class CommentsMixin(ProjectHomeBase):
         }
         seen: list[str] = []
         for token in _MENTION_RE.findall(text):
-            # Try again without a trailing '.' so an end-of-sentence "@alice."
-            # still matches. The captured token keeps the period, which won't.
             canon = by_username.get(token.casefold()) or by_username.get(
                 token.rstrip(".").casefold()
             )
@@ -225,75 +221,65 @@ class CommentsMixin(ProjectHomeBase):
         text = text.strip()
         if issue_key is None or not text:
             return
-        # Capture the reply target and thread count now. The user may re-aim or
-        # the thread may rebuild while the post is still sending, but this comment
-        # still lands where it was aimed and only adds into its own thread.
-        parent_id = self._reply_to
-        mentions = self._extract_mentions(text)
         self.run_worker(
-            self._post_comment(issue_key, text, parent_id, self._comment_gen, mentions),
+            self._post_comment(self._comment_draft(issue_key, text)),
             exclusive=True,
             group="hub-comment-post",
         )
 
-    async def _post_comment(
-        self,
-        issue_key: str,
-        text: str,
-        parent_id: int | None,
-        comment_gen: int,
-        mentions: list[str],
-    ) -> None:
+    def _comment_draft(self, issue_key: str, text: str) -> CommentDraft:
+        return CommentDraft(
+            issue_key=issue_key,
+            text=text,
+            parent_id=self._reply_to,
+            comment_gen=self._comment_gen,
+            mentions=self._extract_mentions(text),
+        )
+
+    async def _post_comment(self, draft: CommentDraft) -> None:
         client = self.app.client
         if client is None:
             return
         try:
             response = await client.comments.create_comment(
-                issue_key,
-                text,
-                parent_comment_id=parent_id,
-                mentioned_usernames=mentions or None,
+                draft.issue_key,
+                draft.text,
+                parent_comment_id=draft.parent_id,
+                mentioned_usernames=draft.mentions or None,
             )
         except TissueApiError as error:
-            log.debug("Hub: failed to add comment to %s: %s", issue_key, error)
-            # Leave the composer and reply banner intact so the user can retry.
-            # Clearing them would silently turn a retried reply into a root post.
-            # Only show the message if they're still on the issue it was meant for.
-            if self._detail_issue_key == issue_key:
+            log.debug("Hub: failed to add comment to %s: %s", draft.issue_key, error)
+            if self._detail_issue_key == draft.issue_key:
                 self.app.notify("Failed to add comment.", severity="error")
             return
-        # The cached issue bundle's comments are now a comment short, so drop it to make
-        # the revisit refetch the full thread.
-        self._detail_cache.pop(issue_key, None)
-        if self._detail_issue_key != issue_key:
+        self._detail_cache.pop(draft.issue_key, None)
+        if self._detail_issue_key != draft.issue_key:
             return
-        # Add to the end instead of reloading the whole thread, since a full
-        # reload resets the scroll and flickers. Only when the count still
-        # matches, though. A mismatch means a detail redraw already re-fetched
-        # the comments, so skip to avoid adding a stale copy.
-        if self._comment_gen == comment_gen:
-            if parent_id is not None:
-                await self._append_reply(response, text, parent_id)
-            else:
-                await self._append_comment(response, text)
-        # Reset the composer only if it's still aimed where this post came from.
-        # The user may have re-aimed at another comment, whose banner we must keep.
-        if self._reply_to == parent_id:
+        await self._append_posted_comment(response, draft)
+        self._reset_comment_input(draft)
+
+    async def _append_posted_comment(
+        self, response: CommentCreateResponse, draft: CommentDraft
+    ) -> None:
+        if self._comment_gen != draft.comment_gen:
+            return
+        if draft.parent_id is not None:
+            await self._append_reply(response, draft.text, draft.parent_id)
+        else:
+            await self._append_comment(response, draft.text)
+
+    def _reset_comment_input(self, draft: CommentDraft) -> None:
+        if self._reply_to == draft.parent_id:
             try:
                 self.query_one("#hub-comment-input", Input).value = ""
             except NoMatches:
                 pass
-            if parent_id is not None:
+            if draft.parent_id is not None:
                 self._cancel_reply()
 
     async def _append_reply(
         self, response: CommentCreateResponse, text: str, parent_id: int
     ) -> None:
-        """Add the just-posted reply indented beneath its parent.
-
-        Shown right away (before the server confirms), so it sits newest-first.
-        The next full reload puts back the server's oldest-first order.
-        """
         try:
             comments_box = self.query_one("#hub-comments")
             parent_body = self.query_one(f"#hub-comment-body-{parent_id}")
@@ -311,7 +297,6 @@ class CommentsMixin(ProjectHomeBase):
             comments_box = self.query_one("#hub-comments")
         except NoMatches:
             return
-        # Drop the empty/loading placeholder when the first comment lands.
         await comments_box.query(".hub-muted").remove()
         comment = self._optimistic_comment(response, text)
         await comments_box.mount(*self._comment_widgets(comment))
@@ -323,11 +308,6 @@ class CommentsMixin(ProjectHomeBase):
     def _optimistic_comment(
         self, response: CommentCreateResponse, text: str
     ) -> CommentDetailResponse:
-        """A local stand-in for the just-posted comment, added without re-fetching.
-
-        Author comes from the saved profile. The real version from the server
-        lands on the next reload.
-        """
         client = self.app.client
         profile = client.account.cached_profile if client else None
         author = (

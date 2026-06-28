@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 class TransitionsMixin(ProjectHomeBase):
-    """The Status row's `⇄` button, picks a transition then performs it."""
+    """Issue transition actions."""
 
     def _status_action(
         self,
@@ -29,7 +29,6 @@ class TransitionsMixin(ProjectHomeBase):
         current_state_label: str,
         target_labels: dict[int, str],
     ) -> Widget | None:
-        """The `⇄` transition button, or None when there are no transitions."""
         if not transitions:
             return None
         self._transition_current_label = current_state_label
@@ -69,6 +68,4 @@ class TransitionsMixin(ProjectHomeBase):
             log.debug("Hub: transition failed for %s: %s", issue_key, error)
             self.app.notify("Transition failed.", severity="error")
             return
-        # Re-render the detail for the new state and the transitions you can now do.
-        # `force=True`: just transitioned, so skip the cache and refetch.
         await self._render_issue_detail(issue_key, focus_detail=False, force=True)

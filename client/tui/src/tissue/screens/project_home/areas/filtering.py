@@ -31,28 +31,29 @@ log = logging.getLogger(__name__)
 
 
 class FilterMixin(ProjectHomeBase):
-    """The ⚙ filter button opens the filter modal for the active list.
-
-    Each view has its own: Issues -> IssueFilter, Sprints -> SprintFilter,
-    Members -> MemberFilter. The button is highlighted while the active list's
-    filter is not the default.
-    """
+    """Filter modal wiring for the active [1] view."""
 
     @on(Button.Pressed, "#hub-filter")
     def _on_filter_pressed(self) -> None:
         if self._view_mode == "sprints":
-            self.app.push_screen(
-                SprintFilterModal(current=self._sprint_filter),
-                self._on_sprint_filter_applied,
-            )
+            self._open_sprint_filter()
             return
         if self._view_mode == "members":
-            self.app.push_screen(
-                MemberFilterModal(current=self._member_filter),
-                self._on_member_filter_applied,
-            )
+            self._open_member_filter()
             return
-        self.run_worker(self._open_filter_modal(), exclusive=True, group="hub-filter")
+        self.run_worker(self._open_issue_filter(), exclusive=True, group="hub-filter")
+
+    def _open_sprint_filter(self) -> None:
+        self.app.push_screen(
+            SprintFilterModal(current=self._sprint_filter),
+            self._on_sprint_filter_applied,
+        )
+
+    def _open_member_filter(self) -> None:
+        self.app.push_screen(
+            MemberFilterModal(current=self._member_filter),
+            self._on_member_filter_applied,
+        )
 
     def _on_sprint_filter_applied(self, new_filter: SprintFilter | None) -> None:
         if new_filter is None:
@@ -68,7 +69,6 @@ class FilterMixin(ProjectHomeBase):
         self._member_filter = new_filter
         self._update_filter_button()
         self._persist_filters()
-        # Re-render the loaded list with the new filter (no refetch needed).
         self.run_worker(self._reapply_member_filter(), exclusive=True, group="hub-list")
 
     async def _reapply_member_filter(self) -> None:
@@ -76,9 +76,7 @@ class FilterMixin(ProjectHomeBase):
         if self._displayed_members:
             self._select_member(0)
 
-    async def _open_filter_modal(self) -> None:
-        # The Assignee picker needs the member list, which may not be loaded yet if
-        # the filter was opened before the Issues view finished. Load it quietly.
+    async def _open_issue_filter(self) -> None:
         await self._ensure_members_loaded()
         self.app.push_screen(
             IssueFilterModal(
@@ -94,23 +92,15 @@ class FilterMixin(ProjectHomeBase):
         self._filter = new_filter
         self._update_filter_button()
         self._persist_filters()
-        # A waiting live-search timer would fire after this load in the shared
-        # 'hub-list' group and cancel the filtered load.
         self._cancel_search_timer()
-        # Switching to the Issues view always clears the keyword, staying keeps it.
         switching = self._view_mode != "issues"
         if switching:
             self._set_view_chrome("issues")
         keyword = None if switching else self._search_keyword()
         self.run_worker(self._load_issues(keyword), exclusive=True, group="hub-list")
-        # Reload Agent Work either way, since `apply_to_agent` may have toggled.
         self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     def _update_filter_button(self) -> None:
-        """Highlight the ⚙ button while the active list's filter isn't the default.
-
-        The tooltip names what it filters (issues vs sprints), matching the view.
-        """
         try:
             filter_button = self.query_one("#hub-filter", Button)
         except NoMatches:
@@ -128,7 +118,6 @@ class FilterMixin(ProjectHomeBase):
         filter_button.tooltip = "Filter (active)" if active else label
 
     def _restore_filters(self) -> None:
-        """Load this project's saved filters from config, falling back to defaults."""
         saved = self.app.config.project_filter_state(self._project_key)
         if not saved:
             return
@@ -143,7 +132,6 @@ class FilterMixin(ProjectHomeBase):
             log.debug("Ignoring unreadable saved filters: %s", error)
 
     def _persist_filters(self) -> None:
-        """Save this project's filters so the next session restores them."""
         self.app.config.save_project_filters(
             self._project_key,
             {
