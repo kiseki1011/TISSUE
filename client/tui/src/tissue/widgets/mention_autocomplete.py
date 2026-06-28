@@ -15,19 +15,7 @@ _MAX_SUGGESTIONS = 30
 
 
 class MentionAutoComplete(AutoComplete):
-    """@-mention autocomplete for a comment `Input`.
-
-    Typing `@` opens a dropdown of project members matched by username or display
-    name. Selecting one inserts `@username`.
-
-    Why it works the way it does:
-    - `members` is a callable read lazily, so the dropdown reflects the member list
-      even when it loads after the composer is mounted.
-    - matching and insertion happen here, bypassing the base widget's whole-input
-      fuzzy filter, so a member can be found by display name even when the username
-      doesn't contain the typed fragment.
-    - Enter is handled by the library. With the dropdown shown it accepts the
-      highlighted member and won't submit the `Input`, otherwise it submits."""
+    """@-mention autocomplete for a comment `Input`."""
 
     def __init__(
         self,
@@ -38,10 +26,7 @@ class MentionAutoComplete(AutoComplete):
         self._members = members
 
     def _active_mention(self, state: TargetState) -> str | None:
-        """The partial username typed after an `@` that begins the current word.
-
-        Returns None when the cursor isn't inside a mention token.
-        """
+        """Partial text after a word-starting `@`, if the cursor is inside one."""
         before = state.text[: state.cursor_position]
         at_index = before.rfind("@")
         if at_index == -1:
@@ -72,7 +57,6 @@ class MentionAutoComplete(AutoComplete):
                 and needle not in name.casefold()
             ):
                 continue
-            # `main` is what gets inserted ('@username'), `prefix` is display-only.
             prefix = f"{name}  " if name and name != username else ""
             items.append(DropdownItem(main=f"@{username}", prefix=prefix))
             if len(items) >= _MAX_SUGGESTIONS:

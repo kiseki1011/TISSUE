@@ -54,15 +54,7 @@ def _validators_for(field: str) -> list[Validator]:
 
 
 class FieldEditModal(TissueModal[bool | None]):
-    """Edit a single account field (name, username, or email).
-
-    Opened from an AccountModal pencil icon. `username` and `email` run a
-    debounced availability check, and `email` additionally requires the user to
-    verify the new address before it can be saved.
-
-    Dismisses `True` once the value is updated, in which case the account
-    service refreshes its cached profile, else `None`.
-    """
+    """Edit one account field."""
 
     CSS_PATH = "field_edit_modal.tcss"
 
@@ -148,10 +140,7 @@ class FieldEditModal(TissueModal[bool | None]):
         self._restart_check_timer(schedule=_format_valid(event))
 
     def _reset_verification(self) -> None:
-        """Drop any pending verification.
-
-        The email changed, so the old token is stale.
-        """
+        """Drop the token from an earlier email value."""
         self._stop_poll()
         self._verification_id = None
         self._verified_token = None
@@ -160,7 +149,6 @@ class FieldEditModal(TissueModal[bool | None]):
         verify_btn.disabled = True
 
     def _restart_check_timer(self, *, schedule: bool) -> None:
-        """Push the debounce timer forward so the worker fires once typing pauses."""
         if self._check_timer is not None:
             self._check_timer.stop()
             self._check_timer = None
@@ -296,7 +284,6 @@ class FieldEditModal(TissueModal[bool | None]):
         self.dismiss(True)
 
     def _is_valid(self, value: str) -> bool:
-        """Re-check format and uniqueness/verification at save time."""
         field = self._field
         if field == "name" and not (_NAME_MIN <= len(value) <= _NAME_MAX):
             self._set_status("Must be 2-35 characters", "error")

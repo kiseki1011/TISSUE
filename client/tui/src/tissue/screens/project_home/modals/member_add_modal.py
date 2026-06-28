@@ -28,11 +28,7 @@ _DEBOUNCE = 0.3
 
 
 class MemberAddModal(TissueModal["bool | None"]):
-    """Search global members and add the chosen ones to the project.
-
-    Dismisses True after a successful add (so the list reloads), None on cancel.
-    Manager-only on the server; the button that opens this is gated to managers.
-    """
+    """Search and add members to the project."""
 
     CSS_PATH = "member_add_modal.tcss"
 

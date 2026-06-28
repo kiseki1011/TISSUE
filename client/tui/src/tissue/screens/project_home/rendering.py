@@ -35,12 +35,7 @@ def _humanize_key(key: str) -> str:
 
 
 def _change_label(field: str, field_names: dict[str, str]) -> str:
-    """The label to show for a change key.
-
-    An old `customFields.{id}` key is looked up in `field_names` to get the
-    field's name, fixing past entries that logged the id. New entries already
-    carry the name.
-    """
+    """Label an activity change key, including old `customFields.{id}` keys."""
     prefix = "customFields."
     if field.startswith(prefix):
         field_id = field[len(prefix) :]
@@ -69,10 +64,7 @@ def _issue_rows(
     *,
     with_due: bool = False,
 ) -> list[list[str | Text]]:
-    """Issue summaries as DataTable rows, adding a Due cell at the end when `with_due`.
-
-    Callers that ask for the Due column must add it to their column headers too.
-    """
+    """Issue summaries as DataTable rows."""
     rows: list[list[str | Text]] = []
     for issue in issues:
         row: list[str | Text] = [
@@ -101,10 +93,7 @@ def _issue_list_rows(
     *,
     with_review_status: bool = False,
 ) -> list[list[str | Text]]:
-    """The [1]/[3] issue-list DataTable rows.
-
-    `member_names` looks up the assignee id to show a name.
-    """
+    """The [1]/[3] issue-list DataTable rows."""
     title_width = 14 if with_review_status else _ISSUE_LIST_TITLE_WIDTH
     rows: list[list[str | Text]] = []
     for issue in issues:
@@ -164,11 +153,7 @@ def _transition_label(
 def _activity_details(
     activity: ActivityLogResponse, field_names: dict[str, str] | None = None
 ) -> list[str]:
-    """Detail lines for an event, one per `changes` then `data` entry.
-
-    Skips event context keys and the raw old/new data the `changes` line
-    already shows. `field_names` looks up old `customFields.{id}` change keys.
-    """
+    """Detail lines for an activity event."""
     field_names = field_names or {}
     lines: list[str] = []
     for field, change in (activity.changes or {}).items():
@@ -195,11 +180,7 @@ def _activity_details(
 
 
 def _activity_label(activity: ActivityLogResponse) -> str:
-    """Turn the event type into plain words.
-
-    example:
-        - ISSUE_STATUS_CHANGED -> 'Status changed'
-    """
+    """Turn the event type into plain words."""
     event_type = (activity.type or "").strip()
     if not event_type:
         return "Activity"

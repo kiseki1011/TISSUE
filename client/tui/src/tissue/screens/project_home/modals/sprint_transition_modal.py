@@ -19,7 +19,6 @@ _ACTION_LABELS = {
 
 
 def available_sprint_actions(status: str) -> list[str]:
-    """The lifecycle actions allowed from a sprint's current status."""
     status = (status or "").upper()
     if status == "PLANNING":
         return ["start", "cancel"]
@@ -29,11 +28,7 @@ def available_sprint_actions(status: str) -> list[str]:
 
 
 class SprintTransitionModal(TissueModal["bool | None"]):
-    """Pick a sprint lifecycle action and perform it. Starting also needs a due date.
-
-    Performs the transition itself so a failure shows in the dialog (above the
-    buttons) instead of a corner toast. Dismisses True on success, None on cancel.
-    """
+    """Pick and run a sprint lifecycle action."""
 
     CSS_PATH = "sprint_transition_modal.tcss"
 
@@ -79,7 +74,6 @@ class SprintTransitionModal(TissueModal["bool | None"]):
         return pressed.id.removeprefix("stra-")
 
     def _sync_due(self) -> None:
-        """The due-date picker only applies to 'start', so hide it otherwise."""
         self.query_one("#str-due-row").display = self._selected() == "start"
 
     @on(RadioSet.Changed, "#str-radio")

@@ -67,7 +67,6 @@ class IssueService:
         page: int = 0,
         size: int = 20,
     ) -> PageResponseIssueSummary:
-        """Full-text search across every project the caller is a member of."""
         return await self._client._call_with_retry(
             self._client.issue_api.search_all_issues,
             keyword=keyword,
@@ -81,7 +80,6 @@ class IssueService:
         page: int = 0,
         size: int = 20,
     ) -> PageResponseIssueSummary:
-        """Issues assigned to the current user, across every project they belong to."""
         return await self._client._call_with_retry(
             self._client.issue_api.search_all_issues,
             assignee_member_ids=["me"],
@@ -104,7 +102,6 @@ class IssueService:
         page: int = 0,
         size: int = 50,
     ) -> PageResponseIssueSummary:
-        """Issues within a single project, with optional list filters."""
         return await self._client._call_with_retry(
             self._client.issue_api.search_project_issues,
             project_key=project_key,
@@ -121,14 +118,12 @@ class IssueService:
         )
 
     async def get_issue(self, issue_key: str) -> IssueCommonDetail:
-        """The common (read) fields of a single issue."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_common,
             issue_key=issue_key,
         )
 
     async def get_issue_detail(self, issue_key: str) -> IssueDetailView:
-        """The full detail payload used by the project detail view."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_detail_view,
             issue_key=issue_key,
@@ -137,7 +132,6 @@ class IssueService:
     async def get_issue_custom_fields(
         self, issue_key: str
     ) -> list[CustomFieldValueInfo]:
-        """The issue's custom field values (the fields its issue type defines)."""
         detail = await self._client._call_with_retry(
             self._client.issue_api.get_issue_custom,
             issue_key=issue_key,
@@ -145,14 +139,12 @@ class IssueService:
         return list(detail.custom_fields or [])
 
     async def get_issue_type(self, issue_type_id: int) -> IssueTypeDetail:
-        """An issue type's full definition, including custom fields."""
         return await self._client._call_with_retry(
             self._client.custom_issue_type_api.get_issue_type,
             issue_type_id=issue_type_id,
         )
 
     async def list_issue_types(self) -> list[IssueTypeSummary]:
-        """All global issue types for the create form picker."""
         return await self._client._call_with_retry(
             self._client.custom_issue_type_api.list_issue_types,
         )
@@ -172,7 +164,6 @@ class IssueService:
         custom_fields: dict[str, Any] | None = None,
         parent_issue_key: str | None = None,
     ) -> str | None:
-        """Create an issue, returning its key when the server provides one."""
         request = CreateIssueRequest(
             issueTypeId=issue_type_id,
             title=title,
@@ -195,7 +186,6 @@ class IssueService:
     async def update_custom_fields(
         self, issue_key: str, custom_fields: dict[str, Any]
     ) -> None:
-        """Update one or more custom field values."""
         await self._client._call_with_retry(
             self._client.issue_api.update_issue_custom_fields,
             issue_key=issue_key,
@@ -205,14 +195,12 @@ class IssueService:
         )
 
     async def get_transitions(self, issue_key: str) -> list[AvailableTransition]:
-        """Workflow transitions available from the issue's current state."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_available_transitions,
             issue_key=issue_key,
         )
 
     async def perform_transition(self, issue_key: str, transition_id: int) -> None:
-        """Execute a workflow transition, moving the issue to a new state."""
         await self._client._call_with_retry(
             self._client.issue_api.perform_issue_transition,
             issue_key=issue_key,
@@ -222,7 +210,6 @@ class IssueService:
         )
 
     async def assign_issue(self, issue_key: str, member_id: int) -> None:
-        """Assign the issue to a project member."""
         await self._client._call_with_retry(
             self._client.issue_api.assign_issue,
             issue_key=issue_key,
@@ -230,14 +217,12 @@ class IssueService:
         )
 
     async def unassign_issue(self, issue_key: str) -> None:
-        """Clear the issue's assignee."""
         await self._client._call_with_retry(
             self._client.issue_api.unassign_issue,
             issue_key=issue_key,
         )
 
     async def add_reviewer(self, issue_key: str, member_id: int) -> None:
-        """Add a project member to the issue's reviewers."""
         await self._client._call_with_retry(
             self._client.issue_api.add_issue_reviewer,
             issue_key=issue_key,
@@ -245,7 +230,6 @@ class IssueService:
         )
 
     async def remove_reviewer(self, issue_key: str, member_id: int) -> None:
-        """Remove a reviewer from the issue."""
         await self._client._call_with_retry(
             self._client.issue_api.remove_issue_reviewer,
             issue_key=issue_key,
@@ -253,7 +237,6 @@ class IssueService:
         )
 
     async def request_review(self, issue_key: str, member_ids: list[int]) -> None:
-        """Ask the given reviewers to review."""
         await self._client._call_with_retry(
             self._client.issue_api.request_issue_review,
             issue_key=issue_key,
@@ -261,7 +244,6 @@ class IssueService:
         )
 
     async def submit_review(self, issue_key: str, *, approved: bool) -> None:
-        """Submit the current user's review decision."""
         await self._client._call_with_retry(
             self._client.issue_api.submit_issue_review,
             issue_key=issue_key,
@@ -319,21 +301,18 @@ class IssueService:
         )
 
     async def get_issue_parent(self, issue_key: str) -> IssueIdentifierResponse:
-        """The issue's parent identifier."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_parent,
             issue_key=issue_key,
         )
 
     async def get_issue_children(self, issue_key: str) -> list[IssueIdentifierResponse]:
-        """The issue's direct child identifiers (one level only), oldest first."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_children,
             issue_key=issue_key,
         )
 
     async def assign_parent(self, issue_key: str, parent_issue_key: str) -> None:
-        """Set or replace the issue's parent."""
         await self._client._call_with_retry(
             self._client.issue_api.assign_issue_parent,
             issue_key=issue_key,
@@ -343,7 +322,6 @@ class IssueService:
         )
 
     async def remove_parent(self, issue_key: str) -> None:
-        """Detach the issue from its parent."""
         await self._client._call_with_retry(
             self._client.issue_api.remove_issue_parent,
             issue_key=issue_key,
@@ -352,7 +330,6 @@ class IssueService:
     async def add_children(
         self, project_key: str, parent_issue_key: str, child_issue_keys: list[str]
     ) -> BatchOperationResponse:
-        """Attach many children to one parent."""
         return await self._client._call_with_retry(
             self._client.issue_api.batch_change_issue_parent,
             project_key=project_key,
@@ -362,7 +339,6 @@ class IssueService:
         )
 
     async def get_issue_relations(self, issue_key: str) -> IssueRelationsDetail:
-        """The issue's relations grouped by type."""
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_relations,
             issue_key=issue_key,
@@ -375,7 +351,6 @@ class IssueService:
         target_issue_key: str,
         relation_type: str,
     ) -> None:
-        """Relate `issue_key` to another issue."""
         await self._client._call_with_retry(
             self._client.issue_api.add_issue_relation,
             issue_key=issue_key,
@@ -389,7 +364,6 @@ class IssueService:
     async def remove_issue_relation(
         self, issue_key: str, target_project_key: str, target_issue_key: str
     ) -> None:
-        """Remove the outgoing relation from `issue_key`."""
         await self._client._call_with_retry(
             self._client.issue_api.remove_issue_relation,
             issue_key=issue_key,
@@ -400,7 +374,6 @@ class IssueService:
         )
 
     async def update_story_point(self, issue_key: str, story_point: int | None) -> None:
-        """Set (or clear, with `None`) an issue's story point."""
         await self._client._call_with_retry(
             self._client.issue_api.update_issue_story_point,
             issue_key=issue_key,

@@ -11,10 +11,7 @@ from tissue.screens.base import TissueModal
 
 
 class SprintGoalEditModal(TissueModal["bool | None"]):
-    """Edit a sprint's Markdown goal in a multi-line editor (like the issue body).
-
-    Closes with True after a save so the caller redraws, None on cancel.
-    """
+    """Edit a sprint's Markdown goal."""
 
     CSS_PATH = "sprint_goal_edit_modal.tcss"
 

@@ -23,11 +23,7 @@ MAX_REVIEWERS = 10
 
 
 class ReviewerPickerModal(TissueModal["list[int] | None"]):
-    """Pick the issue's reviewers, multi-select, with the current ones ticked.
-
-    `_checked` remembers the picks so they stay when the list is rebuilt on
-    search. Dismisses with the chosen reviewer ids, or None on cancel.
-    """
+    """Pick the issue's reviewers."""
 
     CSS_PATH = "reviewer_picker_modal.tcss"
 
@@ -97,7 +93,7 @@ class ReviewerPickerModal(TissueModal["list[int] | None"]):
         self._update_count()
 
     def _sync_checked(self) -> None:
-        """Add the on-screen ticks into `_checked` so hidden picks stay."""
+        """Keep hidden checked reviewers while the visible list is filtered."""
         try:
             selection_list = self.query_one("#reviewer-list", SelectionList)
         except NoMatches:

@@ -15,14 +15,7 @@ from tissue.widgets.filter_selection_list import FilterSelectionList as Selectio
 
 
 class IssuePickerModal(TissueModal["list[str] | None"]):
-    """Pick one issue or several from a list.
-
-    Modes:
-        - multi=False uses an OptionList where Enter or click picks one and
-          closes.
-        - multi=True uses a SelectionList of checkboxes confirmed with an
-          Apply button.
-    """
+    """Pick one issue or several from a searchable list."""
 
     CSS_PATH = "issue_picker_modal.tcss"
 
@@ -88,7 +81,6 @@ class IssuePickerModal(TissueModal["list[str] | None"]):
         self.query_one("#picker-search", Input).focus()
 
     def _empty_note(self) -> None:
-        """Tell the user there is nothing to pick when no issue is eligible."""
         if self._multi:
             self.query_one("#picker-count", Label).update("No eligible issues.")
 

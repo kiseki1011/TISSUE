@@ -26,14 +26,7 @@ if TYPE_CHECKING:
 
 
 class IssueFilterModal(TissueModal["IssueFilter | None"]):
-    """Edit the filter for the issue list.
-
-    Closes with the chosen `IssueFilter`, or None if cancelled.
-
-    Searching assignees rebuilds the list, so checked picks are kept in
-    `_assignee_checked` (which survives a search) instead of read from the live
-    widget.
-    """
+    """Edit the [1] issue-list filter."""
 
     CSS_PATH = "issue_filter_modal.tcss"
 
@@ -86,9 +79,6 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
     def compose(self) -> ComposeResult:
         current_filter = self._current
         with Container(id="filter-dialog", classes="dialog"):
-            # The scroll area is the dialog's full width so its scrollbar sits
-            # right at the modal edge. The inner body holds the padding, matching
-            # the buttons row.
             with VerticalScroll(id="filter-scroll"), Vertical(id="filter-body"):
                 yield Label("[1] Issues filters", classes="filter-group")
                 yield Label("State", classes="filter-label")
@@ -176,11 +166,7 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
         self._sync_assignee_checked()
 
     def _sync_assignee_checked(self) -> None:
-        """Save what is checked in the assignee list into our kept set.
-
-        Removes the values shown right now, then adds back the checked ones, so
-        picks hidden by the search aren't lost.
-        """
+        """Keep hidden checked assignees while the visible list is filtered."""
         try:
             assignee_list = self.query_one("#filter-assignee", SelectionList)
         except NoMatches:

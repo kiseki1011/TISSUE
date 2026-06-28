@@ -35,7 +35,6 @@ class ProjectMemberService:
         page: int = 0,
         size: int = 100,
     ) -> list[ProjectMemberSummary]:
-        """Project members as a flat list."""
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
             self._client.project_member_api.list_project_members,
@@ -54,7 +53,6 @@ class ProjectMemberService:
         page: int = 0,
         size: int = 30,
     ) -> list[MemberCandidateSummary]:
-        """Users a manager can add to this project."""
         pageable = Pageable(page=page, size=size, sort=None)
         result = await self._client._call_with_retry(
             self._client.project_member_api.list_member_candidates,
@@ -67,7 +65,6 @@ class ProjectMemberService:
     async def add_project_members(
         self, project_key: str, member_ids: list[int]
     ) -> None:
-        """Add members to the project by id (manager-only on the server)."""
         request = AddProjectMembersRequest(targetMemberIds=member_ids)
         await self._client._call_with_retry(
             self._client.project_member_api.add_project_members,
@@ -76,7 +73,6 @@ class ProjectMemberService:
         )
 
     async def join_project(self, project_key: str) -> ProjectMemberResponse:
-        """Join the project as the current user."""
         return await self._client._call_with_retry(
             self._client.project_member_api.join_project,
             project_key,

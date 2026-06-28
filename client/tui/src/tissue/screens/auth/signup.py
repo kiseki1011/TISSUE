@@ -36,8 +36,6 @@ _REQUIRED_FIELDS_EMAIL_REQUIRED = ("email", "username", "name", "password")
 
 
 class _PasswordMatch(Validator):
-    """Check that confirm password equals the current password."""
-
     def __init__(self, screen: SignupScreen) -> None:
         super().__init__(failure_description="Passwords do not match")
         self._screen = screen
@@ -81,10 +79,6 @@ class SignupScreen(TissueScreen):
         self._poll_timer: Timer | None = None
         self._email_spinner: Spinner | None = None
 
-        # Availability state by field id.
-        #   - None = not checked
-        #   - True = available
-        #   - False = already taken
         self._available: dict[str, bool | None] = dict.fromkeys(_UNIQUE_FIELDS)
         self._check_timers: dict[str, Timer | None] = dict.fromkeys(_UNIQUE_FIELDS)
 
@@ -116,7 +110,6 @@ class SignupScreen(TissueScreen):
         yield TissueFooter()
 
     def _build_form_children(self) -> list:
-        """Build the ordered list of widgets that go inside the signup form."""
         children: list = []
 
         if self.email_required:
@@ -134,7 +127,6 @@ class SignupScreen(TissueScreen):
             )
             email_input.border_title = "Email"
 
-            # Disabled until the availability check confirms the email is usable.
             verify_btn = Button(
                 "Verify",
                 id="verify_btn",
@@ -225,8 +217,6 @@ class SignupScreen(TissueScreen):
                 Button(
                     "Create account",
                     id="signup_submit_btn",
-                    # When email is required, verification must pass before
-                    # submit unlocks.
                     disabled=self.email_required,
                     classes="-btn-success",
                 ),
@@ -250,7 +240,6 @@ class SignupScreen(TissueScreen):
 
     @on(Input.Changed)
     def on_input_changed(self, event: Input.Changed) -> None:
-        """Handle every input change, dispatching on `event.input.id`."""
         input_id = event.input.id
         if input_id is None:
             return
@@ -264,7 +253,6 @@ class SignupScreen(TissueScreen):
         self._render_status(input_id, event.value, event.validation_result)
 
     def _refresh_field_status(self, input_id: str) -> None:
-        """Validate a field and update its status label."""
         field_input = self.query_one(f"#{input_id}", Input)
         self._render_status(
             input_id, field_input.value, field_input.validate(field_input.value)
@@ -279,7 +267,6 @@ class SignupScreen(TissueScreen):
         render_validation_status(self, input_id, value, result)
 
     def _on_email_changed(self, event: Input.Changed) -> None:
-        """Reset verification state, restart availability check, lock submit."""
         self._stop_poll()
         self._verification_id = None
         self._verified_token = None
@@ -302,12 +289,6 @@ class SignupScreen(TissueScreen):
         )
 
     def _restart_check_timer(self, field: str, *, schedule: bool) -> None:
-        """Cancel any pending availability timer for `field`, optionally start one.
-
-        Each keystroke calls this, so the timer keeps getting pushed forward
-        until the user pauses for `_AVAILABILITY_DEBOUNCE` seconds, after which
-        the API worker runs.
-        """
         current = self._check_timers[field]
         if current is not None:
             current.stop()
@@ -326,7 +307,6 @@ class SignupScreen(TissueScreen):
         await self._check_availability("username")
 
     async def _check_availability(self, field: str) -> None:
-        """Call the availability check API and set the status."""
         client = self.app.client
         if client is None:
             return
@@ -345,7 +325,6 @@ class SignupScreen(TissueScreen):
         try:
             available = await check_available(value)
         except TissueApiError as error:
-            # The user typed more while we awaited, so this result is stale, drop it.
             if field_input.value.strip() != value:
                 return
             log.warning("%s availability check failed: %s", field, error)
@@ -393,7 +372,6 @@ class SignupScreen(TissueScreen):
 
     @work(exclusive=True, group="verify_request")
     async def _do_request_verification(self, email: str) -> None:
-        """Request a verification email and start polling for its status."""
         if self.app.client is None:
             return
 
@@ -424,7 +402,6 @@ class SignupScreen(TissueScreen):
 
     @work(group="verify_poll")
     async def _poll_verification(self) -> None:
-        """One polling tick. On `VERIFIED` status, stop polling and unlock submit."""
         verification_id = self._verification_id
         if verification_id is None or self.app.client is None:
             return
@@ -482,7 +459,6 @@ class SignupScreen(TissueScreen):
         self._do_signup()
 
     def _check_required_fields(self) -> Input | None:
-        """Find empty required fields, show error and focus first one."""
         ids = ["username", "name", "password", "password_confirm"]
         if self.email_required:
             ids.insert(0, "email")
@@ -490,10 +466,6 @@ class SignupScreen(TissueScreen):
 
     @work(exclusive=True, group="signup")
     async def _do_signup(self) -> None:
-        """Call the signup API, returning to login on success.
-
-        On failure notify the user.
-        """
         if self.app.client is None:
             log.error("Signup attempted but TissueClient is not set")
             return

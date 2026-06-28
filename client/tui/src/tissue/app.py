@@ -39,7 +39,6 @@ class TissueApp(App):
         self.system_info: SystemInfoDetails | None = None
         self._session_expiring = False
 
-    # wait interval before showing the connecting screen
     INITIAL_PING_TIMEOUT = 0.5
 
     async def on_mount(self) -> None:
@@ -67,7 +66,6 @@ class TissueApp(App):
             system_info = await asyncio.wait_for(
                 client.ping(), timeout=self.INITIAL_PING_TIMEOUT
             )
-        # If unreachable within INITIAL_PING_TIMEOUT, retry with a spinner.
         except (TimeoutError, TissueApiError) as e:
             log.debug("Initial ping failed, showing connecting screen: %s", e)
             await client.close()
@@ -78,7 +76,6 @@ class TissueApp(App):
         self.system_info = system_info
         self.config.update_state(last_connected_at=datetime.now().astimezone())
 
-        # Restore the previous session from a stored token.
         saved_token = self.token_store.load(saved_url)
         if saved_token is not None:
             try:
@@ -92,24 +89,14 @@ class TissueApp(App):
         self.push_screen(LoginScreen(system_info, self.config))
 
     def _route_to_last_screen(self) -> None:
-        """Restore the screen the user was on before they closed the app.
-
-        When that was a project hub, push it straight onto a (covered) Home in the
-        same tick, so the hub is what paints first (no dashboard flash) while Home
-        stays underneath for back-navigation.
-        """
+        """Restore the last screen without flashing the dashboard first."""
         if self.client is None:
             return
         self.push_screen(HomeScreen())
         self._push_last_project()
 
     def _push_last_project(self) -> None:
-        """Stack the last-open project hub on top of the dashboard, if any.
-
-        Pushed without a flash since it's added before the dashboard paints. The
-        hub tolerates a now-inaccessible project (its loads fall back to empty),
-        and navigating Home from the palette clears the saved key.
-        """
+        """Stack the last-open project hub on top of Home, if any."""
         key = self.config.last_project()
         if not key:
             return
@@ -127,12 +114,7 @@ class TissueApp(App):
         self.config.update_settings(theme=theme)
 
     def get_key_display(self, binding: Binding) -> str:
-        """Format a shortcut for the footer, uppercase and spelled out.
-
-        Changes how the key reads, not what's bound. By case:
-            - with ctrl/alt/shift -> all uppercase ("ctrl+p" -> "CTRL+P")
-            - a lone letter -> uppercase ("r" -> "R")
-        """
+        """Format a shortcut for the footer."""
         if binding.key_display:
             return binding.key_display.upper()
         modifiers, key = binding.parse_key()
@@ -165,21 +147,13 @@ class TissueApp(App):
         self.push_screen(AccountModal())
 
     def show_home(self) -> None:
-        """Navigate to the home screen (command palette)."""
-        # Landing on the dashboard means no project is open. Record it now, up
-        # front, so quitting before the dashboard finishes loading still restores
-        # the dashboard rather than the project we just left.
+        """Navigate to the dashboard from the command palette."""
+        # Save before navigation finishes so quitting mid-load still restores Home.
         self.config.set_last_project(None)
         self._navigate_to_screen(HomeScreen())
 
     def _navigate_to_screen(self, screen: Screen) -> None:
-        """Collapse drill-in screens/modals for palette navigation, then show `screen`.
-
-        Pop everything stacked on top of the base content screen, then replace
-        that content screen with `screen`. We never pop past index 1. The App's
-        auto-created default screen at index 0 was never `push_screen`-ed, so it
-        has no result callback and `switch_screen` would raise trying to pop one.
-        """
+        """Collapse drill-in screens/modals, then show `screen`."""
         while len(self.screen_stack) > 2:
             self.pop_screen()
         if len(self.screen_stack) > 1:
@@ -197,21 +171,13 @@ class TissueApp(App):
         self._reset_to_login()
 
     def _reset_to_login(self) -> None:
-        """Collapse any stacked screens/modals, then land on the login screen.
-
-        Reuses `_navigate_to_screen` so the same stack-collapse rule applies.
-        Never pop past the base screen before `switch_screen`, which would
-        IndexError on the callback-less default screen.
-        """
+        """Collapse stacked screens/modals, then land on login."""
         if self.system_info is None:
             return
         self._navigate_to_screen(LoginScreen(self.system_info, self.config))
 
     def _on_session_expired(self) -> None:
-        """Route back to login once with a notice when a token refresh fails.
-
-        Avoids leaving the user stuck on a screen.
-        """
+        """Route back to login once when token refresh fails."""
         if self.system_info is None or self._session_expiring:
             return
         self._session_expiring = True
@@ -232,24 +198,20 @@ class TissueApp(App):
 
         self._session_expiring = False
 
-        # Record (server, username) so we can detect first-time login.
         profile = client.account.cached_profile
         if profile is not None and profile.username:
             self.config.mark_login_seen(client.host, profile.username)
 
-        # A fresh login lands on the dashboard, not a restored project.
         self.config.set_last_project(None)
         self.switch_screen(HomeScreen())
 
     def _handle_exception(self, error: Exception) -> None:
-        # Log the traceback before Textual tears the app down. It otherwise only
-        # prints to the console, leaving no trace once the app is gone.
+        # Textual tears down the alt screen, so persist the traceback first.
         log.critical("Unhandled exception, app is exiting", exc_info=error)
         super()._handle_exception(error)
 
     async def _flush_next_callbacks(self) -> None:
-        # A stray CancelledError from a cancelled widget swap can leak out here and
-        # quietly kill the app. Swallow it.
+        # A cancelled widget swap can leak a non-task CancelledError here.
         try:
             await super()._flush_next_callbacks()
         except asyncio.CancelledError:

@@ -13,12 +13,7 @@ from tissue.screens.base import TissueModal
 
 
 class RelationAddModal(TissueModal["tuple[str, str] | None"]):
-    """Pick a relation type and a target issue.
-
-    Closes with (type, target key), or None if cancelled. The caller passes in
-    only issues from the same project that are allowed, and the server checks
-    again to be sure.
-    """
+    """Pick a relation type and target issue."""
 
     CSS_PATH = "relation_add_modal.tcss"
 

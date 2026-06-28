@@ -34,29 +34,14 @@ class HomeScreen(
     SearchMixin,
     ProjectsMixin,
 ):
-    """Dashboard landing screen.
-
-    Top is a search bar (`/project:` `/issue:`) over a grid.
-
-    Layout:
-        - [1] Searched Items | Details
-        - [2] My Work        | (Details, row-span 2)
-        - [2] My Work        | [3] Projects
-    """
+    """Dashboard landing screen."""
 
     CSS_PATH = "home.tcss"
 
-    # Navigation keys:
-    # - number keys jump to a box
-    # - h/l cycle through the boxes (1->2->3->1)
-    # - j/k (and the arrows) move rows inside the focused table
-    # - c/p create a project / toggle pin while the [3] Projects box is focused
     BINDINGS = [
         Binding("1", f"focus_box('{SearchResultsPanel.BOX_ID}')", show=False),
         Binding("2", f"focus_box('{MyWorkPanel.BOX_ID}')", show=False),
         Binding("3", f"focus_box('{ProjectsPanel.BOX_ID}')", show=False),
-        # ctrl+digit jumps too, but also works while the search input has focus,
-        # where a plain digit is typed into the input instead of reaching us.
         Binding("ctrl+1", f"focus_box('{SearchResultsPanel.BOX_ID}')", show=False),
         Binding("ctrl+2", f"focus_box('{MyWorkPanel.BOX_ID}')", show=False),
         Binding("ctrl+3", f"focus_box('{ProjectsPanel.BOX_ID}')", show=False),
@@ -64,17 +49,8 @@ class HomeScreen(
         Binding("l", "nav('l')", show=False),
         Binding("c", "create_project", "create project"),
         Binding("p", "toggle_pin", "pin/unpin"),
-        # `/` works in every terminal, so it is the only search key shown in the
-        # footer. A typed `/` reaches the input first when it has focus, so the
-        # binding only fires from the boxes.
         Binding("slash", "focus_search", "search", key_display="/"),
-        # Ctrl+/ does the same but is hidden, because only some terminals encode it.
-        # - legacy ones send ctrl+underscore (0x1F)
-        # - the kitty keyboard protocol sends ctrl+slash
-        # - IntelliJ's terminal sends neither
         Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
-        # Esc leaves the search box back to the boxes, so the box-jump digits (which
-        # the search input would otherwise swallow) work again without holding Ctrl.
         Binding("escape", "leave_search", show=False),
     ]
 
@@ -109,9 +85,6 @@ class HomeScreen(
     async def refresh_data(self) -> None:
         self._cancel_search_timer()
         self._search.invalidate()
-        # A full refresh recomposes and clears the search input, so clear the
-        # results too. Otherwise the Searched Items box would keep stale
-        # (highlighted) results while the input reads empty.
         self._search.clear_results()
         await self._load_dashboard()
 
@@ -126,8 +99,6 @@ class HomeScreen(
         except TissueApiError as error:
             log.debug("Dashboard: failed to load my work: %s", error)
             self._my_work.items = []
-        # Workflow state colors for the issue tables' Status chips. Skipped on failure.
         await self._load_state_colors()
         self.refresh(recompose=True)
-        # Land on a data box so the nav keys (1-4/h/l/j/k) work right away.
         self.call_after_refresh(self._focus_after_load)

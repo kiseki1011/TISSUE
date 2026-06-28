@@ -18,11 +18,7 @@ if TYPE_CHECKING:
 
 
 class SprintDetailModal(ScrollableModal[None]):
-    """Read-only sprint detail in a centered dialog, closed with Esc.
-
-    Opened from the hub's expanded mode where [2] is hidden, so it has no
-    move-issue buttons or list of open issues to pull from.
-    """
+    """Read-only sprint detail dialog."""
 
     CSS_PATH = "sprint_detail_modal.tcss"
 

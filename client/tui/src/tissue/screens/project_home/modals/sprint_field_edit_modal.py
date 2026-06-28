@@ -17,11 +17,7 @@ _FIELD_CLASS = {"title": "-title", "dueAt": "-datetime"}
 
 
 class SprintFieldEditModal(TissueModal[bool | None]):
-    """Edit one editable sprint field (title or due date).
-
-    Goal has its own Markdown editor. Returns `True` so the caller redraws, or
-    `None` on cancel.
-    """
+    """Edit one sprint field."""
 
     CSS_PATH = "sprint_field_edit_modal.tcss"
 

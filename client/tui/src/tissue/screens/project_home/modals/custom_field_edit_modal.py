@@ -48,10 +48,7 @@ _PICKER_TYPES = {"DATE", "TIMESTAMP"}
 
 
 class CustomFieldEditModal(TissueModal[bool | None]):
-    """Edit one custom field value with a widget that fits its type.
-
-    Dismisses `True` so the caller redraws, or `None` on cancel.
-    """
+    """Edit one custom field value."""
 
     CSS_PATH = "custom_field_edit_modal.tcss"
 
@@ -227,10 +224,7 @@ class CustomFieldEditModal(TissueModal[bool | None]):
         self.query_one("#cfe-status", Static).update(message)
 
     def _payload_value(self) -> Any:
-        """The value to send, in the right form for this field type.
-
-        Raises ValueError with a message to show the user on bad input.
-        """
+        """Return the PATCH value in the field type's server shape."""
         ftype = self._ftype
         if ftype == "TEXT":
             text = self.query_one("#cfe-text", TextArea).text

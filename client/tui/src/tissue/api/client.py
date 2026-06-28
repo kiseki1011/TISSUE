@@ -47,11 +47,7 @@ T = TypeVar("T")
 
 
 class TissueClient:
-    """Wrapper over the generated API.
-
-    Owns tokens, refresh, retry, ping, and lifecycle. Domain operations are
-    delegated to services exposed as fields.
-    """
+    """Wrapper over the generated API."""
 
     def __init__(
         self,
@@ -194,7 +190,6 @@ class TissueClient:
         return self._agents_api
 
     def set_tokens(self, token_pair: TokenPair) -> None:
-        """Store the token pair and configure the access token for outgoing requests."""
         self._token_pair = token_pair
         self._config.access_token = token_pair.access_token
         self._persist_tokens()
@@ -215,7 +210,6 @@ class TissueClient:
             log.warning("Failed to persist tokens for %s: %s", self.host, e)
 
     async def refresh(self) -> None:
-        """Use current refresh token for a new token pair."""
         if self._token_pair is None:
             raise TissueApiError("No refresh token available")
         request = RefreshTokenRequest(refreshToken=self._token_pair.refresh_token)
@@ -237,11 +231,7 @@ class TissueClient:
     async def _call_with_retry(
         self, fn: Callable[..., Awaitable[T]], *args, **kwargs
     ) -> T:
-        """Wrapper for authenticated API calls.
-
-        On 401, refresh tokens once and retry. Use this to wrap any endpoint that
-        requires authentication. Public endpoints should call generated APIs directly.
-        """
+        """Call an authenticated endpoint, refreshing once on 401."""
         token_at_call = self._token_pair.access_token if self._token_pair else None
         try:
             return await fn(*args, **kwargs)
@@ -267,13 +257,7 @@ class TissueClient:
             raise TissueApiError("Couldn't read the server response.") from e
 
     async def _refresh_for_retry(self, token_at_call: str | None) -> None:
-        """Refresh once for a 401 retry, serialized via a lock.
-
-        If a concurrent caller already refreshed while we waited for the lock,
-        our access token will have changed. Skip refreshing and let the caller
-        retry with the current token. This stops two callers from spending
-        the same (rotating) refresh token, which the server treats as token reuse.
-        """
+        """Refresh once, unless another caller already did."""
         async with self._refresh_lock:
             current = self._token_pair.access_token if self._token_pair else None
             if current != token_at_call:
@@ -301,7 +285,6 @@ class TissueClient:
         await self._api_client.close()
 
     async def _prefetch_user_context(self) -> None:
-        """Fetch the member profile."""
         try:
             profile = await self.member_profile_api.get_my_profile()
         except (ApiException, httpx.HTTPError) as e:

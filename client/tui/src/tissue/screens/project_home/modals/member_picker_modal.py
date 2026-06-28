@@ -25,13 +25,7 @@ _UNASSIGN_ID = "unassign"
 
 
 class MemberPickerModal(TissueModal[int | None]):
-    """Pick what to do with the assignee.
-
-    Choices:
-        - Pick a member to assign
-        - Clear the assignee (`UNASSIGN`)
-        - Cancel
-    """
+    """Pick an assignee or clear the current assignee."""
 
     CSS_PATH = "member_picker_modal.tcss"
 

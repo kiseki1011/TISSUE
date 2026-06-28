@@ -37,10 +37,7 @@ log = logging.getLogger(__name__)
 
 
 class SearchMixin(HomeScreenBase):
-    """[1] Searched Items.
-
-    The search bar, debounced live search, and results.
-    """
+    """[1] Searched Items search and results."""
 
     def _search_candidates(self, state: TargetState) -> list[DropdownItem]:
         """Suggest the command prefixes only while typing the prefix."""
@@ -54,13 +51,10 @@ class SearchMixin(HomeScreenBase):
             self._search.timer = None
 
     def on_unmount(self) -> None:
-        # Don't let a pending debounce fire on a screen that's going away.
         self._cancel_search_timer()
 
     @on(Input.Changed, "#dashboard-search")
     def _on_search_changed(self, event: Input.Changed) -> None:
-        # Restart the debounce timer so the search fires only once typing pauses.
-        # A keyword below _MIN_QUERY_LEN clears results back to the prompt.
         self._cancel_search_timer()
         parsed = _parse_search(event.value)
         if parsed is None or len(parsed[1]) < _MIN_QUERY_LEN:
@@ -78,8 +72,6 @@ class SearchMixin(HomeScreenBase):
 
     @on(Input.Submitted, "#dashboard-search")
     def _on_search_submitted(self, event: Input.Submitted) -> None:
-        # Enter searches immediately. Unlike live search it allows an empty
-        # keyword, which browses everything for that kind.
         self._cancel_search_timer()
         parsed = _parse_search(event.value)
         if parsed is None:
@@ -94,19 +86,9 @@ class SearchMixin(HomeScreenBase):
         )
 
     def _reset_search(self) -> None:
-        """Clear the Searched Items box back to its prompt.
-
-        Called when the keyword falls below the minimum length.
-        """
-        # Raise the version counter first, unconditionally. An in-flight search
-        # may not have assigned its results yet, but it must still be invalidated
-        # so it can't render results for a query the user has already backspaced
-        # away. _run_search re-checks the counter after its await and drops the
-        # stale result.
+        """Clear results and invalidate in-flight searches."""
         self._search.invalidate()
         if self._search.kind is None and self._search.results is None:
-            # Nothing on screen to clear, so skip the re-render and avoid
-            # rebuilding the box on every keystroke while typing the prefix.
             return
         self._search.clear_results()
         self.run_worker(self._render_searched(), exclusive=True, group="dash-search")

@@ -37,16 +37,7 @@ _PLACEHOLDERS = {
 
 
 class IssueFieldEditModal(TissueModal[bool | None]):
-    """Edit one editable issue field.
-
-    Field:
-        - title
-        - priority
-        - due date
-        - story points
-
-    Returns `True` so the caller redraws, or `None` on cancel.
-    """
+    """Edit one issue field."""
 
     CSS_PATH = "issue_field_edit_modal.tcss"
 
@@ -126,7 +117,6 @@ class IssueFieldEditModal(TissueModal[bool | None]):
 
     @on(Button.Pressed, "#ife-clear")
     def _on_clear(self) -> None:
-        """Empty the picker so saving clears the due date."""
         self.query_one("#ife-datetime", DateTimePicker).datetime = None
         self._save()
 

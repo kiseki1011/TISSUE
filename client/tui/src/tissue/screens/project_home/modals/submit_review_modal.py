@@ -10,14 +10,7 @@ from tissue.screens.base import TissueModal
 
 
 class SubmitReviewModal(TissueModal["bool | None"]):
-    """Asks the user to review an issue with two choices.
-
-    Choices, limited to what the server accepts:
-        - Approve
-        - Request changes
-
-    Esc closes the dialog without a choice.
-    """
+    """Choose approve or request-changes for a review."""
 
     CSS_PATH = "submit_review_modal.tcss"
 

@@ -36,17 +36,6 @@ class SprintService:
         page: int = 0,
         size: int = 50,
     ) -> PageResponseSprintSummary:
-        """Sprints of a single project, for the hub's Sprints tab.
-
-        `statuses` optionally narrows to a set of sprint statuses, omitted
-        means all.
-
-        Sprint status:
-            - PLANNING
-            - ACTIVE
-            - COMPLETED
-            - CANCELLED
-        """
         pageable = Pageable(page=page, size=size, sort=None)
         return await self._client._call_with_retry(
             self._client.sprint_api.list_project_sprints,
@@ -56,7 +45,6 @@ class SprintService:
         )
 
     async def get_sprint(self, sprint_id: int) -> SprintDetail:
-        """A single sprint's detail (goal + lifecycle timestamps)."""
         return await self._client._call_with_retry(
             self._client.sprint_api.get_sprint,
             sprint_id,
@@ -65,10 +53,6 @@ class SprintService:
     async def create_sprint(
         self, project_key: str, *, title: str, goal: str | None = None
     ) -> SprintCommandResult:
-        """Create a sprint in the project, requires PROJECT_MANAGER or above.
-
-        `title` is required (2-50 chars), `goal` is optional (<=255).
-        """
         request = CreateSprintRequest(title=title, goal=goal)
         return await self._client._call_with_retry(
             self._client.sprint_api.create_sprint,
@@ -77,7 +61,6 @@ class SprintService:
         )
 
     async def add_sprint_issues(self, sprint_id: int, issue_keys: list[str]) -> None:
-        """Assign issues to a sprint (bulk, by issue key)."""
         request = AddSprintIssuesRequest(issueKeys=issue_keys)
         await self._client._call_with_retry(
             self._client.sprint_api.add_sprint_issues,
@@ -86,7 +69,6 @@ class SprintService:
         )
 
     async def remove_sprint_issues(self, sprint_id: int, issue_keys: list[str]) -> None:
-        """Remove issues from a sprint (bulk, by issue key)."""
         request = RemoveSprintIssuesRequest(issueKeys=issue_keys)
         await self._client._call_with_retry(
             self._client.sprint_api.remove_sprint_issues,
@@ -95,10 +77,6 @@ class SprintService:
         )
 
     async def start_sprint(self, sprint_id: int, *, due_at: str) -> None:
-        """PLANNING -> ACTIVE. The backend sets started_at to now; due_at is required.
-
-        `due_at` is a UTC ISO-8601 instant string.
-        """
         request = StartSprintRequest(dueAt=datetime.fromisoformat(due_at))
         await self._client._call_with_retry(
             self._client.sprint_api.start_sprint,
@@ -107,14 +85,12 @@ class SprintService:
         )
 
     async def complete_sprint(self, sprint_id: int) -> None:
-        """ACTIVE -> COMPLETED. Rejected if any sprint issue is unfinished."""
         await self._client._call_with_retry(
             self._client.sprint_api.complete_sprint,
             sprint_id,
         )
 
     async def cancel_sprint(self, sprint_id: int) -> None:
-        """PLANNING/ACTIVE -> CANCELLED. Unassigns the sprint's issues."""
         await self._client._call_with_retry(
             self._client.sprint_api.cancel_sprint,
             sprint_id,
@@ -129,7 +105,6 @@ class SprintService:
         started_at: str | None = None,
         due_at: str | None = None,
     ) -> None:
-        """Update only the provided sprint fields."""
         body: dict[str, object | None] = {}
         if title is not None:
             body["title"] = title

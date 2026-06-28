@@ -35,26 +35,7 @@ UNSET: Any = object()
 
 
 class CustomFieldInput(Vertical):
-    """A type-matched control for one custom field.
-
-    The field name sits in the control's border title. A plain widget, so a
-    screen can mount many at once. The create-issue form mounts one per field.
-    Queries are scoped to the widget with class selectors, not global ids, so
-    instances never collide.
-
-    The control is chosen by field type:
-        - TEXT = TextArea
-        - SHORT_TEXT / INTEGER / DECIMAL = Input
-        - PERCENTAGE = Input + live ProgressBar
-        - DATE / TIMESTAMP = picker (stored as ISO date / UTC instant)
-        - BOOLEAN = Switch
-        - SELECT_OPTION = Select
-        - CHECKLIST = SelectionList
-
-    `get_value()` reads and shapes the typed value, raising ValueError with a
-    user-facing message on bad input. An untouched optional field yields `UNSET`
-    so the caller can omit it from the create payload.
-    """
+    """Type-matched editor for one custom field."""
 
     def __init__(
         self,
@@ -89,11 +70,6 @@ class CustomFieldInput(Vertical):
         return f"{self._label}{' *' if self._required else ''}"
 
     def _control(self) -> ComposeResult:
-        """Yield the type-matched control(s).
-
-        The field name goes in the control's border title, so it reads as a
-        labeled box with no separate label above.
-        """
         ftype = self._ftype
         title = self._title()
         if ftype == "TEXT":
@@ -202,10 +178,7 @@ class CustomFieldInput(Vertical):
 
     @property
     def picker(self) -> Widget | None:
-        """The date/datetime picker control, if this field uses one.
-
-        Lets a host auto-open it or watch its `expanded` state.
-        """
+        """The date/datetime picker, if this field uses one."""
         selector = (
             ".cf-date"
             if self._ftype == "DATE"
@@ -221,7 +194,6 @@ class CustomFieldInput(Vertical):
             return None
 
     def focus_input(self) -> None:
-        """Move focus to this field's control (first one that exists)."""
         controls = (
             ".cf-text",
             ".cf-input",
@@ -252,12 +224,7 @@ class CustomFieldInput(Vertical):
         return ValueError(f"{self._label}: this field is required.")
 
     def get_value(self) -> Any:
-        """The typed value for the create payload, shaped per the field type.
-
-        Returns `UNSET` for an untouched optional field so the caller omits it,
-        a shaped value otherwise. Raises ValueError with a user-facing message
-        on invalid input or a missing required field.
-        """
+        """Return the payload value, or `UNSET` when an optional field is blank."""
         ftype = self._ftype
         if ftype == "TEXT":
             text = self.query_one(".cf-text", TextArea).text
