@@ -17,7 +17,8 @@ import org.springframework.stereotype.Repository;
 /**
  * Relevance-ranked FTS adapter.
  *
- * <p>Uses {@link IssueSearchSpecs#ftsKeywordMatches} for the keyword predicate and {@link IssueSearchSpecs#orderByRelevance}
+ * <p>Uses {@link IssueSearchSpecs#ftsKeywordMatches} for the keyword predicate and
+ * {@link IssueSearchSpecs#orderByRelevance}
  * for the {@code ts_rank} ordering, and reuses the other filter specs (priority, state, assignee, sprint,
  * tags, date ranges) without modification. Both the project-scoped and instance-wide searches share
  * the same {@link #filters} chain, differing only in the project predicate.

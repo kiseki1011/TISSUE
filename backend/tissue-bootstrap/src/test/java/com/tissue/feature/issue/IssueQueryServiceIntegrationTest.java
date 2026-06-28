@@ -272,8 +272,8 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName(
-            "getIssueDetailView aggregates common, transitions, custom fields, hierarchy, relations, comments in one call")
+    @DisplayName("getIssueDetailView aggregates common, transitions, custom fields, hierarchy, relations,"
+            + " comments in one call")
     @LLMGenerated(llmInvolvement = LLMInvolvement.VIBE_CODED, model = "claude-opus-4-8")
     void getIssueDetailView_returnsAllSections() {
         // given

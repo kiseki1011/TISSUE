@@ -27,6 +27,7 @@ public record IssueRelationsDetail(
                 case DUPLICATES -> duplicates.add(info);
                 case CAUSES -> causes.add(info);
                 case RELEVANT -> relevant.add(info);
+                default -> {}
             }
         }
 
@@ -41,6 +42,7 @@ public record IssueRelationsDetail(
                 case DUPLICATES -> duplicatedBy.add(info);
                 case CAUSES -> causedBy.add(info);
                 case RELEVANT -> relevant.add(info);
+                default -> {}
             }
         }
 
