@@ -49,3 +49,14 @@ class CommonFieldPatchBodyTest(unittest.TestCase):
         )
 
         self.assertEqual(body, {"dueAt": None})
+
+
+class RawPatchHooksTest(unittest.TestCase):
+    """Guards the generated internals the raw PATCH workaround relies on."""
+
+    def test_serialize_hooks_exist(self) -> None:
+        from tissue.api.generated.api.issue_api import IssueApi
+        from tissue.api.generated.api.sprint_api import SprintApi
+
+        self.assertTrue(hasattr(IssueApi, "_update_issue_common_fields_serialize"))
+        self.assertTrue(hasattr(SprintApi, "_update_sprint_serialize"))
