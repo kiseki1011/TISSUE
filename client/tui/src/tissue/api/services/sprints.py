@@ -121,19 +121,9 @@ class SprintService:
     async def _patch_sprint(
         self, sprint_id: int, body: dict[str, object | None]
     ) -> None:
-        """PATCH using a raw body for JsonNullable fields."""
-        api = self._client.sprint_api
-        param = api._update_sprint_serialize(
+        await self._client._send_raw_patch(
+            self._client.sprint_api._update_sprint_serialize,
             sprint_id=sprint_id,
             update_sprint_request=body,
-            _request_auth=None,
-            _content_type=None,
-            _headers=None,
-            _host_index=0,
-        )
-        response = await api.api_client.call_api(*param)
-        await response.read()
-        api.api_client.response_deserialize(
-            response_data=response,
             response_types_map={"204": None, "400": None, "403": None, "404": None},
         )

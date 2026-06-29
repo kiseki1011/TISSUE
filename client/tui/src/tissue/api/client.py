@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import httpx
 import pydantic
@@ -269,6 +269,28 @@ class TissueClient:
                 if self._on_session_expired is not None:
                     self._on_session_expired()
                 raise
+
+    async def _send_raw_patch(
+        self,
+        serialize: Callable[..., Any],
+        *,
+        response_types_map: dict[str, None],
+        **serialize_kwargs: object,
+    ) -> None:
+        """PATCH with a raw body for fields the generated client can't model."""
+        param = serialize(
+            _request_auth=None,
+            _content_type=None,
+            _headers=None,
+            _host_index=0,
+            **serialize_kwargs,
+        )
+        response = await self._api_client.call_api(*param)
+        await response.read()
+        self._api_client.response_deserialize(
+            response_data=response,
+            response_types_map=response_types_map,
+        )
 
     async def ping(self) -> SystemInfoDetails:
         try:

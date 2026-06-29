@@ -283,20 +283,10 @@ class IssueService:
     async def _patch_common_fields(
         self, issue_key: str, body: dict[str, object | None]
     ) -> None:
-        """Send the raw PATCH body needed by `update_common_fields`."""
-        api = self._client.issue_api
-        param = api._update_issue_common_fields_serialize(
+        await self._client._send_raw_patch(
+            self._client.issue_api._update_issue_common_fields_serialize,
             issue_key=issue_key,
-            update_common_fields_request=body,  # pyright: ignore[reportArgumentType]
-            _request_auth=None,
-            _content_type=None,
-            _headers=None,
-            _host_index=0,
-        )
-        response = await api.api_client.call_api(*param)
-        await response.read()
-        api.api_client.response_deserialize(
-            response_data=response,
+            update_common_fields_request=body,
             response_types_map={"204": None, "400": None, "404": None},
         )
 

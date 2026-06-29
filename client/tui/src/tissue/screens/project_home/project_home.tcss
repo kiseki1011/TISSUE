@@ -285,15 +285,6 @@ ProjectHomeScreen .hub-hier-row {
     height: auto;
 }
 
-/* Description. A bare ✎ at the area's top-right (no label), aligned with the
-   field-edit pencils above (same right-edge x-axis). */
-ProjectHomeScreen .hub-desc-header {
-    width: 100%;
-    height: auto;
-    align-horizontal: right;
-    padding-bottom: 1;
-}
-
 /* Comments section in the detail pane. A header, the loaded comments, and the
    add-comment form. Replies are indented + railed via .hub-reply-block. */
 ProjectHomeScreen .hub-section-title {
