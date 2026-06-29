@@ -33,7 +33,6 @@ from tissue.widgets.issue_fields import (
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
-    from tissue.api.generated.models.available_transition import AvailableTransition
     from tissue.api.generated.models.comment_detail_response import (
         CommentDetailResponse,
     )
@@ -48,10 +47,6 @@ if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
 
 log = logging.getLogger(__name__)
-
-
-def _edit_button(button_id: str) -> TextButton:
-    return TextButton("✎", id=button_id, classes="hub-row-action hub-field-edit")
 
 
 class DetailRenderMixin(ProjectHomeBase):
@@ -99,16 +94,9 @@ class DetailRenderMixin(ProjectHomeBase):
             ),
         ]
 
-    def _cf_edit_button(self, field_id: int) -> TextButton:
-        return TextButton(
-            "✎", id=f"hub-cf-edit-{field_id}", classes="hub-row-action hub-cf-edit"
-        )
-
     def _safe_issue_widgets(
         self,
         issue: IssueCommonDetail,
-        transitions: list[AvailableTransition],
-        target_labels: dict[int, str],
         custom_fields: list[CustomFieldValueInfo],
         options_by_field: dict[int, list[FieldOptionDetail]],
         comments: list[CommentDetailResponse],
@@ -118,8 +106,6 @@ class DetailRenderMixin(ProjectHomeBase):
         try:
             return self._issue_widgets(
                 issue,
-                transitions,
-                target_labels,
                 custom_fields,
                 options_by_field,
                 comments,
@@ -133,8 +119,6 @@ class DetailRenderMixin(ProjectHomeBase):
     def _issue_widgets(
         self,
         detail: IssueCommonDetail,
-        transitions: list[AvailableTransition],
-        target_labels: dict[int, str],
         custom_fields: list[CustomFieldValueInfo],
         options_by_field: dict[int, list[FieldOptionDetail]],
         comments: list[CommentDetailResponse],
@@ -154,60 +138,35 @@ class DetailRenderMixin(ProjectHomeBase):
         widgets: list[Widget] = [
             Horizontal(
                 Static(detail.title or "-", markup=False, classes="hub-detail-title"),
-                _edit_button("hub-edit-title"),
                 classes="hub-title-row",
             ),
             detail_row("Key", detail.issue_key or "-"),
             detail_row(
                 "Status",
                 _color_chip(current_state_label, state.color if state else None),
-                action=self._status_action(
-                    transitions, current_state_label, target_labels
-                ),
             ),
             detail_row(
                 "Priority",
                 _priority_chip(self.app.theme_variables, detail.priority),
-                action=_edit_button("hub-edit-priority"),
             ),
             detail_row("Type", _type_text(issue_type)),
             self._current_sprint_row(detail.issue_key),
-            detail_row(
-                "Assignee",
-                _member_name(detail.assignee),
-                action=TextButton(
-                    "✎", id="hub-assignee-edit", classes="hub-row-action"
-                ),
-            ),
+            detail_row("Assignee", _member_name(detail.assignee)),
             detail_row("Author", _member_name(detail.author)),
             detail_row(
                 "Story points",
                 "-" if detail.story_point is None else str(detail.story_point),
-                action=_edit_button("hub-edit-sp"),
             ),
             *progress_block(detail),
-            detail_row(
-                "Due",
-                format_relative(detail.due_at),
-                action=_edit_button("hub-edit-due"),
-            ),
+            detail_row("Due", format_relative(detail.due_at)),
             detail_row("Created", format_relative(detail.created_at)),
             detail_row("Updated", format_relative(detail.last_updated_at)),
-            *custom_field_section(
-                custom_fields, options_by_field, edit_button=self._cf_edit_button
-            ),
+            *custom_field_section(custom_fields, options_by_field),
             *self._reviewer_section(detail),
             *self._hierarchy_section(detail, parent, children),
             *self._relations_section(detail),
             Rule(),
-            Horizontal(
-                TextButton(
-                    "✎",
-                    id="hub-edit-description",
-                    classes="hub-row-action hub-desc-edit",
-                ),
-                classes="hub-desc-header",
-            ),
+            Static("Description", classes="hub-section-title"),
         ]
         content = (detail.content or "").strip()
         widgets.append(

@@ -64,7 +64,10 @@ class ProjectHomeScreen(
         Binding("l", "nav('l')", show=False),
         Binding("j", "scroll_detail('down')", show=False),
         Binding("k", "scroll_detail('up')", show=False),
-        Binding("ctrl+s", "add_to_sprint", show=False),
+        Binding("e", "edit", "edit"),
+        Binding("a", "assign", "assign"),
+        Binding("t", "transition", "transition"),
+        Binding("s", "add_to_sprint", "add to sprint"),
         Binding("ctrl+t", "toggle_list", show=False),
         Binding("ctrl+w", "toggle_collapse", show=False),
         Binding("ctrl+f", "toggle_expand", "close details", priority=True),
@@ -110,3 +113,33 @@ class ProjectHomeScreen(
         return {
             "toggle_expand": "open details" if self._ui.expanded else "close details"
         }
+
+    def action_edit(self) -> None:
+        if self._ui.view_mode == "sprints":
+            self._edit_sprint()
+        else:
+            self._edit_issue()
+
+    def action_transition(self) -> None:
+        if self._ui.view_mode == "sprints":
+            self._transition_sprint()
+        else:
+            self._transition_issue()
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action in ("assign", "add_to_sprint"):
+            return self._ui.view_mode == "issues"
+        if action in ("edit", "transition"):
+            if self._ui.view_mode == "issues":
+                return True
+            if self._ui.view_mode == "sprints":
+                return self._sprint_editable()
+            return False
+        return super().check_action(action, parameters)
+
+    def _sprint_editable(self) -> bool:
+        return (
+            self._sprint_state.detail_id is not None
+            and self._is_project_manager()
+            and (self._sprint_state.detail_status or "") in ("PLANNING", "ACTIVE")
+        )

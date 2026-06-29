@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import logging
 
-from textual import on
-from textual.widgets import Button
-
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.modals.member_picker_modal import (
@@ -16,10 +13,9 @@ log = logging.getLogger(__name__)
 
 
 class AssignMixin(ProjectHomeBase):
-    """Issue assignee actions."""
+    """Issue assignee actions via the `a` action."""
 
-    @on(Button.Pressed, "#hub-assignee-edit")
-    def _on_assignee_pressed(self) -> None:
+    def action_assign(self) -> None:
         if self._detail_state.issue_key is None:
             return
         self.app.push_screen(

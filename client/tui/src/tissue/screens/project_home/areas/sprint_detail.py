@@ -9,19 +9,11 @@ from textual.widgets import Button, DataTable, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.modals.confirm_modal import ConfirmModal
-from tissue.screens.project_home.modals.sprint_field_edit_modal import (
-    SprintFieldEditModal,
-)
-from tissue.screens.project_home.modals.sprint_goal_edit_modal import (
-    SprintGoalEditModal,
-)
+from tissue.screens.project_home.modals.edit_sprint_modal import EditSprintModal
 from tissue.screens.project_home.modals.sprint_transition_modal import (
     SprintTransitionModal,
 )
-from tissue.screens.project_home.sprint_rendering import (
-    SPRINT_FIELD_BY_BUTTON_ID,
-    sprint_detail_widgets,
-)
+from tissue.screens.project_home.sprint_rendering import sprint_detail_widgets
 
 if TYPE_CHECKING:
     from textual.widget import Widget
@@ -46,7 +38,9 @@ class SprintDetailMixin(ProjectHomeBase):
         if sprint is None:
             return
         issues = await self._load_sprint_issues(sprint_id)
+        await self._ensure_members_loaded()
         self._store_sprint_detail(sprint_id, sprint, issues)
+        self.refresh_bindings()
 
         await self._mount_detail(self._sprint_widgets(sprint, issues))
         await self._clear_timeline()
@@ -114,7 +108,6 @@ class SprintDetailMixin(ProjectHomeBase):
             issue_empty_title_class="hub-section-title",
             issue_table_id="hub-sprint-issues-table",
             issue_table_classes="hub-table hub-sprint-issues",
-            with_actions=self._is_project_manager(),
             with_issue_remove=True,
         )
 
@@ -178,35 +171,19 @@ class SprintDetailMixin(ProjectHomeBase):
             return
         await self._render_sprint_detail(sprint_id, focus_detail=False)
 
-    @on(Button.Pressed, ".hub-sprint-field-edit")
-    def _on_sprint_field_edit(self, event: Button.Pressed) -> None:
-        field = SPRINT_FIELD_BY_BUTTON_ID.get(event.button.id or "")
-        if self._sprint_state.detail_id is None or field is None:
-            return
-        self.app.push_screen(
-            SprintFieldEditModal(
-                sprint_id=self._sprint_state.detail_id,
-                field=field,
-                current_value=self._sprint_state.edit_current.get(field),
-            ),
-            self._on_sprint_edited,
-        )
-
-    @on(Button.Pressed, ".hub-sprint-goal-edit")
-    def _on_sprint_goal_edit(self, event: Button.Pressed) -> None:
-        event.stop()
+    def _edit_sprint(self) -> None:
         if self._sprint_state.detail_id is None:
             return
         self.app.push_screen(
-            SprintGoalEditModal(
+            EditSprintModal(
                 sprint_id=self._sprint_state.detail_id,
-                current_goal=self._sprint_state.edit_current.get("goal"),
+                current=dict(self._sprint_state.edit_current),
+                show_due=(self._sprint_state.detail_status or "") == "ACTIVE",
             ),
             self._on_sprint_edited,
         )
 
-    @on(Button.Pressed, "#hub-sprint-transition")
-    def _on_sprint_transition(self) -> None:
+    def _transition_sprint(self) -> None:
         if (
             self._sprint_state.detail_id is None
             or self._sprint_state.detail_status is None

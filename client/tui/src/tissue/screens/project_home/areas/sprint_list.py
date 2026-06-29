@@ -63,6 +63,7 @@ class SprintListMixin(ProjectHomeBase):
         self._update_create_button()
         self._update_filter_button()
         self._update_search_input()
+        self.refresh_bindings()
 
     def _clear_list_search(self) -> None:
         try:

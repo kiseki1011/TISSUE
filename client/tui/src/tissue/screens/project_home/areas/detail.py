@@ -152,7 +152,12 @@ class DetailMixin(DetailRenderMixin):
         if not self._is_current_detail(issue):
             return
 
-        target_labels = self._build_transition_target_labels(transitions)
+        self._transition_target_labels = self._build_transition_target_labels(
+            transitions
+        )
+        self._transition_current_label = (
+            issue.current_state.display_name if issue.current_state else None
+        ) or "-"
         options_by_field = self._custom_field_options(custom_fields)
         self._store_detail_state(
             issue, transitions, custom_fields, options_by_field, children, view
@@ -160,8 +165,6 @@ class DetailMixin(DetailRenderMixin):
 
         widgets = self._safe_issue_widgets(
             issue,
-            transitions,
-            target_labels,
             custom_fields,
             options_by_field,
             comments,

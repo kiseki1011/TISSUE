@@ -1,43 +1,21 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
-
-from textual import on
-from textual.widget import Widget
-from textual.widgets import Button
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.modals.transition_picker_modal import (
     TransitionPickerModal,
 )
-from tissue.widgets.text_button import TextButton
-
-if TYPE_CHECKING:
-    from tissue.api.generated.models.available_transition import AvailableTransition
 
 log = logging.getLogger(__name__)
 
 
 class TransitionsMixin(ProjectHomeBase):
-    """Issue transition actions."""
+    """Issue status transitions (the issue branch of the `t` action)."""
 
-    def _status_action(
-        self,
-        transitions: list[AvailableTransition],
-        current_state_label: str,
-        target_labels: dict[int, str],
-    ) -> Widget | None:
-        if not transitions:
-            return None
-        self._transition_current_label = current_state_label
-        self._transition_target_labels = target_labels
-        return TextButton("⇄", id="hub-transition-btn", classes="hub-row-action")
-
-    @on(Button.Pressed, "#hub-transition-btn")
-    def _on_transition_button(self) -> None:
-        if not self._transitions_by_id:
+    def _transition_issue(self) -> None:
+        if self._detail_state.issue_key is None or not self._transitions_by_id:
             return
         self.app.push_screen(
             TransitionPickerModal(
