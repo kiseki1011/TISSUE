@@ -61,7 +61,7 @@ class IssueActionsMixin(ProjectHomeBase):
             return
         mode = self._ui.view_mode
         if mode == "sprints":
-            create_button.label = "S"
+            create_button.label = "+"
             manager = self._is_project_manager()
             create_button.disabled = not manager
             create_button.tooltip = "New sprint" if manager else "Requires manager role"
