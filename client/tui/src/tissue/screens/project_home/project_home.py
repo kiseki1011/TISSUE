@@ -64,6 +64,7 @@ class ProjectHomeScreen(
         Binding("l", "nav('l')", show=False),
         Binding("j", "scroll_detail('down')", show=False),
         Binding("k", "scroll_detail('up')", show=False),
+        Binding("n", "create", "new"),
         Binding("e", "edit", "edit"),
         Binding("a", "assign", "assign"),
         Binding("t", "transition", "transition"),
@@ -111,8 +112,16 @@ class ProjectHomeScreen(
 
     def footer_description_overrides(self) -> dict[str, str]:
         return {
-            "toggle_expand": "open details" if self._ui.expanded else "close details"
+            "toggle_expand": "open details" if self._ui.expanded else "close details",
+            "create": self._create_label(),
         }
+
+    def _create_label(self) -> str:
+        if self._ui.view_mode == "sprints":
+            return "new sprint"
+        if self._ui.view_mode == "members":
+            return "add member"
+        return "new issue"
 
     def action_edit(self) -> None:
         if self._ui.view_mode == "sprints":
@@ -127,6 +136,8 @@ class ProjectHomeScreen(
             self._transition_issue()
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "create":
+            return self._ui.view_mode == "issues" or self._is_project_manager()
         if action in ("assign", "add_to_sprint"):
             return self._ui.view_mode == "issues"
         if action in ("edit", "transition"):

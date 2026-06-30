@@ -13,6 +13,9 @@ class IssueActionsMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
+        self.action_create()
+
+    def action_create(self) -> None:
         if self._ui.view_mode == "sprints":
             self._open_create_sprint()
         elif self._ui.view_mode == "members":
