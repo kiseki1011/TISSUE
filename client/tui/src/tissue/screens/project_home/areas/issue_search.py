@@ -9,7 +9,7 @@ from tissue.screens.project_home.constants import _SEARCH_DEBOUNCE
 
 
 class IssueSearchMixin(ProjectHomeBase):
-    """Search box behavior for issues and members."""
+    """Search box behavior for the issue lists (issues/agent/reviews) and members."""
 
     @on(Input.Changed, "#hub-search")
     def _on_search_changed(self) -> None:
@@ -31,6 +31,10 @@ class IssueSearchMixin(ProjectHomeBase):
         if self._ui.view_mode == "members":
             self.run_worker(
                 self._render_members_list(keyword), exclusive=True, group="hub-list"
+            )
+        elif self._ui.view_mode in ("agent", "reviews"):
+            self.run_worker(
+                self._load_agent_issues(keyword), exclusive=True, group="hub-list"
             )
         elif self._ui.view_mode == "issues":
             self.run_worker(

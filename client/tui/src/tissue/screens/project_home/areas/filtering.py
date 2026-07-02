@@ -7,6 +7,7 @@ from textual.css.query import NoMatches
 from textual.widgets import Button, Input
 
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.constants import _ISSUE_VIEWS
 from tissue.screens.project_home.filter_persistence import (
     filter_from_dict,
     filter_to_dict,
@@ -93,12 +94,9 @@ class FilterMixin(ProjectHomeBase):
         self._update_filter_button()
         self._persist_filters()
         self._cancel_search_timer()
-        switching = self._ui.view_mode != "issues"
-        if switching:
+        if self._ui.view_mode not in _ISSUE_VIEWS:
             self._set_view_chrome("issues")
-        keyword = None if switching else self._search_keyword()
-        self.run_worker(self._load_issues(keyword), exclusive=True, group="hub-list")
-        self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
+        self._run_view_load(self._ui.view_mode)
 
     def _update_filter_button(self) -> None:
         try:

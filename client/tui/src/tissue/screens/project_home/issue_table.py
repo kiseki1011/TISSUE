@@ -20,6 +20,7 @@ ISSUE_LIST_FOCUS_TABLE_IDS = (
     ISSUE_TABLE_ID,
     "hub-sprints-table",
     "hub-members-table",
+    AGENT_ISSUE_TABLE_ID,
 )
 
 

@@ -99,6 +99,7 @@ TextButton, TextButton:focus, TextButton:hover {
     min-width: 0;
     height: 3;
     margin-left: 1;
+    background: $background;
 }
 
 /* Subtitle text inside a dialog, under the logo */

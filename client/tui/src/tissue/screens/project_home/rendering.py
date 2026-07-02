@@ -93,7 +93,7 @@ def _issue_list_rows(
     *,
     with_review_status: bool = False,
 ) -> list[list[str | Text]]:
-    """The [1]/[3] issue-list DataTable rows."""
+    """The [1] issue-list DataTable rows (issues, agent work, reviews)."""
     title_width = 14 if with_review_status else _ISSUE_LIST_TITLE_WIDTH
     rows: list[list[str | Text]] = []
     for issue in issues:

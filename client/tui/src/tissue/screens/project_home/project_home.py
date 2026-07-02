@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Grid
@@ -19,8 +20,9 @@ from tissue.screens.project_home.areas.relations import RelationsMixin
 from tissue.screens.project_home.areas.reviewers import ReviewersMixin
 from tissue.screens.project_home.areas.sprints import SprintsMixin
 from tissue.screens.project_home.areas.transitions import TransitionsMixin
+from tissue.screens.project_home.constants import _ISSUE_VIEWS
 from tissue.screens.project_home.panels import (
-    AgentWorkPanel,
+    ActivityPanel,
     IssueDetailPanel,
     IssueListPanel,
     ProjectSearchBar,
@@ -56,10 +58,10 @@ class ProjectHomeScreen(
     BINDINGS = [
         Binding("1", "focus_issues", show=False),
         Binding("2", "focus_detail", show=False),
-        Binding("3", "focus_agent_issues", show=False),
+        Binding("3", "focus_activity", show=False),
         Binding("ctrl+1", "focus_issues", show=False),
         Binding("ctrl+2", "focus_detail", show=False),
-        Binding("ctrl+3", "focus_agent_issues", show=False),
+        Binding("ctrl+3", "focus_activity", show=False),
         Binding("h", "nav('h')", show=False),
         Binding("l", "nav('l')", show=False),
         Binding("j", "scroll_detail('down')", show=False),
@@ -69,8 +71,9 @@ class ProjectHomeScreen(
         Binding("a", "assign", "assign"),
         Binding("t", "transition", "transition"),
         Binding("s", "add_to_sprint", "add to sprint"),
+        Binding("x", "remove_from_sprint", "remove from sprint"),
         Binding("ctrl+t", "toggle_list", show=False),
-        Binding("ctrl+w", "toggle_collapse", show=False),
+        Binding("ctrl+w", "toggle_activity", "activity"),
         Binding("ctrl+f", "toggle_expand", "close details", priority=True),
         Binding("slash", "focus_search", "search", key_display="/"),
         Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
@@ -86,7 +89,7 @@ class ProjectHomeScreen(
             with Grid(id="hub-grid"):
                 yield IssueListPanel()
                 yield IssueDetailPanel()
-                yield AgentWorkPanel()
+                yield ActivityPanel()
 
     def on_mount(self) -> None:
         self._restore_filters()
@@ -94,17 +97,15 @@ class ProjectHomeScreen(
         self.app.config.set_last_project(self._project_key)
         self._apply_initial_breakpoints()
         self.set_class(self._ui.expanded, "-expanded")
-        self._apply_collapse()
+        self._apply_activity_state()
         self._refresh_box_chrome()
         self._update_filter_button()
         self._run_view_load(self._ui.view_mode, focus_list=True)
         self.run_worker(self._load_state_colors(), exclusive=True, group="hub-colors")
-        self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     async def refresh_data(self) -> None:
         self._detail_state.cache.clear()
         self._run_view_load(self._ui.view_mode)
-        self.run_worker(self._load_agent_issues(), exclusive=True, group="hub-agent")
 
     def on_unmount(self) -> None:
         self._cancel_detail_timer()
@@ -113,6 +114,9 @@ class ProjectHomeScreen(
     def footer_description_overrides(self) -> dict[str, str]:
         return {
             "toggle_expand": "open details" if self._ui.expanded else "close details",
+            "toggle_activity": (
+                "show activity" if self._ui.activity_closed else "hide activity"
+            ),
             "create": self._create_label(),
         }
 
@@ -126,22 +130,33 @@ class ProjectHomeScreen(
     def action_edit(self) -> None:
         if self._ui.view_mode == "sprints":
             self._edit_sprint()
-        else:
+        elif self._ui.view_mode in _ISSUE_VIEWS:
             self._edit_issue()
 
     def action_transition(self) -> None:
         if self._ui.view_mode == "sprints":
             self._transition_sprint()
-        else:
+        elif self._ui.view_mode in _ISSUE_VIEWS:
             self._transition_issue()
+
+    def on_descendant_focus(self, event: events.DescendantFocus) -> None:
+        if event.widget.id == "hub-sprint-issues-table":
+            self.refresh_bindings()
+
+    def on_descendant_blur(self, event: events.DescendantBlur) -> None:
+        if event.widget.id == "hub-sprint-issues-table":
+            self.refresh_bindings()
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action == "create":
-            return self._ui.view_mode == "issues" or self._is_project_manager()
+            return self._ui.view_mode in _ISSUE_VIEWS or self._is_project_manager()
+        if action == "remove_from_sprint":
+            focused = self.app.focused
+            return focused is not None and focused.id == "hub-sprint-issues-table"
         if action in ("assign", "add_to_sprint"):
-            return self._ui.view_mode == "issues"
+            return self._ui.view_mode in _ISSUE_VIEWS
         if action in ("edit", "transition"):
-            if self._ui.view_mode == "issues":
+            if self._ui.view_mode in _ISSUE_VIEWS:
                 return True
             if self._ui.view_mode == "sprints":
                 return self._sprint_editable()

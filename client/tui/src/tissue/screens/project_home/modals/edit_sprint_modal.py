@@ -45,7 +45,7 @@ class EditSprintModal(TissueModal[bool | None]):
         self._show_due = show_due
 
     def compose(self) -> ComposeResult:
-        with Container(id="esm-dialog"):
+        with Container(id="esm-dialog", classes="dialog"):
             with VerticalScroll(id="esm-scroll"), Vertical(id="esm-form"):
                 title_input = Input(
                     value=self._current.get("title", ""), id="esm-title"
@@ -77,7 +77,7 @@ class EditSprintModal(TissueModal[bool | None]):
 
     def on_mount(self) -> None:
         dialog = self.query_one("#esm-dialog", Container)
-        dialog.border_title = "Edit sprint"
+        dialog.border_title = "Edit Sprint"
         dialog.border_subtitle = "Esc to cancel"
         self.query_one("#esm-title", Input).focus()
 

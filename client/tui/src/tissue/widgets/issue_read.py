@@ -35,6 +35,17 @@ if TYPE_CHECKING:
     )
 
 
+def issue_edit_current(detail: IssueCommonDetail) -> dict[str, str]:
+    """String-form field values the edit modal pre-fills from."""
+    return {
+        "title": detail.title or "",
+        "priority": detail.priority or "",
+        "dueAt": detail.due_at.isoformat() if detail.due_at else "",
+        "storyPoint": "" if detail.story_point is None else str(detail.story_point),
+        "content": detail.content or "",
+    }
+
+
 def reviewer_read_block(
     detail: IssueCommonDetail, theme_variables: dict[str, str]
 ) -> list[Widget]:
