@@ -13,6 +13,12 @@ ProjectHomeScreen #hub-search {
     background: $background;
     border-title-style: bold;
 }
+/* Keep the background flat on focus: Textual's Input adds background-tint
+   $foreground 5% on focus, which visibly lightens the bar. Neutralize it. */
+ProjectHomeScreen #hub-search:focus {
+    background: $background;
+    background-tint: transparent;
+}
 /* The ⚙ filter button is accented while a non-default filter is active, so a
    narrowed issue list never looks like the full one. */
 ProjectHomeScreen #hub-filter.-filter-active {

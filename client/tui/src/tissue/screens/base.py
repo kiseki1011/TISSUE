@@ -77,13 +77,15 @@ class PostAuthScreen(TissueScreen):
     }
     """
 
-    # Breadcrumb shown in the TopBar, overridden directly or via top_bar_breadcrumb().
-    SCREEN_TITLE = ""
+    # Cached header status text (right side of the TopBar). Screens fill this
+    # asynchronously via set_top_bar_status(); compose re-reads it so the value
+    # survives a recompose.
+    _header_status: str = ""
 
     def compose(self) -> ComposeResult:
         from tissue.widgets.top_bar import TopBar
 
-        yield TopBar(self.top_bar_breadcrumb())
+        yield TopBar(self._header_status)
         yield from self.compose_content()
         yield TissueFooter()
 
@@ -95,8 +97,15 @@ class PostAuthScreen(TissueScreen):
         """
         yield from ()
 
-    def top_bar_breadcrumb(self) -> str:
-        return self.SCREEN_TITLE
+    def set_top_bar_status(self, text: str) -> None:
+        """Set the TopBar's right-side status, caching it across recomposes."""
+        from tissue.widgets.top_bar import TopBar
+
+        self._header_status = text
+        try:
+            self.query_one(TopBar).set_status(text)
+        except NoMatches:
+            pass
 
 
 class RefreshableScreen(PostAuthScreen):

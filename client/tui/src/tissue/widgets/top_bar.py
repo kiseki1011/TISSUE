@@ -15,13 +15,9 @@ if TYPE_CHECKING:
 class TopBar(Horizontal):
     """Persistent top bar shown on every PostAuthScreen.
 
-    Three regions:
-        - server, left
-        - breadcrumb, center
-        - user, right
-
-    The breadcrumb tells the user where they are and the username tells them
-    who they are.
+    Two regions: the server/user identity on the left, a screen-specific status
+    (e.g. assigned-issue counts) on the right. Screens push the status via the
+    screen's set_top_bar_status(); the cached value is re-read on recompose.
     """
 
     DEFAULT_CSS = """
@@ -33,20 +29,14 @@ class TopBar(Horizontal):
         background: $background;
         padding: 0 2;
     }
-    /* Equal-width sides (1fr) with an auto-width center keep the breadcrumb at
-       the bar's true center regardless of how long the server / user labels are. */
+    /* Identity left, status right; each takes half so a long status never pushes
+       the identity off-screen. */
     TopBar .topbar-server {
         width: 1fr;
         padding: 0 1;
         color: $text-muted;
     }
-    TopBar .topbar-crumb {
-        width: auto;
-        text-align: center;
-        text-style: bold;
-        color: $text;
-    }
-    TopBar .topbar-user {
+    TopBar .topbar-status {
         width: 1fr;
         text-align: right;
         padding: 0 1;
@@ -57,14 +47,16 @@ class TopBar(Horizontal):
     if TYPE_CHECKING:
         app: TissueApp
 
-    def __init__(self, breadcrumb: str = "") -> None:
+    def __init__(self, status: str = "") -> None:
         super().__init__()
-        self._breadcrumb = breadcrumb
+        self._status = status
 
     def compose(self) -> ComposeResult:
         yield Label(self._server_label(), classes="topbar-server")
-        yield Label(self._breadcrumb, classes="topbar-crumb")
-        yield Label("", classes="topbar-user")
+        yield Label(self._status, classes="topbar-status")
+
+    def set_status(self, text: str) -> None:
+        self.query_one(".topbar-status", Label).update(text)
 
     def _server_label(self) -> Text:
         info = self.app.system_info

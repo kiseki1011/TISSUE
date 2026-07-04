@@ -85,6 +85,7 @@ class IssueActionsMixin(ProjectHomeBase):
         self.run_worker(
             self._reload_and_select(issue_key), exclusive=True, group="hub-list"
         )
+        self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")
 
     async def _reload_and_select(self, issue_key: str) -> None:
         await self._load_issues()

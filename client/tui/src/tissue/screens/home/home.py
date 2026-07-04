@@ -60,9 +60,6 @@ class HomeScreen(
         ProjectsPanel.BOX_ID,
     )
 
-    def top_bar_breadcrumb(self) -> str:
-        return "Dashboard"
-
     def compose_content(self) -> ComposeResult:
         with Vertical(id="screen-body"):
             search = Input(
@@ -99,6 +96,24 @@ class HomeScreen(
         except TissueApiError as error:
             log.debug("Dashboard: failed to load my work: %s", error)
             self._my_work.items = []
+        await self._load_header_stats()
         await self._load_state_colors()
         self.refresh(recompose=True)
         self.call_after_refresh(self._focus_after_load)
+
+    async def _load_header_stats(self) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            projects = await client.projects.list_projects(
+                size=1, include_archived=False
+            )
+            assigned = await client.issues.my_assigned_total(
+                state_categories=["INITIAL", "ACTIVE"]
+            )
+        except TissueApiError as error:
+            log.debug("Dashboard: failed to load header stats: %s", error)
+            return
+        count = projects.total_elements or 0
+        self.set_top_bar_status(f"{count} projects · total {assigned} assigned")
