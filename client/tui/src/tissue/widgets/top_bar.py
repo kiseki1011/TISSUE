@@ -27,7 +27,8 @@ class TopBar(Horizontal):
         dock: top;
         width: 100%;
         height: 1;
-        background: $primary 20%;
+        background: $background;
+        padding: 0 1;
     }
     /* Equal-width sides (1fr) with an auto-width center keep the breadcrumb at
        the bar's true center regardless of how long the server / user labels are. */

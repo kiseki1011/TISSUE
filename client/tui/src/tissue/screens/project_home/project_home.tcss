@@ -2,7 +2,7 @@
    Left is the issues list, right is the focusable detail box. */
 ProjectHomeScreen #screen-body {
     layout: vertical;
-    padding: 0 1;
+    padding: 1 1;
 }
 ProjectHomeScreen #hub-search-row {
     width: 100%;

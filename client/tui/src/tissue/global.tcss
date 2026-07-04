@@ -176,12 +176,19 @@ TextButton:focus {
     text-style: bold;
 }
 
-/* Footer command shortcuts. A subtle raised background on the key chip, and a
-   single space on each side of the description so the key, description, and next
-   shortcut all stay separated. */
+/* Footer reads as one flat strip matching the content behind it: no raised chip
+   on the key, no distinct description background, and the container background set
+   to $background. Left/right padding insets the shortcuts from the screen edge; a
+   space on each side of the description keeps key, description, and next shortcut
+   separated. Key stays distinguishable by its bold accent foreground. */
+TissueFooter {
+    background: $background;
+    padding: 0 1;
+}
 FooterKey > .footer-key--key {
-    background: $panel-lighten-1;
+    background: transparent;
 }
 FooterKey > .footer-key--description {
+    background: transparent;
     padding: 0 1;
 }
