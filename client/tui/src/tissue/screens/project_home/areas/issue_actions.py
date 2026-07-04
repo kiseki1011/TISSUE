@@ -13,6 +13,9 @@ class IssueActionsMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
+        self.action_create()
+
+    def action_create(self) -> None:
         if self._ui.view_mode == "sprints":
             self._open_create_sprint()
         elif self._ui.view_mode == "members":
@@ -61,7 +64,7 @@ class IssueActionsMixin(ProjectHomeBase):
             return
         mode = self._ui.view_mode
         if mode == "sprints":
-            create_button.label = "S"
+            create_button.label = "+"
             manager = self._is_project_manager()
             create_button.disabled = not manager
             create_button.tooltip = "New sprint" if manager else "Requires manager role"

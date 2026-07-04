@@ -117,35 +117,24 @@ class IssueCommentState:
 @dataclass
 class ProjectHomeUiState:
     expanded: bool = False
-    collapsed_box: str | None = None
+    activity_closed: bool = False
     view_mode: str = "issues"
-    agent_mode: str = "work"
 
     def restore(
         self,
         saved: Mapping[str, object],
         *,
         valid_view_modes: Collection[str],
-        valid_agent_modes: Collection[str],
     ) -> None:
         self.expanded = bool(saved.get("expanded", self.expanded))
-
-        collapsed = saved.get("collapsed_box")
-        if collapsed in {"issues-box", "agent-box"}:
-            self.collapsed_box = str(collapsed)
-
+        self.activity_closed = bool(saved.get("activity_closed", self.activity_closed))
         view_mode = saved.get("view_mode")
         if isinstance(view_mode, str) and view_mode in valid_view_modes:
             self.view_mode = view_mode
 
-        agent_mode = saved.get("agent_mode")
-        if isinstance(agent_mode, str) and agent_mode in valid_agent_modes:
-            self.agent_mode = agent_mode
-
     def to_config(self) -> dict[str, object | None]:
         return {
             "expanded": self.expanded,
-            "collapsed_box": self.collapsed_box,
+            "activity_closed": self.activity_closed,
             "view_mode": self.view_mode,
-            "agent_mode": self.agent_mode,
         }

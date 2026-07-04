@@ -25,10 +25,6 @@ class SprintListMixin(ProjectHomeBase):
     """Switches [1] between issues, sprints, and members."""
 
     def action_toggle_list(self) -> None:
-        if self._current_hub_box() == "3":
-            self._toggle_agent_mode()
-            return
-
         keep_focus = self._should_refocus_list_after_switch()
         if keep_focus:
             self._focus_list_host()
@@ -40,6 +36,7 @@ class SprintListMixin(ProjectHomeBase):
             "hub-issues-table",
             "hub-sprints-table",
             "hub-members-table",
+            "hub-agent-issues-table",
             "hub-list-host",
             "hub-search",
         )
@@ -91,6 +88,8 @@ class SprintListMixin(ProjectHomeBase):
             await self._load_sprints()
         elif mode == "members":
             await self._load_members_list(keyword)
+        elif mode in ("agent", "reviews"):
+            await self._load_agent_issues(keyword)
         else:
             await self._load_issues(keyword)
         if focus_list:
@@ -111,6 +110,7 @@ class SprintListMixin(ProjectHomeBase):
                 sprint_id=sprint_id,
                 project_key=self._project_key,
                 state_colors=self._state_colors,
+                is_manager=self._is_project_manager(),
             )
         )
 

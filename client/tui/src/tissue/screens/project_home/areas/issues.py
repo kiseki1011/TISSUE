@@ -176,11 +176,7 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
         self._recolor_status_table(AGENT_ISSUE_TABLE_ID, self._agent_work.issues)
 
     def _recolor_status_table(self, table_id: str, issues: list[IssueSummary]) -> None:
-        panel = (
-            self._agent_work_panel()
-            if table_id == AGENT_ISSUE_TABLE_ID
-            else self._issue_list_panel()
-        )
+        panel = self._issue_list_panel()
         if panel is None:
             return
         recolor_status_cells(panel, table_id, issues, self._state_colors)
@@ -250,16 +246,8 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
         panel.focus_host()
 
     def action_add_to_sprint(self) -> None:
-        panel = self._issue_list_panel()
-        if panel is None:
-            return
-        row = panel.table_cursor_row(ISSUE_TABLE_ID, require_focus=True)
-        if row is None:
-            return
-        if not (0 <= row < len(self._issue_list.issues)):
-            return
-        issue_key = self._issue_list.issues[row].issue_key
-        if not issue_key:
+        issue_key = self._detail_state.issue_key
+        if issue_key is None:
             return
         self.run_worker(
             self._add_issue_to_active_sprint(issue_key),

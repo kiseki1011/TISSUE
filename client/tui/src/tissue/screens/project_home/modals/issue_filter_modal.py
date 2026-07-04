@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -113,19 +112,15 @@ class IssueFilterModal(TissueModal["IssueFilter | None"]):
                     id="filter-current-sprint",
                 )
                 yield Rule()
-                yield Label("[3] filters", classes="filter-group")
-                # When on, the [1] State/Priority/Sprint above also limit [3].
+                yield Label("Agent / Reviews filters", classes="filter-group")
+                # When on, the State/Priority/Sprint above also limit the Agent
+                # and Reviews lists.
                 yield Checkbox(
-                    Text.assemble(
-                        ("Apply ", ""),
-                        ("[1]", "bold"),
-                        (" filters to ", ""),
-                        ("[3]", "bold"),
-                    ),
+                    "Apply the above filters to Agent / Reviews",
                     value=current_filter.apply_to_agent,
                     id="filter-agent",
                 )
-                # Only limits the [3] Requested Reviews view, no effect elsewhere.
+                # Only limits the Reviews view, no effect elsewhere.
                 yield Label("My Review Status", classes="filter-label")
                 yield SelectionList[str](
                     *(

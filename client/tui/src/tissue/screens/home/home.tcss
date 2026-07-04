@@ -1,7 +1,7 @@
 /* Search bar on top, the dashboard grid fills the rest. */
 HomeScreen #screen-body {
     layout: vertical;
-    padding: 1 2;
+    padding: 0 1;
 }
 HomeScreen #dashboard-search-row {
     width: 100%;
@@ -10,6 +10,7 @@ HomeScreen #dashboard-search-row {
 }
 HomeScreen #dashboard-search {
     width: 1fr;
+    background: $background;
     border-title-color: $primary;
     border-title-style: bold;
 }

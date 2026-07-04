@@ -113,6 +113,12 @@ class SprintDetailMixin(ProjectHomeBase):
 
     @on(Button.Pressed, "#hub-sprint-remove-issue")
     def _on_sprint_remove_issue(self) -> None:
+        self._remove_focused_sprint_issue()
+
+    def action_remove_from_sprint(self) -> None:
+        self._remove_focused_sprint_issue()
+
+    def _remove_focused_sprint_issue(self) -> None:
         issue_key = self._focused_sprint_issue_key()
         if issue_key is None:
             self.app.notify("Focus an issue to remove.", severity="warning")
@@ -275,6 +281,6 @@ class SprintDetailMixin(ProjectHomeBase):
             self._refresh_detail(issue_key)
 
     async def _clear_timeline(self) -> None:
-        panel = self._detail_panel()
+        panel = self._activity_panel()
         if panel is not None:
-            await panel.clear_timeline()
+            await panel.clear()

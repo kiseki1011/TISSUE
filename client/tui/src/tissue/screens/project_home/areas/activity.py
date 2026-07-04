@@ -34,7 +34,7 @@ class ActivityMixin(ProjectHomeBase):
             activities = []
         if self._detail_state.issue_key != issue_key:
             return
-        panel = self._detail_panel()
+        panel = self._activity_panel()
         if panel is None:
             return
         widgets: list[Widget] = [Static("Activity", classes="hub-timeline-title")]
@@ -43,7 +43,7 @@ class ActivityMixin(ProjectHomeBase):
         else:
             for entry in activities:
                 widgets.extend(self._activity_widgets(entry))
-        await panel.replace_timeline(widgets)
+        await panel.replace(widgets)
 
     def _activity_widgets(self, activity: ActivityLogResponse) -> list[Widget]:
         accent = color_hex(self.app.theme_variables.get("accent"))

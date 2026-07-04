@@ -6,7 +6,7 @@ from textual.css.query import NoMatches
 
 from tissue.screens.base import RefreshableScreen
 from tissue.screens.project_home.panels import (
-    AgentWorkPanel,
+    ActivityPanel,
     IssueDetailPanel,
     IssueListPanel,
 )
@@ -105,24 +105,22 @@ class ProjectHomeBase(RefreshableScreen):
         except NoMatches:
             return None
 
+    def _activity_panel(self) -> ActivityPanel | None:
+        try:
+            return self.query_one(ActivityPanel)
+        except NoMatches:
+            return None
+
     def _issue_list_panel(self) -> IssueListPanel | None:
         try:
             return self.query_one(IssueListPanel)
         except NoMatches:
             return None
 
-    def _agent_work_panel(self) -> AgentWorkPanel | None:
-        try:
-            return self.query_one(AgentWorkPanel)
-        except NoMatches:
-            return None
-
     if TYPE_CHECKING:
 
         async def _load_issues(self, keyword: str | None = None) -> None: ...
-        async def _load_agent_issues(self, *, focus_list: bool = False) -> None: ...
-        def _toggle_agent_mode(self) -> None: ...
-        def action_focus_agent_issues(self) -> None: ...
+        async def _load_agent_issues(self, keyword: str | None = None) -> None: ...
         def _current_hub_box(self) -> str | None: ...
         def _update_create_button(self) -> None: ...
         def _update_filter_button(self) -> None: ...

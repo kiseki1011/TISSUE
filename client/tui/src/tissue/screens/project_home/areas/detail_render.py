@@ -30,6 +30,7 @@ from tissue.widgets.issue_fields import (
 from tissue.widgets.issue_fields import (
     member_name as _member_name,
 )
+from tissue.widgets.issue_read import issue_edit_current
 from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
@@ -128,13 +129,7 @@ class DetailRenderMixin(ProjectHomeBase):
         state = detail.current_state
         issue_type = detail.issue_type
         current_state_label = (state.display_name if state else None) or "-"
-        self._detail_state.edit_current = {
-            "title": detail.title or "",
-            "priority": detail.priority or "",
-            "dueAt": detail.due_at.isoformat() if detail.due_at else "",
-            "storyPoint": "" if detail.story_point is None else str(detail.story_point),
-            "content": detail.content or "",
-        }
+        self._detail_state.edit_current = issue_edit_current(detail)
         widgets: list[Widget] = [
             Horizontal(
                 Static(detail.title or "-", markup=False, classes="hub-detail-title"),

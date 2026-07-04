@@ -120,7 +120,6 @@ class IssueDetailPanel(Horizontal):
         super().__init__(id="hub-detail")
         self.border_title = "[2] Details"
         self._body_lock = asyncio.Lock()
-        self._timeline_lock = asyncio.Lock()
 
     def compose(self) -> ComposeResult:
         main = VerticalScroll(
@@ -132,10 +131,6 @@ class IssueDetailPanel(Horizontal):
         )
         main.can_focus = True
         yield main
-        yield VerticalScroll(
-            Vertical(id="hub-detail-timeline-inner"),
-            id="hub-detail-timeline",
-        )
 
     async def replace_body(self, widgets: list[Widget]) -> None:
         async def swap() -> None:
@@ -146,24 +141,6 @@ class IssueDetailPanel(Horizontal):
                     await inner.mount(*widgets)
 
         await asyncio.shield(swap())
-
-    async def replace_timeline(self, widgets: list[Widget]) -> None:
-        async def swap() -> None:
-            async with self._timeline_lock:
-                inner = self.query_one("#hub-detail-timeline-inner", Vertical)
-                with self.app.batch_update():
-                    await inner.remove_children()
-                    await inner.mount(*widgets)
-
-        await asyncio.shield(swap())
-
-    async def clear_timeline(self) -> None:
-        async def clear() -> None:
-            async with self._timeline_lock:
-                timeline = self.query_one("#hub-detail-timeline-inner", Vertical)
-                await timeline.remove_children()
-
-        await asyncio.shield(clear())
 
     def focus_body(self) -> None:
         self.query_one("#hub-detail-main", VerticalScroll).focus()
@@ -185,14 +162,53 @@ class IssueDetailPanel(Horizontal):
             return None
 
 
-class AgentWorkPanel(_HostPanel):
+class ActivityPanel(Vertical):
+    """[3] the issue's activity timeline, a box the user can close to widen [2]."""
+
     def __init__(self) -> None:
-        super().__init__(id="hub-agent-issues-box", classes="hub-box panel")
-        self._host_id = "hub-agent-issues-host"
-        self.border_title = "[3] My Agent's Work"
+        super().__init__(id="hub-activity")
+        self.border_title = "[3] Activity"
+        self._lock = asyncio.Lock()
 
     def compose(self) -> ComposeResult:
-        yield _ListHost(self._host_id)
+        scroll = VerticalScroll(
+            Vertical(id="hub-activity-inner"),
+            id="hub-activity-scroll",
+        )
+        scroll.can_focus = True
+        yield scroll
+
+    async def replace(self, widgets: list[Widget]) -> None:
+        async def swap() -> None:
+            async with self._lock:
+                inner = self.query_one("#hub-activity-inner", Vertical)
+                with self.app.batch_update():
+                    await inner.remove_children()
+                    await inner.mount(*widgets)
+
+        await asyncio.shield(swap())
+
+    async def clear(self) -> None:
+        async def _clear() -> None:
+            async with self._lock:
+                inner = self.query_one("#hub-activity-inner", Vertical)
+                await inner.remove_children()
+
+        await asyncio.shield(_clear())
+
+    def focus_scroll(self) -> None:
+        self.query_one("#hub-activity-scroll", VerticalScroll).focus()
+
+    def has_focus_in(self) -> bool:
+        scroll = self.query_one("#hub-activity-scroll", VerticalScroll)
+        return self.app.focused is scroll
+
+    def scroll_activity(self, direction: str) -> None:
+        scroll = self.query_one("#hub-activity-scroll", VerticalScroll)
+        if direction == "down":
+            scroll.scroll_down()
+        else:
+            scroll.scroll_up()
 
 
 class _ListHost(Vertical):

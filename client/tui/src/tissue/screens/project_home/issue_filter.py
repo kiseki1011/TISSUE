@@ -23,7 +23,7 @@ class IssueFilter:
     sprint_ids: tuple[int, ...] = ()
     # Added on top of sprint_ids on the server, not a clash with it.
     current_sprint_only: bool = False
-    # Also limits the [3] Agent Work box (its agent-assignee filter is always kept).
+    # Also limits the Agent / Reviews lists (their assignee/reviewer filter is kept).
     apply_to_agent: bool = False
 
     def __post_init__(self) -> None:

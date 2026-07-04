@@ -71,7 +71,7 @@ class EditIssueModal(TissueModal[bool | None]):
         self._cf_baseline: dict[int, Any] = {}
 
     def compose(self) -> ComposeResult:
-        with Container(id="eim-dialog"):
+        with Container(id="eim-dialog", classes="dialog"):
             with VerticalScroll(id="eim-scroll"), Vertical(id="eim-form"):
                 title_input = Input(
                     value=self._current.get("title", ""), id="eim-title"
@@ -137,7 +137,7 @@ class EditIssueModal(TissueModal[bool | None]):
 
     def on_mount(self) -> None:
         dialog = self.query_one("#eim-dialog", Container)
-        dialog.border_title = f"Edit {self._issue_key}"
+        dialog.border_title = "Edit Issue"
         dialog.border_subtitle = "Esc to cancel"
         self.query_one("#eim-title", Input).focus()
         self.call_after_refresh(self._snapshot_custom_fields)

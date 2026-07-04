@@ -25,7 +25,7 @@ SprintTransitionModal #str-due-row {
 }
 SprintTransitionModal .str-due-label {
     width: auto;
-    padding: 1 1 0 0;
+    padding: 1 1 0 1;
 }
 SprintTransitionModal #str-due {
     width: 1fr;
