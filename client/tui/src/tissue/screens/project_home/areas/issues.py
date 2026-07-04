@@ -13,6 +13,7 @@ from tissue.screens.project_home.areas.issue_search import IssueSearchMixin
 from tissue.screens.project_home.constants import (
     _DETAIL_PREFETCH_AFTER,
     _DETAIL_PREFETCH_BEFORE,
+    _ISSUE_VIEWS,
 )
 from tissue.screens.project_home.issue_table import (
     AGENT_ISSUE_TABLE_ID,
@@ -22,9 +23,11 @@ from tissue.screens.project_home.issue_table import (
     numbered_issue_rows,
     recolor_status_cells,
 )
+from tissue.screens.project_home.rendering import _issue_list_rows
 from tissue.screens.project_home.workflow_colors import load_state_colors
 
 if TYPE_CHECKING:
+    from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
     from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.page_response_issue_summary import (
         PageResponseIssueSummary,
@@ -92,6 +95,71 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
             if member.member_id is not None
         }
 
+    def _sync_list_row(self, common: IssueCommonDetail) -> None:
+        """Refresh the cached summary and [1] row after a detail-pane edit."""
+        issue_key = common.issue_key
+        if issue_key is None:
+            return
+        mode = self._ui.view_mode
+        if mode == "issues":
+            issues = self._issue_list.issues
+            table_id = ISSUE_TABLE_ID
+        elif mode in ("agent", "reviews"):
+            issues = self._agent_work.issues
+            table_id = AGENT_ISSUE_TABLE_ID
+        else:
+            return
+        panel = self._issue_list_panel()
+        if panel is None:
+            return
+        index = next(
+            (i for i, summary in enumerate(issues) if summary.issue_key == issue_key),
+            None,
+        )
+        if index is None:
+            return
+        self._apply_common_to_summary(issues[index], common)
+        # Read the review-chip layout from the mounted table, not view_mode: a
+        # stale revalidate can land mid-switch while the old table is still up.
+        reviews = panel.table_column_index(table_id, "Review") is not None
+        self._update_list_row_cells(table_id, index, issues[index], reviews=reviews)
+
+    def _apply_common_to_summary(
+        self, summary: IssueSummary, common: IssueCommonDetail
+    ) -> None:
+        summary.title = common.title
+        summary.priority = common.priority
+        summary.story_point = common.story_point
+        summary.due_at = common.due_at
+        state = common.current_state
+        summary.current_state_id = state.id if state else None
+        summary.current_state_label = state.display_name if state else None
+        summary.current_state_category = state.category if state else None
+        summary.assignee_member_id = (
+            common.assignee.member_id if common.assignee else None
+        )
+
+    def _update_list_row_cells(
+        self, table_id: str, index: int, summary: IssueSummary, *, reviews: bool
+    ) -> None:
+        panel = self._issue_list_panel()
+        if panel is None:
+            return
+        member_names = self._member_names()
+        if table_id == AGENT_ISSUE_TABLE_ID:
+            member_names = {**member_names, **self._agent_work.names}
+        row = _issue_list_rows(
+            [summary],
+            self._state_colors,
+            self.app.theme_variables,
+            member_names,
+            with_review_status=reviews,
+            title_extra=self._title_extra(),
+        )[0]
+        column_offset = 1 if table_id == ISSUE_TABLE_ID else 0
+        for cell_index, value in enumerate(row):
+            panel.update_table_cell(table_id, index, column_offset + cell_index, value)
+
     async def _render_issues(self) -> None:
         panel = self._issue_list_panel()
         if panel is None:
@@ -106,9 +174,47 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
             self._state_colors,
             self.app.theme_variables,
             self._member_names(),
+            title_extra=self._title_extra(),
         )
         await panel.replace_content([table])
         self.watch(table, "scroll_y", self._on_issues_scrolled, init=False)
+        # Colors load in a separate worker; if they arrived while this table was
+        # mid-mount, the state-color recolor no-op'd, so apply them now.
+        self._recolor_status_table(ISSUE_TABLE_ID, self._issue_list.issues)
+
+    async def _reflow_list_titles(self) -> None:
+        """Re-render the [1] list so titles re-fit after an expand/collapse."""
+        mode = self._ui.view_mode
+        if mode not in _ISSUE_VIEWS:
+            return
+        panel = self._issue_list_panel()
+        if panel is None:
+            return
+        table_id = ISSUE_TABLE_ID if mode == "issues" else AGENT_ISSUE_TABLE_ID
+        table = panel.table(table_id)
+        cursor = None if table is None else table.cursor_row
+        had_focus = table is not None and table.has_focus
+        if mode == "issues":
+            if not self._issue_list.issues:
+                return
+            await self._render_issues()
+        else:
+            if not self._agent_work.issues:
+                return
+            await self._render_agent_issues(empty_hint="")
+        new_table = panel.table(table_id)
+        if new_table is None or cursor is None:
+            return
+        row = min(cursor, new_table.row_count - 1)
+        if row < 0:
+            return
+        new_table.move_cursor(row=row)
+        if mode == "issues":
+            self._select_issue(row)
+        else:
+            self._select_agent_issue(row)
+        if had_focus:
+            new_table.focus()
 
     def _numbered_issue_rows(
         self, issues: list[IssueSummary], *, start: int = 0
@@ -119,6 +225,7 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
             self.app.theme_variables,
             self._member_names(),
             start=start,
+            title_extra=self._title_extra(),
         )
 
     async def _load_more_issues(self) -> None:
@@ -246,11 +353,13 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
         panel.focus_host()
 
     def action_add_to_sprint(self) -> None:
+        """`s` toggles: remove if the issue is already in the active sprint."""
         issue_key = self._detail_state.issue_key
         if issue_key is None:
             return
-        self.run_worker(
-            self._add_issue_to_active_sprint(issue_key),
-            exclusive=True,
-            group="hub-add-sprint",
+        worker = (
+            self._remove_issue_from_active_sprint(issue_key)
+            if self._focused_in_active_sprint()
+            else self._add_issue_to_active_sprint(issue_key)
         )
+        self.run_worker(worker, exclusive=True, group="hub-add-sprint")

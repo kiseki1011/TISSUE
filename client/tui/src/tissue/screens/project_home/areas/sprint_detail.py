@@ -215,17 +215,6 @@ class SprintDetailMixin(ProjectHomeBase):
             group="hub-detail",
         )
 
-    @on(Button.Pressed, "#hub-add-to-sprint")
-    def _on_add_to_active_sprint(self) -> None:
-        issue_key = self._detail_state.issue_key
-        if issue_key is None:
-            return
-        self.run_worker(
-            self._add_issue_to_active_sprint(issue_key),
-            exclusive=True,
-            group="hub-add-sprint",
-        )
-
     async def _ensure_sprint_index(self) -> None:
         if self._sprint_state.by_id is not None:
             return
@@ -273,7 +262,31 @@ class SprintDetailMixin(ProjectHomeBase):
         )
         self._reflect_issue_sprint_change(issue_key, active.id)
 
-    def _reflect_issue_sprint_change(self, issue_key: str, sprint_id: int) -> None:
+    async def _remove_issue_from_active_sprint(self, issue_key: str) -> None:
+        await self._ensure_sprint_index()
+        active = self._active_sprint()
+        if active is None or active.id is None:
+            self.app.notify("No active sprint to remove from.", severity="warning")
+            return
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            await client.sprints.remove_sprint_issues(active.id, [issue_key])
+        except TissueApiError as error:
+            self.app.notify(
+                f"Couldn't remove {issue_key}: {error.detail or 'please try again'}",
+                severity="error",
+            )
+            return
+        self.app.notify(
+            f"Removed {issue_key} from {active.sprint_key or 'the active sprint'}."
+        )
+        self._reflect_issue_sprint_change(issue_key, None)
+
+    def _reflect_issue_sprint_change(
+        self, issue_key: str, sprint_id: int | None
+    ) -> None:
         for summary in (*self._issue_list.issues, *self._agent_work.issues):
             if summary.issue_key == issue_key:
                 summary.sprint_id = sprint_id

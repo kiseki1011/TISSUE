@@ -8,9 +8,7 @@ _SEARCH_DEBOUNCE = 0.2
 _DETAIL_PREFETCH_BEFORE = 2
 _DETAIL_PREFETCH_AFTER = 3
 
-# Labels feed the [1] box title (all contexts, the active one bold). CTRL+T
-# cycles them. "agent"/"reviews" are issue lists (my agents' work, issues
-# awaiting my review), merged in from the old [3] box.
+# Labels feed the [1] box title (all contexts, the active one bold).
 _VIEW_CYCLE: tuple[str, ...] = (
     "issues",
     "agent",
@@ -22,7 +20,7 @@ _VIEW_LABELS: dict[str, str] = {
     "issues": "Issues",
     "sprints": "Sprints",
     "members": "Members",
-    "agent": "Agent",
+    "agent": "Agent's Work",
     "reviews": "Reviews",
 }
 
@@ -30,9 +28,8 @@ _VIEW_LABELS: dict[str, str] = {
 # sprint, new issue) apply and the [2] detail shows an issue.
 _ISSUE_VIEWS: frozenset[str] = frozenset({"issues", "agent", "reviews"})
 
-# The server gives no color for sprint status, so the TUI sets one per state,
-# used as the chip *background*, the same way as `PRIORITY_VAR` in
-# `issue_render`.
+# The server gives no color for sprint status, so sets one per state,
+# used as the chip background.
 _SPRINT_STATUS_VAR: dict[str, str] = {
     "PLANNING": "primary",
     "ACTIVE": "success",
@@ -40,8 +37,7 @@ _SPRINT_STATUS_VAR: dict[str, str] = {
     "CANCELLED": "error",
 }
 
-# Activity `data` keys to skip. They are shown elsewhere, plus the raw
-# old*/new* pairs just repeat `changes` (already shown as one "before → after").
+# Activity `data` keys to skip.
 _ACTIVITY_DATA_SKIP = frozenset(
     {
         "issueKey",

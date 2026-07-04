@@ -11,7 +11,10 @@ from textual.widgets import DataTable, Rule, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
-from tissue.screens.project_home.member_filter import DEFAULT_MEMBER_FILTER
+from tissue.screens.project_home.member_filter import (
+    DEFAULT_MEMBER_FILTER,
+    is_agent_member,
+)
 from tissue.screens.project_home.rendering import _issue_rows
 from tissue.util.datetime_fmt import format_relative
 from tissue.widgets.detail_row import detail_row
@@ -32,6 +35,10 @@ def _active_label(active: bool | None) -> str:
     if active is None:
         return "-"
     return "Yes" if active else "No"
+
+
+def _member_kind(member: ProjectMemberSummary) -> str:
+    return "Agent" if is_agent_member(member) else "Human"
 
 
 def member_read_view(
@@ -149,7 +156,13 @@ class MembersMixin(ProjectHomeBase):
         await panel.replace_content(
             [
                 _DashTable(
-                    [("#", None), ("Name", None), ("Role", 10), ("Active", 8)],
+                    [
+                        ("#", None),
+                        ("Name", None),
+                        ("Type", 7),
+                        ("Role", 10),
+                        ("Active", 8),
+                    ],
                     self._member_rows(members),
                     id="hub-members-table",
                     classes="hub-table",
@@ -180,6 +193,7 @@ class MembersMixin(ProjectHomeBase):
             [
                 str(index + 1),
                 Text(member.display_name or member.username or "-"),
+                _member_kind(member),
                 (member.role or "-").capitalize(),
                 _active_label(member.active),
             ]
@@ -194,6 +208,22 @@ class MembersMixin(ProjectHomeBase):
     @on(DataTable.RowSelected, "#hub-members-table")
     def _on_member_selected(self, event: DataTable.RowSelected) -> None:
         self._select_member(event.cursor_row, focus_detail=True)
+
+    @on(DataTable.RowSelected, "#hub-member-assigned")
+    def _on_member_assigned_selected(self, event: DataTable.RowSelected) -> None:
+        event.stop()
+        self._open_member_issue(self._member_list.detail_assigned, event.cursor_row)
+
+    @on(DataTable.RowSelected, "#hub-member-reviewing")
+    def _on_member_reviewing_selected(self, event: DataTable.RowSelected) -> None:
+        event.stop()
+        self._open_member_issue(self._member_list.detail_reviewing, event.cursor_row)
+
+    def _open_member_issue(self, issues: list[IssueSummary], row_index: int) -> None:
+        if 0 <= row_index < len(issues):
+            issue_key = issues[row_index].issue_key
+            if issue_key:
+                self._open_issue_modal(issue_key)
 
     def _select_member(self, row_index: int, *, focus_detail: bool = False) -> None:
         if not (0 <= row_index < len(self._member_list.displayed)):
@@ -222,6 +252,8 @@ class MembersMixin(ProjectHomeBase):
         assigned, reviewing = await fetch_member_issues(
             self.app.client, self._project_key, member.member_id
         )
+        self._member_list.detail_assigned = assigned
+        self._member_list.detail_reviewing = reviewing
         widgets.append(Rule())
         widgets.extend(
             member_issue_section(

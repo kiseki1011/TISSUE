@@ -54,6 +54,8 @@ class IssueListState:
 class ProjectMemberListState:
     members: list[ProjectMemberSummary] = field(default_factory=list)
     displayed: list[ProjectMemberSummary] = field(default_factory=list)
+    detail_assigned: list[IssueSummary] = field(default_factory=list)
+    detail_reviewing: list[IssueSummary] = field(default_factory=list)
 
 
 @dataclass

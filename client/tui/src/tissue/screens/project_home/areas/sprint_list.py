@@ -24,11 +24,11 @@ log = logging.getLogger(__name__)
 class SprintListMixin(ProjectHomeBase):
     """Switches [1] between issues, sprints, and members."""
 
-    def action_toggle_list(self) -> None:
+    def action_cycle_view(self, direction: str = "next") -> None:
         keep_focus = self._should_refocus_list_after_switch()
         if keep_focus:
             self._focus_list_host()
-        self._switch_view(self._next_view_mode(), focus_list=keep_focus)
+        self._switch_view(self._adjacent_view_mode(direction), focus_list=keep_focus)
 
     def _should_refocus_list_after_switch(self) -> bool:
         focused = self.app.focused
@@ -46,9 +46,10 @@ class SprintListMixin(ProjectHomeBase):
         if panel is not None:
             panel.focus_host()
 
-    def _next_view_mode(self) -> str:
+    def _adjacent_view_mode(self, direction: str) -> str:
+        step = -1 if direction == "prev" else 1
         current_index = _VIEW_CYCLE.index(self._ui.view_mode)
-        return _VIEW_CYCLE[(current_index + 1) % len(_VIEW_CYCLE)]
+        return _VIEW_CYCLE[(current_index + step) % len(_VIEW_CYCLE)]
 
     def _set_view_chrome(self, mode: str) -> None:
         self._ui.view_mode = mode

@@ -23,6 +23,7 @@ from tissue.screens.project_home.modals.create_issue_form import (
     parent_hierarchy_of,
     parent_required,
 )
+from tissue.screens.project_home.modals.issue_picker_modal import PickerCandidate
 from tissue.widgets.custom_field_input import CustomFieldInput
 from tissue.widgets.datetime_pickers import DueDateTimePicker
 
@@ -234,18 +235,20 @@ class CreateIssueModal(TissueModal[str | None]):
                 candidates=candidates,
                 multi=False,
                 title="Select parent",
-                subtitle=f"{parent_hier} issues · Esc to cancel",
+                subtitle=f"{parent_hier} level issues · Esc to cancel",
             ),
             self._on_parent_picked,
         )
 
-    async def _parent_candidates(self, parent_hier: str) -> list[tuple[str, str]]:
+    async def _parent_candidates(self, parent_hier: str) -> list[PickerCandidate]:
         client = self.app.client
         if client is None:
             return []
         try:
             page = await client.issues.search_project_issues(
-                self._project_key, size=100
+                self._project_key,
+                state_categories=["INITIAL", "ACTIVE", "COMPLETED"],
+                size=100,
             )
         except TissueApiError as error:
             log.debug("Create: failed to load parent candidates: %s", error)

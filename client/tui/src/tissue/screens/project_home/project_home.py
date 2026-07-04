@@ -72,9 +72,10 @@ class ProjectHomeScreen(
         Binding("t", "transition", "transition"),
         Binding("s", "add_to_sprint", "add to sprint"),
         Binding("x", "remove_from_sprint", "remove from sprint"),
-        Binding("ctrl+t", "toggle_list", show=False),
-        Binding("ctrl+w", "toggle_activity", "activity"),
-        Binding("ctrl+f", "toggle_expand", "close details", priority=True),
+        Binding("full_stop,greater_than_sign", "cycle_view('next')", show=False),
+        Binding("comma,less_than_sign", "cycle_view('prev')", show=False),
+        Binding("ctrl+w", "toggle_activity", "activity", show=False),
+        Binding("ctrl+f", "toggle_expand", "close details", priority=True, show=False),
         Binding("slash", "focus_search", "search", key_display="/"),
         Binding("ctrl+underscore,ctrl+slash", "focus_search", show=False),
         Binding("escape", "leave_search", show=False),
@@ -112,12 +113,14 @@ class ProjectHomeScreen(
         self._cancel_search_timer()
 
     def footer_description_overrides(self) -> dict[str, str]:
+        """`s` flips its label whether issue joines current sprint oir not."""
         return {
-            "toggle_expand": "open details" if self._ui.expanded else "close details",
-            "toggle_activity": (
-                "show activity" if self._ui.activity_closed else "hide activity"
-            ),
             "create": self._create_label(),
+            "add_to_sprint": (
+                "remove from sprint"
+                if self._focused_in_active_sprint()
+                else "add to sprint"
+            ),
         }
 
     def _create_label(self) -> str:

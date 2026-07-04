@@ -3,7 +3,7 @@ EditIssueModal {
 }
 
 EditIssueModal #eim-dialog {
-    width: 83;
+    width: 80;
     max-width: 90%;
     height: 38;
     max-height: 90%;
@@ -67,11 +67,23 @@ EditIssueModal .cf-datetime > #input-control {
 }
 
 EditIssueModal #eim-title,
-EditIssueModal #eim-priority,
-EditIssueModal #eim-due,
 EditIssueModal #eim-sp {
     width: 100%;
     margin-bottom: 1;
+}
+
+/* Priority and Due share a row, split 1:1 with a gap. */
+EditIssueModal #eim-pd-row {
+    width: 100%;
+    height: auto;
+    margin-bottom: 1;
+}
+EditIssueModal #eim-priority,
+EditIssueModal #eim-due {
+    width: 1fr;
+}
+EditIssueModal #eim-priority {
+    margin-right: 1;
 }
 
 EditIssueModal #eim-content {

@@ -31,7 +31,6 @@ from tissue.widgets.issue_fields import (
     member_name as _member_name,
 )
 from tissue.widgets.issue_read import issue_edit_current
-from tissue.widgets.text_button import TextButton
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.comment_detail_response import (
@@ -173,6 +172,8 @@ class DetailRenderMixin(ProjectHomeBase):
         return widgets
 
     def _current_sprint_row(self, issue_key: str | None) -> Widget:
+        # No inline button — like Status/Priority/Assignee, sprint membership is
+        # keyboard-driven ('s' toggles add/remove; footer shows which).
         summary = self._summary_for(issue_key) if issue_key else None
         index = self._sprint_state.by_id or {}
         current = (
@@ -181,12 +182,15 @@ class DetailRenderMixin(ProjectHomeBase):
             else None
         )
         name = (current.sprint_key or current.title or "-") if current else "-"
+        return detail_row("Current Sprint", name)
+
+    def _focused_in_active_sprint(self) -> bool:
+        """Whether the focused issue already belongs to the active sprint (O(1))."""
+        key = self._detail_state.issue_key
+        if key is None:
+            return False
         active = self._active_sprint()
-        add_button = TextButton("+", id="hub-add-to-sprint", classes="hub-row-action")
-        add_button.disabled = active is None
-        add_button.tooltip = (
-            f"Add this issue to {active.sprint_key}"
-            if active is not None
-            else "No active sprint to add to"
-        )
-        return detail_row("Current Sprint", name, action=add_button)
+        if active is None:
+            return False
+        summary = self._summary_for(key)
+        return summary is not None and summary.sprint_id == active.id

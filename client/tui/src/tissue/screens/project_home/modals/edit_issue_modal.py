@@ -79,19 +79,22 @@ class EditIssueModal(TissueModal[bool | None]):
                 title_input.border_title = "Title"
                 yield title_input
 
-                priority = self._current.get("priority") or "P2"
-                select = Select(
-                    [(value, value) for value in _PRIORITIES],
-                    value=priority if priority in _PRIORITIES else "P2",
-                    allow_blank=False,
-                    id="eim-priority",
-                )
-                select.border_title = "Priority"
-                yield select
+                with Horizontal(id="eim-pd-row"):
+                    priority = self._current.get("priority") or "P2"
+                    select = Select(
+                        [(value, value) for value in _PRIORITIES],
+                        value=priority if priority in _PRIORITIES else "P2",
+                        allow_blank=False,
+                        id="eim-priority",
+                    )
+                    select.border_title = "Priority"
+                    yield select
 
-                due_picker = DueDateTimePicker(value=self._initial_due(), id="eim-due")
-                due_picker.border_title = "Due"
-                yield due_picker
+                    due_picker = DueDateTimePicker(
+                        value=self._initial_due(), id="eim-due"
+                    )
+                    due_picker.border_title = "Due"
+                    yield due_picker
 
                 if self._show_story_point:
                     story_point = Input(

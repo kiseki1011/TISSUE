@@ -10,6 +10,7 @@ from textual.widgets import Button, Static
 
 from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.modals.issue_picker_modal import PickerCandidate
 from tissue.widgets.issue_link import IssueLink
 from tissue.widgets.issue_refs import issue_ref_row
 from tissue.widgets.text_button import TextButton
@@ -154,19 +155,21 @@ class HierarchyMixin(ProjectHomeBase):
 
     async def _candidates(
         self, hierarchy: str, exclude: set[str]
-    ) -> list[tuple[str, str]]:
+    ) -> list[PickerCandidate]:
         client = self.app.client
         if client is None:
             return []
         await self._ensure_issue_type_hierarchy()
         try:
             page = await client.issues.search_project_issues(
-                self._project_key, size=_CANDIDATE_LIMIT
+                self._project_key,
+                state_categories=["INITIAL", "ACTIVE", "COMPLETED"],
+                size=_CANDIDATE_LIMIT,
             )
         except TissueApiError as error:
             log.debug("Hub: failed to load hierarchy candidates: %s", error)
             return []
-        candidates: list[tuple[str, str]] = []
+        candidates: list[PickerCandidate] = []
         for summary in page.content or []:
             if summary.issue_key is None or summary.issue_key in exclude:
                 continue
@@ -178,16 +181,16 @@ class HierarchyMixin(ProjectHomeBase):
             ):
                 continue
             candidates.append(
-                (
-                    self._candidate_label(summary.issue_key, summary.title),
-                    summary.issue_key,
+                PickerCandidate(
+                    key=summary.issue_key,
+                    title=summary.title,
+                    issue_type_name=summary.issue_type_name,
+                    status_label=summary.current_state_label,
+                    priority=summary.priority,
+                    category=summary.current_state_category,
                 )
             )
         return candidates
-
-    @staticmethod
-    def _candidate_label(issue_key: str, title: str | None) -> str:
-        return issue_key + (f"  {title}" if title else "")
 
     async def _open_parent_picker(self) -> None:
         issue_key = self._detail_state.issue_key
@@ -207,7 +210,7 @@ class HierarchyMixin(ProjectHomeBase):
             candidates=candidates,
             multi=False,
             title="Set parent",
-            subtitle=f"{parent_hier} issues · Esc to cancel",
+            subtitle=f"{parent_hier} level issues · Esc to cancel",
             callback=self._on_parent_picked,
         )
 
@@ -230,7 +233,7 @@ class HierarchyMixin(ProjectHomeBase):
             candidates=self._without_existing_children(candidates),
             multi=True,
             title="Add children",
-            subtitle=f"{child_hier} issues · Esc to cancel",
+            subtitle=f"{child_hier} level issues · Esc to cancel",
             callback=self._on_children_picked,
         )
 
@@ -239,19 +242,19 @@ class HierarchyMixin(ProjectHomeBase):
         return _HIERARCHY_BY_LEVEL.get((level or 0) + offset)
 
     def _without_existing_children(
-        self, candidates: list[tuple[str, str]]
-    ) -> list[tuple[str, str]]:
+        self, candidates: list[PickerCandidate]
+    ) -> list[PickerCandidate]:
         existing = {
             child.issue_key
             for child in self._hierarchy_state.children
             if child.issue_key
         }
-        return [(label, key) for label, key in candidates if key not in existing]
+        return [cand for cand in candidates if cand.key not in existing]
 
     def _push_hierarchy_picker(
         self,
         *,
-        candidates: list[tuple[str, str]],
+        candidates: list[PickerCandidate],
         multi: bool,
         title: str,
         subtitle: str,
