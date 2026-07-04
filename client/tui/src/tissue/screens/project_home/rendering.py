@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 # "…" clips to this width (not char count)
 _ISSUE_LIST_TITLE_WIDTH = 18
+# Extra Title width when [2]/[3] are collapsed
+_EXPANDED_TITLE_EXTRA = 14
 
 
 def _humanize_key(key: str) -> str:
@@ -92,9 +94,11 @@ def _issue_list_rows(
     member_names: dict[int, str],
     *,
     with_review_status: bool = False,
+    title_extra: int = 0,
 ) -> list[list[str | Text]]:
     """The [1] issue-list DataTable rows (issues, agent work, reviews)."""
-    title_width = 14 if with_review_status else _ISSUE_LIST_TITLE_WIDTH
+    base_width = 14 if with_review_status else _ISSUE_LIST_TITLE_WIDTH
+    title_width = base_width + title_extra
     rows: list[list[str | Text]] = []
     for issue in issues:
         row: list[str | Text] = []

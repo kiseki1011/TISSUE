@@ -31,7 +31,7 @@ class LayoutMixin(ProjectHomeBase):
             if self._ui.view_mode == "issues" and self._issue_list.total
             else ""
         )
-        issues.border_subtitle = f"{total}Switch: CTRL+T"
+        issues.border_subtitle = f"{total}Switch: < >"
 
     def _current_hub_box(self) -> str | None:
         return self._focused_ancestor_id(
@@ -105,6 +105,7 @@ class LayoutMixin(ProjectHomeBase):
         self.set_class(self._ui.expanded, "-expanded")
         self.refresh_bindings()
         self._persist_project_ui()
+        self.run_worker(self._reflow_list_titles(), exclusive=True, group="hub-reflow")
 
     def action_toggle_activity(self) -> None:
         self._ui.activity_closed = not self._ui.activity_closed

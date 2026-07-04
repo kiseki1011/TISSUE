@@ -57,7 +57,7 @@ class IssueSearchMixin(ProjectHomeBase):
         else:
             search_input.disabled = False
             search_input.placeholder = (
-                "Search members…"
+                "Search project members…"
                 if self._ui.view_mode == "members"
                 else "Search issues…"
             )

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -11,7 +13,28 @@ from textual.widgets.option_list import Option
 from textual.widgets.selection_list import Selection
 
 from tissue.screens.base import TissueModal
+from tissue.widgets.filter_checkbox import FilterCheckbox as Checkbox
 from tissue.widgets.filter_selection_list import FilterSelectionList as SelectionList
+
+
+def _clip(text: str, width: int) -> str:
+    return text if len(text) <= width else text[: width - 1] + "…"
+
+
+@dataclass(frozen=True)
+class PickerCandidate:
+    """One selectable issue, with the columns the modal renders and filters on."""
+
+    key: str
+    title: str | None = None
+    issue_type_name: str | None = None
+    status_label: str | None = None
+    priority: str | None = None
+    category: str | None = None
+
+    @property
+    def search_text(self) -> str:
+        return self.key + (f"  {self.title}" if self.title else "")
 
 
 class IssuePickerModal(TissueModal["list[str] | None"]):
@@ -24,7 +47,7 @@ class IssuePickerModal(TissueModal["list[str] | None"]):
     def __init__(
         self,
         *,
-        candidates: list[tuple[str, str]],
+        candidates: list[PickerCandidate],
         multi: bool,
         title: str,
         subtitle: str | None = None,
@@ -36,31 +59,51 @@ class IssuePickerModal(TissueModal["list[str] | None"]):
         self._subtitle = subtitle
         self._checked: set[str] = set()
         self._keyword = ""
+        self._include_completed = False
         # Ignore SelectedChanged while we rebuild the multi list in code.
         self._rebuilding = False
 
-    def _matches(self) -> list[tuple[str, str]]:
+    def _matches(self) -> list[PickerCandidate]:
         keyword = self._keyword
-        return [
-            (label, key)
-            for label, key in self._candidates
-            if not keyword or keyword in label.casefold()
-        ]
+        result: list[PickerCandidate] = []
+        for cand in self._candidates:
+            if cand.category == "ABORTED":
+                continue
+            if cand.category == "COMPLETED" and not self._include_completed:
+                continue
+            if keyword and keyword not in cand.search_text.casefold():
+                continue
+            result.append(cand)
+        return result
+
+    @staticmethod
+    def _row_text(cand: PickerCandidate) -> str:
+        title = _clip(cand.title or "", 30)
+        type_name = _clip(cand.issue_type_name or "-", 12)
+        status = _clip(cand.status_label or "-", 14)
+        priority = cand.priority or "-"
+        return f"{cand.key:<10}  {title:<30}  {type_name:<12}  {status:<14}  {priority}"
 
     def _selections(self) -> list[Selection[str]]:
-        # Content wraps labels so a title with '[' (e.g. "[BUG]") shows as-is
+        # Content wraps rows so a title with '[' (e.g. "[BUG]") shows as-is
         # instead of being read as Textual markup, which would crash or drop it.
         return [
-            Selection(Content(label), key, key in self._checked)
-            for label, key in self._matches()
+            Selection(
+                Content(self._row_text(cand)), cand.key, cand.key in self._checked
+            )
+            for cand in self._matches()
         ]
 
     def _options(self) -> list[Option]:
-        return [Option(Content(label), id=key) for label, key in self._matches()]
+        return [
+            Option(Content(self._row_text(cand)), id=cand.key)
+            for cand in self._matches()
+        ]
 
     def compose(self) -> ComposeResult:
         with Container(id="picker-dialog", classes="dialog"):
             yield Input(placeholder="Search issues…", id="picker-search")
+            yield Checkbox("Include completed issues", id="picker-completed")
             if self._multi:
                 yield SelectionList[str](*self._selections(), id="picker-list")
                 yield Label("", id="picker-count", classes="picker-count")
@@ -89,6 +132,15 @@ class IssuePickerModal(TissueModal["list[str] | None"]):
         if self._multi:
             self._sync_checked()
         self._keyword = event.value.strip().casefold()
+        self._rebuild()
+
+    @on(Checkbox.Changed, "#picker-completed")
+    def _on_completed_toggle(self, event: Checkbox.Changed) -> None:
+        # Sync against the currently-shown filter BEFORE flipping the flag, so a
+        # checked-but-now-hidden pick survives (mirrors _on_search's ordering).
+        if self._multi:
+            self._sync_checked()
+        self._include_completed = event.value
         self._rebuild()
 
     def _rebuild(self) -> None:
@@ -127,7 +179,7 @@ class IssuePickerModal(TissueModal["list[str] | None"]):
             selection_list = self.query_one("#picker-list", SelectionList)
         except NoMatches:
             return
-        shown = {key for _, key in self._matches()}
+        shown = {cand.key for cand in self._matches()}
         self._checked = (self._checked - shown) | set(selection_list.selected)
 
     def _update_count(self) -> None:

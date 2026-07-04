@@ -142,6 +142,7 @@ class DetailMixin(DetailRenderMixin):
             )
             return
 
+        self._sync_list_row(issue)
         transitions = view.available_transitions or []
         custom_fields = view.custom_fields or []
         comments = (view.comments.content or []) if view.comments else []
@@ -151,6 +152,9 @@ class DetailMixin(DetailRenderMixin):
         await self._load_detail_dependencies()
         if not self._is_current_detail(issue):
             return
+        # Refresh now that the sprint index is loaded so the footer 's' label
+        # (add vs remove) agrees with the Current Sprint button.
+        self.refresh_bindings()
 
         self._transition_target_labels = self._build_transition_target_labels(
             transitions

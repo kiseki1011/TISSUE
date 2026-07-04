@@ -9,6 +9,7 @@ from tissue.screens.project_home.modals.create_issue_form import (
     parent_candidate_labels,
     parent_hierarchy_of,
 )
+from tissue.screens.project_home.modals.issue_picker_modal import PickerCandidate
 
 
 class CreateIssueFormValuesTest(unittest.TestCase):
@@ -64,14 +65,50 @@ class CreateIssueHierarchyTest(unittest.TestCase):
             SimpleNamespace(id=2, hierarchy="STANDARD"),
         ]
         summaries = [
-            SimpleNamespace(issue_key="TIS-1", issue_type_id=1, title="Epic"),
-            SimpleNamespace(issue_key="TIS-2", issue_type_id=2, title="Task"),
-            SimpleNamespace(issue_key=None, issue_type_id=1, title="No key"),
+            SimpleNamespace(
+                issue_key="TIS-1",
+                issue_type_id=1,
+                title="Epic",
+                issue_type_name="Epic Type",
+                current_state_label="Open",
+                priority="P2",
+                current_state_category="INITIAL",
+            ),
+            SimpleNamespace(
+                issue_key="TIS-2",
+                issue_type_id=2,
+                title="Task",
+                issue_type_name="Task Type",
+                current_state_label="Open",
+                priority="P2",
+                current_state_category="INITIAL",
+            ),
+            SimpleNamespace(
+                issue_key=None,
+                issue_type_id=1,
+                title="No key",
+                issue_type_name="Epic Type",
+                current_state_label="Open",
+                priority="P2",
+                current_state_category="INITIAL",
+            ),
         ]
 
         candidates, labels = parent_candidate_labels(issue_types, "EPIC", summaries)
 
-        self.assertEqual(candidates, [("TIS-1  Epic", "TIS-1")])
+        self.assertEqual(
+            candidates,
+            [
+                PickerCandidate(
+                    key="TIS-1",
+                    title="Epic",
+                    issue_type_name="Epic Type",
+                    status_label="Open",
+                    priority="P2",
+                    category="INITIAL",
+                )
+            ],
+        )
         self.assertEqual(labels, {"TIS-1": "TIS-1  Epic"})
 
     def test_member_choices_skip_members_without_id(self) -> None:

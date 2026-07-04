@@ -9,6 +9,10 @@ from tissue.api.errors import TissueApiError
 from tissue.screens.home.widgets import _DashTable
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.constants import _OPEN_STATE_CATEGORIES
+from tissue.screens.project_home.issue_table import (
+    AGENT_ISSUE_TABLE_ID,
+    recolor_status_cells,
+)
 from tissue.screens.project_home.rendering import _issue_list_rows
 
 log = logging.getLogger(__name__)
@@ -110,6 +114,7 @@ class AgentIssuesMixin(ProjectHomeBase):
             self.app.theme_variables,
             member_names,
             with_review_status=reviews,
+            title_extra=self._title_extra(),
         )
         last_col = "Assignee" if reviews else "Agent"
         columns: list[tuple[str, int | None]] = []
@@ -136,6 +141,9 @@ class AgentIssuesMixin(ProjectHomeBase):
                     classes="hub-table",
                 )
             ]
+        )
+        recolor_status_cells(
+            panel, AGENT_ISSUE_TABLE_ID, self._agent_work.issues, self._state_colors
         )
         self._select_agent_issue(0)
 

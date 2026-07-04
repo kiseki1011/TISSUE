@@ -29,13 +29,15 @@ def issue_table(
     state_colors: dict[int, str],
     theme_variables: dict[str, str],
     member_names: dict[int, str],
+    *,
+    title_extra: int = 0,
 ) -> _DashTable:
     return _DashTable(
         [
             ("#", None),
             ("Key", 10),
             ("Type", 10),
-            ("Title", _ISSUE_LIST_TITLE_WIDTH),
+            ("Title", _ISSUE_LIST_TITLE_WIDTH + title_extra),
             ("Status", 13),
             ("Priority", 8),
             ("Points", 6),
@@ -47,6 +49,7 @@ def issue_table(
             state_colors,
             theme_variables,
             member_names,
+            title_extra=title_extra,
         ),
         id=ISSUE_TABLE_ID,
         classes="hub-table",
@@ -60,8 +63,11 @@ def numbered_issue_rows(
     member_names: dict[int, str],
     *,
     start: int = 0,
+    title_extra: int = 0,
 ) -> list[list[str | Text]]:
-    rows = _issue_list_rows(issues, state_colors, theme_variables, member_names)
+    rows = _issue_list_rows(
+        issues, state_colors, theme_variables, member_names, title_extra=title_extra
+    )
     for index, row in enumerate(rows):
         row.insert(0, str(start + index + 1))
     return rows
@@ -87,5 +93,5 @@ def recolor_status_cells(
                 table_id,
                 row,
                 status_col,
-                _color_chip(issue.current_state_label or "-", hex_color),
+                _color_chip(issue.current_state_label or "-", hex_color, pad=False),
             )

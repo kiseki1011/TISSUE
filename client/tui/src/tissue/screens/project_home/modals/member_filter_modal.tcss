@@ -30,6 +30,7 @@ MemberFilterModal .mfm-label {
     margin-top: 1;
 }
 MemberFilterModal #mfm-active,
+MemberFilterModal #mfm-kind,
 MemberFilterModal #mfm-role {
     width: 100%;
     height: auto;

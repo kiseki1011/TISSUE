@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from tissue.screens.project_home.modals.issue_picker_modal import PickerCandidate
 from tissue.widgets.custom_field_input import UNSET, CustomFieldInput
 
 if TYPE_CHECKING:
@@ -138,13 +139,13 @@ def parent_candidate_labels(
     issue_types: list[IssueTypeSummary],
     parent_hierarchy: str,
     summaries: Iterable[Any],
-) -> tuple[list[tuple[str, str]], dict[str, str]]:
+) -> tuple[list[PickerCandidate], dict[str, str]]:
     hierarchy_by_type = {
         issue_type.id: issue_type.hierarchy
         for issue_type in issue_types
         if issue_type.id is not None
     }
-    candidates: list[tuple[str, str]] = []
+    candidates: list[PickerCandidate] = []
     label_by_key: dict[str, str] = {}
     for summary in summaries:
         if summary.issue_key is None or summary.issue_type_id is None:
@@ -152,7 +153,16 @@ def parent_candidate_labels(
         if hierarchy_by_type.get(summary.issue_type_id) != parent_hierarchy:
             continue
         label = summary.issue_key + (f"  {summary.title}" if summary.title else "")
-        candidates.append((label, summary.issue_key))
+        candidates.append(
+            PickerCandidate(
+                key=summary.issue_key,
+                title=summary.title,
+                issue_type_name=summary.issue_type_name,
+                status_label=summary.current_state_label,
+                priority=summary.priority,
+                category=summary.current_state_category,
+            )
+        )
         label_by_key[summary.issue_key] = label
     return candidates, label_by_key
 

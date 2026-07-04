@@ -49,6 +49,8 @@ ReviewerPickerModal #reviewer-buttons {
 }
 
 ReviewerPickerModal #reviewer-buttons Button {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
     margin-left: 1;
-    min-width: 11;
 }

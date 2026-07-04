@@ -4,9 +4,9 @@ RelationAddModal {
 }
 
 RelationAddModal #rel-dialog {
-    width: 64;
-    max-width: 90%;
-    height: 26;
+    width: 84;
+    max-width: 95%;
+    height: 30;
     max-height: 90%;
     padding: 1 2;
     layout: vertical;
@@ -23,6 +23,11 @@ RelationAddModal #rel-type {
 
 RelationAddModal #rel-search {
     width: 100%;
+}
+
+RelationAddModal #rel-completed {
+    width: 100%;
+    margin-top: 1;
 }
 
 RelationAddModal #rel-list {

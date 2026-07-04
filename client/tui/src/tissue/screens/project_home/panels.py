@@ -109,7 +109,7 @@ class IssueListPanel(_HostPanel):
         super().__init__(id="hub-issues-box", classes="hub-box panel")
         self._host_id = "hub-list-host"
         self.border_title = "[1] Issues"
-        self.border_subtitle = "CTRL+T: Sprints"
+        self.border_subtitle = "Switch: < >"
 
     def compose(self) -> ComposeResult:
         yield _ListHost(self._host_id)
@@ -119,6 +119,7 @@ class IssueDetailPanel(Horizontal):
     def __init__(self) -> None:
         super().__init__(id="hub-detail")
         self.border_title = "[2] Details"
+        self.border_subtitle = "Hide: CTRL+F"
         self._body_lock = asyncio.Lock()
 
     def compose(self) -> ComposeResult:
@@ -168,6 +169,7 @@ class ActivityPanel(Vertical):
     def __init__(self) -> None:
         super().__init__(id="hub-activity")
         self.border_title = "[3] Activity"
+        self.border_subtitle = "Hide: CTRL+W"
         self._lock = asyncio.Lock()
 
     def compose(self) -> ComposeResult:

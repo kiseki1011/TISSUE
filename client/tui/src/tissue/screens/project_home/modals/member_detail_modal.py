@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical, VerticalScroll
 from textual.css.query import NoMatches
-from textual.widgets import Rule
+from textual.widgets import DataTable, Rule
 
 from tissue.screens.base import ScrollableModal
 from tissue.screens.project_home.areas.members import (
@@ -18,6 +19,7 @@ from tissue.screens.project_home.areas.members import (
 if TYPE_CHECKING:
     from textual.widget import Widget
 
+    from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
     )
@@ -41,6 +43,8 @@ class MemberDetailModal(ScrollableModal[None]):
         self._member = member
         self._project_key = project_key
         self._state_colors = state_colors
+        self._assigned: list[IssueSummary] = []
+        self._reviewing: list[IssueSummary] = []
 
     def compose(self) -> ComposeResult:
         with Container(id="mdm-dialog", classes="dialog"):
@@ -65,6 +69,30 @@ class MemberDetailModal(ScrollableModal[None]):
     def action_close(self) -> None:
         self.dismiss(None)
 
+    @on(DataTable.RowSelected, "#mdm-assigned")
+    def _on_assigned_selected(self, event: DataTable.RowSelected) -> None:
+        event.stop()
+        self._open_issue(self._assigned, event.cursor_row)
+
+    @on(DataTable.RowSelected, "#mdm-reviewing")
+    def _on_reviewing_selected(self, event: DataTable.RowSelected) -> None:
+        event.stop()
+        self._open_issue(self._reviewing, event.cursor_row)
+
+    def _open_issue(self, issues: list[IssueSummary], row_index: int) -> None:
+        if not (0 <= row_index < len(issues)):
+            return
+        issue_key = issues[row_index].issue_key
+        if not issue_key:
+            return
+        from tissue.screens.project_home.modals.issue_detail_modal import (
+            IssueDetailModal,
+        )
+
+        self.app.push_screen(
+            IssueDetailModal(issue_key=issue_key, project_key=self._project_key)
+        )
+
     async def _load(self) -> None:
         """Fetch the member's Assigned/Reviewing issues and rebuild the body.
 
@@ -76,6 +104,8 @@ class MemberDetailModal(ScrollableModal[None]):
         assigned, reviewing = await fetch_member_issues(
             self.app.client, self._project_key, self._member.member_id
         )
+        self._assigned = assigned
+        self._reviewing = reviewing
         widgets: list[Widget] = member_read_view(
             self._member, title_class="mdm-title", spacer_class="mdm-spacer"
         )

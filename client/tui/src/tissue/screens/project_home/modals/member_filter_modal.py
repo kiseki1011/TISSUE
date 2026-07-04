@@ -29,6 +29,11 @@ class MemberFilterModal(TissueModal["MemberFilter | None"]):
         ("Inactive only", "inactive"),
     )
     _ROLE_OPTIONS = (("Member", "MEMBER"), ("Manager", "MANAGER"))
+    _KIND_OPTIONS = (
+        ("All", "all"),
+        ("Humans only", "human"),
+        ("Agents only", "agent"),
+    )
 
     def __init__(self, *, current: MemberFilter) -> None:
         super().__init__()
@@ -45,6 +50,14 @@ class MemberFilterModal(TissueModal["MemberFilter | None"]):
                             label,
                             value=(value == current.active),
                             id=f"mfm-active-{value}",
+                        )
+                yield Label("Type", classes="mfm-label")
+                with RadioSet(id="mfm-kind"):
+                    for label, value in self._KIND_OPTIONS:
+                        yield RadioButton(
+                            label,
+                            value=(value == current.kind),
+                            id=f"mfm-kind-{value}",
                         )
                 yield Label("Role", classes="mfm-label")
                 yield SelectionList[str](
@@ -85,6 +98,7 @@ class MemberFilterModal(TissueModal["MemberFilter | None"]):
     def _on_reset(self, event: Button.Pressed) -> None:
         event.stop()
         self.query_one("#mfm-active-all", RadioButton).value = True
+        self.query_one("#mfm-kind-all", RadioButton).value = True
         self.query_one("#mfm-role", SelectionList).deselect_all()
 
     def _collect(self) -> MemberFilter:
@@ -92,5 +106,9 @@ class MemberFilterModal(TissueModal["MemberFilter | None"]):
         active = "all"
         if pressed is not None and pressed.id:
             active = pressed.id.removeprefix("mfm-active-")
+        kind_pressed = self.query_one("#mfm-kind", RadioSet).pressed_button
+        kind = "all"
+        if kind_pressed is not None and kind_pressed.id:
+            kind = kind_pressed.id.removeprefix("mfm-kind-")
         roles = tuple(self.query_one("#mfm-role", SelectionList).selected)
-        return MemberFilter(active=active, roles=roles)
+        return MemberFilter(active=active, kind=kind, roles=roles)

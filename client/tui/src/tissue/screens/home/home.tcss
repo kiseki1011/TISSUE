@@ -6,7 +6,6 @@ HomeScreen #screen-body {
 HomeScreen #dashboard-search-row {
     width: 100%;
     height: auto;
-    margin-bottom: 1;
 }
 HomeScreen #dashboard-search {
     width: 1fr;
@@ -27,7 +26,9 @@ HomeScreen #dashboard-grid {
     grid-size: 2 3;
     grid-rows: 1fr 1fr 1fr;
     grid-columns: 1fr 1fr;
-    grid-gutter: 1;
+    /* No vertical gutter so [1]/[2] and Details/[3] stack flush within each
+       column; keep the horizontal gutter between the two columns. */
+    grid-gutter: 0 1;
 }
 
 /* Shared box chrome, border plus a title that sits on the top border. Each box
@@ -52,15 +53,13 @@ HomeScreen #dash-mywork {
 }
 
 /* Details pane. Row-spans 2 so it lines up with [1]+[2] on the left (gutter
-   included) and sits above [3] Projects. The raised surface background sets it
-   apart. Its border matches the screen background, so it looks invisible but
-   still keeps the footprint aligned with the bordered boxes and lets the
-   "Details" border-title render. The inner container carries the padding. */
+   included) and sits above [3] Projects. Bordered like the other boxes (solid
+   $primary, no background override) so it reads as a sibling box. The inner
+   container carries the padding. */
 HomeScreen #dashboard-detail {
     row-span: 2;
     padding: 0;
-    background: $surface;
-    border: solid $background;
+    border: solid $primary;
     border-title-color: $primary;
     border-title-style: bold;
 }
