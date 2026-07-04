@@ -6,6 +6,8 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Label
 
+from tissue.widgets.color_type import color_hex
+
 if TYPE_CHECKING:
     from tissue.app import TissueApp
 
@@ -27,8 +29,9 @@ class TopBar(Horizontal):
         dock: top;
         width: 100%;
         height: 1;
+        margin-top: 1;
         background: $background;
-        padding: 0 1;
+        padding: 0 2;
     }
     /* Equal-width sides (1fr) with an auto-width center keep the breadcrumb at
        the bar's true center regardless of how long the server / user labels are. */
@@ -61,17 +64,25 @@ class TopBar(Horizontal):
     def compose(self) -> ComposeResult:
         yield Label(self._server_label(), classes="topbar-server")
         yield Label(self._breadcrumb, classes="topbar-crumb")
-        yield Label(self._user_label(), classes="topbar-user")
+        yield Label("", classes="topbar-user")
 
     def _server_label(self) -> Text:
         info = self.app.system_info
         name = info.server_name if info is not None else None
         domain = self._server_domain()
-        label = Text(name or domain or "tissue")
-        # Append the domain alongside the name so the user can still tell which
-        # instance they are on.
+        # A filled dot + the server identity, in the primary color. color_hex
+        # falls back to "" on ANSI themes (Rich rejects ansi_* names), leaving
+        # the identity at the muted base color rather than crashing.
+        primary = color_hex(self.app.theme_variables.get("primary"))
+        label = Text()
+        label.append(f"● {name or domain or 'tissue'}", style=primary or "")
+        # Domain then username trail the identity in one left-aligned run, same
+        # dim ·-separated format, instead of pinning the user to the far edge.
         if name and domain:
             label.append(f"  ·  {domain}", style="dim")
+        username = self._username()
+        if username:
+            label.append(f"  ·  {username}", style="dim")
         return label
 
     def _server_domain(self) -> str:
@@ -80,7 +91,7 @@ class TopBar(Horizontal):
             return ""
         return urlparse(client.host).netloc or client.host
 
-    def _user_label(self) -> str:
+    def _username(self) -> str:
         client = self.app.client
         profile = client.account.cached_profile if client is not None else None
         if profile is None:

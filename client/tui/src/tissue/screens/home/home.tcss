@@ -1,7 +1,7 @@
 /* Search bar on top, the dashboard grid fills the rest. */
 HomeScreen #screen-body {
     layout: vertical;
-    padding: 1 1;
+    padding: 1 2;
 }
 HomeScreen #dashboard-search-row {
     width: 100%;
@@ -43,7 +43,7 @@ HomeScreen .dashboard-box {
 
 /* Accent the box border when it (or its table) has focus. */
 HomeScreen .dashboard-box:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 
@@ -59,7 +59,7 @@ HomeScreen #dash-mywork {
 HomeScreen #dashboard-detail {
     row-span: 2;
     padding: 0;
-    border: solid $primary;
+    border: round $primary;
     border-title-color: $primary;
     border-title-style: bold;
 }

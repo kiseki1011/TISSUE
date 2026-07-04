@@ -2,7 +2,7 @@
    Left is the issues list, right is the focusable detail box. */
 ProjectHomeScreen #screen-body {
     layout: vertical;
-    padding: 1 1;
+    padding: 1 2;
 }
 ProjectHomeScreen #hub-search-row {
     width: 100%;
@@ -16,7 +16,7 @@ ProjectHomeScreen #hub-search {
 /* The ⚙ filter button is accented while a non-default filter is active, so a
    narrowed issue list never looks like the full one. */
 ProjectHomeScreen #hub-filter.-filter-active {
-    border: solid $accent;
+    border: round $accent;
     color: $accent;
 }
 /* Three columns: [1] the swappable list, [2] Details, [3] Activity. [1] is half
@@ -69,7 +69,7 @@ ProjectHomeScreen .hub-box {
     border-subtitle-color: $text-muted;
 }
 ProjectHomeScreen #hub-issues-box:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 /* No left padding so the # column sits next to the border. */
@@ -88,13 +88,13 @@ ProjectHomeScreen .hub-list-host {
 ProjectHomeScreen #hub-detail {
     width: 100%;
     height: 100%;
-    border: solid $primary;
+    border: round $primary;
     border-title-color: $primary;
     border-title-style: bold;
     border-subtitle-color: $text-muted;
 }
 ProjectHomeScreen #hub-detail:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 /* The scroll lives on the outer box so its scrollbar sits flush at the edge; the
@@ -115,13 +115,13 @@ ProjectHomeScreen #hub-detail-main-inner {
 ProjectHomeScreen #hub-activity {
     width: 100%;
     height: 100%;
-    border: solid $primary;
+    border: round $primary;
     border-title-color: $primary;
     border-title-style: bold;
     border-subtitle-color: $text-muted;
 }
 ProjectHomeScreen #hub-activity:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 ProjectHomeScreen #hub-activity-scroll {

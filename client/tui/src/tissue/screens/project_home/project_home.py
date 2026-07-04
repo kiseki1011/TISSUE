@@ -82,7 +82,7 @@ class ProjectHomeScreen(
     ]
 
     def top_bar_breadcrumb(self) -> str:
-        return f"Projects > {self._project_key}"
+        return f"Projects ▶ {self._project_key}"
 
     def compose_content(self) -> ComposeResult:
         with Container(id="screen-body"):
