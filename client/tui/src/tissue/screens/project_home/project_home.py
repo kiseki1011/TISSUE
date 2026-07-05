@@ -75,6 +75,7 @@ class ProjectHomeScreen(
         Binding("t", "transition", "transition"),
         Binding("s", "add_to_sprint", "add to sprint"),
         Binding("x", "remove_from_sprint", "remove from sprint"),
+        Binding("d", "delete", "delete"),
         Binding("full_stop,greater_than_sign", "cycle_view('next')", show=False),
         Binding("comma,less_than_sign", "cycle_view('prev')", show=False),
         Binding("ctrl+w", "toggle_activity", "activity", show=False),
@@ -177,7 +178,7 @@ class ProjectHomeScreen(
         if action == "remove_from_sprint":
             focused = self.app.focused
             return focused is not None and focused.id == "hub-sprint-issues-table"
-        if action in ("assign", "add_to_sprint"):
+        if action in ("assign", "add_to_sprint", "delete"):
             return self._ui.view_mode in _ISSUE_VIEWS
         if action in ("edit", "transition"):
             if self._ui.view_mode in _ISSUE_VIEWS:

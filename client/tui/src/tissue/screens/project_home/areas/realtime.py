@@ -23,13 +23,18 @@ class RealtimeMixin(ProjectHomeBase):
     For an existing issue, an event triggers a targeted refetch of just that issue,
     run through the same paths a local edit uses, so the change lands without flicker.
     A newly created issue instead reloads [1] in place, since its sorted position
-    isn't known locally.
+    isn't known locally. Sprint events refresh the sprint list/detail when shown.
     """
 
     def handle_realtime_event(self, event: RealtimeEvent) -> None:
-        if event.category != "issue" or event.project_key != self._project_key:
+        if event.project_key != self._project_key:
             return
         if self._is_self_event(event):
+            return
+        if event.category == "sprint":
+            self._handle_sprint_event(event)
+            return
+        if event.category != "issue":
             return
         if event.type == "ISSUE_CREATED":
             self._refresh_header()
@@ -55,6 +60,20 @@ class RealtimeMixin(ProjectHomeBase):
                 exclusive=True,
                 group=f"hub-live-{issue_key}",
             )
+
+    def _handle_sprint_event(self, event: RealtimeEvent) -> None:
+        # Any sprint change invalidates the cached id->sprint index used to name
+        # sprints elsewhere.
+        self._sprint_state.by_id = None
+        if self._ui.view_mode != "sprints":
+            return
+        open_id = self._sprint_state.detail_id
+        worker = (
+            self._reload_and_select_sprint(open_id)
+            if open_id is not None
+            else self._load_sprints()
+        )
+        self.run_worker(worker, exclusive=True, group="hub-list")
 
     def _refresh_header(self) -> None:
         self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")

@@ -155,6 +155,34 @@ class IssueService:
             issue_key=issue_key,
         )
 
+    async def list_project_trash(
+        self,
+        project_key: str,
+        *,
+        mine_only: bool = False,
+        page: int = 0,
+        size: int = 20,
+    ) -> PageResponseIssueSummary:
+        return await self._client._call_with_retry(
+            self._client.issue_api.list_project_trash,
+            project_key=project_key,
+            mine_only=mine_only,
+            page=page,
+            size=size,
+        )
+
+    async def delete_issue(self, issue_key: str) -> None:
+        await self._client._call_with_retry(
+            self._client.issue_api.delete_issue,
+            issue_key=issue_key,
+        )
+
+    async def restore_issue(self, issue_key: str) -> None:
+        await self._client._call_with_retry(
+            self._client.issue_api.restore_issue,
+            issue_key=issue_key,
+        )
+
     async def get_issue_custom_fields(
         self, issue_key: str
     ) -> list[CustomFieldValueInfo]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from textual.containers import HorizontalGroup
 from textual.widgets import Footer
 from textual.widgets._footer import FooterKey
 
@@ -9,9 +10,13 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
     from textual.widget import Widget
 
+# App-level chrome shown on the footer's first row; everything else drops to the
+# second row.
+_COMMON_ACTIONS = frozenset({"app.options", "app.quit", "refresh", "action_refresh"})
+
 
 class TissueFooter(Footer):
-    """Footer that normalizes labels and keeps the palette key inline."""
+    """Two-row footer: common shortcuts on top, screen-specific ones below."""
 
     def compose(self) -> ComposeResult:
         overrides_fn = getattr(self.screen, "footer_description_overrides", None)
@@ -26,34 +31,22 @@ class TissueFooter(Footer):
                 description = overrides.get(widget.action, widget.description)
                 widget.description = description[:1].upper() + description[1:]
 
-        # Textual docks the command palette to the far right; this app keeps it
-        # inline with the other shortcuts.
-        palette: FooterKey | None = None
+        common: list[Widget] = []
         rest: list[Widget] = []
         for widget in super().compose():
-            if isinstance(widget, FooterKey) and widget.has_class("-command-palette"):
-                palette = widget
-            else:
-                rest.append(widget)
-        for widget in rest:
+            is_palette = isinstance(widget, FooterKey) and widget.has_class(
+                "-command-palette"
+            )
+            if is_palette:
+                # Undock it so it flows inline with the other common keys.
+                widget.remove_class("-command-palette")
             capitalize(widget)
+            is_common = is_palette or (
+                isinstance(widget, FooterKey) and widget.action in _COMMON_ACTIONS
+            )
+            (common if is_common else rest).append(widget)
 
-        if palette is None:
-            yield from rest
-            return
-
-        # The docking class also carries the far-right separator.
-        palette.remove_class("-command-palette")
-        capitalize(palette)
-        inserted = False
-        for widget in rest:
-            yield widget
-            if (
-                not inserted
-                and isinstance(widget, FooterKey)
-                and widget.action == "app.quit"
-            ):
-                yield palette
-                inserted = True
-        if not inserted:
-            yield palette
+        if common:
+            yield HorizontalGroup(*common, classes="footer-row")
+        if rest:
+            yield HorizontalGroup(*rest, classes="footer-row")

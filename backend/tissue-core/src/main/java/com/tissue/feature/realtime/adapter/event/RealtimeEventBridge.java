@@ -1,20 +1,21 @@
 package com.tissue.feature.realtime.adapter.event;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueDeletedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
+import com.tissue.feature.issue.domain.event.IssueRelationAddedEvent;
+import com.tissue.feature.issue.domain.event.IssueRelationRemovedEvent;
+import com.tissue.feature.issue.domain.event.IssueReviewRequestedEvent;
+import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
+import com.tissue.feature.issue.domain.event.IssueReviewerAddedEvent;
+import com.tissue.feature.issue.domain.event.IssueReviewerRemovedEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.feature.issue.domain.event.IssueUnassignedEvent;
-import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
-import com.tissue.feature.realtime.application.SseEmitterRegistry;
-import com.tissue.feature.realtime.application.dto.RealtimeMessage;
+import com.tissue.feature.realtime.application.RealtimeBroadcaster;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +25,11 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Bridges issue domain events onto the realtime SSE stream, delivering each event to the emitters
- * of the connected members of the project.
+ * Bridges issue domain events (lifecycle, reviewers, relations) onto the realtime SSE stream,
+ * delivering each to the emitters of the project's connected members.
  *
  * <p>Runs after the transaction is committed ({@link TransactionPhase#AFTER_COMMIT}) on a separate
- * thread. This ensures SSE updates never block the request and are sent only after changes are
- * successfully committed.
+ * thread, so SSE updates never block the request and are sent only after changes are committed.
  */
 @Slf4j
 @Component
@@ -38,9 +38,7 @@ public class RealtimeEventBridge {
 
     private static final String ISSUE_CATEGORY = "issue";
 
-    private final SseEmitterRegistry registry;
-    private final ProjectMemberQueryRepository projectMemberQueryRepository;
-    private final ObjectMapper objectMapper;
+    private final RealtimeBroadcaster broadcaster;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -124,6 +122,109 @@ public class RealtimeEventBridge {
                 Map.of());
     }
 
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onReviewerAdded(IssueReviewerAddedEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_REVIEWER_ADDED",
+                Map.of("reviewerMemberId", event.reviewerMemberId()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onReviewerRemoved(IssueReviewerRemovedEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_REVIEWER_REMOVED",
+                Map.of("removedReviewerMemberId", event.removedReviewerMemberId()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onReviewSubmitted(IssueReviewSubmittedEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_REVIEW_SUBMITTED",
+                Map.of("reviewStatus", event.reviewStatus().name()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onReviewRequested(IssueReviewRequestedEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_REVIEW_REQUESTED",
+                Map.of("reviewerCount", event.reviewerCount()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onRelationAdded(IssueRelationAddedEvent event) {
+        broadcastRelation(
+                event.eventId(),
+                event.sourceProjectKey(),
+                event.sourceIssueKey(),
+                event.targetProjectKey(),
+                event.targetIssueKey(),
+                event.relationId(),
+                event.relationType().name(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_RELATION_ADDED");
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onRelationRemoved(IssueRelationRemovedEvent event) {
+        broadcastRelation(
+                event.eventId(),
+                event.sourceProjectKey(),
+                event.sourceIssueKey(),
+                event.targetProjectKey(),
+                event.targetIssueKey(),
+                event.relationId(),
+                event.relationType().name(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_RELATION_REMOVED");
+    }
+
+    private void broadcastRelation(
+            UUID eventId,
+            String sourceProjectKey,
+            String sourceIssueKey,
+            String targetProjectKey,
+            String targetIssueKey,
+            Long relationId,
+            String relationType,
+            Long actorMemberId,
+            Instant occurredAt,
+            String type) {
+        Map<String, Object> data = Map.of("relationId", relationId, "relationType", relationType);
+        broadcastIssue(eventId, sourceProjectKey, sourceIssueKey, actorMemberId, occurredAt, type, data);
+        // A relation touches both issues' detail; notify the target's project too.
+        if (!targetIssueKey.equals(sourceIssueKey)) {
+            broadcastIssue(eventId, targetProjectKey, targetIssueKey, actorMemberId, occurredAt, type, data);
+        }
+    }
+
     private void broadcastIssue(
             UUID eventId,
             String projectKey,
@@ -132,18 +233,6 @@ public class RealtimeEventBridge {
             Instant occurredAt,
             String type,
             Map<String, Object> data) {
-        Set<Long> memberIds = projectMemberQueryRepository.findMemberIdsByProjectKey(projectKey);
-        if (memberIds.isEmpty()) {
-            return;
-        }
-        RealtimeMessage message = new RealtimeMessage(type, projectKey, issueKey, actorMemberId, occurredAt, data);
-        String json;
-        try {
-            json = objectMapper.writeValueAsString(message);
-        } catch (JsonProcessingException e) {
-            log.warn("Realtime: failed to serialize {} for {}", type, issueKey, e);
-            return;
-        }
-        registry.send(memberIds, ISSUE_CATEGORY, eventId.toString(), json);
+        broadcaster.broadcast(ISSUE_CATEGORY, eventId, projectKey, issueKey, actorMemberId, occurredAt, type, data);
     }
 }

@@ -4,12 +4,15 @@ from textual import on
 from textual.css.query import NoMatches
 from textual.widgets import Button
 
+from tissue.api.errors import TissueApiError
 from tissue.screens.project_home._base import ProjectHomeBase
+from tissue.screens.project_home.constants import _ISSUE_VIEWS
+from tissue.screens.project_home.modals.confirm_modal import ConfirmModal
 from tissue.screens.project_home.modals.create_issue_modal import CreateIssueModal
 
 
 class IssueActionsMixin(ProjectHomeBase):
-    """Create button behavior for the current [1] view."""
+    """Create and delete behavior for the current [1] view."""
 
     @on(Button.Pressed, "#hub-new-issue")
     def _on_create_pressed(self) -> None:
@@ -93,3 +96,37 @@ class IssueActionsMixin(ProjectHomeBase):
             if issue.issue_key == issue_key:
                 self._select_issue(index)
                 return
+
+    def action_delete(self) -> None:
+        issue_key = self._detail_state.issue_key
+        if issue_key is None or self._ui.view_mode not in _ISSUE_VIEWS:
+            return
+        self.app.push_screen(
+            ConfirmModal(
+                message=f"⚠ Delete {issue_key}? It can be restored from Trash.",
+                title="Delete issue",
+                confirm_label="Delete",
+            ),
+            lambda confirmed: self._on_delete_confirmed(issue_key, confirmed),
+        )
+
+    def _on_delete_confirmed(self, issue_key: str, confirmed: bool | None) -> None:
+        if not confirmed:
+            return
+        self.run_worker(
+            self._delete_issue(issue_key), exclusive=True, group="hub-delete"
+        )
+
+    async def _delete_issue(self, issue_key: str) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            await client.issues.delete_issue(issue_key)
+        except TissueApiError as error:
+            self.app.notify(f"Couldn't delete {issue_key}: {error}", severity="error")
+            return
+        self._detail_state.cache.pop(issue_key, None)
+        self.app.notify(f"Deleted {issue_key}.")
+        self._run_view_load(self._ui.view_mode)
+        self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")

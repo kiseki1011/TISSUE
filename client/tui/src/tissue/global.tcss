@@ -182,9 +182,16 @@ TextButton:focus {
    space on each side of the description keeps key, description, and next shortcut
    separated. Key stays distinguishable by its bold accent foreground. */
 TissueFooter {
+    layout: vertical;
+    height: auto;
     background: $background;
     padding: 0 2;
     margin-bottom: 1;
+}
+TissueFooter .footer-row {
+    layout: horizontal;
+    width: 1fr;
+    height: 1;
 }
 FooterKey > .footer-key--key {
     background: transparent;
