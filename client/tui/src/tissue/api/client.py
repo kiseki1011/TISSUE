@@ -1,12 +1,18 @@
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
+from contextlib import AbstractAsyncContextManager
 from typing import Any, TypeVar
 
 import httpx
 import pydantic
 
-from tissue.api.errors import NotTissueServer, TissueApiError, translate
+from tissue.api.errors import (
+    InvalidCredentials,
+    NotTissueServer,
+    TissueApiError,
+    translate,
+)
 from tissue.api.generated.api.activity_log_api import ActivityLogApi
 from tissue.api.generated.api.agents_api import AgentsApi
 from tissue.api.generated.api.authentication_api import AuthenticationApi
@@ -98,6 +104,10 @@ class TissueClient:
     @property
     def is_authenticated(self) -> bool:
         return self._token_pair is not None
+
+    @property
+    def access_token(self) -> str | None:
+        return self._token_pair.access_token if self._token_pair else None
 
     @property
     def system_info(self) -> SystemInfoApi:
@@ -256,6 +266,15 @@ class TissueClient:
         except pydantic.ValidationError as e:
             raise TissueApiError("Couldn't read the server response.") from e
 
+    async def refresh_session(self, token_at_call: str | None) -> None:
+        """Coordinated refresh for a background consumer (the realtime stream).
+
+        Shares the on-401 retry path's lock so a stream reconnect and an in-flight API
+        call never refresh twice. A real 401 clears the session and routes to login; a
+        transient network/5xx error just raises, leaving the session intact to retry.
+        """
+        await self._refresh_for_retry(token_at_call)
+
     async def _refresh_for_retry(self, token_at_call: str | None) -> None:
         """Refresh once, unless another caller already did."""
         async with self._refresh_lock:
@@ -264,10 +283,14 @@ class TissueClient:
                 return
             try:
                 await self.refresh()
-            except TissueApiError:
-                self.clear_tokens()
-                if self._on_session_expired is not None:
-                    self._on_session_expired()
+            except TissueApiError as e:
+                # Only rejected credentials mean the refresh token is gone; a
+                # network/5xx blip is transient, so don't destroy a still-valid
+                # session over it.
+                if isinstance(e, InvalidCredentials):
+                    self.clear_tokens()
+                    if self._on_session_expired is not None:
+                        self._on_session_expired()
                 raise
 
     async def _send_raw_patch(
@@ -305,6 +328,30 @@ class TissueClient:
 
     async def close(self) -> None:
         await self._api_client.close()
+
+    def stream(
+        self,
+        method: str,
+        path: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout: httpx.Timeout | float | None = None,
+    ) -> AbstractAsyncContextManager[httpx.Response]:
+        """Open a streaming request on the shared, configured httpx client.
+
+        A long-lived response (SSE) can't go through the generated call layer — it
+        buffers the whole body and caps the timeout at 5 min — but that layer's httpx
+        client carries the right SSL/proxy/verify config, so we stream directly on it.
+        Returns httpx's streaming context manager: `async with client.stream(...) as r`.
+        """
+        rest = self._api_client.rest_client
+        pool = rest.pool_manager
+        if pool is None:
+            pool = rest._create_pool_manager()
+            rest.pool_manager = pool
+        return pool.stream(
+            method, f"{self.host}{path}", headers=headers, timeout=timeout
+        )
 
     async def _prefetch_user_context(self) -> None:
         try:

@@ -6,11 +6,13 @@ from datetime import datetime
 from textual.app import App, SystemCommand
 from textual.binding import Binding
 from textual.keys import format_key
+from textual.reactive import reactive
 from textual.screen import Screen
 
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
+from tissue.api.realtime import RealtimeConsumer
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.domain.auth.token_store import create_token_store
@@ -26,6 +28,9 @@ class TissueApp(App):
     CSS_PATH = "global.tcss"
 
     COMMANDS = App.COMMANDS | {TissueCommands}
+
+    # Live state of the realtime (SSE) stream
+    connection_state: reactive[str] = reactive("disconnected")
 
     def __init__(self, *, debug: bool = False, connect_url: str | None = None) -> None:
         super().__init__()
@@ -92,6 +97,7 @@ class TissueApp(App):
         """Restore the last screen without flashing the dashboard first."""
         if self.client is None:
             return
+        self._start_realtime()
         self.push_screen(HomeScreen())
         self._push_last_project()
 
@@ -105,9 +111,28 @@ class TissueApp(App):
         self.push_screen(ProjectHomeScreen(key))
 
     async def on_unmount(self) -> None:
+        self._stop_realtime()
         if self.client is not None:
             await self.client.close()
             self.client = None
+
+    def _start_realtime(self) -> None:
+        """Open the background realtime (SSE) stream for the logged-in session."""
+        if self.client is None:
+            return
+        self.connection_state = "connecting"
+        consumer = RealtimeConsumer(self.client, on_state=self._set_connection_state)
+        self.run_worker(
+            consumer.run(), name="realtime", group="realtime", exclusive=True
+        )
+
+    def _stop_realtime(self) -> None:
+        """Tear down the realtime stream on logout, session expiry, or exit."""
+        self.workers.cancel_group(self, "realtime")
+        self.connection_state = "disconnected"
+
+    def _set_connection_state(self, state: str) -> None:
+        self.connection_state = state
 
     def change_theme(self, theme: str) -> None:
         self.theme = theme
@@ -172,6 +197,7 @@ class TissueApp(App):
 
     def _reset_to_login(self) -> None:
         """Collapse stacked screens/modals, then land on login."""
+        self._stop_realtime()
         if self.system_info is None:
             return
         self._navigate_to_screen(LoginScreen(self.system_info, self.config))
@@ -203,6 +229,7 @@ class TissueApp(App):
             self.config.mark_login_seen(client.host, profile.username)
 
         self.config.set_last_project(None)
+        self._start_realtime()
         self.switch_screen(HomeScreen())
 
     def _handle_exception(self, error: Exception) -> None:

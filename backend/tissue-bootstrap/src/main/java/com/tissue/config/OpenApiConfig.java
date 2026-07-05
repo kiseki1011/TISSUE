@@ -174,6 +174,12 @@ public class OpenApiConfig {
                                                 "Notification Preference")),
                                 Map.of(
                                         "name",
+                                        "Realtime",
+                                        "tags",
+                                        List.of(
+                                                "Realtime")),
+                                Map.of(
+                                        "name",
                                         "VCS",
                                         "tags",
                                         List.of(
@@ -324,6 +330,7 @@ public class OpenApiConfig {
                 new Tag()
                         .name("Notification Preference")
                         .description("Current user's notification preference management"),
+                new Tag().name("Realtime").description("Realtime update stream over Server Sent Events (SSE)"),
                 new Tag().name("GitHub Integration").description("GitHub VCS integration management for projects"),
                 new Tag().name("Global Member Management").description("Global member management for `SUPER_ADMIN`"),
                 new Tag().name("Global Activity Log").description("Global activity log view for `SUPER_ADMIN`"),

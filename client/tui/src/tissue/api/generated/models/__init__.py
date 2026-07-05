@@ -158,6 +158,7 @@ from tissue.api.generated.models.sprint_command_result import SprintCommandResul
 from tissue.api.generated.models.sprint_detail import SprintDetail
 from tissue.api.generated.models.sprint_issue_keys import SprintIssueKeys
 from tissue.api.generated.models.sprint_summary import SprintSummary
+from tissue.api.generated.models.sse_emitter import SseEmitter
 from tissue.api.generated.models.start_sprint_request import StartSprintRequest
 from tissue.api.generated.models.state_count import StateCount
 from tissue.api.generated.models.state_detail import StateDetail
