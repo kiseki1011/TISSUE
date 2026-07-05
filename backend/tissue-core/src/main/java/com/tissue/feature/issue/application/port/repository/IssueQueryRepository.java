@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -50,6 +52,43 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
              AND i.soft_deleted = true
        """, nativeQuery = true)
     Optional<Issue> findDeletedWithProjectByKey(@Param("issueKey") String issueKey);
+
+    /**
+     * Uses native queries because the {@code soft_deleted = false} {@code @SQLRestriction}
+     * on {@link Issue} hides them on default for a JPA managed query.
+     */
+    @Query(value = """
+           SELECT i.*
+           FROM issue i
+           WHERE i.project_id = :projectId
+             AND i.soft_deleted = true
+           ORDER BY i.soft_deleted_at DESC NULLS LAST, i.id DESC
+       """, countQuery = """
+           SELECT count(*)
+           FROM issue i
+           WHERE i.project_id = :projectId
+             AND i.soft_deleted = true
+       """, nativeQuery = true)
+    Page<Issue> findDeletedByProjectId(@Param("projectId") Long projectId, Pageable pageable);
+
+    @Query(value = """
+           SELECT i.*
+           FROM issue i
+           WHERE i.project_id = :projectId
+             AND i.soft_deleted = true
+             AND i.created_by IN (:authorMemberIds)
+           ORDER BY i.soft_deleted_at DESC NULLS LAST, i.id DESC
+       """, countQuery = """
+           SELECT count(*)
+           FROM issue i
+           WHERE i.project_id = :projectId
+             AND i.soft_deleted = true
+             AND i.created_by IN (:authorMemberIds)
+       """, nativeQuery = true)
+    Page<Issue> findDeletedByProjectIdAndAuthors(
+            @Param("projectId") Long projectId,
+            @Param("authorMemberIds") Collection<Long> authorMemberIds,
+            Pageable pageable);
 
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey")
