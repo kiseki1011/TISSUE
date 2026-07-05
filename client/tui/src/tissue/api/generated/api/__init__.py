@@ -25,6 +25,7 @@ from tissue.api.generated.api.position_api import PositionApi
 from tissue.api.generated.api.project_api import ProjectApi
 from tissue.api.generated.api.project_lifecycle_management_api import ProjectLifecycleManagementApi
 from tissue.api.generated.api.project_member_api import ProjectMemberApi
+from tissue.api.generated.api.realtime_api import RealtimeApi
 from tissue.api.generated.api.sprint_api import SprintApi
 from tissue.api.generated.api.super_admin_audit_api import SuperAdminAuditApi
 from tissue.api.generated.api.system_info_api import SystemInfoApi

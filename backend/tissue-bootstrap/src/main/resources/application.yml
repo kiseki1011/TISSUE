@@ -233,6 +233,15 @@ tissue:
       concurrency: 20
       retry-interval: 3m
 
+  # Realtime updates over Server-Sent Events (SSE).
+  #   sse.timeout-ms:   how long a single stream stays open before the client must reconnect
+  #   sse.heartbeat-ms: interval between keep-alive pings that hold idle connections open and
+  #                     prune dead ones
+  realtime:
+    sse:
+      timeout-ms: ${TISSUE_REALTIME_SSE_TIMEOUT_MS:1800000}   # 30 min
+      heartbeat-ms: ${TISSUE_REALTIME_SSE_HEARTBEAT_MS:15000} # 15s
+
   # Member policy
   #
   # The retention period for storing the withdrawn member's PII, before permanent deletion.

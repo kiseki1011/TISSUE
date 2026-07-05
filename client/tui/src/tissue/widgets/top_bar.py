@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Horizontal
+from textual.css.query import NoMatches
 from textual.widgets import Label
 
 from tissue.widgets.color_type import color_hex
@@ -16,8 +17,8 @@ class TopBar(Horizontal):
     """Persistent top bar shown on every PostAuthScreen.
 
     Two regions: the server/user identity on the left, a screen-specific status
-    (e.g. assigned-issue counts) on the right. Screens push the status via the
-    screen's set_top_bar_status(); the cached value is re-read on recompose.
+    on the right. Screens push the status via thㄷ screen's `set_top_bar_status()`.
+    The cached value is read again on recompose.
     """
 
     DEFAULT_CSS = """
@@ -55,27 +56,50 @@ class TopBar(Horizontal):
         yield Label(self._server_label(), classes="topbar-server")
         yield Label(self._status, classes="topbar-status")
 
+    def on_mount(self) -> None:
+        # Re-render status dot whenever the realtime connection changes
+        self.watch(self.app, "connection_state", self._on_connection_state, init=False)
+
+    def _on_connection_state(self, _state: str) -> None:
+        try:
+            self.query_one(".topbar-server", Label).update(self._server_label())
+        except NoMatches:
+            pass
+
     def set_status(self, text: str) -> None:
         self.query_one(".topbar-status", Label).update(text)
 
     def _server_label(self) -> Text:
+        """The server label on the header.
+
+        - Server info
+        - Status dot (color reflects the realtime connection)
+        """
         info = self.app.system_info
         name = info.server_name if info is not None else None
         domain = self._server_domain()
-        # A filled dot + the server identity, in the primary color. color_hex
-        # falls back to "" on ANSI themes (Rich rejects ansi_* names), leaving
-        # the identity at the muted base color rather than crashing.
         primary = color_hex(self.app.theme_variables.get("primary"))
+        glyph, state_var = self._connection_indicator()
+        dot = color_hex(self.app.theme_variables.get(state_var))
         label = Text()
-        label.append(f"● {name or domain or 'tissue'}", style=primary or "")
-        # Domain then username trail the identity in one left-aligned run, same
-        # dim ·-separated format, instead of pinning the user to the far edge.
+        label.append(f"{glyph} ", style=dot or primary or "")
+        label.append(name or domain or "tissue", style=primary or "")
+
         if name and domain:
             label.append(f"  ·  {domain}", style="dim")
         username = self._username()
         if username:
             label.append(f"  ·  {username}", style="dim")
         return label
+
+    def _connection_indicator(self) -> tuple[str, str]:
+        """The status-dot glyph and its theme color variable for the connection."""
+        state = getattr(self.app, "connection_state", "disconnected")
+        if state == "connected":
+            return "●", "success"
+        if state == "connecting":
+            return "◐", "warning"
+        return "✕", "error"
 
     def _server_domain(self) -> str:
         client = self.app.client

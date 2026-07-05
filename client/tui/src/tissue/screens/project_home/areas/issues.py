@@ -50,6 +50,51 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
         self._refresh_box_chrome()
         self._select_first_issue_or_reset_detail()
 
+    async def _live_reload_issues(self) -> None:
+        """Refetch [1] in place, keeping the open issue and table focus when possible.
+
+        Reloads page 0 only.
+        """
+        if not self._member_list.members:
+            await self._load_members()
+        page = await self._fetch_issue_page(keyword=self._issue_list.keyword)
+        if page is None:
+            return
+        # Snapshot before the rebuild so focus moved to [2] mid-fetch isn't stolen back.
+        panel = self._issue_list_panel()
+        table = panel.table(ISSUE_TABLE_ID) if panel is not None else None
+        had_focus = table is not None and table.has_focus
+        selected_key = self._detail_state.issue_key
+        self._replace_issues(page)
+        self._issue_list.page = 0
+        await self._render_issues()
+        self._refresh_box_chrome()
+        self._restore_issue_selection(selected_key, had_focus=had_focus)
+
+    def _restore_issue_selection(
+        self, issue_key: str | None, *, had_focus: bool
+    ) -> None:
+        issues = self._issue_list.issues
+        if not issues:
+            self.run_worker(
+                self._reset_detail_pane(), exclusive=True, group="hub-detail"
+            )
+            return
+        index = next(
+            (i for i, summary in enumerate(issues) if summary.issue_key == issue_key),
+            None,
+        )
+        if index is None:
+            # Open issue fell off the reloaded page, so leave [2] on it (no hijack).
+            return
+        panel = self._issue_list_panel()
+        table = panel.table(ISSUE_TABLE_ID) if panel is not None else None
+        if table is not None:
+            table.move_cursor(row=min(index, table.row_count - 1))
+            if had_focus:
+                table.focus()
+        self._select_issue(index)
+
     async def _fetch_issue_page(
         self, *, keyword: str | None, page: int = 0
     ) -> PageResponseIssueSummary | None:
@@ -178,8 +223,8 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
         )
         await panel.replace_content([table])
         self.watch(table, "scroll_y", self._on_issues_scrolled, init=False)
-        # Colors load in a separate worker; if they arrived while this table was
-        # mid-mount, the state-color recolor no-op'd, so apply them now.
+        # Colors load in a separate worker and may have arrived mid-mount, when the
+        # recolor no-op'd, so apply them now.
         self._recolor_status_table(ISSUE_TABLE_ID, self._issue_list.issues)
 
     async def _reflow_list_titles(self) -> None:

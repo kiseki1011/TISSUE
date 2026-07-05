@@ -132,6 +132,7 @@ class ConnectingScreen(TissueScreen):
         if saved_token is not None:
             try:
                 if await client.auth.restore_session(saved_token):
+                    self.app._start_realtime()
                     self.app.switch_screen(HomeScreen())
                     self.app._push_last_project()
                     return

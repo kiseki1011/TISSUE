@@ -4471,6 +4471,15 @@
         },
         "type": "object"
       },
+      "SseEmitter": {
+        "properties": {
+          "timeout": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "StartSprintRequest": {
         "properties": {
           "dueAt": {
@@ -6766,6 +6775,28 @@
         "summary": "Refresh token",
         "tags": [
           "Authentication"
+        ]
+      }
+    },
+    "/api/v1/events/stream": {
+      "get": {
+        "description": "Opens a long-lived Server Sent Events (SSE) stream that pushes changes\n(issue and sprint updates) for every project the caller belongs to, so a\nclient can update in place instead of polling.\n\nEach event's `data` is a JSON body describing what changed. The stream stays open\nuntil the client disconnects or the server times it out, after which the client\nreconnects.\n\n**Requirements:**\n- Requires authentication\n\n**Client note:** this is a streaming endpoint. Consume the response\nincrementally as an SSE stream (read it line by line as events arrive). Do not\ncall the generated client method for this operation. It buffers the whole\nresponse and blocks until the stream closes.",
+        "operationId": "subscribeToEvents",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/SseEmitter"
+                }
+              }
+            },
+            "description": "Event stream opened"
+          }
+        },
+        "summary": "Subscribe to the realtime event stream",
+        "tags": [
+          "Realtime"
         ]
       }
     },
@@ -13945,6 +13976,10 @@
       "name": "Notification Preference"
     },
     {
+      "description": "Realtime update stream over Server Sent Events (SSE)",
+      "name": "Realtime"
+    },
+    {
       "description": "GitHub VCS integration management for projects",
       "name": "GitHub Integration"
     },
@@ -14051,6 +14086,12 @@
       "tags": [
         "Notification",
         "Notification Preference"
+      ]
+    },
+    {
+      "name": "Realtime",
+      "tags": [
+        "Realtime"
       ]
     },
     {

@@ -59,9 +59,12 @@ class DetailMixin(DetailRenderMixin):
         if not force:
             await self._show_skeleton(issue_key)
 
+        token = self._detail_state.begin_fetch(issue_key)
         view = await self._load_detail_view(issue_key)
         if view is None:
             return
+        if not self._detail_state.is_latest_fetch(issue_key, token):
+            return  # a newer fetch for this issue superseded us
         self._detail_state.cache[issue_key] = view
         await self._apply_detail_view(view, focus_detail=focus_detail)
 
@@ -122,11 +125,14 @@ class DetailMixin(DetailRenderMixin):
         client = self.app.client
         if client is None:
             return
+        token = self._detail_state.begin_fetch(issue_key)
         try:
             fresh = await client.issues.get_issue_detail(issue_key)
         except TissueApiError as error:
             log.debug("Hub: failed to refresh issue %s: %s", issue_key, error)
             return
+        if not self._detail_state.is_latest_fetch(issue_key, token):
+            return  # a newer fetch for this issue superseded us
         if fresh == self._detail_state.cache.get(issue_key):
             return
         self._detail_state.cache[issue_key] = fresh
@@ -152,8 +158,6 @@ class DetailMixin(DetailRenderMixin):
         await self._load_detail_dependencies()
         if not self._is_current_detail(issue):
             return
-        # Refresh now that the sprint index is loaded so the footer 's' label
-        # (add vs remove) agrees with the Current Sprint button.
         self.refresh_bindings()
 
         self._transition_target_labels = self._build_transition_target_labels(

@@ -89,6 +89,14 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("project") Project project, @Param("memberIds") Collection<Long> memberIds);
 
     @Query("""
+            SELECT pm.member.id
+            FROM ProjectMember pm
+            WHERE pm.projectKey = :projectKey
+              AND pm.softDeleted = false
+            """)
+    Set<Long> findMemberIdsByProjectKey(@Param("projectKey") String projectKey);
+
+    @Query("""
             SELECT
                 m.id as memberId,
                 m.email as email,
