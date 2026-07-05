@@ -103,6 +103,10 @@ class IssueDetailState:
 class IssueReviewState:
     reviewer_ids: list[int] = field(default_factory=list)
     assignee_id: int | None = None
+    is_reviewer: bool = False
+    # The issue these reviewer fields describe
+    # `v` only acts when this matches the shown issue
+    detail_key: str | None = None
     busy: bool = False
     picker_issue_key: str | None = None
     picker_baseline: list[int] = field(default_factory=list)

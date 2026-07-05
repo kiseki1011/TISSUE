@@ -40,7 +40,13 @@ class TissueCommands(Provider):
                     self._home,
                     "Go to the home screen",
                 )
-            if self._project_key() is not None:
+            if self._on_trash():
+                yield (
+                    "Project Home",
+                    self._project_home,
+                    "Return to this project's hub",
+                )
+            elif self._project_key() is not None:
                 yield (
                     "Trash",
                     self._trash,
@@ -70,12 +76,23 @@ class TissueCommands(Provider):
         screen = self.screen
         return screen._project_key if isinstance(screen, ProjectHomeScreen) else None
 
+    def _on_trash(self) -> bool:
+        """The palette was invoked over a project's trash screen."""
+        from tissue.screens.project_home.trash import TrashScreen
+
+        return isinstance(self.screen, TrashScreen)
+
     def _trash(self) -> None:
         from tissue.screens.project_home.trash import TrashScreen
 
         project_key = self._project_key()
         if project_key is not None:
             self.app.push_screen(TrashScreen(project_key))
+
+    def _project_home(self) -> None:
+        """Trash sits on top of its project hub, so popping returns to it."""
+        if self._on_trash():
+            self.app.pop_screen()
 
     def _home(self) -> None:
         self.app.show_home()

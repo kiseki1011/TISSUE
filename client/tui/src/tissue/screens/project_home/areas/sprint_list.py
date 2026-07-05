@@ -129,6 +129,11 @@ class SprintListMixin(ProjectHomeBase):
         await self._load_sprints()
         for index, sprint in enumerate(self._sprint_state.sprints):
             if sprint.id == sprint_id:
+                # Move the cursor too
+                panel = self._issue_list_panel()
+                table = panel.table("hub-sprints-table") if panel is not None else None
+                if table is not None and table.row_count:
+                    table.move_cursor(row=min(index, table.row_count - 1))
                 self._select_sprint(index)
                 return
 

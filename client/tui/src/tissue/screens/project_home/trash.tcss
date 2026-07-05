@@ -6,9 +6,16 @@ TrashScreen #trash-body {
 TrashScreen #trash-toolbar {
     width: 100%;
     height: auto;
+    align-vertical: middle;
 }
-TrashScreen #trash-toolbar Button {
-    margin-right: 1;
+/* Icon-only back button, sized like the search bar's filter button but with no
+   background fill (the toolbar buttons read as flat). */
+TrashScreen #trash-back {
+    margin-left: 0;
+    background: transparent;
+}
+TrashScreen #trash-mine {
+    margin-left: 1;
 }
 TrashScreen #trash-grid {
     width: 100%;
@@ -29,6 +36,7 @@ TrashScreen .trash-box {
     border-subtitle-color: $text-muted;
     padding: 0 1;
 }
+/* No left padding so the # column sits flush at the border, like the hub. */
 TrashScreen #trash-list-box {
     padding: 0 1 0 0;
 }
@@ -37,9 +45,28 @@ TrashScreen #trash-detail-box:focus-within {
     border: round $accent;
     border-title-color: $accent;
 }
+/* Detail box stacks a scrollable body over a pinned action row so Restore stays
+   bottom-right regardless of how far the body is scrolled. */
 TrashScreen #trash-detail-box {
+    layout: vertical;
+}
+TrashScreen #trash-detail-scroll {
+    width: 100%;
+    height: 1fr;
     scrollbar-gutter: stable;
     padding: 1 2;
+}
+TrashScreen #trash-detail-actions {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    padding: 0 1 1 0;
+}
+TrashScreen .trash-restore-btn {
+    width: auto;
+    min-width: 0;
+    padding: 0 1;
+    background: transparent;
 }
 TrashScreen .hub-table {
     height: 1fr;
@@ -52,27 +79,25 @@ TrashScreen .trash-muted {
     color: $text-muted;
     padding: 1;
 }
+TrashScreen .trash-empty {
+    padding: 1 1 1 2;
+}
 TrashScreen .trash-title {
     width: 100%;
     text-style: bold;
     color: $text;
     padding-bottom: 1;
 }
-TrashScreen .trash-row {
+/* key:value rows, matching the hub detail pane. */
+TrashScreen .detail-row {
     width: 100%;
     height: auto;
 }
-TrashScreen .trash-key {
-    width: 12;
+TrashScreen .detail-key {
+    width: 15;
     color: $text-muted;
 }
-TrashScreen .trash-value {
+TrashScreen .detail-value {
     width: 1fr;
     color: $text;
-}
-TrashScreen #trash-actions {
-    width: 100%;
-    height: auto;
-    align-horizontal: right;
-    margin-top: 1;
 }

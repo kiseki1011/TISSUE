@@ -208,11 +208,9 @@ class SprintDetailMixin(ProjectHomeBase):
             return
         self._sprint_state.by_id = None
         self.run_worker(
-            self._render_sprint_detail(
-                self._sprint_state.detail_id, focus_detail=False
-            ),
+            self._reload_and_select_sprint(self._sprint_state.detail_id),
             exclusive=True,
-            group="hub-detail",
+            group="hub-list",
         )
 
     async def _ensure_sprint_index(self) -> None:

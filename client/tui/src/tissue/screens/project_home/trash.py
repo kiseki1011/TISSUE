@@ -6,16 +6,18 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container, Grid, Horizontal, Vertical, VerticalScroll
-from textual.css.query import NoMatches
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Static
+from textual.widgets import Button, Checkbox, DataTable, Static
 
 from tissue.api.errors import TissueApiError
-from tissue.screens.base import RefreshableScreen
+from tissue.screens.base import PostAuthScreen
 from tissue.screens.project_home.issue_table import ISSUE_TABLE_ID, issue_table
 from tissue.screens.project_home.workflow_colors import load_state_colors
-from tissue.util.datetime_fmt import format_date
+from tissue.util.datetime_fmt import format_relative
+from tissue.widgets.detail_row import detail_row
+from tissue.widgets.filter_checkbox import FilterCheckbox
 from tissue.widgets.issue_chips import color_chip, priority_chip, type_chip
 
 if TYPE_CHECKING:
@@ -25,14 +27,16 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class TrashScreen(RefreshableScreen):
+class TrashScreen(PostAuthScreen):
     """A project's trash: its soft-deleted issues, read-only, with restore.
 
-    Deleted issues are hidden from the detail endpoint, so the [2] pane shows what the
-    list summary carries rather than a full fetch.
+    Deleted issues are hidden from the detail endpoint, so [2] shows what the list
+    summary carries rather than a full fetch.
     """
 
     CSS_PATH = "trash.tcss"
+
+    BINDINGS = [Binding("r", "restore", "restore")]
 
     def __init__(self, project_key: str) -> None:
         super().__init__()
@@ -47,11 +51,23 @@ class TrashScreen(RefreshableScreen):
     def compose_content(self) -> ComposeResult:
         with Container(id="trash-body"):
             with Horizontal(id="trash-toolbar"):
-                yield Button("← Back", id="trash-back")
-                yield Button("Show: everyone", id="trash-mine")
+                back = Button("←", id="trash-back", classes="search-filter-btn")
+                back.tooltip = "Back to project home"
+                yield back
+                yield FilterCheckbox(
+                    "Mine only", value=self._mine_only, id="trash-mine"
+                )
             with Grid(id="trash-grid"):
                 yield Vertical(id="trash-list-box", classes="trash-box")
-                yield VerticalScroll(id="trash-detail-box", classes="trash-box")
+                with Vertical(id="trash-detail-box", classes="trash-box"):
+                    yield VerticalScroll(id="trash-detail-scroll")
+                    with Horizontal(id="trash-detail-actions"):
+                        yield Button(
+                            "Restore",
+                            id="trash-restore",
+                            classes="trash-restore-btn",
+                            disabled=True,
+                        )
 
     def on_mount(self) -> None:
         self.set_top_bar_status(f"{self._project_key} · Trash")
@@ -59,10 +75,10 @@ class TrashScreen(RefreshableScreen):
         self.query_one("#trash-detail-box").border_title = "[2] Details"
         self.run_worker(self._load(), exclusive=True, group="trash-load")
 
-    async def refresh_data(self) -> None:
-        # Route through the exclusive worker so `r` coalesces with an in-flight
-        # on-mount/toggle load instead of racing a second render of the panes.
-        self.run_worker(self._load(), exclusive=True, group="trash-load")
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "restore":
+            return self._selected_key is not None
+        return super().check_action(action, parameters)
 
     async def _load(self) -> None:
         client = self.app.client
@@ -110,6 +126,7 @@ class TrashScreen(RefreshableScreen):
         await box.remove_children()
         if not self._issues:
             self._selected_key = None
+            self.refresh_bindings()
             await box.mount(Static("Trash is empty.", classes="trash-empty"))
             self._show_detail(None)
             return
@@ -125,6 +142,7 @@ class TrashScreen(RefreshableScreen):
             return
         summary = self._issues[index]
         self._selected_key = summary.issue_key
+        self.refresh_bindings()
         self._show_detail(summary)
 
     def _show_detail(self, summary: IssueSummary | None) -> None:
@@ -137,74 +155,68 @@ class TrashScreen(RefreshableScreen):
         self._select_index(event.cursor_row)
 
     async def _render_detail(self, summary: IssueSummary | None) -> None:
-        box = self.query_one("#trash-detail-box", VerticalScroll)
-        await box.remove_children()
+        scroll = self.query_one("#trash-detail-scroll", VerticalScroll)
+        await scroll.remove_children()
+        restore = self.query_one("#trash-restore", Button)
         if summary is None:
-            await box.mount(
+            restore.disabled = True
+            await scroll.mount(
                 Static("Select an issue to see details.", classes="trash-muted")
             )
             return
+        restore.disabled = False
+        await scroll.mount_all(self._detail_widgets(summary))
+
+    def _detail_widgets(self, summary: IssueSummary) -> list[Widget]:
         assignee = summary.assignee_member_id
         state_color = (
             self._state_colors.get(summary.current_state_id)
             if summary.current_state_id is not None
             else None
         )
-        widgets: list[Widget] = [
+        return [
             Static(Text(summary.title or "-", style="bold"), classes="trash-title"),
-            self._row("Key", summary.issue_key or "-"),
-            self._row(
-                "Type", type_chip(summary.issue_type_name, summary.issue_type_color)
-            ),
-            self._row(
+            detail_row("Key", summary.issue_key or "-"),
+            detail_row(
                 "Status",
-                color_chip(summary.current_state_label or "-", state_color, pad=False),
+                color_chip(summary.current_state_label or "-", state_color),
             ),
-            self._row(
+            detail_row(
                 "Priority", priority_chip(self.app.theme_variables, summary.priority)
             ),
-            self._row(
-                "Assignee",
-                Text(self._members.get(assignee, "-")) if assignee is not None else "-",
+            detail_row(
+                "Type", type_chip(summary.issue_type_name, summary.issue_type_color)
             ),
-            self._row(
-                "Points",
+            detail_row(
+                "Assignee",
+                self._members.get(assignee, "-") if assignee is not None else "-",
+            ),
+            detail_row(
+                "Story points",
                 "-" if summary.story_point is None else str(summary.story_point),
             ),
-            self._row("Due", format_date(summary.due_at)),
-            Horizontal(
-                Button("Restore", id="trash-restore", variant="success"),
-                id="trash-actions",
-            ),
+            detail_row("Due", format_relative(summary.due_at)),
         ]
-        await box.mount_all(widgets)
-
-    def _row(self, label: str, value: str | Text) -> Horizontal:
-        return Horizontal(
-            Static(label, classes="trash-key"),
-            Static(value, classes="trash-value"),
-            classes="trash-row",
-        )
 
     @on(Button.Pressed, "#trash-back")
     def _on_back(self) -> None:
         self.app.pop_screen()
 
-    @on(Button.Pressed, "#trash-mine")
-    def _on_toggle_mine(self) -> None:
-        self._mine_only = not self._mine_only
-        self._update_mine_button()
+    @on(Checkbox.Changed, "#trash-mine")
+    def _on_toggle_mine(self, event: Checkbox.Changed) -> None:
+        if event.value == self._mine_only:
+            return
+        self._mine_only = event.value
         self.run_worker(self._fetch_trash(), exclusive=True, group="trash-load")
 
-    def _update_mine_button(self) -> None:
-        try:
-            button = self.query_one("#trash-mine", Button)
-        except NoMatches:
-            return
-        button.label = "Show: mine only" if self._mine_only else "Show: everyone"
+    def action_restore(self) -> None:
+        self._do_restore()
 
     @on(Button.Pressed, "#trash-restore")
     def _on_restore(self) -> None:
+        self._do_restore()
+
+    def _do_restore(self) -> None:
         if self._selected_key is not None:
             self.run_worker(
                 self._restore(self._selected_key),

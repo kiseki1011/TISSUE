@@ -57,6 +57,8 @@ class ReviewersMixin(ProjectHomeBase):
             for reviewer in reviewers
             if reviewer.participant and reviewer.participant.member_id is not None
         ]
+        self._review_state.is_reviewer = self._current_user_is_reviewer(reviewers)
+        self._review_state.detail_key = detail.issue_key
 
     def _reviewer_row(self, reviewer: ReviewerInfo) -> Widget:
         participant = reviewer.participant
@@ -235,13 +237,33 @@ class ReviewersMixin(ProjectHomeBase):
             self._review_state.busy = False
         self._refresh_detail(issue_key)
 
+    def action_review(self) -> None:
+        """`v` in the Reviews view.
+
+        Submit a review if actor is a reviewer, else request.
+        """
+        issue_key = self._detail_state.issue_key
+        # Only act when the loaded reviewer context is for the shown issue
+        if issue_key is None or self._review_state.detail_key != issue_key:
+            return
+        if self._review_state.is_reviewer:
+            self._start_submit_review()
+        else:
+            self._start_request_review()
+
     @on(Button.Pressed, "#hub-request-review")
     def _on_request_review(self, event: Button.Pressed) -> None:
         event.stop()
+        self._start_request_review()
+
+    def _start_request_review(self) -> None:
         if self._review_state.busy:
             return
         issue_key = self._detail_state.issue_key
-        if issue_key is None or not self._review_state.reviewer_ids:
+        if issue_key is None:
+            return
+        if not self._review_state.reviewer_ids:
+            self.app.notify("Add a reviewer first.", severity="warning")
             return
         self._review_state.busy = True
         self.run_worker(
@@ -270,6 +292,9 @@ class ReviewersMixin(ProjectHomeBase):
     @on(Button.Pressed, "#hub-submit-review")
     def _on_submit_review(self, event: Button.Pressed) -> None:
         event.stop()
+        self._start_submit_review()
+
+    def _start_submit_review(self) -> None:
         if self._review_state.busy:
             return
         issue_key = self._detail_state.issue_key

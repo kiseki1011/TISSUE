@@ -78,6 +78,11 @@ TextArea:focus {
     border: round $primary;
 }
 
+/* Every modal dims the screen behind it */
+TissueModal {
+    background: $background 60%;
+}
+
 .panel {
     border: round $primary;
 }
