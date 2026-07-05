@@ -82,6 +82,21 @@ class IssueDetailState:
     edit_current: dict[str, str] = field(default_factory=dict)
     custom_fields: dict[int, CustomFieldValueInfo] = field(default_factory=dict)
     field_options: dict[int, list[FieldOptionDetail]] = field(default_factory=dict)
+    _fetch_seq: int = 0
+    _latest_fetch: dict[str, int] = field(default_factory=dict)
+
+    def begin_fetch(self, issue_key: str) -> int:
+        """Claim the newest in-flight detail fetch for `issue_key`.
+
+        Concurrent fetches for the same issue can land out of order. Callers pass the
+        returned token to `is_latest_fetch` so only the newest-issued fetch wins.
+        """
+        self._fetch_seq += 1
+        self._latest_fetch[issue_key] = self._fetch_seq
+        return self._fetch_seq
+
+    def is_latest_fetch(self, issue_key: str, token: int) -> bool:
+        return self._latest_fetch.get(issue_key) == token
 
 
 @dataclass

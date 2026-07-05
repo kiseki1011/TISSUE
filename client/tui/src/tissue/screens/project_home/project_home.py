@@ -17,6 +17,7 @@ from tissue.screens.project_home.areas.hierarchy import HierarchyMixin
 from tissue.screens.project_home.areas.issues import IssuesMixin
 from tissue.screens.project_home.areas.layout import LayoutMixin
 from tissue.screens.project_home.areas.members import MembersMixin
+from tissue.screens.project_home.areas.realtime import RealtimeMixin
 from tissue.screens.project_home.areas.relations import RelationsMixin
 from tissue.screens.project_home.areas.reviewers import ReviewersMixin
 from tissue.screens.project_home.areas.sprints import SprintsMixin
@@ -46,6 +47,7 @@ class ProjectHomeScreen(
     RelationsMixin,
     CommentsMixin,
     ActivityMixin,
+    RealtimeMixin,
 ):
     """Per-project hub."""
 

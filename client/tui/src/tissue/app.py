@@ -12,7 +12,7 @@ from textual.screen import Screen
 from tissue.api.client import TissueClient
 from tissue.api.errors import TissueApiError
 from tissue.api.generated.models.system_info_details import SystemInfoDetails
-from tissue.api.realtime import RealtimeConsumer
+from tissue.api.realtime import RealtimeConsumer, RealtimeEvent
 from tissue.commands import TissueCommands
 from tissue.config.manager import ConfigManager
 from tissue.domain.auth.token_store import create_token_store
@@ -121,10 +121,25 @@ class TissueApp(App):
         if self.client is None:
             return
         self.connection_state = "connecting"
-        consumer = RealtimeConsumer(self.client, on_state=self._set_connection_state)
+        consumer = RealtimeConsumer(
+            self.client,
+            on_state=self._set_connection_state,
+            on_event=self._on_realtime_event,
+        )
         self.run_worker(
             consumer.run(), name="realtime", group="realtime", exclusive=True
         )
+
+    def _on_realtime_event(self, event: RealtimeEvent) -> None:
+        """Deliver a realtime event to every mounted screen that handles them."""
+        for screen in self.screen_stack:
+            handler = getattr(screen, "handle_realtime_event", None)
+            if handler is None:
+                continue
+            try:
+                handler(event)
+            except Exception:
+                log.exception("Realtime: screen handler failed")
 
     def _stop_realtime(self) -> None:
         """Tear down the realtime stream on logout, session expiry, or exit."""
