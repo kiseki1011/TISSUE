@@ -31,11 +31,11 @@ EditSprintModal #esm-due {
 }
 
 EditSprintModal #esm-due {
-    border: solid $primary;
+    border: round $primary;
     height: 3;
 }
 EditSprintModal #esm-due:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 EditSprintModal #esm-due > #input-control {

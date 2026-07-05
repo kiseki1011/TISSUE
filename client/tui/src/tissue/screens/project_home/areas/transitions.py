@@ -47,3 +47,4 @@ class TransitionsMixin(ProjectHomeBase):
             self.app.notify("Transition failed.", severity="error")
             return
         await self._render_issue_detail(issue_key, focus_detail=False, force=True)
+        self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")

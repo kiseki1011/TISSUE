@@ -34,11 +34,11 @@ EditIssueModal .cf-datetime {
 }
 
 EditIssueModal Select {
-    border: solid $primary;
+    border: round $primary;
     height: auto;
 }
 EditIssueModal Select:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 EditIssueModal Select > SelectCurrent,
@@ -49,13 +49,13 @@ EditIssueModal Select:focus > SelectCurrent {
 EditIssueModal #eim-due,
 EditIssueModal .cf-date,
 EditIssueModal .cf-datetime {
-    border: solid $primary;
+    border: round $primary;
     height: 3;
 }
 EditIssueModal #eim-due:focus-within,
 EditIssueModal .cf-date:focus-within,
 EditIssueModal .cf-datetime:focus-within {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 EditIssueModal #eim-due > #input-control,
@@ -106,7 +106,7 @@ EditIssueModal .custom-field-input .cf-datetime {
 }
 EditIssueModal .custom-field-input .cf-switch {
     width: 100%;
-    border: solid $primary;
+    border: round $primary;
 }
 EditIssueModal .custom-field-input .cf-text {
     width: 100%;
@@ -116,6 +116,10 @@ EditIssueModal .custom-field-input .cf-checklist {
     width: 100%;
     height: auto;
     max-height: 10;
+    border: round $primary;
+}
+EditIssueModal .custom-field-input .cf-checklist:focus-within {
+    border: round $accent;
 }
 
 EditIssueModal #eim-status {

@@ -241,6 +241,7 @@ class ProjectsMixin(HomeScreenBase):
     async def _reload_projects(self) -> None:
         await self._fetch_projects()
         await self._render_projects()
+        await self._load_header_stats()
 
     def action_toggle_pin(self) -> None:
         projects = self._projects.items

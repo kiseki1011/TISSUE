@@ -17,6 +17,10 @@ SprintFilterModal #sfm-status {
     width: 100%;
     height: auto;
     margin-bottom: 1;
+    border: none;
+    background: $panel;
+    padding: 0 1;
+    scrollbar-size-vertical: 1;
 }
 SprintFilterModal #sfm-buttons {
     width: 100%;

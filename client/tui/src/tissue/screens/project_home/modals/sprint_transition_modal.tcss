@@ -17,6 +17,8 @@ SprintTransitionModal #str-dialog.-expanded .str-actions {
 SprintTransitionModal #str-radio {
     width: 100%;
     margin-bottom: 1;
+    border: none;
+    background: $panel;
 }
 SprintTransitionModal #str-due-row {
     width: 100%;

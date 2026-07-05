@@ -117,6 +117,32 @@ class IssueService:
             size=size,
         )
 
+    async def my_assigned_total(
+        self,
+        *,
+        project_key: str | None = None,
+        state_categories: list[str] | None = None,
+    ) -> int:
+        """Count of issues assigned to me, optionally scoped to one project.
+
+        Uses size=1 and reads totalElements, so it counts without fetching rows.
+        """
+        if project_key is not None:
+            page = await self.search_project_issues(
+                project_key,
+                assignee_member_ids=["me"],
+                state_categories=state_categories,
+                size=1,
+            )
+        else:
+            page = await self._client._call_with_retry(
+                self._client.issue_api.search_all_issues,
+                assignee_member_ids=["me"],
+                state_categories=state_categories,
+                size=1,
+            )
+        return page.total_elements or 0
+
     async def get_issue(self, issue_key: str) -> IssueCommonDetail:
         return await self._client._call_with_retry(
             self._client.issue_api.get_issue_common,

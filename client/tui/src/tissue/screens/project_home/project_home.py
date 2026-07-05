@@ -5,6 +5,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Grid
 
+from tissue.api.errors import TissueApiError
 from tissue.screens.project_home.areas.activity import ActivityMixin
 from tissue.screens.project_home.areas.agent_issues import AgentIssuesMixin
 from tissue.screens.project_home.areas.assign import AssignMixin
@@ -81,8 +82,24 @@ class ProjectHomeScreen(
         Binding("escape", "leave_search", show=False),
     ]
 
-    def top_bar_breadcrumb(self) -> str:
-        return f"Projects ▸ {self._title or self._project_key}"
+    async def _load_header_stats(self) -> None:
+        client = self.app.client
+        if client is None:
+            return
+        try:
+            assigned = await client.issues.my_assigned_total(
+                project_key=self._project_key,
+                state_categories=["INITIAL", "ACTIVE"],
+            )
+            in_progress = await client.issues.my_assigned_total(
+                project_key=self._project_key,
+                state_categories=["ACTIVE"],
+            )
+        except TissueApiError:
+            return
+        self.set_top_bar_status(
+            f"{self._project_key} · {assigned} assigned · {in_progress} in progress"
+        )
 
     def compose_content(self) -> ComposeResult:
         with Container(id="screen-body"):
@@ -103,10 +120,12 @@ class ProjectHomeScreen(
         self._update_filter_button()
         self._run_view_load(self._ui.view_mode, focus_list=True)
         self.run_worker(self._load_state_colors(), exclusive=True, group="hub-colors")
+        self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")
 
     async def refresh_data(self) -> None:
         self._detail_state.cache.clear()
         self._run_view_load(self._ui.view_mode)
+        self.run_worker(self._load_header_stats(), exclusive=True, group="hub-header")
 
     def on_unmount(self) -> None:
         self._cancel_detail_timer()

@@ -12,6 +12,8 @@ TransitionPickerModal #tr-radio {
     height: auto;
     max-height: 16;
     margin-bottom: 1;
+    border: none;
+    background: $panel;
 }
 
 TransitionPickerModal .tr-blocked {

@@ -1,5 +1,5 @@
 Button {
-    border: solid $primary;
+    border: round $primary;
 }
 
 /* textual-timepiece styles its own inputs/buttons flat. The app-wide
@@ -16,7 +16,7 @@ DateTimePicker Button:focus {
 /* Focus changes only the border/text (not the background); the background
    highlight is reserved for :hover. */
 Button:focus {
-    border: solid $accent;
+    border: round $accent;
     color: $accent;
     background-tint: transparent 0%;
     text-style: bold;
@@ -27,11 +27,11 @@ Button:hover {
 }
 
 Input {
-    border: solid $primary;
+    border: round $primary;
 }
 
 Input:focus {
-    border: solid $accent;
+    border: round $accent;
     color: $accent;
     border-title-color: $accent;
     background: transparent;
@@ -42,48 +42,48 @@ Input > .input--placeholder {
 }
 
 Input.-error {
-    border: solid $error;
+    border: round $error;
     color: $error;
     border-title-color: $error;
 }
 
 Checkbox {
-    border: solid $primary;
+    border: round $primary;
 }
 
 Checkbox:focus {
-    border: solid $accent;
+    border: round $accent;
 }
 
 /* Match the Select's closed box to our buttons (border style/color/size). */
 SelectCurrent {
-    border: solid $primary;
+    border: round $primary;
 }
 
 Select:focus > SelectCurrent {
-    border: solid $accent;
+    border: round $accent;
 }
 
 TextArea {
-    border: solid $primary;
+    border: round $primary;
 }
 
 TextArea:focus {
-    border: solid $accent;
+    border: round $accent;
     border-title-color: $accent;
 }
 
 .dialog {
     background: $surface;
-    border: solid $primary;
+    border: round $primary;
 }
 
 .panel {
-    border: solid $primary;
+    border: round $primary;
 }
 
 .panel:focus {
-    border: solid $accent;
+    border: round $accent;
 }
 
 /* TextButton has its own no-border style */
@@ -160,14 +160,14 @@ TextButton, TextButton:focus, TextButton:hover {
 /* Colored action-button variants (hardcoded solid border). Class selectors beat
    the generic `Button` rule, and these are placed after it so the :focus variants
    win on the specificity tie. */
-.-btn-secondary { border: solid $secondary; color: $secondary; border-title-color: $secondary; }
-.-btn-secondary:focus { border: solid $accent; color: $accent; border-title-color: $accent; }
-.-btn-success { border: solid $success; color: $success; border-title-color: $success; }
-.-btn-success:focus { border: solid $accent; color: $accent; border-title-color: $accent; }
-.-btn-warning { border: solid $warning; color: $warning; border-title-color: $warning; }
-.-btn-warning:focus { border: solid $accent; color: $accent; border-title-color: $accent; }
-.-btn-error { border: solid $error; color: $error; border-title-color: $error; }
-.-btn-error:focus { border: solid $accent; color: $accent; border-title-color: $accent; }
+.-btn-secondary { border: round $secondary; color: $secondary; border-title-color: $secondary; }
+.-btn-secondary:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-success { border: round $success; color: $success; border-title-color: $success; }
+.-btn-success:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-warning { border: round $warning; color: $warning; border-title-color: $warning; }
+.-btn-warning:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-error { border: round $error; color: $error; border-title-color: $error; }
+.-btn-error:focus { border: round $accent; color: $accent; border-title-color: $accent; }
 
 /* TextButton focus highlight */
 TextButton:focus {
@@ -176,12 +176,20 @@ TextButton:focus {
     text-style: bold;
 }
 
-/* Footer command shortcuts. A subtle raised background on the key chip, and a
-   single space on each side of the description so the key, description, and next
-   shortcut all stay separated. */
+/* Footer reads as one flat strip matching the content behind it: no raised chip
+   on the key, no distinct description background, and the container background set
+   to $background. Left/right padding insets the shortcuts from the screen edge; a
+   space on each side of the description keeps key, description, and next shortcut
+   separated. Key stays distinguishable by its bold accent foreground. */
+TissueFooter {
+    background: $background;
+    padding: 0 2;
+    margin-bottom: 1;
+}
 FooterKey > .footer-key--key {
-    background: $panel-lighten-1;
+    background: transparent;
 }
 FooterKey > .footer-key--description {
+    background: transparent;
     padding: 0 1;
 }
