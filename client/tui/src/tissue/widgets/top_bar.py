@@ -82,8 +82,10 @@ class TopBar(Horizontal):
         glyph, state_var = self._connection_indicator()
         dot = color_hex(self.app.theme_variables.get(state_var))
         label = Text()
+        # Dot and server name share the connection color so the name reads as part
+        # of the indicator (green connected, red disconnected, …).
         label.append(f"{glyph} ", style=dot or primary or "")
-        label.append(name or domain or "tissue", style=primary or "")
+        label.append(name or domain or "tissue", style=dot or primary or "")
 
         if name and domain:
             label.append(f"  ·  {domain}", style="dim")

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING
 
-from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -14,11 +14,9 @@ from textual.widgets import Button, Checkbox, DataTable, Static
 from tissue.api.errors import TissueApiError
 from tissue.screens.base import PostAuthScreen
 from tissue.screens.project_home.issue_table import ISSUE_TABLE_ID, issue_table
+from tissue.screens.project_home.trash_render import trash_detail_widgets
 from tissue.screens.project_home.workflow_colors import load_state_colors
-from tissue.util.datetime_fmt import format_relative
-from tissue.widgets.detail_row import detail_row
 from tissue.widgets.filter_checkbox import FilterCheckbox
-from tissue.widgets.issue_chips import color_chip, priority_chip, type_chip
 
 if TYPE_CHECKING:
     from tissue.api.generated.models.issue_summary import IssueSummary
@@ -36,7 +34,10 @@ class TrashScreen(PostAuthScreen):
 
     CSS_PATH = "trash.tcss"
 
-    BINDINGS = [Binding("r", "restore", "restore")]
+    BINDINGS = [
+        Binding("r", "restore", "restore"),
+        Binding("ctrl+f", "toggle_expand", "close details", priority=True, show=False),
+    ]
 
     def __init__(self, project_key: str) -> None:
         super().__init__()
@@ -44,16 +45,16 @@ class TrashScreen(PostAuthScreen):
         self._issues: list[IssueSummary] = []
         self._selected_key: str | None = None
         self._mine_only = False
+        self._expanded = False
         self._members: dict[int, str] = {}
         self._state_colors: dict[int, str] = {}
         self._workflow_cache: dict[int, WorkflowDetail] = {}
+        self._swap_lock = asyncio.Lock()
 
     def compose_content(self) -> ComposeResult:
         with Container(id="trash-body"):
             with Horizontal(id="trash-toolbar"):
-                back = Button("←", id="trash-back", classes="search-filter-btn")
-                back.tooltip = "Back to project home"
-                yield back
+                # Back navigation is via the command palette ("Project Home").
                 yield FilterCheckbox(
                     "Mine only", value=self._mine_only, id="trash-mine"
                 )
@@ -71,14 +72,22 @@ class TrashScreen(PostAuthScreen):
 
     def on_mount(self) -> None:
         self.set_top_bar_status(f"{self._project_key} · Trash")
-        self.query_one("#trash-list-box").border_title = "[1] Deleted issues"
-        self.query_one("#trash-detail-box").border_title = "[2] Details"
+        list_box = self.query_one("#trash-list-box")
+        list_box.border_title = "[1] Deleted issues"
+        list_box.border_subtitle = "Enter: read"
+        detail_box = self.query_one("#trash-detail-box")
+        detail_box.border_title = "[2] Details"
+        detail_box.border_subtitle = "Hide: CTRL+F"
         self.run_worker(self._load(), exclusive=True, group="trash-load")
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action == "restore":
             return self._selected_key is not None
         return super().check_action(action, parameters)
+
+    def action_toggle_expand(self) -> None:
+        self._expanded = not self._expanded
+        self.set_class(self._expanded, "-trash-expanded")
 
     async def _load(self) -> None:
         client = self.app.client
@@ -123,19 +132,36 @@ class TrashScreen(PostAuthScreen):
 
     async def _render_list(self) -> None:
         box = self.query_one("#trash-list-box", Vertical)
-        await box.remove_children()
         if not self._issues:
             self._selected_key = None
             self.refresh_bindings()
-            await box.mount(Static("Trash is empty.", classes="trash-empty"))
+            await self._swap(box, [Static("Trash is empty.", classes="trash-empty")])
             self._show_detail(None)
             return
         table = issue_table(
             self._issues, self._state_colors, self.app.theme_variables, self._members
         )
-        await box.mount(table)
+        await self._swap(box, [table])
         table.focus()
         self._select_index(0)
+
+    async def _swap(self, container: Widget, widgets: list[Widget]) -> None:
+        """Replace a container's children atomically, surviving worker cancellation.
+
+        A fast restore/toggle cancels this worker mid-swap; shielding lets the
+        remove+mount finish rather than tearing (which left [1]/[2] blank). The
+        lock then serializes a cancelled swap against its replacement so the two
+        can't interleave and stack both widget sets in the same container. The
+        table's own on_mount re-selects row 0 via RowHighlighted.
+        """
+
+        async def do_swap() -> None:
+            async with self._swap_lock:
+                with self.app.batch_update():
+                    await container.remove_children()
+                    await container.mount(*widgets)
+
+        await asyncio.shield(do_swap())
 
     def _select_index(self, index: int) -> None:
         if not (0 <= index < len(self._issues)):
@@ -154,53 +180,45 @@ class TrashScreen(PostAuthScreen):
     def _on_highlighted(self, event: DataTable.RowHighlighted) -> None:
         self._select_index(event.cursor_row)
 
+    @on(DataTable.RowSelected, f"#{ISSUE_TABLE_ID}")
+    def _on_selected(self, event: DataTable.RowSelected) -> None:
+        self._open_read_modal(event.cursor_row)
+
+    def _open_read_modal(self, index: int) -> None:
+        if not (0 <= index < len(self._issues)):
+            return
+        from tissue.screens.project_home.modals.trash_issue_modal import TrashIssueModal
+
+        self.app.push_screen(
+            TrashIssueModal(
+                summary=self._issues[index],
+                members=self._members,
+                state_colors=self._state_colors,
+            ),
+            self._on_modal_closed,
+        )
+
+    def _on_modal_closed(self, issue_key: str | None) -> None:
+        if issue_key is not None:
+            self._run_restore(issue_key)
+
     async def _render_detail(self, summary: IssueSummary | None) -> None:
         scroll = self.query_one("#trash-detail-scroll", VerticalScroll)
-        await scroll.remove_children()
         restore = self.query_one("#trash-restore", Button)
         if summary is None:
             restore.disabled = True
-            await scroll.mount(
-                Static("Select an issue to see details.", classes="trash-muted")
+            await self._swap(
+                scroll,
+                [Static("Select an issue to see details.", classes="trash-muted")],
             )
             return
         restore.disabled = False
-        await scroll.mount_all(self._detail_widgets(summary))
+        await self._swap(scroll, self._detail_widgets(summary))
 
     def _detail_widgets(self, summary: IssueSummary) -> list[Widget]:
-        assignee = summary.assignee_member_id
-        state_color = (
-            self._state_colors.get(summary.current_state_id)
-            if summary.current_state_id is not None
-            else None
+        return trash_detail_widgets(
+            summary, self._members, self._state_colors, self.app.theme_variables
         )
-        return [
-            Static(Text(summary.title or "-", style="bold"), classes="trash-title"),
-            detail_row("Key", summary.issue_key or "-"),
-            detail_row(
-                "Status",
-                color_chip(summary.current_state_label or "-", state_color),
-            ),
-            detail_row(
-                "Priority", priority_chip(self.app.theme_variables, summary.priority)
-            ),
-            detail_row(
-                "Type", type_chip(summary.issue_type_name, summary.issue_type_color)
-            ),
-            detail_row(
-                "Assignee",
-                self._members.get(assignee, "-") if assignee is not None else "-",
-            ),
-            detail_row(
-                "Story points",
-                "-" if summary.story_point is None else str(summary.story_point),
-            ),
-            detail_row("Due", format_relative(summary.due_at)),
-        ]
-
-    @on(Button.Pressed, "#trash-back")
-    def _on_back(self) -> None:
-        self.app.pop_screen()
 
     @on(Checkbox.Changed, "#trash-mine")
     def _on_toggle_mine(self, event: Checkbox.Changed) -> None:
@@ -218,11 +236,11 @@ class TrashScreen(PostAuthScreen):
 
     def _do_restore(self) -> None:
         if self._selected_key is not None:
-            self.run_worker(
-                self._restore(self._selected_key),
-                exclusive=True,
-                group="trash-restore",
-            )
+            self._run_restore(self._selected_key)
+
+    def _run_restore(self, issue_key: str) -> None:
+        # Same group as the list loads so the refetch serializes with them.
+        self.run_worker(self._restore(issue_key), exclusive=True, group="trash-load")
 
     async def _restore(self, issue_key: str) -> None:
         client = self.app.client
@@ -234,4 +252,6 @@ class TrashScreen(PostAuthScreen):
             self.app.notify(f"Couldn't restore {issue_key}: {error}", severity="error")
             return
         self.app.notify(f"Restored {issue_key}.")
-        self.run_worker(self._fetch_trash(), exclusive=True, group="trash-load")
+        # Refetch inline (not a nested worker): a worker spawned from inside this
+        # one gets cancelled when this one ends, which left [1]/[2] half-rendered.
+        await self._fetch_trash()

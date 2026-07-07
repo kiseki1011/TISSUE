@@ -30,6 +30,7 @@ class IssueSummary(BaseModel):
     IssueSummary
     """ # noqa: E501
     assignee_member_id: Optional[StrictInt] = Field(default=None, alias="assigneeMemberId")
+    content: Optional[StrictStr] = None
     count_based_progress: Optional[StrictInt] = Field(default=None, alias="countBasedProgress")
     current_state_category: Optional[StrictStr] = Field(default=None, description="Workflow state category: INITIAL (starting state for new issues), ACTIVE (work in progress), COMPLETED (successfully finished), ABORTED (cancelled or abandoned)", alias="currentStateCategory")
     current_state_id: Optional[StrictInt] = Field(default=None, alias="currentStateId")
@@ -45,7 +46,7 @@ class IssueSummary(BaseModel):
     sprint_id: Optional[StrictInt] = Field(default=None, alias="sprintId")
     story_point: Optional[StrictInt] = Field(default=None, alias="storyPoint")
     title: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["assigneeMemberId", "countBasedProgress", "currentStateCategory", "currentStateId", "currentStateLabel", "dueAt", "id", "issueKey", "issueTypeColor", "issueTypeId", "issueTypeName", "myReviewStatus", "priority", "sprintId", "storyPoint", "title"]
+    __properties: ClassVar[List[str]] = ["assigneeMemberId", "content", "countBasedProgress", "currentStateCategory", "currentStateId", "currentStateLabel", "dueAt", "id", "issueKey", "issueTypeColor", "issueTypeId", "issueTypeName", "myReviewStatus", "priority", "sprintId", "storyPoint", "title"]
 
     @field_validator('current_state_category')
     def current_state_category_validate_enum(cls, value):
@@ -139,6 +140,7 @@ class IssueSummary(BaseModel):
 
         _obj = cls.model_validate({
             "assigneeMemberId": obj.get("assigneeMemberId"),
+            "content": obj.get("content"),
             "countBasedProgress": obj.get("countBasedProgress"),
             "currentStateCategory": obj.get("currentStateCategory"),
             "currentStateId": obj.get("currentStateId"),

@@ -8,14 +8,14 @@ TrashScreen #trash-toolbar {
     height: auto;
     align-vertical: middle;
 }
-/* Icon-only back button, sized like the search bar's filter button but with no
-   background fill (the toolbar buttons read as flat). */
-TrashScreen #trash-back {
-    margin-left: 0;
-    background: transparent;
-}
+/* Borderless toggle, matching the issue filter modal's Sprint checkbox, so it
+   reads as a plain checkbox rather than a boxed button. */
 TrashScreen #trash-mine {
-    margin-left: 1;
+    margin-left: 0;
+    width: auto;
+    height: auto;
+    border: none;
+    background: transparent;
 }
 TrashScreen #trash-grid {
     width: 100%;
@@ -25,7 +25,15 @@ TrashScreen #trash-grid {
     grid-columns: 4fr 3fr;
     grid-rows: 1fr;
     grid-gutter: 1;
-    margin-top: 1;
+}
+/* CTRL+F closes [2]: [1] takes the full width, Enter then opens the read modal. */
+TrashScreen.-trash-expanded #trash-grid {
+    grid-size: 1 1;
+    grid-columns: 1fr;
+    grid-gutter: 0;
+}
+TrashScreen.-trash-expanded #trash-detail-box {
+    display: none;
 }
 TrashScreen .trash-box {
     width: 100%;
@@ -87,6 +95,18 @@ TrashScreen .trash-title {
     text-style: bold;
     color: $text;
     padding-bottom: 1;
+}
+/* Description heading + its rendered markdown body, matching the hub detail. */
+TrashScreen .trash-section-title {
+    width: 100%;
+    text-style: bold;
+    color: $text;
+    padding-top: 1;
+}
+TrashScreen .trash-content {
+    width: 100%;
+    height: auto;
+    padding: 0;
 }
 /* key:value rows, matching the hub detail pane. */
 TrashScreen .detail-row {

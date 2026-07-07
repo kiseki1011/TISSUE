@@ -2206,6 +2206,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "content": {
+            "type": "string"
+          },
           "countBasedProgress": {
             "format": "int32",
             "type": "integer"

@@ -12,6 +12,7 @@ import com.tissue.feature.sprint.application.service.SprintFinder;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.dto.CursorPage;
+import com.tissue.shared.dto.PageSizes;
 import com.tissue.shared.dto.ProjectIdentifier;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IssueListQueryService implements IssueListQueryUseCase {
 
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final int DEFAULT_PAGE_SIZE = 20;
     private static final Set<StateCategory> NON_TERMINAL = Set.of(StateCategory.INITIAL, StateCategory.ACTIVE);
     private static final Set<StateCategory> INITIAL_ONLY = Set.of(StateCategory.INITIAL);
 
@@ -42,7 +41,7 @@ public class IssueListQueryService implements IssueListQueryUseCase {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
-        int clamped = clampSize(size);
+        int clamped = PageSizes.clamp(size);
         List<Issue> fetched = listRepository.findAssignedAfter(
                 project, Set.of(actorMemberId), NON_TERMINAL, IssueSearchCursor.decode(cursor), clamped);
         return toPage(fetched, clamped);
@@ -54,7 +53,7 @@ public class IssueListQueryService implements IssueListQueryUseCase {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
-        int clamped = clampSize(size);
+        int clamped = PageSizes.clamp(size);
         List<Issue> fetched =
                 listRepository.findBacklogAfter(project, INITIAL_ONLY, IssueSearchCursor.decode(cursor), clamped);
         return toPage(fetched, clamped);
@@ -71,7 +70,7 @@ public class IssueListQueryService implements IssueListQueryUseCase {
             return CursorPage.empty();
         }
 
-        int clamped = clampSize(size);
+        int clamped = PageSizes.clamp(size);
         List<Issue> fetched = listRepository.findInSprintAfter(
                 project, activeSprint.get().getId(), IssueSearchCursor.decode(cursor), clamped);
         return toPage(fetched, clamped);
@@ -87,12 +86,5 @@ public class IssueListQueryService implements IssueListQueryUseCase {
             nextCursor = new IssueSearchCursor(last.getPriority(), last.getId()).encode();
         }
         return CursorPage.of(page.stream().map(IssueSummary::from).toList(), nextCursor);
-    }
-
-    private static int clampSize(int requested) {
-        if (requested <= 0) {
-            return DEFAULT_PAGE_SIZE;
-        }
-        return Math.min(requested, MAX_PAGE_SIZE);
     }
 }
