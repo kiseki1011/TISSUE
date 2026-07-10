@@ -3,10 +3,28 @@ TrashScreen #trash-body {
     layout: vertical;
     padding: 1 2;
 }
+/* Same column template as #trash-grid so the toolbar's first column lines up with
+   [1]; the checkbox right-aligns inside it and the second column (over [2]) stays
+   empty, keeping the [1]/[2] box tops aligned. */
 TrashScreen #trash-toolbar {
     width: 100%;
     height: auto;
-    align-vertical: middle;
+    layout: grid;
+    grid-size: 2 1;
+    grid-columns: 4fr 3fr;
+    grid-gutter: 1;
+}
+/* CTRL+F expands [1] to full width: collapse the toolbar the same way so "Mine
+   only" follows [1]'s right edge. */
+TrashScreen.-trash-expanded #trash-toolbar {
+    grid-size: 1 1;
+    grid-columns: 1fr;
+    grid-gutter: 0;
+}
+TrashScreen #trash-toolbar-list {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
 }
 /* Borderless toggle, matching the issue filter modal's Sprint checkbox, so it
    reads as a plain checkbox rather than a boxed button. */

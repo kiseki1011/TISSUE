@@ -53,11 +53,14 @@ class TrashScreen(PostAuthScreen):
 
     def compose_content(self) -> ComposeResult:
         with Container(id="trash-body"):
-            with Horizontal(id="trash-toolbar"):
-                # Back navigation is via the command palette ("Project Home").
-                yield FilterCheckbox(
-                    "Mine only", value=self._mine_only, id="trash-mine"
-                )
+            with Grid(id="trash-toolbar"):
+                # Mirrors the grid columns so "Mine only" sits at [1]'s top-right and
+                # tracks its right edge when CTRL+F widens [1] to full width. Back
+                # navigation is via the command palette ("Project Home").
+                with Horizontal(id="trash-toolbar-list"):
+                    yield FilterCheckbox(
+                        "Mine only", value=self._mine_only, id="trash-mine"
+                    )
             with Grid(id="trash-grid"):
                 yield Vertical(id="trash-list-box", classes="trash-box")
                 with Vertical(id="trash-detail-box", classes="trash-box"):
