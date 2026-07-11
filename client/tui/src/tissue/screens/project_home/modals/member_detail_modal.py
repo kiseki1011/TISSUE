@@ -82,15 +82,19 @@ class MemberDetailModal(ScrollableModal[None]):
     def _open_issue(self, issues: list[IssueSummary], row_index: int) -> None:
         if not (0 <= row_index < len(issues)):
             return
-        issue_key = issues[row_index].issue_key
-        if not issue_key:
+        summary = issues[row_index]
+        if not summary.issue_key:
             return
         from tissue.screens.project_home.modals.issue_detail_modal import (
             IssueDetailModal,
         )
 
         self.app.push_screen(
-            IssueDetailModal(issue_key=issue_key, project_key=self._project_key)
+            IssueDetailModal(
+                issue_key=summary.issue_key,
+                project_key=self._project_key,
+                summary=summary,
+            )
         )
 
     async def _load(self) -> None:

@@ -360,24 +360,32 @@ class IssuesMixin(IssueActionsMixin, IssueSearchMixin, ProjectHomeBase):
             self._open_issue_modal(issue_key)
             return
 
-        self._debounce_detail(
-            lambda: self.run_worker(
+        def settle() -> None:
+            self.run_worker(
                 self._render_issue_detail(issue_key, focus_detail=focus_detail),
                 exclusive=True,
                 group="hub-detail",
-            ),
-            immediate=focus_detail,
-        )
-        self._prefetch_nearby_issue_details(index)
+            )
+            # Prefetch on settle, not per keystroke: holding j/k must not spawn a
+            # heavy get_issue_detail for every row it passes, which blocks the loop
+            # (large pydantic parse) and stutters the cursor. Warm once it pauses.
+            self._prefetch_nearby_issue_details(index, self._issue_list.issues)
 
-    def _prefetch_nearby_issue_details(self, index: int) -> None:
+        self._debounce_detail(settle, immediate=focus_detail)
+
+    def _prefetch_nearby_issue_details(
+        self, index: int, issues: list[IssueSummary]
+    ) -> None:
+        """Warm the shared detail cache for rows around `index`.
+
+        Shared by the Issues and Agent/Reviews lists so browsing either lands on
+        pre-cached rows (instant [2] render) instead of a cold BFF round-trip.
+        """
         start = max(0, index - _DETAIL_PREFETCH_BEFORE)
-        end = min(len(self._issue_list.issues), index + _DETAIL_PREFETCH_AFTER + 1)
+        end = min(len(issues), index + _DETAIL_PREFETCH_AFTER + 1)
         issue_keys = [
             issue.issue_key
-            for offset, issue in enumerate(
-                self._issue_list.issues[start:end], start=start
-            )
+            for offset, issue in enumerate(issues[start:end], start=start)
             if offset != index
             and issue.issue_key is not None
             and issue.issue_key not in self._detail_state.cache

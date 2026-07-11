@@ -48,7 +48,7 @@ class TissueCommands(Provider):
                 )
             elif self._project_key() is not None:
                 yield (
-                    "Trash",
+                    "Trash Can",
                     self._trash,
                     "View and restore this project's deleted issues",
                 )

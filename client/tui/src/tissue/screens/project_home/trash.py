@@ -8,6 +8,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Grid, Horizontal, Vertical, VerticalScroll
+from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Button, Checkbox, DataTable, Static
 
@@ -36,6 +37,10 @@ class TrashScreen(PostAuthScreen):
 
     BINDINGS = [
         Binding("r", "restore", "restore"),
+        Binding("1", "focus_list", show=False),
+        Binding("2", "focus_detail", show=False),
+        Binding("h", "nav('h')", show=False),
+        Binding("l", "nav('l')", show=False),
         Binding("ctrl+f", "toggle_expand", "close details", priority=True, show=False),
     ]
 
@@ -74,7 +79,7 @@ class TrashScreen(PostAuthScreen):
                         )
 
     def on_mount(self) -> None:
-        self.set_top_bar_status(f"{self._project_key} · Trash")
+        self.set_top_bar_status(f"{self._project_key} · Trash Can")
         list_box = self.query_one("#trash-list-box")
         list_box.border_title = "[1] Deleted issues"
         list_box.border_subtitle = "Enter: read"
@@ -91,6 +96,43 @@ class TrashScreen(PostAuthScreen):
     def action_toggle_expand(self) -> None:
         self._expanded = not self._expanded
         self.set_class(self._expanded, "-trash-expanded")
+
+    def _nav_order(self) -> tuple[str, ...]:
+        # [2] is hidden while [1] is expanded, so it drops out of the cycle.
+        return ("1",) if self._expanded else ("1", "2")
+
+    def _current_box(self) -> str | None:
+        node = self.app.focused
+        while node is not None:
+            if node.id == "trash-list-box":
+                return "1"
+            if node.id == "trash-detail-box":
+                return "2"
+            node = node.parent
+        return None
+
+    def _focus_box(self, box_id: str) -> None:
+        target = "#trash-detail-scroll" if box_id == "2" else f"#{ISSUE_TABLE_ID}"
+        try:
+            self.query_one(target).focus()
+        except NoMatches:
+            pass
+
+    def action_focus_list(self) -> None:
+        self._focus_box("1")
+
+    def action_focus_detail(self) -> None:
+        if not self._expanded:
+            self._focus_box("2")
+
+    def action_nav(self, direction: str) -> None:
+        order = self._nav_order()
+        current = self._current_box()
+        if current not in order:
+            self._focus_box("1")
+            return
+        step = 1 if direction == "l" else -1
+        self._focus_box(order[(order.index(current) + step) % len(order)])
 
     async def _load(self) -> None:
         client = self.app.client
@@ -138,7 +180,9 @@ class TrashScreen(PostAuthScreen):
         if not self._issues:
             self._selected_key = None
             self.refresh_bindings()
-            await self._swap(box, [Static("Trash is empty.", classes="trash-empty")])
+            await self._swap(
+                box, [Static("Trash Can is empty.", classes="trash-empty")]
+            )
             self._show_detail(None)
             return
         table = issue_table(

@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from rich.markdown import Markdown as RichMarkdown
 from rich.text import Text
 from textual.containers import Horizontal
 from textual.widget import Widget
-from textual.widgets import Markdown, Rule, Static
+from textual.widgets import Rule, Static
 
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.util.datetime_fmt import format_relative
@@ -163,8 +164,12 @@ class DetailRenderMixin(ProjectHomeBase):
             Static("Description", classes="hub-section-title"),
         ]
         content = (detail.content or "").strip()
+        # Rich's Markdown renders as ONE Static renderable (~0.8ms) vs Textual's
+        # Markdown widget, which builds a whole sub-widget tree (~10ms) and stutters
+        # held-key list navigation as [2] re-renders per row. The read modal keeps
+        # the interactive widget; this preview pane only needs formatted, fast text.
         widgets.append(
-            Markdown(content, classes="hub-content")
+            Static(RichMarkdown(content), classes="hub-content")
             if content
             else Static(Text("(empty)", style="italic"), classes="hub-muted")
         )

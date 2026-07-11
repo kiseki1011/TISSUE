@@ -1,5 +1,4 @@
-/* Search bar on top, below it a 2:3 master-detail grid.
-   Left is the issues list, right is the focusable detail box. */
+/* Search bar on top */
 ProjectHomeScreen #screen-body {
     layout: vertical;
     padding: 1 2;
@@ -13,20 +12,21 @@ ProjectHomeScreen #hub-search {
     background: $background;
     border-title-style: bold;
 }
-/* Keep the background flat on focus: Textual's Input adds background-tint
-   $foreground 5% on focus, which visibly lightens the bar. Neutralize it. */
+/* Keep the background flat on focus */
 ProjectHomeScreen #hub-search:focus {
     background: $background;
     background-tint: transparent;
 }
-/* The ⚙ filter button is accented while a non-default filter is active, so a
-   narrowed issue list never looks like the full one. */
+/* ⚙ filter button is accented while a non-default filter is active */
 ProjectHomeScreen #hub-filter.-filter-active {
     border: round $accent;
     color: $accent;
 }
-/* Three columns: [1] the swappable list, [2] Details, [3] Activity. [1] is half
-   the width; [2]+[3] share the other half ([1] : [2]-area = 1:1) with [2]:[3] = 3:1. */
+/* Three columns
+ - [1] the swappable list (50%)
+ - [2] Details (40%)
+ - [3] Activity (10%)
+ */
 ProjectHomeScreen #hub-grid {
     width: 100%;
     height: 1fr;
@@ -36,10 +36,7 @@ ProjectHomeScreen #hub-grid {
     grid-rows: 1fr;
     grid-gutter: 1;
 }
-/* [3] Activity is dropped — CTRL+W, a member/sprint (no timeline), or a narrow
-   terminal — and the grid falls to two tracks so [2] takes its space, keeping
-   [1] at half. The track (not just its width) is removed via display:none so no
-   dead grid-gutter cell is left to the right of [2]. */
+/* CTRL+W (or other context that doesnt use activity): [3] Activity is dropped */
 ProjectHomeScreen.-activity-closed #hub-grid,
 ProjectHomeScreen.-no-timeline #hub-grid,
 ProjectHomeScreen.-h-narrow #hub-grid {
@@ -51,8 +48,7 @@ ProjectHomeScreen.-no-timeline #hub-activity,
 ProjectHomeScreen.-h-narrow #hub-activity {
     display: none;
 }
-/* CTRL+F expands [1] to full width: a single track, [2] and [3] dropped from the
-   layout. Selecting an issue then opens a detail modal. */
+/* CTRL+F: expands [1] to full width */
 ProjectHomeScreen.-expanded #hub-grid {
     grid-size: 1 1;
     grid-columns: 1fr;
@@ -63,34 +59,30 @@ ProjectHomeScreen.-expanded #hub-activity {
     display: none;
 }
 
-/* [1] Issues box. The .panel class supplies the solid border. The focusable is
-   the table inside it, so accent on :focus-within (not :focus). */
+/* [1] Issues box */
 ProjectHomeScreen .hub-box {
     width: 100%;
     height: 100%;
     padding: 0 1;
     border-title-color: $primary;
-    /* Title weight is set per-segment via markup in _refresh_box_chrome
-       (active view bold, others dim), so no blanket border-title-style here. */
     border-subtitle-color: $text-muted;
 }
 ProjectHomeScreen #hub-issues-box:focus-within {
     border: round $accent;
     border-title-color: $accent;
 }
-/* No left padding so the # column sits next to the border. */
+
 ProjectHomeScreen #hub-issues-box {
-    padding: 0 1 0 0;
+    padding: 0 1 0 1;
 }
-/* The swappable list host. Fills the [1] box, Issues/Sprints tables mount here. */
+
+/* The swappable list host that fills the [1] box */
 ProjectHomeScreen .hub-list-host {
     width: 100%;
     height: 1fr;
 }
 
-/* [2] Details. Bordered like [1] (solid $primary, no background override so the
-   screen shows through) so the two read as sibling boxes; holds the scrollable
-   issue body. Accents on :focus-within. */
+/* [2] Details */
 ProjectHomeScreen #hub-detail {
     width: 100%;
     height: 100%;
@@ -103,9 +95,8 @@ ProjectHomeScreen #hub-detail:focus-within {
     border: round $accent;
     border-title-color: $accent;
 }
-/* The scroll lives on the outer box so its scrollbar sits flush at the edge; the
-   padding is on the inner wrapper, inside the scrollbar. `scrollbar-gutter: stable`
-   reserves the scrollbar column so content doesn't jump when the bar toggles. */
+/* Scroll should live on the outer box so its scrollbar sits at the edge. 
+If you dont do this, the scroll will be pushed inside with the padding. */
 ProjectHomeScreen #hub-detail-main {
     width: 1fr;
     height: 100%;
@@ -116,8 +107,7 @@ ProjectHomeScreen #hub-detail-main-inner {
     height: auto;
     padding: 1 2;
 }
-/* [3] Activity. A separate box (styled like [1]/[2]) for the issue's activity
-   timeline. Collapsed via the #hub-grid rules above. */
+/* [3] Activity */
 ProjectHomeScreen #hub-activity {
     width: 100%;
     height: 100%;
@@ -174,8 +164,7 @@ ProjectHomeScreen .hub-table {
     height: 1fr;
     border: none;
 }
-/* A sprint's issue sub-list lives inside the (auto-height) detail body, so it
-   sizes to its rows instead of filling 1fr. It caps + scrolls if very long. */
+/* Sprint's issue sub-list lives inside the detail body */
 ProjectHomeScreen .hub-sprint-issues {
     height: auto;
     max-height: 18;
@@ -187,14 +176,12 @@ ProjectHomeScreen .hub-muted {
     color: $text-muted;
     padding: 1;
 }
-/* Empty-state text for the [1] list. The box drops its left padding so the
-   table's # column sits flush at the border; this nudges the placeholder text
-   in so it doesn't read as glued to the edge. */
+/* Text when [1] is empty */
 ProjectHomeScreen .hub-list-empty {
     width: 100%;
     height: auto;
     color: $text-muted;
-    padding: 1 1 1 2;
+    padding: 2 1 1 2;
 }
 ProjectHomeScreen .hub-title-row {
     width: 100%;
@@ -206,23 +193,20 @@ ProjectHomeScreen .hub-detail-title {
     text-style: bold;
     color: $text;
 }
-/* A one-line gap (e.g. between a member's name and its detail rows). */
+/* Single line gap (between a title and detail rows) */
 ProjectHomeScreen .hub-detail-spacer {
     width: 100%;
     height: 1;
 }
-/* The issue body, rendered as Markdown. Drop the widget's own horizontal
-   padding (0 2) so it lines up with the detail rows above it, the inner wrapper
-   already supplies the horizontal padding. */
+/* Issue body, rendered as Markdown */
 ProjectHomeScreen .hub-content {
     width: 100%;
     height: auto;
     padding: 0;
 }
 
-/* The inline ✎ / ⇄ action buttons that sit at the right edge of a detail row
-   (Status' transition, the field-edit pencils, the assignee pencil). TextButton
-   is borderless, accent it on hover/focus so it reads as actionable. */
+/* The inline ✎ / ⇄ action buttons that sit at the right edge of a detail row.
+   TextButton is borderless, accent it on hover/focus to show it's actionable. */
 ProjectHomeScreen .hub-row-action {
     width: auto;
     min-width: 3;
@@ -237,11 +221,11 @@ ProjectHomeScreen .hub-row-action:focus {
     text-style: bold;
 }
 
-/* Reviewers section in the custom-field slot. A bold header + '+', one reviewer
-   per row (name · status chip · ✕), then a right-aligned action button. The
-   button reads 'Submit review' when the current user is a reviewer, else
-   'Request review'. The header's margin is the one blank line that separates it
-   from the fields. */
+/* Reviewers section in the custom field area. 
+  - Bold header + '+', one reviewer per row (name · status chip · ✕)
+  - Right-aligned action button
+  - Button reads 'Submit review' when the current user is a reviewer, else 'Request review' 
+*/
 ProjectHomeScreen .hub-reviewer-header {
     width: 100%;
     height: auto;
@@ -270,15 +254,17 @@ ProjectHomeScreen .hub-request-row {
     align-horizontal: right;
     margin-top: 1;
 }
-/* A plain text button (Submit/Request review), sized to its label. */
+/* Plain text button sized to its label. */
 ProjectHomeScreen .hub-request-btn {
     min-width: 0;
     margin-right: 3;
 }
 
-/* Children hierarchy section, below the reviewers. A bold 'Children' header + '+',
-   then one link row per child (link · ✕). Mirrors the reviewers section's spacing
-   so the two read as one stack. (Parent renders as a plain detail-row above it.) */
+/* Children hierarchy section, below the reviewers. 
+  - Bold 'Children' header + '+', then one link row per child (link · ✕)
+  - Mirrors the reviewers section's spacing
+  - Parent renders as a plain detail-row above
+*/
 ProjectHomeScreen .hub-hier-header {
     width: 100%;
     height: auto;
@@ -294,15 +280,19 @@ ProjectHomeScreen .hub-hier-row {
     height: auto;
 }
 
-/* Comments section in the detail pane. A header, the loaded comments, and the
-   add-comment form. Replies are indented + railed via .hub-reply-block. */
+/* Comments section in the detail pane
+  - Header
+  - Loaded comments
+  - Add-comment form
+  - Replies are indented (see .hub-reply-block) 
+*/
 ProjectHomeScreen .hub-section-title {
     width: 100%;
     text-style: bold;
     color: $text;
     padding-top: 1;
 }
-/* Section header with an inline action button on the right. */
+/* Section header with an inline action button on the right */
 ProjectHomeScreen .hub-open-header {
     width: 100%;
     height: auto;
@@ -323,9 +313,7 @@ ProjectHomeScreen .hub-comment-meta {
     color: $text-muted;
     padding-top: 1;
 }
-/* A comment body, rendered as Markdown (a deleted body is a plain Static). Drop
-   the widget's own horizontal padding (0 2) so it lines up under the meta line,
-   and tighten the block margins so single-line comments read compactly. */
+/* Comment body, rendered as Markdown (a deleted body is a plain Static) */
 ProjectHomeScreen .hub-comment-body {
     width: 100%;
     height: auto;
@@ -334,8 +322,8 @@ ProjectHomeScreen .hub-comment-body {
 ProjectHomeScreen .hub-comment-body MarkdownParagraph {
     margin: 0 0 1 0;
 }
-/* A reply, indented under its parent with a left-border "thread rail" marking
-   the nesting depth (replies cap at one level). */
+/* Reply, indented under its parent with a left-border "thread rail" marking
+   the nesting depth (replies are capped at single level depth) */
 ProjectHomeScreen .hub-reply-block {
     width: 100%;
     height: auto;
@@ -343,8 +331,7 @@ ProjectHomeScreen .hub-reply-block {
     padding-left: 1;
     border-left: solid $primary;
 }
-/* A root comment's meta line paired with its ↳ Reply action. The row carries the
-   meta's usual top gap so the button lines up with the (now gap-less) author text. */
+/* A root comment's meta line paired with its ↳ reply action */
 ProjectHomeScreen .hub-comment-head {
     width: 100%;
     height: auto;
@@ -366,7 +353,7 @@ ProjectHomeScreen #hub-comment-compose {
     width: 100%;
     height: auto;
 }
-/* The "Replying to @…" banner shown above the input while composing a reply. */
+/* The replying banner shown above the input */
 ProjectHomeScreen .hub-reply-banner {
     width: 100%;
     height: auto;
@@ -378,7 +365,7 @@ ProjectHomeScreen .hub-reply-target {
     color: $text-muted;
 }
 
-/* key:value rows in the detail pane (shared detail_row widget). */
+/* key:value rows in the detail pane (shared detail_row widget) */
 ProjectHomeScreen .detail-row {
     width: 100%;
     height: auto;

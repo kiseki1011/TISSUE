@@ -1,11 +1,8 @@
-/* Trash mirrors the hub: a toolbar on top, then a 4:3 list/detail grid. */
 TrashScreen #trash-body {
     layout: vertical;
     padding: 1 2;
 }
-/* Same column template as #trash-grid so the toolbar's first column lines up with
-   [1]; the checkbox right-aligns inside it and the second column (over [2]) stays
-   empty, keeping the [1]/[2] box tops aligned. */
+
 TrashScreen #trash-toolbar {
     width: 100%;
     height: auto;
@@ -14,8 +11,8 @@ TrashScreen #trash-toolbar {
     grid-columns: 4fr 3fr;
     grid-gutter: 1;
 }
-/* CTRL+F expands [1] to full width: collapse the toolbar the same way so "Mine
-   only" follows [1]'s right edge. */
+
+/* CTRL+F expands [1] to full width */
 TrashScreen.-trash-expanded #trash-toolbar {
     grid-size: 1 1;
     grid-columns: 1fr;
@@ -26,8 +23,7 @@ TrashScreen #trash-toolbar-list {
     height: auto;
     align-horizontal: right;
 }
-/* Borderless toggle, matching the issue filter modal's Sprint checkbox, so it
-   reads as a plain checkbox rather than a boxed button. */
+/* Borderless toggle */
 TrashScreen #trash-mine {
     margin-left: 0;
     width: auto;
@@ -44,7 +40,8 @@ TrashScreen #trash-grid {
     grid-rows: 1fr;
     grid-gutter: 1;
 }
-/* CTRL+F closes [2]: [1] takes the full width, Enter then opens the read modal. */
+
+/* CTRL+F closes [2] */
 TrashScreen.-trash-expanded #trash-grid {
     grid-size: 1 1;
     grid-columns: 1fr;
@@ -62,17 +59,17 @@ TrashScreen .trash-box {
     border-subtitle-color: $text-muted;
     padding: 0 1;
 }
-/* No left padding so the # column sits flush at the border, like the hub. */
+
 TrashScreen #trash-list-box {
-    padding: 0 1 0 0;
+    padding: 0 1 0 1;
 }
 TrashScreen #trash-list-box:focus-within,
 TrashScreen #trash-detail-box:focus-within {
     border: round $accent;
     border-title-color: $accent;
 }
-/* Detail box stacks a scrollable body over a pinned action row so Restore stays
-   bottom-right regardless of how far the body is scrolled. */
+
+/* Restore stays bottom right */
 TrashScreen #trash-detail-box {
     layout: vertical;
 }
@@ -105,8 +102,9 @@ TrashScreen .trash-muted {
     color: $text-muted;
     padding: 1;
 }
+
 TrashScreen .trash-empty {
-    padding: 1 1 1 2;
+    padding: 2 1 1 2;
 }
 TrashScreen .trash-title {
     width: 100%;
@@ -114,7 +112,8 @@ TrashScreen .trash-title {
     color: $text;
     padding-bottom: 1;
 }
-/* Description heading + its rendered markdown body, matching the hub detail. */
+
+/* Description heading + rendered markdown body */
 TrashScreen .trash-section-title {
     width: 100%;
     text-style: bold;
@@ -126,7 +125,8 @@ TrashScreen .trash-content {
     height: auto;
     padding: 0;
 }
-/* key:value rows, matching the hub detail pane. */
+
+/* key:value rows */
 TrashScreen .detail-row {
     width: 100%;
     height: auto;

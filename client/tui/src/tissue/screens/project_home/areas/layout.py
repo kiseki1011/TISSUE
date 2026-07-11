@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from textual.css.query import NoMatches
 
 from tissue.screens.project_home._base import ProjectHomeBase
 from tissue.screens.project_home.constants import _VIEW_CYCLE, _VIEW_LABELS
+
+if TYPE_CHECKING:
+    from tissue.api.generated.models.issue_summary import IssueSummary
 
 
 class LayoutMixin(ProjectHomeBase):
@@ -120,11 +125,20 @@ class LayoutMixin(ProjectHomeBase):
     def _apply_activity_state(self) -> None:
         self.set_class(self._ui.activity_closed, "-activity-closed")
 
-    def _open_issue_modal(self, issue_key: str) -> None:
+    def _open_issue_modal(
+        self, issue_key: str, summary: IssueSummary | None = None
+    ) -> None:
         from tissue.screens.project_home.modals.issue_detail_modal import (
             IssueDetailModal,
         )
 
+        # A warmed cache (highlighted/prefetched row) opens instantly; the summary
+        # gives cold opens a populated skeleton instead of a blank "Loading…".
         self.app.push_screen(
-            IssueDetailModal(issue_key=issue_key, project_key=self._project_key)
+            IssueDetailModal(
+                issue_key=issue_key,
+                project_key=self._project_key,
+                summary=summary or self._summary_for(issue_key),
+                cached_view=self._detail_state.cache.get(issue_key),
+            )
         )

@@ -221,9 +221,9 @@ class MembersMixin(ProjectHomeBase):
 
     def _open_member_issue(self, issues: list[IssueSummary], row_index: int) -> None:
         if 0 <= row_index < len(issues):
-            issue_key = issues[row_index].issue_key
-            if issue_key:
-                self._open_issue_modal(issue_key)
+            summary = issues[row_index]
+            if summary.issue_key:
+                self._open_issue_modal(summary.issue_key, summary)
 
     def _select_member(self, row_index: int, *, focus_detail: bool = False) -> None:
         if not (0 <= row_index < len(self._member_list.displayed)):

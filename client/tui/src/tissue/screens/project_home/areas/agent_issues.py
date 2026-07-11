@@ -167,11 +167,15 @@ class AgentIssuesMixin(ProjectHomeBase):
         if focus_detail and self._ui.expanded:
             self._open_issue_modal(issue_key)
             return
-        self._debounce_detail(
-            lambda: self.run_worker(
+
+        def settle() -> None:
+            self.run_worker(
                 self._render_issue_detail(issue_key, focus_detail=focus_detail),
                 exclusive=True,
                 group="hub-detail",
-            ),
-            immediate=focus_detail,
-        )
+            )
+            # Prefetch on settle, not per keystroke (see _select_issue): avoids a
+            # heavy get_issue_detail per passed row stuttering held-key navigation.
+            self._prefetch_nearby_issue_details(row_index, self._agent_work.issues)
+
+        self._debounce_detail(settle, immediate=focus_detail)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING
 
@@ -7,6 +8,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical, VerticalScroll
+from textual.css.query import NoMatches
 from textual.widgets import Static
 
 from tissue.api.errors import TissueApiError
@@ -31,6 +33,8 @@ if TYPE_CHECKING:
     )
     from tissue.api.generated.models.field_option_detail import FieldOptionDetail
     from tissue.api.generated.models.issue_common_detail import IssueCommonDetail
+    from tissue.api.generated.models.issue_detail_view import IssueDetailView
+    from tissue.api.generated.models.issue_summary import IssueSummary
     from tissue.api.generated.models.project_member_summary import (
         ProjectMemberSummary,
     )
@@ -51,26 +55,61 @@ class IssueDetailModal(ScrollableModal[None]):
         Binding("escape", "close", "close"),
     ]
 
-    def __init__(self, *, issue_key: str, project_key: str) -> None:
+    def __init__(
+        self,
+        *,
+        issue_key: str,
+        project_key: str,
+        summary: IssueSummary | None = None,
+        cached_view: IssueDetailView | None = None,
+    ) -> None:
         super().__init__()
         self._issue_key = issue_key
         self._project_key = project_key
+        self._summary = summary
+        self._cached_view = cached_view
         self._detail: IssueCommonDetail | None = None
         self._custom_fields: list[CustomFieldValueInfo] = []
         self._options_by_field: dict[int, list[FieldOptionDetail]] = {}
         self._transitions: list[AvailableTransition] = []
         self._members: list[ProjectMemberSummary] | None = None
+        # Monotonic token so a background revalidate can't clobber a newer
+        # mutation reload that mounted after it started (the [2] pane uses the
+        # same is-latest-fetch guard). The lock serializes the two-step body swap
+        # so concurrent mounts can't interleave remove+mount.
+        self._render_gen = 0
+        self._mount_lock = asyncio.Lock()
+
+    def _begin_render(self) -> int:
+        self._render_gen += 1
+        return self._render_gen
 
     def compose(self) -> ComposeResult:
         with Container(id="idm-dialog", classes="dialog"):
             with VerticalScroll(id="idm-scroll"):
-                yield Vertical(Static("Loading…", classes="idm-muted"), id="idm-body")
+                yield Vertical(*self._initial_body(), id="idm-body")
+
+    def _initial_body(self) -> list[Widget]:
+        """Paint synchronously: a warmed row's cached detail, else a summary skeleton.
+
+        Both avoid the blank "Loading…" gap that made cold opens feel laggy.
+        """
+        view = self._cached_view
+        if view is not None and view.common is not None:
+            self._populate_state(view)
+            return self._view_widgets(view)
+        return self._skeleton_widgets()
 
     def on_mount(self) -> None:
         dialog = self.query_one("#idm-dialog", Container)
         dialog.border_title = self._issue_key
-        dialog.border_subtitle = "Esc to close"
-        self._reload()
+        if self._cached_view is not None and self._cached_view.common is not None:
+            # Shown instantly from cache; refresh in the background (SWR).
+            dialog.border_subtitle = self._subtitle()
+            self.run_worker(self._revalidate(), group="idm-revalidate", exclusive=True)
+        else:
+            dialog.border_subtitle = "Esc to close"
+            self.run_worker(self._fetch_and_apply(), group="idm-load", exclusive=True)
 
     def action_close(self) -> None:
         self.dismiss(None)
@@ -87,23 +126,55 @@ class IssueDetailModal(ScrollableModal[None]):
             )
 
     def _reload(self) -> None:
-        self.run_worker(self._load(), group="idm-load", exclusive=True)
+        self.run_worker(self._fetch_and_apply(), group="idm-load", exclusive=True)
 
-    async def _load(self) -> None:
+    async def _fetch_and_apply(self) -> None:
         client = self.app.client
         if client is None:
             return
+        gen = self._begin_render()
         try:
             view = await client.issues.get_issue_detail(self._issue_key)
         except TissueApiError as error:
             log.debug("Detail modal: failed to load %s: %s", self._issue_key, error)
-            await self._mount([Static("Couldn't load issue.", classes="idm-muted")])
+            await self._mount(
+                [Static("Couldn't load issue.", classes="idm-muted")], gen
+            )
             return
-        issue = view.common
-        if issue is None:
-            await self._mount([Static("Couldn't load issue.", classes="idm-muted")])
+        if gen != self._render_gen:
+            return  # a newer load/revalidate superseded us
+        if view.common is None:
+            await self._mount(
+                [Static("Couldn't load issue.", classes="idm-muted")], gen
+            )
             return
-        self._detail = issue
+        self._cached_view = view
+        self._populate_state(view)
+        await self._mount(self._view_widgets(view), gen)
+        self._set_subtitle()
+
+    async def _revalidate(self) -> None:
+        """Re-fetch after showing the cached view; remount only if it changed."""
+        client = self.app.client
+        if client is None:
+            return
+        gen = self._begin_render()
+        try:
+            fresh = await client.issues.get_issue_detail(self._issue_key)
+        except TissueApiError as error:
+            log.debug("Detail modal: revalidate failed %s: %s", self._issue_key, error)
+            return
+        if gen != self._render_gen:
+            return  # a newer load/mutation superseded us
+        if fresh == self._cached_view or fresh.common is None:
+            return
+        self._cached_view = fresh
+        self._populate_state(fresh)
+        await self._mount(self._view_widgets(fresh), gen)
+        self._set_subtitle()
+
+    def _populate_state(self, view: IssueDetailView) -> None:
+        self._detail = view.common
         self._custom_fields = view.custom_fields or []
         self._options_by_field = {
             custom_field.field_id: list(custom_field.options or [])
@@ -111,8 +182,13 @@ class IssueDetailModal(ScrollableModal[None]):
             if custom_field.field_id is not None
         }
         self._transitions = view.available_transitions or []
-        await self._mount(
-            issue_read_view(
+
+    def _view_widgets(self, view: IssueDetailView) -> list[Widget]:
+        issue = view.common
+        if issue is None:
+            return [Static("Couldn't load issue.", classes="idm-muted")]
+        try:
+            return issue_read_view(
                 issue,
                 self._custom_fields,
                 self._options_by_field,
@@ -125,8 +201,25 @@ class IssueDetailModal(ScrollableModal[None]):
                 children=view.children or [],
                 relations=view.relations,
             )
-        )
-        self.query_one("#idm-dialog", Container).border_subtitle = self._subtitle()
+        except Exception:
+            log.exception("Detail modal: failed to render %s", self._issue_key)
+            return [Static("Couldn't render issue.", classes="idm-muted")]
+
+    def _skeleton_widgets(self) -> list[Widget]:
+        summary = self._summary
+        if summary is None:
+            return [Static("Loading…", classes="idm-muted")]
+        return [
+            Static(summary.title or "-", markup=False, classes="idm-title"),
+            Static(summary.issue_key or self._issue_key, classes="idm-muted"),
+            Static("Loading details…", classes="idm-muted"),
+        ]
+
+    def _set_subtitle(self) -> None:
+        try:
+            self.query_one("#idm-dialog", Container).border_subtitle = self._subtitle()
+        except NoMatches:
+            pass
 
     def _subtitle(self) -> str:
         hints = ["e edit", "a assign"]
@@ -137,11 +230,19 @@ class IssueDetailModal(ScrollableModal[None]):
         hints.append("Esc close")
         return " · ".join(hints)
 
-    async def _mount(self, widgets: list[Widget]) -> None:
-        body = self.query_one("#idm-body", Vertical)
-        with self.app.batch_update():
-            await body.remove_children()
-            await body.mount(*widgets)
+    async def _mount(self, widgets: list[Widget], gen: int | None = None) -> None:
+        async with self._mount_lock:
+            # Re-check under the lock: a stale render that won the lock after a
+            # newer one already mounted must not overwrite it.
+            if gen is not None and gen != self._render_gen:
+                return
+            try:
+                body = self.query_one("#idm-body", Vertical)
+            except NoMatches:
+                return  # modal already dismissed
+            with self.app.batch_update():
+                await body.remove_children()
+                await body.mount(*widgets)
 
     def action_edit(self) -> None:
         if self._detail is None:

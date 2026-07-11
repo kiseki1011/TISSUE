@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 class DetailMixin(DetailRenderMixin):
     """Loads, caches, and mounts the [2] detail pane."""
 
-    _DETAIL_DEBOUNCE = 0.10
+    _DETAIL_DEBOUNCE = 0.04
 
     def _cancel_detail_timer(self) -> None:
         if self._detail_timer is not None:

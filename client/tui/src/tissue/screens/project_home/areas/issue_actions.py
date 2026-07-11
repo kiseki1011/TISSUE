@@ -103,7 +103,7 @@ class IssueActionsMixin(ProjectHomeBase):
             return
         self.app.push_screen(
             ConfirmModal(
-                message=f"⚠ Delete {issue_key}? It can be restored from Trash.",
+                message=f"⚠ Delete {issue_key}? It can be restored from the Trash Can.",
                 title="Delete issue",
                 confirm_label="Delete",
             ),

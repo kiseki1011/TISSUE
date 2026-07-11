@@ -1,5 +1,6 @@
 IssueDetailModal {
     align: center middle;
+    background: $background 60%;
 }
 
 IssueDetailModal #idm-dialog {
@@ -42,7 +43,7 @@ IssueDetailModal .idm-muted {
     color: $text-muted;
 }
 
-/* key/value rows (shared detail_row widget). */
+/* key, value rows (shared detail_row widget) */
 IssueDetailModal .detail-row {
     width: 100%;
     height: auto;
