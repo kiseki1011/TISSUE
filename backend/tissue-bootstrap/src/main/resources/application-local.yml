@@ -1,7 +1,9 @@
 spring:
   # Load a .env (KEY=value) for local overrides, if present
   config:
-    import: optional:file:.env[.properties]
+    import:
+      - "optional:file:.env[.properties]"
+      - "optional:file:backend/.env[.properties]"
 
   docker:
     compose:

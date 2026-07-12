@@ -14,8 +14,20 @@ const appName = "tissue"
 
 // Config is the app state, loaded at startup and saved when a value changes.
 type Config struct {
-	// ServerURL is the last server connected to, reused when tissue runs without -c.
+	// ServerURL is the last server connected to, reused when tissue runs without `-c`.
 	ServerURL string `json:"server_url"`
+
+	// Theme is the color palette name (see theme.Names)
+	Theme string `json:"theme"`
+
+	// Icons selects the glyph set (see glyph.ParseMode)
+	// - "auto"
+	// - "nerd"
+	// - "unicode"
+	Icons string `json:"icons"`
+
+	// Pinned maps a server URL to its pinned project keys, in pin order.
+	Pinned map[string][]string `json:"pinned,omitempty"`
 
 	path string
 }
@@ -53,6 +65,46 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("parse config %s: %w", path, err)
 	}
 	return cfg, nil
+}
+
+// SetServer records the connected server and persists it.
+func (c *Config) SetServer(server string) error {
+	c.ServerURL = server
+	return c.Save()
+}
+
+// PinnedProjects returns the pinned project keys for a server, in pin order.
+func (c *Config) PinnedProjects(server string) []string {
+	return c.Pinned[server]
+}
+
+// IsPinned reports whether key is pinned on server.
+func (c *Config) IsPinned(server, key string) bool {
+	for _, k := range c.Pinned[server] {
+		if k == key {
+			return true
+		}
+	}
+	return false
+}
+
+// TogglePin flips the pinned state of key on server and persists.
+func (c *Config) TogglePin(server, key string) error {
+	if c.Pinned == nil {
+		c.Pinned = map[string][]string{}
+	}
+	if c.IsPinned(server, key) {
+		kept := make([]string, 0, len(c.Pinned[server]))
+		for _, k := range c.Pinned[server] {
+			if k != key {
+				kept = append(kept, k)
+			}
+		}
+		c.Pinned[server] = kept
+	} else {
+		c.Pinned[server] = append(c.Pinned[server], key)
+	}
+	return c.Save()
 }
 
 // Save writes the config back to disk.

@@ -7,7 +7,11 @@ import com.tissue.shared.enums.ResourceType;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
@@ -28,6 +32,16 @@ import org.springframework.stereotype.Repository;
 public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRepository {
 
     private final ActivityLogJpaRepository jpaRepository;
+
+    @Override
+    public Map<String, Instant> findLastActivityAtByProjectKeys(Collection<String> projectKeys) {
+        if (projectKeys.isEmpty()) {
+            return Map.of();
+        }
+        return jpaRepository.findLastActivityByProjectKeys(projectKeys, ActivityType.issueTypes()).stream()
+                .collect(Collectors.toMap(
+                        ProjectLastActivityRow::getProjectKey, ProjectLastActivityRow::getLastActivityAt));
+    }
 
     @Override
     public List<ActivityLog> findAllByIssueKey(String issueKey, @Nullable Long keysetId, int limit) {

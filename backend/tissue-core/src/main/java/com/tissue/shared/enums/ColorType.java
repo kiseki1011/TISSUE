@@ -8,14 +8,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Colors based from Textual's
- * <a href="https://textual.textualize.io/api/color/#textual.color.Color">named colors</a>.
- *
- * <p>All ANSI colors are provided, other colors are partially provided.
- * Using the HexCode and display name will not be needed in most cases. Let the client (Textual) render
- * the color based on the enum value.
- */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum ColorType {
@@ -42,9 +34,9 @@ public enum ColorType {
     MAROON("#800000", "Maroon"),
     RED("#FF0000", "Red"),
     ORANGERED("#FF4500", "Orange Red"),
-    DARKORANGE("FF8C00", "Dark Orange"),
+    DARKORANGE("#FF8C00", "Dark Orange"),
     LIMEGREEN("#32CD32", "Lime Green"),
-    LIGHTGREEN("90EE90", "Light Green"),
+    LIGHTGREEN("#90EE90", "Light Green"),
     LIGHTYELLOW("#FFFFE0", "Light Yellow"),
     MEDIUMBLUE("#0000CD", "Medium Blue"),
     MIDNIGHTBLUE("#191970", "Midnight Blue"),

@@ -2,12 +2,21 @@ package com.tissue.feature.activitylog.application.port.repository;
 
 import com.tissue.feature.activitylog.domain.ActivityLog;
 import com.tissue.feature.activitylog.domain.ActivityType;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ActivityLogQueryRepository {
+
+    /**
+     * Latest issue-scoped activity Instant per project key. Keys with no issue activity are absent
+     * from the map.
+     */
+    Map<String, Instant> findLastActivityAtByProjectKeys(Collection<String> projectKeys);
 
     List<ActivityLog> findAllByIssueKey(String issueKey, @Nullable Long keysetId, int limit);
 

@@ -1,4 +1,9 @@
-.PHONY: build run fmt lint test tidy
+.PHONY: build run fmt lint test tidy gen
+
+# Regenerate the API client + OpenAPI docs
+gen:
+	go run ./internal/tools/specprep ../docs/api-docs.json api/openapi.json
+	go tool oapi-codegen -config oapi-codegen.yaml api/openapi.json
 
 build:
 	go build -o bin/tissue ./cmd/tissue
@@ -17,5 +22,3 @@ test:
 
 tidy:
 	go mod tidy
-
-# TODO: `gen` (spec preprocessing + oapi-codegen)
