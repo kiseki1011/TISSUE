@@ -3,6 +3,10 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  docker:
+    compose:
+      file: "backend/compose.yaml"
+
   datasource:
     url: jdbc:postgresql://localhost:5432/tissue_local
     username: developer
