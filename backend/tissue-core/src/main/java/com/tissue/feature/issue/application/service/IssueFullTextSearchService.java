@@ -12,6 +12,7 @@ import com.tissue.feature.project.application.port.repository.ProjectMemberQuery
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.shared.dto.PageSizes;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
-
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final int DEFAULT_PAGE_SIZE = 20;
 
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
@@ -52,7 +49,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
         Project project = projectFinder.getByProjectKey(pid.projectKey());
         projectMemberFinder.getBy(project, actorMemberId);
 
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+        Pageable pageable = PageSizes.clampedPageRequest(page, size);
 
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
 
@@ -72,7 +69,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
             model = "claude-opus-4-8")
     @Override
     public Page<IssueSummary> ftsAllRanked(IssueSearchCondition condition, int page, int size, Long actorMemberId) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+        Pageable pageable = PageSizes.clampedPageRequest(page, size);
 
         boolean blankKeyword =
                 condition.keyword() == null || condition.keyword().isBlank();
@@ -106,12 +103,5 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
                 : reviewerQueryRepository.findMyReviewStatuses(actorMemberId, issueIds).stream()
                         .collect(Collectors.toMap(MyReviewStatusView::issueId, MyReviewStatusView::status));
         return issues.map(issue -> IssueSummary.from(issue, myStatuses.get(issue.getId())));
-    }
-
-    private static int clampSize(int requested) {
-        if (requested <= 0) {
-            return DEFAULT_PAGE_SIZE;
-        }
-        return Math.min(requested, MAX_PAGE_SIZE);
     }
 }

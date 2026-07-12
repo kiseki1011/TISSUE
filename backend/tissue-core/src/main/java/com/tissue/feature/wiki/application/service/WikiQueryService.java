@@ -17,6 +17,7 @@ import com.tissue.feature.wiki.domain.WikiDocumentSnapshot;
 import com.tissue.feature.wiki.domain.WikiLink;
 import com.tissue.feature.wiki.domain.exception.WikiDocumentNotFoundException;
 import com.tissue.feature.wiki.domain.exception.WikiSnapshotNotFoundException;
+import com.tissue.shared.dto.PageSizes;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
@@ -25,7 +26,6 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class WikiQueryService implements WikiQueryUseCase {
-
-    private static final int MAX_PAGE_SIZE = 100;
-    private static final int DEFAULT_PAGE_SIZE = 20;
 
     private final WikiDocumentQueryRepository wikiDocumentQueryRepository;
     private final WikiSnapshotRepository wikiSnapshotRepository;
@@ -112,17 +109,10 @@ public class WikiQueryService implements WikiQueryUseCase {
     @Override
     public Page<WikiDocumentSearchResult> searchDocuments(
             @Nullable String keyword, @Nullable Set<Long> tagIds, Long actorMemberId, int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), clampSize(size));
+        Pageable pageable = PageSizes.clampedPageRequest(page, size);
 
         return wikiSearchRepository
                 .search(keyword, tagIds, pageable)
                 .map(doc -> WikiDocumentSearchResult.from(doc, keyword));
-    }
-
-    private static int clampSize(int requested) {
-        if (requested <= 0) {
-            return DEFAULT_PAGE_SIZE;
-        }
-        return Math.min(requested, MAX_PAGE_SIZE);
     }
 }

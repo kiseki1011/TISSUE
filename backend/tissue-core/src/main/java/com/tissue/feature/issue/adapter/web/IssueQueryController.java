@@ -17,6 +17,7 @@ import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierRes
 import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
+import com.tissue.feature.issue.application.port.usecase.IssueTrashUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -49,6 +51,7 @@ public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
     private final IssueFullTextSearchUseCase issueFtsUseCase;
+    private final IssueTrashUseCase issueTrashUseCase;
     private final CommentQueryUseCase commentQueryUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
@@ -114,6 +117,35 @@ public class IssueQueryController {
             @CurrentMember MemberDetails memberDetails) {
         Page<IssueSummary> response = issueFtsUseCase.ftsAllRanked(
                 request.toCondition(memberDetails.getMemberId()), page, size, memberDetails.getMemberId());
+        return ResponseEntity.ok(PageResponse.from(response));
+    }
+
+    @Operation(operationId = "listProjectTrash", summary = "List a project's deleted issues", description = """
+                    List the project's soft-deleted issues (the trash), newest deletion first, so they \
+                    can be reviewed and restored.
+
+                    - `mineOnly=true` limits the list to issues you authored. Otherwise every deleted \
+                    issue in the project is returned.
+                    - `page` is the zero-based page index (default 0)
+                    - `size` is the page size (default 20, max 100)
+
+                    **Requirements:**
+                    - Requires project membership""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Deleted issues retrieved"),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @GetMapping("/projects/{projectKey}/issues:trash")
+    public ResponseEntity<PageResponse<IssueSummary>> listProjectTrash(
+            @PathVariable String projectKey,
+            @RequestParam(value = "mineOnly", defaultValue = "false") boolean mineOnly,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @CurrentMember MemberDetails memberDetails) {
+        Set<Long> authors = mineOnly ? Set.of(memberDetails.getMemberId()) : Set.of();
+        Page<IssueSummary> response = issueTrashUseCase.listDeletedByProject(
+                ProjectIdentifier.ofProjectKey(projectKey), authors, page, size, memberDetails.getMemberId());
         return ResponseEntity.ok(PageResponse.from(response));
     }
 

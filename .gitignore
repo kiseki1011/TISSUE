@@ -65,15 +65,22 @@ config.json
 .ruff_cache/
 dist/
 
-### env ###
+### Env ###
 .env
 
 ### Loadtest ###
 /loadtest/
 /backend/loadtest/
 
-### openapi-generator ###
+### Openapi-generator ###
 **/.openapi-generator/
 
-### file storage ###
+### File storage ###
 **/tissue-storage/
+
+### Golang ###
+/tui/bin/
+/tui/dist/
+
+### AGENT.md ###
+AGENT.md

@@ -1,0 +1,207 @@
+Button {
+    border: round $primary;
+}
+
+/* textual-timepiece styles its own inputs/buttons flat. The app-wide
+   Input/Button borders above would box each inner widget, squashing the 1-row
+   input controls and hiding the grid labels, so neutralize borders inside the
+   picker. The picker's own input-control wrapper supplies the focus border. */
+DateTimePicker Input,
+DateTimePicker Input:focus,
+DateTimePicker Button,
+DateTimePicker Button:focus {
+    border: none;
+}
+
+/* Focus changes only the border/text (not the background); the background
+   highlight is reserved for :hover. */
+Button:focus {
+    border: round $accent;
+    color: $accent;
+    background-tint: transparent 0%;
+    text-style: bold;
+}
+
+Button:hover {
+    background: $surface-lighten-1;
+}
+
+Input {
+    border: round $primary;
+}
+
+Input:focus {
+    border: round $accent;
+    color: $accent;
+    border-title-color: $accent;
+    background: transparent;
+}
+
+Input > .input--placeholder {
+    text-style: italic;
+}
+
+Input.-error {
+    border: round $error;
+    color: $error;
+    border-title-color: $error;
+}
+
+Checkbox {
+    border: round $primary;
+}
+
+Checkbox:focus {
+    border: round $accent;
+}
+
+/* Match the Select's closed box to our buttons (border style/color/size). */
+SelectCurrent {
+    border: round $primary;
+}
+
+Select:focus > SelectCurrent {
+    border: round $accent;
+}
+
+TextArea {
+    border: round $primary;
+}
+
+TextArea:focus {
+    border: round $accent;
+    border-title-color: $accent;
+}
+
+.dialog {
+    background: $surface;
+    border: round $primary;
+}
+
+/* Every modal dims the screen behind it */
+TissueModal {
+    background: $background 60%;
+}
+
+.panel {
+    border: round $primary;
+}
+
+.panel:focus {
+    border: round $accent;
+}
+
+/* TextButton has its own no-border style */
+TextButton, TextButton:focus, TextButton:hover {
+    border: none;
+    background: transparent;
+}
+
+/* Small square button beside a search bar (same height as the input) that opens
+   a filter/sort modal. Width is fixed and min-width dropped so it stays compact. */
+.search-filter-btn {
+    width: 5;
+    min-width: 0;
+    height: 3;
+    margin-left: 1;
+    background: $background;
+}
+
+/* Subtitle text inside a dialog, under the logo */
+.dialog-subtitle {
+    text-align: center;
+    color: $text-muted;
+    width: 100%;
+}
+
+/* Inline status message under a form input */
+.status-msg {
+    height: 1;
+    padding-left: 1;
+    width: 100%;
+    text-align: left;
+    color: $text-muted;
+}
+
+.status-msg.-error {
+    color: $error;
+}
+
+.status-msg.-success {
+    color: $success;
+}
+
+.status-msg.-waiting {
+    color: $text-muted;
+}
+
+.placeholder {
+    color: $text-muted;
+    text-style: italic;
+    width: 100%;
+    text-align: center;
+    padding: 4 0;
+}
+
+/* Custom-field section in a detail pane (shared by the dashboard + project hub).
+   .detail-gap is the blank line above the section. .cf-text renders a TEXT custom
+   field's value as a borderless Markdown box (padding 0 so it lines up with the
+   rows above). */
+.detail-gap {
+    height: 1;
+}
+.cf-text {
+    width: 1fr;
+    height: auto;
+    padding: 0;
+}
+
+.primary { color: $primary; }
+.secondary { color: $secondary; }
+.error { color: $error; }
+.warning { color: $warning; }
+.success { color: $success; }
+
+/* Colored action-button variants (hardcoded solid border). Class selectors beat
+   the generic `Button` rule, and these are placed after it so the :focus variants
+   win on the specificity tie. */
+.-btn-secondary { border: round $secondary; color: $secondary; border-title-color: $secondary; }
+.-btn-secondary:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-success { border: round $success; color: $success; border-title-color: $success; }
+.-btn-success:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-warning { border: round $warning; color: $warning; border-title-color: $warning; }
+.-btn-warning:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+.-btn-error { border: round $error; color: $error; border-title-color: $error; }
+.-btn-error:focus { border: round $accent; color: $accent; border-title-color: $accent; }
+
+/* TextButton focus highlight */
+TextButton:focus {
+    background: $primary !important;
+    color: $background;
+    text-style: bold;
+}
+
+/* Footer reads as one flat strip matching the content behind it: no raised chip
+   on the key, no distinct description background, and the container background set
+   to $background. Left/right padding insets the shortcuts from the screen edge; a
+   space on each side of the description keeps key, description, and next shortcut
+   separated. Key stays distinguishable by its bold accent foreground. */
+TissueFooter {
+    layout: vertical;
+    height: auto;
+    background: $background;
+    padding: 0 2;
+    margin-bottom: 1;
+}
+TissueFooter .footer-row {
+    layout: horizontal;
+    width: 1fr;
+    height: 1;
+}
+FooterKey > .footer-key--key {
+    background: transparent;
+}
+FooterKey > .footer-key--description {
+    background: transparent;
+    padding: 0 1;
+}

@@ -30,13 +30,22 @@ public record IssueSummary(
 
         // The actor's own review status on this issue, or null when they are not a reviewer.
         // Only the FTS search service (which knows the actor) populates it. Other leave it null.
-        @Nullable ReviewStatus myReviewStatus) {
+        @Nullable ReviewStatus myReviewStatus,
+        @Nullable String content) {
 
     public static IssueSummary from(Issue issue) {
         return from(issue, null);
     }
 
     public static IssueSummary from(Issue issue, @Nullable ReviewStatus myReviewStatus) {
+        return create(issue, myReviewStatus, null);
+    }
+
+    public static IssueSummary fromDeleted(Issue issue) {
+        return create(issue, null, issue.getContent());
+    }
+
+    private static IssueSummary create(Issue issue, @Nullable ReviewStatus myReviewStatus, @Nullable String content) {
         WorkflowState state = issue.getCurrentState();
         ProjectMember assignee = issue.getParticipants().getAssignee();
         IssueType issueType = issue.getIssueType();
@@ -56,6 +65,7 @@ public record IssueSummary(
                 issueType != null ? issueType.getId() : null,
                 issueType != null ? issueType.getName() : null,
                 issueType != null ? issueType.getColor() : null,
-                myReviewStatus);
+                myReviewStatus,
+                content);
     }
 }

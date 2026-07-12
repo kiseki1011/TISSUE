@@ -2206,6 +2206,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "content": {
+            "type": "string"
+          },
           "countBasedProgress": {
             "format": "int32",
             "type": "integer"
@@ -10840,6 +10843,70 @@
           }
         },
         "summary": "Search project issues",
+        "tags": [
+          "Issue"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/issues:trash": {
+      "get": {
+        "description": "List the project's soft-deleted issues (the trash), newest deletion first, so they can be reviewed and restored.\n\n- `mineOnly=true` limits the list to issues you authored. Otherwise every deleted issue in the project is returned.\n- `page` is the zero-based page index (default 0)\n- `size` is the page size (default 20, max 100)\n\n**Requirements:**\n- Requires project membership",
+        "operationId": "listProjectTrash",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mineOnly",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseIssueSummary"
+                }
+              }
+            },
+            "description": "Deleted issues retrieved"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "List a project's deleted issues",
         "tags": [
           "Issue"
         ]
