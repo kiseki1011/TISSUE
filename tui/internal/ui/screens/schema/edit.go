@@ -30,7 +30,7 @@ const (
 	editIssueType
 )
 
-// fields present in the edit modal; efColor is skipped for transitions.
+// fields present in the edit modal. efColor is skipped for transitions.
 const (
 	efName = iota
 	efColor
@@ -44,9 +44,8 @@ const (
 	editDescH  = 3
 )
 
-// editForm is the "Edit …" modal for a single graph element's metadata. Only name, color
-// (states/workflow) and description are editable here — category and wiring are not, so they
-// have no fields. On save it fires the matching PATCH and closes.
+// editForm is the "Edit …" modal for a graph element's metadata. Only name, color
+// (states/workflow) and description are editable — category and wiring are not.
 type editForm struct {
 	deps   deps.Deps
 	kind   editKind
@@ -56,7 +55,7 @@ type editForm struct {
 
 	name    textinput.Model
 	desc    textarea.Model
-	colors  []string // color options; nil for a kind without a color field
+	colors  []string // color options — nil for a kind without a color field
 	colorIx int
 	spinner spinner.Model
 
@@ -70,8 +69,7 @@ type editForm struct {
 	submitting bool
 }
 
-// newEditForm builds the modal seeded with the element's current values. withColor adds the
-// color picker (states and workflows have one; transitions do not).
+// withColor adds the color picker (states and workflows have one — transitions do not).
 func newEditForm(d deps.Deps, kind editKind, wfID, elemID int, title, name, colorName, desc string, withColor bool) editForm {
 	n := textinput.New()
 	n.Prompt = ""
@@ -128,8 +126,8 @@ func (f editForm) route(msg tea.Msg) (editForm, tea.Cmd) {
 		return f.onClick(msg)
 	case tea.MouseMotionMsg:
 		if f.picking {
-			if i := f.cpick.hitCell(msg); i >= 0 {
-				f.cpick.cursor = i
+			if i := f.cpick.HitCell(msg); i >= 0 {
+				f.cpick.Cursor = i
 			}
 			return f, nil
 		}
@@ -176,17 +174,16 @@ func (f editForm) onKey(msg tea.KeyPressMsg) (editForm, tea.Cmd) {
 	return f.typeIntoFocused(msg)
 }
 
-// pickKey drives the open color grid: arrows/hjkl move, enter selects, esc closes it.
 func (f editForm) pickKey(msg tea.KeyPressMsg) editForm {
 	switch msg.String() {
 	case "left", "h":
-		f.cpick = f.cpick.move(-1, 0)
+		f.cpick = f.cpick.Move(-1, 0)
 	case "right", "l":
-		f.cpick = f.cpick.move(1, 0)
+		f.cpick = f.cpick.Move(1, 0)
 	case "up", "k":
-		f.cpick = f.cpick.move(0, -1)
+		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
-		f.cpick = f.cpick.move(0, 1)
+		f.cpick = f.cpick.Move(0, 1)
 	case "enter", " ":
 		return f.applyColor()
 	case "esc":
@@ -201,9 +198,8 @@ func (f editForm) openColorPicker() editForm {
 	return f
 }
 
-// applyColor commits the grid's highlighted swatch as the form's color and closes the grid.
 func (f editForm) applyColor() editForm {
-	if name, ok := f.cpick.selected(); ok {
+	if name, ok := f.cpick.Selected(); ok {
 		if i := indexOf(f.colors, name); i >= 0 {
 			f.colorIx = i
 		}
@@ -274,8 +270,6 @@ func (f editForm) submit() (editForm, tea.Cmd) {
 	return f, tea.Batch(saveEdit(f.deps, f.kind, f.wfID, f.elemID, name, color, strings.TrimSpace(f.desc.Value())), f.spinner.Tick)
 }
 
-// ---- click routing ----
-
 func (f editForm) zoneID(id int) string {
 	switch id {
 	case efName:
@@ -306,8 +300,8 @@ func (f editForm) onClick(msg tea.MouseClickMsg) (editForm, tea.Cmd) {
 		return f, nil
 	}
 	if f.picking {
-		if i := f.cpick.hitCell(msg); i >= 0 {
-			f.cpick.cursor = i
+		if i := f.cpick.HitCell(msg); i >= 0 {
+			f.cpick.Cursor = i
 			return f.applyColor(), nil
 		}
 		return f, nil
@@ -317,7 +311,7 @@ func (f editForm) onClick(msg tea.MouseClickMsg) (editForm, tea.Cmd) {
 		return f.focusOn(id)
 	case efColor:
 		ff, _ := f.focusOn(efColor)
-		return ff.openColorPicker(), nil // clicking the color field opens the swatch grid
+		return ff.openColorPicker(), nil
 	case efSubmit:
 		return f.submit()
 	case efCancel:
@@ -326,14 +320,43 @@ func (f editForm) onClick(msg tea.MouseClickMsg) (editForm, tea.Cmd) {
 	return f, nil
 }
 
-// ---- view ----
-
 func (f editForm) View() string {
 	if f.picking {
 		return f.cpick.View(f.deps.Styles)
 	}
 	body := lipgloss.NewStyle().Padding(1, 1).Render(f.body())
 	return components.TitledBoxCentered(f.title, body, f.deps.Styles.Theme.Primary)
+}
+
+// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
+// scrolls to keep it visible. +2 = top border + the padding row above the body. The Color field is
+// absent (height 0) for a kind without a colour, matching body(). ok=false while the picker is open.
+func (f editForm) FocusRow() (int, int, bool) {
+	if f.picking {
+		return 0, 0, false
+	}
+	const chromeTop = 2
+	nameH := lipgloss.Height(f.field(efName, "Name", fixEdit(f.name.View(), 1), f.nameErr))
+	colorH := 0
+	if f.colors != nil {
+		colorH = lipgloss.Height(f.field(efColor, "Color", f.colorContent(), ""))
+	}
+	descH := lipgloss.Height(f.field(efDesc, "Description", fixEdit(f.desc.View(), editDescH), ""))
+	switch f.focus {
+	case efName:
+		return chromeTop, nameH, true
+	case efColor:
+		return chromeTop + nameH, colorH, true
+	case efDesc:
+		return chromeTop + nameH + colorH, descH, true
+	default: // the Save/Cancel buttons row
+		line := nameH + colorH + descH
+		if f.submitting || f.status != "" {
+			line++
+		}
+		line++ // the blank row before the buttons
+		return chromeTop + line, lipgloss.Height(f.buttons()), true
+	}
 }
 
 func (f editForm) body() string {
@@ -352,8 +375,6 @@ func (f editForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// colorContent shows the current color as a swatch + name, with a hint that enter opens the
-// swatch grid to change it.
 func (f editForm) colorContent() string {
 	name := f.colors[f.colorIx]
 	body := components.ColorLabel(name)
@@ -365,7 +386,7 @@ func (f editForm) colorContent() string {
 }
 
 func (f editForm) field(id int, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(id, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(id, errMsg), f.focus == id)
 	if zid := f.zoneID(id); zid != "" {
 		box = zone.Mark(zid, box)
 	}
@@ -395,7 +416,7 @@ func (f editForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f editForm) fieldBorderColor(id int, errMsg string) color.Color {
@@ -460,8 +481,6 @@ func indexOfInt(is []int, v int) int {
 	}
 	return -1
 }
-
-// ---- messages ----
 
 type editSavedMsg struct{ wfID int }
 

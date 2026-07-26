@@ -10,8 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// RefreshFunc exchanges a refresh token for a new pair. It must use an unauthenticated client so
-// a failed refresh does not recurse back through Transport.
+// RefreshFunc must use an unauthenticated client so a failed refresh does not recurse back through Transport.
 type RefreshFunc func(ctx context.Context, refreshToken string) (domain.TokenPair, error)
 
 // Transport adds the bearer token to each request and on a 401, refreshes once and retries.
@@ -26,7 +25,6 @@ type Transport struct {
 }
 
 // NewTransport wraps base (nil uses http.DefaultTransport).
-// `persist` when set, is called with refreshed tokens so they can be saved.
 func NewTransport(base http.RoundTripper, refresh RefreshFunc, persist func(domain.TokenPair)) *Transport {
 	if base == nil {
 		base = http.DefaultTransport
@@ -34,14 +32,12 @@ func NewTransport(base http.RoundTripper, refresh RefreshFunc, persist func(doma
 	return &Transport{base: base, refresh: refresh, persist: persist}
 }
 
-// SetTokens replaces the current tokens after a login or restore.
 func (t *Transport) SetTokens(tokens domain.TokenPair) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.tokens = tokens
 }
 
-// Clear drops the current tokens after logout.
 func (t *Transport) Clear() {
 	t.SetTokens(domain.TokenPair{})
 }

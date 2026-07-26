@@ -3,16 +3,15 @@ package home
 import (
 	"fmt"
 	"image/color"
-	"regexp"
 	"strings"
 	"time"
 
 	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/table"
 	lipgloss "charm.land/lipgloss/v2"
-	runewidth "github.com/mattn/go-runewidth"
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
@@ -33,9 +32,7 @@ func tableStyles(d deps.Deps) table.Styles {
 // (example: "12mon")
 const activityColW = 6
 
-// projectColumns lays out the columns: Activity/Key fixed, Repository fixed when
-// shown, Visibility/Archived sized to their headers, Title taking the rest. Narrow
-// terminals drop Repository (see Model.showRepo) since it only holds a placeholder.
+// Narrow terminals drop Repository (see Model.showRepo) since it only holds a placeholder.
 func projectColumns(tableW int, actTitle, visTitle, archTitle string, showRepo bool) []table.Column {
 	const keyW, repoW = 10, 21
 	visW, archW := glyphColW(visTitle), glyphColW(archTitle)
@@ -62,7 +59,6 @@ func projectColumns(tableW int, actTitle, visTitle, archTitle string, showRepo b
 	)
 }
 
-// glyphColW sizes a status column to its header.
 // Wide enough for a fallback word but never narrower than a glyph plus a little room.
 func glyphColW(title string) int {
 	if w := lipgloss.Width(title); w > 3 {
@@ -71,7 +67,6 @@ func glyphColW(title string) int {
 	return 3
 }
 
-// columnTitles resolves the Activity, Visibility and Archived headers.
 // A glyph in nerd mode, a plain fallback otherwise.
 func columnTitles(g glyph.Set) (act, vis, arch string) {
 	return g.Or(g.LastUpdated, "◷"), g.Or(g.Eye, "Visibility"), g.Or(g.Cabinet, "Archived")
@@ -97,7 +92,6 @@ func roleLabel(v string) string {
 	}
 }
 
-// roleValue renders the caller's project role, a dash("-") if not a member.
 func roleValue(s theme.Styles, v string) string {
 	if v == "" {
 		return s.Muted.Render("-")
@@ -118,8 +112,6 @@ func visibilityLabel(v string) string {
 	}
 }
 
-// visGlyph is the raw visibility glyph.
-// An open eye for public, a crossed eye for private.
 func visGlyph(g glyph.Set, v string) string {
 	switch strings.ToUpper(v) {
 	case "PUBLIC":
@@ -130,7 +122,6 @@ func visGlyph(g glyph.Set, v string) string {
 	return ""
 }
 
-// visColor is the accent for a visibility value.
 func visColor(s theme.Styles, v string) color.Color {
 	switch strings.ToUpper(v) {
 	case "PUBLIC":
@@ -155,7 +146,6 @@ func formatDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
 
-// humanizeSince renders a compact age like "3d" or "12mon", or "-" if no value.
 func humanizeSince(t time.Time) string {
 	if t.IsZero() {
 		return "-"
@@ -182,74 +172,20 @@ func humanizeSince(t time.Time) string {
 	}
 }
 
-// csiPattern matches any ANSI CSI sequence: SGR color codes and bubblezone's
-// zero-width zone markers (which terminate in 'z'). Stripping both yields plain text.
-var csiPattern = regexp.MustCompile("\x1b\\[[0-9;]*[A-Za-z]")
+// The ANSI-strip, overlay, and color-mix helpers live in components. These thin wrappers keep this
+// package's call sites unqualified. See components/render.go for the implementations.
 
-// stripANSI removes all CSI sequences, leaving plain text with its column layout intact.
-func stripANSI(s string) string {
-	return csiPattern.ReplaceAllString(s, "")
-}
+func stripANSI(s string) string { return components.StripANSI(s) }
 
-// overlayDim splices fg over a dimmed copy of the plain backdrop at (x,y). fg is
-// copied in verbatim so its zone markers survive; lipgloss.NewCompositor would drop
-// them, since it rebuilds the frame cell by cell.
 func overlayDim(backdrop, fg string, x, y int, dim color.Color) string {
-	style := lipgloss.NewStyle().Foreground(dim)
-	bgLines := strings.Split(backdrop, "\n")
-	fgLines := strings.Split(fg, "\n")
-	fgW := lipgloss.Width(fg)
-	for i := range bgLines {
-		row := i - y
-		if row < 0 || row >= len(fgLines) {
-			bgLines[i] = style.Render(bgLines[i])
-			continue
-		}
-		left, rest := splitCols(bgLines[i], x)
-		_, right := splitCols(rest, fgW)
-		bgLines[i] = style.Render(left) + fgLines[row] + style.Render(right)
-	}
-	return strings.Join(bgLines, "\n")
+	return components.OverlayDim(backdrop, fg, x, y, dim)
 }
 
-// splitCols splits a plain (ANSI-free) string at visible column c, returning the
-// left part padded to exactly c columns and the remainder. A wide rune straddling
-// c is replaced with spaces on both sides so the total column count is preserved.
-func splitCols(plain string, c int) (string, string) {
-	if c <= 0 {
-		return "", plain
-	}
-	col := 0
-	for i, r := range plain {
-		if col == c {
-			return plain[:i], plain[i:]
-		}
-		w := runewidth.RuneWidth(r)
-		if col+w > c {
-			left := plain[:i] + strings.Repeat(" ", c-col)
-			right := strings.Repeat(" ", col+w-c) + plain[i+len(string(r)):]
-			return left, right
-		}
-		col += w
-	}
-	return plain + strings.Repeat(" ", c-col), ""
-}
-
-// mixColors linearly blends a toward b by t in [0,1] (t=0 is a, t=1 is b).
-func mixColors(a, b color.Color, t float64) color.Color {
-	ar, ag, ab, _ := a.RGBA()
-	br, bg, bb, _ := b.RGBA()
-	blend := func(x, y uint32) uint8 {
-		return uint8(float64(x>>8)*(1-t) + float64(y>>8)*t)
-	}
-	return color.RGBA{R: blend(ar, br), G: blend(ag, bg), B: blend(ab, bb), A: 0xff}
-}
+func mixColors(a, b color.Color, t float64) color.Color { return components.MixColors(a, b, t) }
 
 // statLabelW is the fixed width of a bar row's label column (must fit "MICROTASK").
 const statLabelW = 11
 
-// statsBlock renders the project statistics.
-// "Issues" divider + KPI band + by state bars + by hierarchy bars
 func statsBlock(s theme.Styles, g glyph.Set, st domain.ProjectStats, contentW int) []string {
 	usable := contentW
 	// usable minus the label + count + spacing around the bar
@@ -274,7 +210,6 @@ func statsBlock(s theme.Styles, g glyph.Set, st domain.ProjectStats, contentW in
 	return rows
 }
 
-// sectionDivider renders "<glyph> Label ─────" with a bold label and muted rule.
 func sectionDivider(s theme.Styles, icon, label string, width int) string {
 	prefix := ""
 	if icon != "" {
@@ -285,17 +220,14 @@ func sectionDivider(s theme.Styles, icon, label string, width int) string {
 	if dashes < 0 {
 		dashes = 0
 	}
-	// the glyph shares the label's bold color, the rule stays muted
 	title := lipgloss.NewStyle().Foreground(s.Theme.Text).Bold(true).Render(prefix + label)
 	return title + s.Muted.Render(" "+strings.Repeat("─", dashes))
 }
 
-// statSubheader is a bold group label inside the stats block.
 func statSubheader(s theme.Styles, label string) string {
 	return lipgloss.NewStyle().Foreground(s.Theme.Text).Bold(true).Render(label)
 }
 
-// sectionRule is a full-width muted rule.
 func sectionRule(s theme.Styles, width int) string {
 	if width < 0 {
 		width = 0
@@ -303,19 +235,18 @@ func sectionRule(s theme.Styles, width int) string {
 	return s.Muted.Render(strings.Repeat("─", width))
 }
 
-// ruleWithTitle is a full-width horizontal rule with a left-inset title, used as a top border that
-// has no sides.
+// Focus is signalled by the rule COLOUR (c), not weight.
 func ruleWithTitle(title string, width int, c color.Color) string {
+	dash := "─"
 	label := " " + title + " "
 	const lead = 2
 	rest := width - lead - lipgloss.Width(label)
 	if rest < 0 {
 		rest = 0
 	}
-	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat("─", lead) + label + strings.Repeat("─", rest))
+	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat(dash, lead) + label + strings.Repeat(dash, rest))
 }
 
-// scrollbarColumn builds a one-cell-per-row scrollbar. It is blank when the content fits.
 func scrollbarColumn(off, total, view int, t theme.Theme) []string {
 	cells := make([]string, view)
 	if total <= view {
@@ -341,7 +272,6 @@ func scrollbarColumn(off, total, view int, t theme.Theme) []string {
 	return cells
 }
 
-// kpiRows renders the two headline KPI lines. Completion percent is computed here.
 func kpiRows(s theme.Styles, st domain.ProjectStats) []string {
 	pct := 0
 	if st.Total > 0 {
@@ -363,15 +293,12 @@ func kpiRows(s theme.Styles, st domain.ProjectStats) []string {
 	return []string{line1, line2}
 }
 
-// statRow is one labelled bar.
-// "LABEL <bar> count"
 func statRow(s theme.Styles, label string, count, total, barW int, fg color.Color) string {
 	labelCell := lipgloss.NewStyle().Foreground(s.Theme.Muted).Width(statLabelW).Render(label)
 	countCell := lipgloss.NewStyle().Foreground(s.Theme.Text).Render(fmt.Sprintf("%4d", count))
 	return labelCell + statBar(count, total, barW, fg) + " " + countCell
 }
 
-// statBar renders a fixed-width solid bar filled to count/total (percentage).
 func statBar(count, total, width int, fg color.Color) string {
 	frac := 0.0
 	if total > 0 {
@@ -386,7 +313,6 @@ func statBar(count, total, width int, fg color.Color) string {
 	return bar.ViewAs(frac)
 }
 
-// stateColor maps a StateCategory to its bar color.
 func stateColor(s theme.Styles, v string) color.Color {
 	switch strings.ToUpper(v) {
 	case "INITIAL":
@@ -401,7 +327,6 @@ func stateColor(s theme.Styles, v string) color.Color {
 	return s.Theme.Text
 }
 
-// attentionColor highlights a KPI.
 func attentionColor(s theme.Styles, n int) color.Color {
 	if n > 0 {
 		return s.Theme.Warning

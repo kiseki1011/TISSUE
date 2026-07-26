@@ -18,7 +18,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// optRow is one editable option. id 0 marks a new option not yet on the server.
+// id 0 marks a new option not yet on the server.
 type optRow struct {
 	id   int
 	name string
@@ -29,10 +29,8 @@ const maxFieldOptions = 50
 
 const optionRowW = 40
 
-// optionsForm is the options editor for one SELECT_OPTION / CHECKLIST field. It edits the option
-// list locally (add / rename / remove) and, on Save, diffs against the field's original options and
-// fires the individual option endpoints in one command (delete, then rename, then add) since the
-// backend has no whole-list replace for options.
+// optionsForm edits one SELECT_OPTION / CHECKLIST field's options. Save diffs against the original
+// and fires per-option endpoints (delete, rename, add) since the backend has no whole-list replace.
 type optionsForm struct {
 	deps    deps.Deps
 	typeID  int
@@ -143,7 +141,6 @@ func (f optionsForm) onKey(msg tea.KeyPressMsg) (optionsForm, tea.Cmd) {
 	return f, nil
 }
 
-// inputKey drives the open add/rename text prompt.
 func (f optionsForm) inputKey(msg tea.KeyPressMsg) (optionsForm, tea.Cmd) {
 	switch msg.String() {
 	case "enter":
@@ -176,8 +173,7 @@ func (f optionsForm) openRename(i int) optionsForm {
 	return f
 }
 
-// commitInput folds the prompt's text back into the row list (a new row or a rename), rejecting a
-// blank or duplicate name so the backend never 400/409s on it.
+// commitInput rejects a blank or duplicate name so the backend never 400/409s on it.
 func (f optionsForm) commitInput() optionsForm {
 	name := strings.TrimSpace(f.input.Value())
 	switch {
@@ -202,8 +198,8 @@ func (f optionsForm) commitInput() optionsForm {
 	return f
 }
 
-// duplicateName reports whether name collides case-insensitively with another row (the backend's
-// option uniqueness is on the normalized name).
+// duplicateName reports a case-insensitive collision. The backend's option uniqueness is on the
+// normalized name.
 func (f optionsForm) duplicateName(name string, except int) bool {
 	norm := strings.ToLower(strings.TrimSpace(name))
 	for i, r := range f.rows {
@@ -223,9 +219,7 @@ func (f optionsForm) removeRow(i int) optionsForm {
 	return f
 }
 
-// diff compares the edited rows against the original options and reports the deletions (by id),
-// renames (rows keeping their id with a changed name), and additions (new names). A case-only
-// rename is dropped from renames since the backend rejects it as a duplicate.
+// A case-only rename is dropped from diff since the backend rejects it as a duplicate.
 func (f optionsForm) diff() (dels []int, renames []optRow, adds []string) {
 	origByID := map[int]string{}
 	for _, o := range f.orig {
@@ -250,9 +244,8 @@ func (f optionsForm) diff() (dels []int, renames []optRow, adds []string) {
 	return dels, renames, adds
 }
 
-// submit commits the option diff in one command (delete, then rename, then add). Nothing changed
-// closes the modal without a network call. It collects the set of names to steer temp rename names
-// clear of, so a swap or cycle of option names commits without an intermediate collision.
+// submit closes without a network call when nothing changed. Otherwise it gathers the avoid-set so
+// temp rename names dodge a swap-or-cycle collision.
 func (f optionsForm) submit() (optionsForm, tea.Cmd) {
 	f.status = ""
 	dels, renames, adds := f.diff()
@@ -270,13 +263,10 @@ func (f optionsForm) submit() (optionsForm, tea.Cmd) {
 	return f, tea.Batch(commitOptions(f.deps, f.typeID, f.fieldID, dels, renames, adds, avoid), f.spinner.Tick)
 }
 
-// sameNormalized reports whether two names are equal after trim+lowercase, so a case-only rename
-// (which the backend rejects) is treated as no change.
+// sameNormalized treats a case-only rename (which the backend rejects) as no change.
 func sameNormalized(a, b string) bool {
 	return strings.ToLower(strings.TrimSpace(a)) == strings.ToLower(strings.TrimSpace(b))
 }
-
-// ---- view ----
 
 func (f optionsForm) View() string {
 	t := f.deps.Styles.Theme
@@ -313,7 +303,7 @@ func (f optionsForm) inputView() string {
 		border = t.Error
 	}
 	rows := []string{
-		components.TitledBox("Name", fixOption(f.input.View()), border),
+		components.TitledBoxWeighted("Name", fixOption(f.input.View()), border, true),
 		lipgloss.NewStyle().Padding(0, 1).Render(f.errText(f.inputErr)),
 		"",
 		hintBar(f.deps.Styles, "enter", "save", "esc", "back"),
@@ -369,7 +359,7 @@ func (f optionsForm) button(label, id string, focused bool) string {
 		borderCol, textCol, bold = t.Accent, t.Accent, true
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f optionsForm) hint() string {
@@ -404,8 +394,6 @@ func (f optionsForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// ---- click routing ----
-
 func optionRowZone(i int) string { return "options.row." + itoa(i) }
 
 func (f optionsForm) onClick(msg tea.MouseClickMsg) (optionsForm, tea.Cmd) {
@@ -434,8 +422,6 @@ func (f optionsForm) onClick(msg tea.MouseClickMsg) (optionsForm, tea.Cmd) {
 func fixOption(s string) string {
 	return lipgloss.NewStyle().Width(optionRowW).MaxWidth(optionRowW).Height(1).MaxHeight(1).Render(s)
 }
-
-// ---- messages ----
 
 type optionsSavedMsg struct{ typeID int }
 
@@ -478,8 +464,7 @@ func commitOptions(d deps.Deps, typeID, fieldID int, dels []int, renames []optRo
 	}
 }
 
-// tempRenameNames returns n distinct throwaway option names, each clear of the avoid set (the
-// current and final option names, normalized lowercase), for the first phase of a two-phase rename.
+// tempRenameNames returns n names clear of the avoid set (normalized current and final names).
 func tempRenameNames(n int, avoid map[string]bool) []string {
 	out := make([]string, 0, n)
 	k := 0

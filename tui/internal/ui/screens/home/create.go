@@ -38,8 +38,7 @@ const (
 
 var projectKeyPattern = regexp.MustCompile(`^[A-Z]+[0-9]*$`)
 
-// createForm is the "New Project" modal. Its fields live in a viewport so the modal
-// scrolls when the terminal is too short to show them all.
+// createForm's fields live in a viewport so the modal scrolls when the terminal is too short.
 type createForm struct {
 	deps deps.Deps
 
@@ -131,8 +130,7 @@ func (f createForm) route(msg tea.Msg) (createForm, tea.Cmd) {
 	return f.updateInputs(msg)
 }
 
-// hitZone returns the field or button under the cursor, or -1 for none. Elements
-// scrolled out of the viewport carry no zone this frame, so they never match.
+// Elements scrolled out of the viewport carry no zone this frame, so they never match.
 func (f createForm) hitZone(msg tea.MouseMsg) int {
 	switch {
 	case zone.Get(fieldZoneID(createKey)).InBounds(msg):
@@ -169,8 +167,6 @@ func (f createForm) onHover(msg tea.MouseMotionMsg) (createForm, tea.Cmd) {
 	return f, nil
 }
 
-// resize updates the height available to the body when the terminal is resized
-// while the modal is open, keeping the focused field in view.
 func (f createForm) resize(bodyH int) createForm {
 	f.bodyH = bodyH
 	f = f.sync()
@@ -178,7 +174,6 @@ func (f createForm) resize(bodyH int) createForm {
 	return f
 }
 
-// sync rebuilds the scrollable body and sizes the viewport to it (capped at bodyH).
 // SetContent keeps the current scroll offset, so it is safe to call on every update.
 func (f createForm) sync() createForm {
 	content := f.body()
@@ -198,8 +193,7 @@ func (f createForm) sync() createForm {
 	return f
 }
 
-// onKey routes navigation and submit. In the description textarea, up/down and enter
-// belong to the textarea, so they fall through to typeIntoFocused.
+// In the description textarea, up/down and enter belong to the textarea, so they fall through to typeIntoFocused.
 func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 	if f.submitting {
 		return f, nil
@@ -327,11 +321,11 @@ func (f createForm) submit() (createForm, tea.Cmd) {
 }
 
 func (f createForm) View() string {
-	body := lipgloss.NewStyle().Padding(1, 1).Render(f.withScrollbar(f.vp.View()))
+	// asymmetric padding balances the modal: withScrollbar reserves a right gutter, so left padding is widened to 2 to match.
+	body := lipgloss.NewStyle().Padding(1, 0, 1, 2).Render(f.withScrollbar(f.vp.View()))
 	return components.TitledBoxCentered("New Project", body, f.deps.Styles.Theme.Primary)
 }
 
-// body assembles the scrollable form content
 func (f createForm) body() string {
 	rows := []string{
 		f.field(createKey, "Key", fixBody(f.key.View(), 1), f.keyErr),
@@ -369,9 +363,7 @@ func (f createForm) focusLine() int {
 	}
 }
 
-// withScrollbar reserves a one-column right gutter on every line and draws the scrollbar in it when
-// the content overflows. The gutter is always present so the modal width stays constant whether
-// or not the scrollbar is shown.
+// The gutter is always present so the modal width stays constant whether or not the scrollbar is shown.
 func (f createForm) withScrollbar(view string) string {
 	lines := strings.Split(view, "\n")
 	h := len(lines)
@@ -408,7 +400,7 @@ func fixBody(s string, h int) string {
 }
 
 func (f createForm) field(which int, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(which, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(which, errMsg), f.focus == which)
 	if id := fieldZoneID(which); id != "" {
 		box = zone.Mark(id, box)
 	}
@@ -429,8 +421,6 @@ func fieldZoneID(which int) string {
 	return ""
 }
 
-// buttons draws the Create and Cancel actions, each sized to its label, grouped at
-// the bottom right under the fields.
 func (f createForm) buttons() string {
 	group := lipgloss.JoinHorizontal(lipgloss.Top,
 		f.button("Create", "create.submit", f.focus == createSubmit, f.hover == createSubmit),
@@ -450,7 +440,7 @@ func (f createForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f createForm) fieldBorderColor(which int, errMsg string) color.Color {

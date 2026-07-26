@@ -18,7 +18,6 @@ const (
 	filterItemCount
 )
 
-// filterForm is the project-list filter modal
 type filterForm struct {
 	deps deps.Deps
 
@@ -187,7 +186,7 @@ func (f filterForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func filterZoneID(which int) string {

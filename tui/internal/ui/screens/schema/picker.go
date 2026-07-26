@@ -9,13 +9,11 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// picker is a compact single-select dropdown: a titled, bordered, windowed list navigated
-// with ↑/↓ and confirmed with enter. It is used inside a modal to choose one value (a guard
-// type, and reusable for colors etc.) instead of cycling through options with ←/→.
+// picker is a single-select dropdown used inside a modal instead of cycling options with ←/→.
 type pickerOption struct {
 	value string // applied on select
 	label string // display text
-	lead  string // optional pre-rendered decoration before the label (e.g. a color swatch)
+	lead  string // optional pre-rendered decoration before the label (like a color swatch)
 }
 
 type picker struct {
@@ -67,7 +65,6 @@ func (p picker) top() int {
 
 func pickerOptZone(i int) string { return "picker.opt." + itoa(i) }
 
-// hitOption returns the option index under the cursor while the picker is open, or -1.
 func (p picker) hitOption(msg tea.MouseMsg) int {
 	visible := min(p.maxRows, len(p.options))
 	top := p.top()

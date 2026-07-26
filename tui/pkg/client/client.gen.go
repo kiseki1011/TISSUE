@@ -4194,16 +4194,18 @@ type AdminMemberSummary struct {
 	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 
 	// Email Email (`null` when email-required is disabled)
-	Email    *string    `json:"email,omitempty"`
-	Id       *int64     `json:"id,omitempty"`
-	JoinedAt *time.Time `json:"joinedAt,omitempty"`
-	Name     *string    `json:"name,omitempty"`
+	Email    *string          `json:"email,omitempty"`
+	Id       *int64           `json:"id,omitempty"`
+	JoinedAt *time.Time       `json:"joinedAt,omitempty"`
+	Name     *string          `json:"name,omitempty"`
+	Position *PositionSummary `json:"position,omitempty"`
 
 	// Role System-level role
 	Role *AdminMemberSummaryRole `json:"role,omitempty"`
 
 	// Status Account status
 	Status   *AdminMemberSummaryStatus `json:"status,omitempty"`
+	Team     *TeamSummary              `json:"team,omitempty"`
 	Username *string                   `json:"username,omitempty"`
 }
 

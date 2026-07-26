@@ -19,10 +19,9 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// issueHierarchies are the four IssueHierarchy values, top to bottom.
+// IssueHierarchy values, top to bottom.
 var issueHierarchies = []string{"EPIC", "STANDARD", "SUBTASK", "MICROTASK"}
 
-// create-type focus stops.
 const (
 	ctName = iota
 	ctColor
@@ -33,9 +32,8 @@ const (
 	ctCancel
 )
 
-// createTypeForm is the "New Issue Type" modal. Name, color, hierarchy, and workflow are set here;
-// hierarchy and workflow are fixed at creation (they cannot be edited afterward). The icon is not
-// collected — the backend defaults it and it is unused in the TUI.
+// createTypeForm is the "New Issue Type" modal. Hierarchy and workflow are fixed at creation
+// (not editable afterward). The icon is not collected — the backend defaults it, unused in the TUI.
 type createTypeForm struct {
 	deps deps.Deps
 
@@ -110,8 +108,8 @@ func (f createTypeForm) Update(msg tea.Msg) (createTypeForm, tea.Cmd) {
 		return f.onClick(msg)
 	case tea.MouseMotionMsg:
 		if f.picking {
-			if i := f.cpick.hitCell(msg); i >= 0 {
-				f.cpick.cursor = i
+			if i := f.cpick.HitCell(msg); i >= 0 {
+				f.cpick.Cursor = i
 			}
 			return f, nil
 		}
@@ -170,15 +168,15 @@ func (f createTypeForm) onKey(msg tea.KeyPressMsg) (createTypeForm, tea.Cmd) {
 func (f createTypeForm) colorKey(msg tea.KeyPressMsg) createTypeForm {
 	switch msg.String() {
 	case "left", "h":
-		f.cpick = f.cpick.move(-1, 0)
+		f.cpick = f.cpick.Move(-1, 0)
 	case "right", "l":
-		f.cpick = f.cpick.move(1, 0)
+		f.cpick = f.cpick.Move(1, 0)
 	case "up", "k":
-		f.cpick = f.cpick.move(0, -1)
+		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
-		f.cpick = f.cpick.move(0, 1)
+		f.cpick = f.cpick.Move(0, 1)
 	case "enter", " ":
-		if name, ok := f.cpick.selected(); ok {
+		if name, ok := f.cpick.Selected(); ok {
 			f.color = name
 		}
 		f.picking = false
@@ -307,8 +305,6 @@ func (f createTypeForm) submit() (createTypeForm, tea.Cmd) {
 	)
 }
 
-// ---- view ----
-
 func (f createTypeForm) View() string {
 	if f.picking {
 		return f.cpick.View(f.deps.Styles)
@@ -318,6 +314,44 @@ func (f createTypeForm) View() string {
 	}
 	body := lipgloss.NewStyle().Padding(1, 1).Render(f.body())
 	return components.TitledBoxCentered("New Issue Type", body, f.deps.Styles.Theme.Primary)
+}
+
+// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
+// scrolls to keep it visible. +2 = top border + the padding row above the body. ok=false while a
+// picker (colour grid or hierarchy/workflow dropdown) replaces the form.
+func (f createTypeForm) FocusRow() (int, int, bool) {
+	if f.picking || f.pickOpen {
+		return 0, 0, false
+	}
+	const chromeTop = 2
+	nameH := lipgloss.Height(f.field(ctName, "Name", fixEdit(f.name.View(), 1), f.nameErr))
+	colorH := lipgloss.Height(f.field(ctColor, "Color", f.colorContent(), ""))
+	hierH := lipgloss.Height(f.field(ctHierarchy, "Hierarchy", f.hierarchyContent(), ""))
+	wfH := lipgloss.Height(f.field(ctWorkflow, "Workflow", f.workflowContent(), ""))
+	descH := lipgloss.Height(f.field(ctDesc, "Description", fixEdit(f.desc.View(), editDescH), ""))
+	switch f.focus {
+	case ctName:
+		return chromeTop, nameH, true
+	case ctColor:
+		return chromeTop + nameH, colorH, true
+	case ctHierarchy:
+		return chromeTop + nameH + colorH, hierH, true
+	case ctWorkflow:
+		return chromeTop + nameH + colorH + hierH, wfH, true
+	case ctDesc:
+		return chromeTop + nameH + colorH + hierH + wfH, descH, true
+	default: // the Create/Cancel buttons row
+		line := nameH + colorH + hierH + wfH + descH
+		switch {
+		case f.submitting:
+			line++ // the saving spinner (a single line)
+		case f.status != "":
+			// this form width-constrains its error, so a long message wraps to >1 line — measure it
+			line += lipgloss.Height(f.deps.Styles.Error.Width(editFieldW).Padding(0, 1).Render(f.status))
+		}
+		line++ // the blank row before the buttons
+		return chromeTop + line, lipgloss.Height(f.buttons()), true
+	}
 }
 
 func (f createTypeForm) body() string {
@@ -365,7 +399,7 @@ func (f createTypeForm) workflowContent() string {
 }
 
 func (f createTypeForm) field(id int, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(id, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(id, errMsg), f.focus == id)
 	if zid := f.zoneID(id); zid != "" {
 		box = zone.Mark(zid, box)
 	}
@@ -395,7 +429,7 @@ func (f createTypeForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f createTypeForm) fieldBorderColor(id int, errMsg string) color.Color {
@@ -447,8 +481,6 @@ func (f createTypeForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// ---- click routing ----
-
 func (f createTypeForm) zoneID(id int) string {
 	switch id {
 	case ctName:
@@ -483,9 +515,9 @@ func (f createTypeForm) onClick(msg tea.MouseClickMsg) (createTypeForm, tea.Cmd)
 		return f, nil
 	}
 	if f.picking {
-		if i := f.cpick.hitCell(msg); i >= 0 {
-			f.cpick.cursor = i
-			if name, ok := f.cpick.selected(); ok {
+		if i := f.cpick.HitCell(msg); i >= 0 {
+			f.cpick.Cursor = i
+			if name, ok := f.cpick.Selected(); ok {
 				f.color = name
 			}
 			f.picking = false
@@ -519,7 +551,6 @@ func (f createTypeForm) onClick(msg tea.MouseClickMsg) (createTypeForm, tea.Cmd)
 	return f, nil
 }
 
-// atoiSafe parses a small non-negative integer, returning 0 on any error.
 func atoiSafe(s string) int {
 	n := 0
 	for _, r := range s {
@@ -530,8 +561,6 @@ func atoiSafe(s string) int {
 	}
 	return n
 }
-
-// ---- messages ----
 
 type typeCreatedMsg struct{}
 

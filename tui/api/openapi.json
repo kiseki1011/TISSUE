@@ -338,6 +338,10 @@
             "example": "Gildong Hong",
             "type": "string"
           },
+          "position": {
+            "$ref": "#/components/schemas/PositionSummary",
+            "description": "Assigned position"
+          },
           "role": {
             "description": "System-level role",
             "enum": [
@@ -358,6 +362,10 @@
             ],
             "example": "ACTIVE",
             "type": "string"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSummary",
+            "description": "Assigned team"
           },
           "username": {
             "example": "gildong",

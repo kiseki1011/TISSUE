@@ -16,8 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// guardTypes lists the five GuardType values in the order the picker cycles them. The last,
-// APPROVAL_REQUIRED, is the only one with a parameter (min_approvals).
+// guardTypes in the order the picker cycles them. APPROVAL_REQUIRED is the only one with a parameter (min_approvals).
 var guardTypes = []string{
 	"ASSIGNEE_REQUIRED",
 	"BLOCKING_ISSUE_RESOLVE_REQUIRED",
@@ -28,7 +27,6 @@ var guardTypes = []string{
 
 const guardApproval = "APPROVAL_REQUIRED"
 
-// guardTypeLabel is the human-readable name of a guard type.
 func guardTypeLabel(t string) string {
 	switch t {
 	case "ASSIGNEE_REQUIRED":
@@ -46,7 +44,7 @@ func guardTypeLabel(t string) string {
 }
 
 // guardRow is one editable guard. params is the guard's full parameter map, cloned from the
-// backend so edits do not mutate the cached graph; for APPROVAL_REQUIRED, min_approvals is
+// backend so edits do not mutate the cached graph. For APPROVAL_REQUIRED, min_approvals is
 // edited inside it while any other params (block_on_change_request, …) are preserved.
 type guardRow struct {
 	gtype  string
@@ -105,7 +103,7 @@ type guardsForm struct {
 	status     string
 	submitting bool
 
-	pickOpen bool   // the guard-type dropdown is open
+	pickOpen bool
 	pick     picker // the dropdown, valid while pickOpen
 	pickRow  int    // row whose type is being set, or -1 when adding a new guard
 }
@@ -185,7 +183,7 @@ func (f guardsForm) onKey(msg tea.KeyPressMsg) (guardsForm, tea.Cmd) {
 	case "enter", " ":
 		switch {
 		case f.onRow():
-			return f.openTypePicker(f.focus), nil // enter a guard row → change its type
+			return f.openTypePicker(f.focus), nil
 		case f.focus == f.addIdx():
 			return f.openAddPicker(), nil
 		case f.focus == f.saveIdx():
@@ -197,7 +195,6 @@ func (f guardsForm) onKey(msg tea.KeyPressMsg) (guardsForm, tea.Cmd) {
 	return f, nil
 }
 
-// pickKey drives the open guard-type dropdown.
 func (f guardsForm) pickKey(msg tea.KeyPressMsg) guardsForm {
 	switch msg.String() {
 	case "up", "k":
@@ -213,7 +210,7 @@ func (f guardsForm) pickKey(msg tea.KeyPressMsg) guardsForm {
 }
 
 // availableOptions are the guard types not used by another row (except is that row's index,
-// so its own type stays selectable when changing it; -1 when adding a new guard).
+// so its own type stays selectable when changing it, or -1 when adding a new guard).
 func (f guardsForm) availableOptions(except int) []pickerOption {
 	used := f.usedTypes(except)
 	var opts []pickerOption
@@ -242,7 +239,6 @@ func (f guardsForm) openTypePicker(i int) guardsForm {
 	return f
 }
 
-// applyPick commits the dropdown choice: adding a new guard or retyping an existing one.
 func (f guardsForm) applyPick() guardsForm {
 	opt, ok := f.pick.selected()
 	f.pickOpen = false
@@ -319,8 +315,6 @@ func (f guardsForm) submit() (guardsForm, tea.Cmd) {
 	f.status = ""
 	return f, tea.Batch(saveGuards(f.deps, f.wfID, f.transID, guards), f.spinner.Tick)
 }
-
-// ---- view ----
 
 func (f guardsForm) View() string {
 	if f.pickOpen {
@@ -400,14 +394,12 @@ func (f guardsForm) button(label, id string, focused bool) string {
 		borderCol, textCol, bold = t.Accent, t.Accent, true
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f guardsForm) hint() string {
 	return hintBar(f.deps.Styles, "enter", "type", "←/→", "count", "x", "remove")
 }
-
-// ---- click routing ----
 
 func guardRowZone(i int) string { return "guards.row." + itoa(i) }
 
@@ -465,7 +457,6 @@ func (f guardsForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// itoa is a tiny non-allocating-ish int formatter for small non-negative numbers.
 func itoa(n int) string {
 	if n == 0 {
 		return "0"
@@ -484,8 +475,6 @@ func itoa(n int) string {
 	}
 	return string(b)
 }
-
-// ---- messages ----
 
 type guardsSavedMsg struct{ wfID int }
 

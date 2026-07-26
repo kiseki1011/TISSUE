@@ -15,7 +15,6 @@ type Project struct {
 	MyRole       string
 }
 
-// ProjectStats is the snapshot issue statistics for a project.
 type ProjectStats struct {
 	Total       int
 	Open        int
@@ -27,7 +26,6 @@ type ProjectStats struct {
 	ByPriority  []StatBucket
 }
 
-// StatBucket is one labelled count in a stat breakdown.
 type StatBucket struct {
 	Label string
 	Count int

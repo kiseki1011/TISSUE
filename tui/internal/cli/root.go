@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	zone "github.com/lrstanley/bubblezone/v2"
@@ -29,7 +30,6 @@ var (
 	iconsFlag  string
 )
 
-// Execute runs the command tree and returns a process exit code.
 func Execute() int {
 	if err := newRootCmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
@@ -50,7 +50,7 @@ func newRootCmd() *cobra.Command {
 	root.PersistentFlags().StringVarP(&serverFlag, "server", "c", "",
 		"server base URL (e.g. https://tissue.example.com)")
 	root.PersistentFlags().StringVar(&themeFlag, "theme", "",
-		"color theme: tokyo-night, dracula, gruvbox, solarized-light")
+		"color theme: "+strings.Join(theme.Names(), ", "))
 	root.PersistentFlags().StringVar(&iconsFlag, "icons", "",
 		"glyph set: auto, nerd, unicode")
 	root.AddCommand(newVersionCmd())
@@ -92,7 +92,6 @@ func runTUI(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-// buildDeps assembles the API clients, token store, and refreshing transport.
 // The public client stays unauthenticated so token refresh cannot recurse back through the transport.
 func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 	store, err := auth.NewTokenStore()
@@ -124,6 +123,8 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 		Authed:    domain.NewAuthService(authedAPI),
 		Projects:  domain.NewProjectService(authedAPI),
 		Catalog:   domain.NewCatalogService(authedAPI),
+		Agents:    domain.NewAgentService(authedAPI),
+		Issues:    domain.NewIssueService(authedAPI),
 		Store:     store,
 		Transport: transport,
 		Config:    cfg,

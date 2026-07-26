@@ -12,7 +12,6 @@ import (
 
 const appName = "tissue"
 
-// Config is the app state, loaded at startup and saved when a value changes.
 type Config struct {
 	// ServerURL is the last server connected to, reused when tissue runs without `-c`.
 	ServerURL string `json:"server_url"`
@@ -32,7 +31,6 @@ type Config struct {
 	path string
 }
 
-// Dir returns the config directory, creating it if needed.
 func Dir() (string, error) {
 	base, err := os.UserConfigDir()
 	if err != nil {
@@ -67,7 +65,6 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// SetServer records the connected server and persists it.
 func (c *Config) SetServer(server string) error {
 	c.ServerURL = server
 	return c.Save()
@@ -78,7 +75,6 @@ func (c *Config) PinnedProjects(server string) []string {
 	return c.Pinned[server]
 }
 
-// IsPinned reports whether key is pinned on server.
 func (c *Config) IsPinned(server, key string) bool {
 	for _, k := range c.Pinned[server] {
 		if k == key {
@@ -88,7 +84,6 @@ func (c *Config) IsPinned(server, key string) bool {
 	return false
 }
 
-// TogglePin flips the pinned state of key on server and persists.
 func (c *Config) TogglePin(server, key string) error {
 	if c.Pinned == nil {
 		c.Pinned = map[string][]string{}
@@ -107,7 +102,6 @@ func (c *Config) TogglePin(server, key string) error {
 	return c.Save()
 }
 
-// Save writes the config back to disk.
 func (c *Config) Save() error {
 	if c.path == "" {
 		dir, err := Dir()

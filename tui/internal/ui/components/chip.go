@@ -7,14 +7,12 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// hierarchyChip pairs a background with the label color that stays legible on it. The
-// label is not a single constant because terminals render 4/5 dark and 6/7 light, and
-// white-on-cyan measures under 3:1 on most palettes.
+// fg is per-chip, not one constant, because terminals render 4/5 dark and 6/7 light,
+// and white-on-cyan measures under 3:1 on most palettes.
 type hierarchyChip struct{ bg, fg lipgloss.ANSIColor }
 
-// hierarchyChips maps an IssueHierarchy to its badge colors, using ANSI indexes so the
-// chips follow the terminal's own palette rather than the active theme. The four levels
-// descend from magenta (EPIC) to light gray (MICROTASK).
+// Uses ANSI indexes so the chips follow the terminal's own palette rather than the
+// active theme.
 //
 // None of these is index 8: the ANSI theme uses 8 for Selection, Surface, Muted and
 // Border, so a chip painted with it would vanish into a selected row.
@@ -34,11 +32,9 @@ func chipFor(hierarchy string) hierarchyChip {
 	return unknownChip
 }
 
-// HierarchyColor is the background color of the hierarchy's badge.
 func HierarchyColor(hierarchy string) color.Color { return chipFor(hierarchy).bg }
 
-// HierarchyChip renders the hierarchy as a colored badge. An empty hierarchy renders
-// nothing, so callers can drop it into a layout unconditionally.
+// An empty hierarchy renders nothing, so callers can drop it into a layout unconditionally.
 func HierarchyChip(hierarchy string) string {
 	if hierarchy == "" {
 		return ""

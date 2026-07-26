@@ -9,7 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// Deps is the set of dependencies wired once at startup and passed to screens.
 type Deps struct {
 	Server string
 
@@ -18,6 +17,8 @@ type Deps struct {
 	Authed   *domain.AuthService
 	Projects *domain.ProjectService
 	Catalog  *domain.CatalogService
+	Agents   *domain.AgentService
+	Issues   *domain.IssueService
 
 	Store     auth.TokenStore
 	Transport *auth.Transport

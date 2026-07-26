@@ -124,12 +124,12 @@ func TestColorGridPicksSwatch(t *testing.T) {
 	if !f.picking {
 		t.Fatal("enter on the color field did not open the swatch grid")
 	}
-	if got, _ := f.cpick.selected(); got != "ANSI_BLACK" {
+	if got, _ := f.cpick.Selected(); got != "ANSI_BLACK" {
 		t.Errorf("grid opened at %q, want the current ANSI_BLACK", got)
 	}
 
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyRight})
-	want, _ := f.cpick.selected()
+	want, _ := f.cpick.Selected()
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
 	if f.picking {
 		t.Fatal("enter did not close the grid")

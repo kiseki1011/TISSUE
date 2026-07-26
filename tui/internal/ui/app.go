@@ -15,14 +15,17 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/nav"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/agents"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/connecting"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/home"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/login"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/oidcdevice"
-	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/organization"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/project"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/schema"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
@@ -34,7 +37,8 @@ const (
 	screenOidcDevice
 	screenHome
 	screenSchema
-	screenOrganization
+	screenAgents
+	screenProject // a drill-in from the Projects tab, not a top-level tab
 )
 
 // tabDef is one top-level tab shown in the header once authenticated.
@@ -44,11 +48,11 @@ type tabDef struct {
 	zone   string
 }
 
-// tabs is the header tab bar order: the project dashboard plus the global admin catalogs.
+// tabs is the header tab bar order: the project dashboard plus the global schema catalog.
 var tabs = []tabDef{
 	{screenHome, "Projects", "app.tab.projects"},
 	{screenSchema, "Schema", "app.tab.schema"},
-	{screenOrganization, "Organization", "app.tab.organization"},
+	{screenAgents, "Agents", "app.tab.agents"},
 }
 
 // Chrome band sizes.
@@ -62,38 +66,49 @@ const (
 
 // App is the root model, owning shared dependencies and routing between screens.
 type App struct {
-	deps   deps.Deps
-	screen screen
-	width  int
-	height int
-	mouse  bool // when true, capture mouse so clicks can move focus
-	help   help.Model
-	toasts toast.Model    // bottom-right notification stack, shared across screens
-	user   domain.Profile // authenticated member, populated after login
+	deps        deps.Deps
+	screen      screen
+	width       int
+	height      int
+	mouse       bool // when true, capture mouse so clicks can move focus
+	help        help.Model
+	toasts      toast.Model    // bottom-right notification stack, shared across screens
+	modal       appModal       // app-level overlay (help, ...), nil when none is open
+	modalScroll int            // wheel scroll offset when the open modal is taller than the terminal
+	user        domain.Profile // authenticated member, populated after login
+	sessionGen  int            // bumped on login/logout so a stale in-flight profile fetch is ignored
 
-	connecting   connecting.Model
-	login        login.Model
-	oidcDevice   oidcdevice.Model
-	home         home.Model
-	schema       schema.Model
-	organization organization.Model
+	connecting connecting.Model
+	login      login.Model
+	oidcDevice oidcdevice.Model
+	home       home.Model
+	schema     schema.Model
+	agents     agents.Model
+	project    project.Model
 }
 
-// New builds the root model, starting on the connecting screen.
+// newHelpModel builds the footer/help-modal renderer styled to the theme. It is rebuilt on a live
+// theme change, so the short (footer) and full (help modal) views both restyle.
+func newHelpModel(t theme.Theme) help.Model {
+	h := help.New()
+	keyS := lipgloss.NewStyle().Foreground(t.Primary)
+	descS := lipgloss.NewStyle().Foreground(t.Muted)
+	sepS := lipgloss.NewStyle().Foreground(t.Border)
+	h.Styles.ShortKey, h.Styles.FullKey = keyS, keyS
+	h.Styles.ShortDesc, h.Styles.FullDesc = descS, descS
+	h.Styles.ShortSeparator, h.Styles.FullSeparator = sepS, sepS
+	h.Styles.Ellipsis = sepS
+	return h
+}
+
 func New(d deps.Deps) App {
 	t := d.Styles.Theme
-	h := help.New()
-	h.Styles.ShortKey = lipgloss.NewStyle().Foreground(t.Primary)
-	h.Styles.ShortDesc = lipgloss.NewStyle().Foreground(t.Muted)
-	h.Styles.ShortSeparator = lipgloss.NewStyle().Foreground(t.Border)
-	h.Styles.Ellipsis = lipgloss.NewStyle().Foreground(t.Border)
-
 	return App{
 		deps:       d,
 		screen:     screenConnecting,
 		connecting: connecting.New(d),
 		mouse:      true,
-		help:       h,
+		help:       newHelpModel(t),
 		toasts:     toast.New(t, d.Glyphs),
 	}
 }
@@ -102,17 +117,55 @@ func (a App) Init() tea.Cmd {
 	return a.connecting.Init()
 }
 
+// appModal is an app-level overlay (help now, settings later) shown centered over a dimmed backdrop.
+// While one is open it owns the keyboard and its own mouse. The host dismisses it on a click outside
+// its box or a modalClosedMsg the modal emits (such as on esc).
+type appModal interface {
+	Update(tea.Msg) (appModal, tea.Cmd)
+	View() string
+	HelpKeys() []key.Binding
+}
+
+// describer is optionally implemented by a screen to introduce itself in the help modal.
+type describer interface {
+	HelpTitle() string
+	HelpAbout() string
+}
+
+type modalClosedMsg struct{}
+
+// closeModal is the command a modal returns to ask the host to dismiss it.
+func closeModal() tea.Msg { return modalClosedMsg{} }
+
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// a visible toast swallows mouse input landing on it, so the floating notification is opaque to
 	// clicks/wheel rather than click-through to the widget it covers
 	if mm, ok := msg.(tea.MouseMsg); ok && a.mouseOnToast(mm) {
 		return a, nil
 	}
+	// ctrl+c always quits, even while a modal owns the keyboard below
+	if k, ok := msg.(tea.KeyPressMsg); ok && k.String() == "ctrl+c" {
+		return a, tea.Quit
+	}
+	// an open modal owns interactive input. Background messages (resize, loads, toasts) still flow
+	// through to the normal handling below so the inert screen stays current
+	if a.modal != nil {
+		switch msg.(type) {
+		case tea.KeyPressMsg, tea.MouseClickMsg, tea.MouseWheelMsg, tea.MouseMotionMsg:
+			return a.updateModal(msg)
+		}
+	}
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
-		case "ctrl+c":
-			return a, tea.Quit
+		case "?":
+			if a.tabNavActive() {
+				return a.openHelp()
+			}
+		case ",":
+			if a.tabNavActive() {
+				return a.openOptions()
+			}
 		case "ctrl+o":
 			a.mouse = !a.mouse
 			return a, nil
@@ -134,10 +187,30 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.width, a.height = msg.Width, msg.Height
 		a.help.SetWidth(msg.Width)
+		if a.modal != nil {
+			a.modal, _ = a.modal.Update(msg) // let the modal re-size its own viewport
+			a = a.scrollModalBy(0)           // re-clamp the window offset to the new height
+		}
 		return a.updateActive(tea.WindowSizeMsg{Width: msg.Width, Height: msg.Height - a.reservedRows()})
+	case modalClosedMsg:
+		a.modal, a.modalScroll = nil, 0
+		return a, nil
+	case themeSelectedMsg:
+		return a.applyTheme(msg.name)
+	case logoutMsg:
+		// revoke + clear tokens in the background. The probe runs once that completes (loggedOutMsg)
+		a.modal, a.modalScroll = nil, 0
+		a.user = domain.Profile{}
+		a.sessionGen++
+		a.screen = screenConnecting
+		a.connecting = connecting.New(a.deps)
+		return a, logoutCmd(a.deps)
+	case loggedOutMsg:
+		// tokens are revoked server-side and cleared locally. The re-probe now routes to login
+		return a.withSize(a.connecting.Init())
 	case tea.MouseClickMsg:
-		// a header-tab click switches tabs only when tab-nav is live; while a modal captures input
-		// (e.g. a delete is submitting) the click yields to the screen, so a mid-action tab switch
+		// a header-tab click switches tabs only when tab-nav is live. While a modal captures input
+		// (for example a delete is submitting) the click yields to the screen, so a mid-action tab switch
 		// cannot strand the in-flight result message on the wrong screen
 		if a.tabNavActive() {
 			if target, ok := a.tabAt(msg); ok {
@@ -153,16 +226,28 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.screen = screenOidcDevice
 		a.oidcDevice = oidcdevice.New(a.deps, msg.Info)
 		return a.withSize(a.oidcDevice.Init())
+	case nav.OpenProjectMsg:
+		// drill into a project's issues. The Projects tab state is preserved for the return
+		a.screen = screenProject
+		a.project = project.New(a.deps, msg.ProjectKey, msg.Title)
+		return a.withSize(a.project.Init())
+	case nav.CloseProjectMsg:
+		// return to the (preserved) Projects tab and re-lay it to the current size
+		return a.switchTab(screenHome)
 	case nav.GoToHomeMsg:
 		a.screen = screenHome
+		a.sessionGen++            // a fresh session, ignore any prior login's in-flight profile fetch
+		a.user = domain.Profile{} // start blank so the new session never inherits the prior identity
 		a.home = home.New(a.deps, msg.Info, msg.Welcome)
 		a.schema = schema.New(a.deps)
-		a.organization = organization.New(a.deps)
+		a.agents = agents.New(a.deps)
 		m, cmd := a.withSize(a.home.Init())
-		// prefetch the Schema/Organization catalogs so they are ready when their tabs open
-		return m, tea.Batch(cmd, fetchProfile(a.deps), a.schema.Init(), a.organization.Init())
+		// prefetch the Schema catalog and the agents list so both tabs are ready when opened
+		return m, tea.Batch(cmd, fetchProfile(a.deps, a.sessionGen), a.schema.Init(), a.agents.Init())
 	case profileLoadedMsg:
-		a.user = msg.profile
+		if msg.gen == a.sessionGen { // drop a profile that belongs to a superseded session
+			a.user = msg.profile
+		}
 		return a, nil
 	case schema.LoadedMsg:
 		// route the background catalog load to the Schema screen even while another tab is active
@@ -177,15 +262,40 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		a.schema, cmd = a.schema.Update(msg)
 		return a, cmd
-	case organization.LoadedMsg:
+	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg:
+		// route the background agents prefetch to the Agents screen even while another tab is active
 		var cmd tea.Cmd
-		a.organization, cmd = a.organization.Update(msg)
+		a.agents, cmd = a.agents.Update(msg)
+		return a, cmd
+	case home.StatsLoadedMsg, home.StatsErrMsg:
+		// home's stats prefetch runs in the background. Deliver its results to home even while the
+		// user has drilled into a project (else the pending state strands the Details stats panel)
+		var cmd tea.Cmd
+		a.home, cmd = a.home.Update(msg)
 		return a, cmd
 	case toast.ShowMsg, toast.ExpireMsg:
-		// the notification stack is shell-owned; any screen raises a toast by emitting ShowMsg
+		// the notification stack is shell-owned. Any screen raises a toast by emitting ShowMsg
 		var cmd tea.Cmd
 		a.toasts, cmd = a.toasts.Update(msg)
 		return a, cmd
+	case optionsPositionsLoaded, optionsPositionFailed:
+		// the options modal owns async position-picker state. Deliver the result if it is still open
+		if a.modal == nil {
+			return a, nil
+		}
+		var cmd tea.Cmd
+		a.modal, cmd = a.modal.Update(msg)
+		return a, cmd
+	case optionsPositionSet:
+		// let the modal reflect the change, and refresh the cached profile so a reopen shows it too.
+		// If the modal has already closed (for example a logout raced the result), do nothing — refreshing
+		// would repopulate the just-cleared profile.
+		if a.modal == nil {
+			return a, nil
+		}
+		var cmd tea.Cmd
+		a.modal, cmd = a.modal.Update(msg)
+		return a, tea.Batch(cmd, fetchProfile(a.deps, a.sessionGen))
 	}
 
 	return a.updateActive(msg)
@@ -204,13 +314,14 @@ func (a App) updateActive(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.home, cmd = a.home.Update(msg)
 	case screenSchema:
 		a.schema, cmd = a.schema.Update(msg)
-	case screenOrganization:
-		a.organization, cmd = a.organization.Update(msg)
+	case screenAgents:
+		a.agents, cmd = a.agents.Update(msg)
+	case screenProject:
+		a.project, cmd = a.project.Update(msg)
 	}
 	return a, cmd
 }
 
-// isTabScreen reports whether s is one of the authenticated top-level tab screens.
 func (a App) isTabScreen(s screen) bool {
 	for _, t := range tabs {
 		if t.screen == s {
@@ -220,7 +331,6 @@ func (a App) isTabScreen(s screen) bool {
 	return false
 }
 
-// stepTab returns the tab delta steps away from the current one, wrapping around.
 func (a App) stepTab(delta int) screen {
 	idx := 0
 	for i, t := range tabs {
@@ -233,7 +343,6 @@ func (a App) stepTab(delta int) screen {
 	return tabs[(idx+delta+n)%n].screen
 }
 
-// tabAt returns the tab whose header zone the click landed on.
 func (a App) tabAt(msg tea.MouseClickMsg) (screen, bool) {
 	if msg.Button != tea.MouseLeft {
 		return 0, false
@@ -272,9 +381,10 @@ func (a App) activeCapturingInput() bool {
 	return false
 }
 
-// tabNavActive reports whether the global tab-switch keys should act right now.
+// tabNavActive reports whether the global tab-switch keys should act right now. An open app modal
+// owns the keyboard, so tab-nav (and its footer hint) yields to it.
 func (a App) tabNavActive() bool {
-	return a.isTabScreen(a.screen) && !a.activeCapturingInput()
+	return a.isTabScreen(a.screen) && !a.activeCapturingInput() && a.modal == nil
 }
 
 // withSize forwards the current window size straight to the activated screen.
@@ -301,8 +411,11 @@ func (a App) View() tea.View {
 	// never emit more than the terminal
 	content = lipgloss.NewStyle().MaxWidth(a.width).MaxHeight(a.height).Render(content)
 
-	// float the notification stack into the bottom-right, after Scan has consumed the zone markers
-	// so only SGR styling remains to preserve
+	// a modal dims the (inert) backdrop and floats centered. It is spliced in BEFORE Scan so its own
+	// click zones register, unlike the toasts which sit on top after Scan
+	if a.modal != nil {
+		content = a.overlayModalDim(content, a.modalView())
+	}
 	v := tea.NewView(a.overlayToasts(zone.Scan(content)))
 	v.AltScreen = true
 	v.BackgroundColor = a.deps.Styles.Theme.Background
@@ -375,7 +488,7 @@ func (a App) overlayToasts(frame string) string {
 }
 
 // spliceAt keeps the visible columns [0,x) of line with their SGR styling intact, pads to exactly x
-// columns, then places insert; columns at and past x are covered by insert and dropped. ansi.Cut is
+// columns, then places insert. Columns at and past x are covered by insert and dropped. ansi.Cut is
 // grapheme- and SGR-aware — the same measure lipgloss laid the frame out with — so the cut lands on
 // the same column the frame was built to, even across emoji / VS16 / ZWJ clusters.
 func spliceAt(line string, x int, insert string) string {
@@ -399,6 +512,178 @@ func (a App) mouseOnToast(msg tea.MouseMsg) bool {
 	return m.Y >= top && m.Y <= bottom && m.X >= x && m.X < x+w
 }
 
+// openHelp raises the help modal for the active screen, seeded with the screen's self-description
+// (when it offers one) and the live global + screen key bindings, so the shortcut list can never
+// drift from what the footer already advertises.
+func (a App) openHelp() (tea.Model, tea.Cmd) {
+	title, about := "Help", ""
+	if d, ok := a.activeModel().(describer); ok {
+		title, about = d.HelpTitle(), d.HelpAbout()
+	}
+	a.modal, a.modalScroll = newHelpModal(a.deps.Styles.Theme, a.help, title, about, a.globalKeys(), a.screenKeys(), a.width, a.height), 0
+	return a, nil
+}
+
+// openOptions raises the settings modal (server + account info, live theme switch, logout).
+func (a App) openOptions() (tea.Model, tea.Cmd) {
+	m, cmd := newOptionsModal(a.deps, a.user)
+	a.modal, a.modalScroll = m, 0
+	return a, cmd
+}
+
+// applyTheme switches the whole app to the named theme: it restyles the shell (header/footer/help,
+// toasts) and every persistent screen in place — no state is lost — and persists the choice.
+func (a App) applyTheme(name string) (tea.Model, tea.Cmd) {
+	a.deps.Styles = theme.New(theme.ByName(name))
+	if a.deps.Config != nil {
+		a.deps.Config.Theme = name
+		// best-effort: a failed persist still applies for this session, but surface it like the
+		// codebase's other best-effort saves
+		if err := a.deps.Config.Save(); err != nil {
+			slog.Warn("save theme", "name", name, "err", err)
+		}
+	}
+	t := a.deps.Styles.Theme
+	a.help = newHelpModel(t)
+	a.toasts = a.toasts.Retheme(t)
+	a.home = a.home.Retheme(a.deps)
+	a.schema = a.schema.Retheme(a.deps)
+	a.agents = a.agents.Retheme(a.deps)
+	a.project = a.project.Retheme(a.deps)
+	return a, nil
+}
+
+type loggedOutMsg struct{}
+
+// logoutCmd revokes the session server-side so a token that survives a failed local clear cannot be
+// traded back for a fresh pair (the connecting re-probe's refresh would 401 → login), then clears the
+// local tokens and transport and signals the shell to re-probe.
+func logoutCmd(d deps.Deps) tea.Cmd {
+	return func() tea.Msg {
+		ctx := context.Background()
+		if d.Authed != nil {
+			if err := d.Authed.Logout(ctx); err != nil {
+				slog.Warn("server-side logout", "err", err)
+			}
+		}
+		if d.Store != nil {
+			if err := d.Store.Clear(d.Server); err != nil {
+				slog.Warn("clear stored tokens", "err", err)
+			}
+		}
+		if d.Transport != nil {
+			d.Transport.Clear()
+		}
+		return loggedOutMsg{}
+	}
+}
+
+// updateModal routes interactive input to the open modal. A left click outside the modal's box
+// dismisses it. Everything else is the modal's to handle (it emits modalClosedMsg to close).
+func (a App) updateModal(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if click, ok := msg.(tea.MouseClickMsg); ok {
+		if click.Button == tea.MouseLeft && !a.pointInModal(click) {
+			a.modal, a.modalScroll = nil, 0
+			return a, nil
+		}
+	}
+	// when the modal overflows the terminal the wheel drives its window. Otherwise it belongs to the
+	// modal's own scroll (for example the help viewport)
+	if wheel, ok := msg.(tea.MouseWheelMsg); ok && a.modalWindowed() {
+		switch wheel.Button {
+		case tea.MouseWheelUp:
+			return a.scrollModalBy(-1), nil
+		case tea.MouseWheelDown:
+			return a.scrollModalBy(1), nil
+		}
+	}
+	var cmd tea.Cmd
+	a.modal, cmd = a.modal.Update(msg)
+	return a, cmd
+}
+
+// modalBox renders the modal — windowed to the terminal height with a scrollbar when it is too tall —
+// and returns it with its centered top-left origin (mx,my). overlayModalDim (rendering) and
+// pointInModal (input) share it so the visible box and its click-through rectangle agree.
+func (a App) modalBox() (view string, mx, my, w, h int) {
+	view = a.modalView()
+	w, h = lipgloss.Width(view), lipgloss.Height(view)
+	mx = max(0, (a.width-w)/2)
+	my = max(0, (a.height-h)/2)
+	return
+}
+
+// modalView is the open modal's rendered box, windowed to the terminal height with a scrollbar drawn
+// in its right border when it overflows (self-sizing modals that already fit are returned untouched).
+func (a App) modalView() string {
+	view := a.modal.View()
+	if a.height <= 0 {
+		return view
+	}
+	t := a.deps.Styles.Theme
+	windowed, _, _ := components.ScrollBox(view, a.height, a.modalScroll, t.Primary, t.Border)
+	return windowed
+}
+
+// modalWindowed reports whether the open modal is taller than the terminal, so wheel scrolling drives
+// the window instead of the modal's own handler.
+func (a App) modalWindowed() bool {
+	return a.modal != nil && a.height > 0 && lipgloss.Height(a.modal.View()) > a.height
+}
+
+func (a App) scrollModalBy(delta int) App {
+	if a.modal == nil {
+		return a
+	}
+	maxOff := lipgloss.Height(a.modal.View()) - a.height // interior overflow rows
+	a.modalScroll = min(max(a.modalScroll+delta, 0), max(maxOff, 0))
+	return a
+}
+
+func (a App) pointInModal(msg tea.MouseMsg) bool {
+	if a.modal == nil {
+		return false
+	}
+	_, mx, my, w, h := a.modalBox()
+	m := msg.Mouse()
+	return m.X >= mx && m.X < mx+w && m.Y >= my && m.Y < my+h
+}
+
+// overlayModalDim dims the whole (inert) backdrop and splices the centered modal over it. It runs
+// before zone.Scan, so the modal's own markers survive to register. The backdrop is stripped, so its
+// now-stale zones drop out and cannot be clicked behind the modal.
+func (a App) overlayModalDim(backdrop, modal string) string {
+	_, mx, my, w, _ := a.modalBox()
+	dim := lipgloss.NewStyle().Foreground(a.deps.Styles.Theme.Muted)
+	src := strings.Split(backdrop, "\n")
+	modalLines := strings.Split(modal, "\n")
+	// grow past the (height-clamped) backdrop if the modal extends below it, so every modal row — and
+	// its zone markers — is emitted for the scan and pointInModal cannot claim an unrendered row
+	total := len(src)
+	if my+len(modalLines) > total {
+		total = my + len(modalLines)
+	}
+	out := make([]string, total)
+	for i := 0; i < total; i++ {
+		plain := ""
+		if i < len(src) {
+			plain = ansi.Strip(src[i]) // drop backdrop SGR + zone markers — it is inert under the modal
+		}
+		row := i - my
+		if row < 0 || row >= len(modalLines) {
+			out[i] = dim.Render(plain)
+			continue
+		}
+		left := ansi.Cut(plain, 0, mx)
+		if p := mx - ansi.StringWidth(left); p > 0 {
+			left += strings.Repeat(" ", p)
+		}
+		right := ansi.Cut(plain, mx+w, a.width)
+		out[i] = dim.Render(left) + modalLines[row] + dim.Render(right)
+	}
+	return strings.Join(out, "\n")
+}
+
 func (a App) activeView() string {
 	switch a.screen {
 	case screenConnecting:
@@ -411,8 +696,10 @@ func (a App) activeView() string {
 		return a.home.View()
 	case screenSchema:
 		return a.schema.View()
-	case screenOrganization:
-		return a.organization.View()
+	case screenAgents:
+		return a.agents.View()
+	case screenProject:
+		return a.project.View()
 	}
 	return ""
 }
@@ -429,8 +716,10 @@ func (a App) activeModel() any {
 		return a.home
 	case screenSchema:
 		return a.schema
-	case screenOrganization:
-		return a.organization
+	case screenAgents:
+		return a.agents
+	case screenProject:
+		return a.project
 	}
 	return nil
 }
@@ -474,7 +763,7 @@ func (a App) headerView() string {
 	return lipgloss.NewStyle().MaxWidth(a.width).Render(line)
 }
 
-// tabGlyph maps a tab to its nerd glyph; the fallback is empty so plain terminals show
+// tabGlyph maps a tab to its nerd glyph. The fallback is empty so plain terminals show
 // the label alone.
 func (a App) tabGlyph(s screen) string {
 	g := a.deps.Glyphs
@@ -483,13 +772,13 @@ func (a App) tabGlyph(s screen) string {
 		return g.Or(g.Project, "")
 	case screenSchema:
 		return g.Or(g.Workflow, "")
-	case screenOrganization:
-		return g.Or(g.People, "")
+	case screenAgents:
+		return g.Or(g.Robot, "")
 	}
 	return ""
 }
 
-// tabBar renders the clickable top-level tabs; the active one is accented and underlined. Each tab
+// tabBar renders the clickable top-level tabs. The active one is accented and underlined. Each tab
 // carries its 1/2/3 switch key as a muted digit prefix, surfacing the shortcut at the tab itself
 // instead of only in the footer help.
 func (a App) tabBar() string {
@@ -525,8 +814,13 @@ func (a App) footerView() string {
 		return ""
 	}
 	pad := strings.Repeat(" ", leftInset+1)
-	top := pad + a.help.ShortHelpView(a.globalKeys())
-	bottom := pad + a.help.ShortHelpView(a.screenKeys())
+	// budget the help lines for the terminal minus the left pad, so a long global-hint row ellipsizes
+	// gracefully instead of overflowing the pad and getting hard-clipped by the shell's MaxWidth —
+	// a.help's own width is set to the full terminal width for the help modal.
+	h := a.help
+	h.SetWidth(max(0, a.width-len(pad)))
+	top := pad + h.ShortHelpView(a.globalKeys())
+	bottom := pad + h.ShortHelpView(a.screenKeys())
 	return lipgloss.JoinVertical(lipgloss.Left, top, bottom)
 }
 
@@ -535,34 +829,46 @@ func (a App) globalKeys() []key.Binding {
 	if a.mouse {
 		mouse = "mouse: on"
 	}
-	binds := make([]key.Binding, 0, 4)
+	binds := make([]key.Binding, 0, 6)
+	// tab-switch, help and options are gated to the same condition their handlers are (tab screens,
+	// no modal), so the footer never advertises a shortcut that is inert on the current screen.
 	if a.tabNavActive() {
-		binds = append(binds, key.NewBinding(key.WithKeys("1", "2", "3", "ctrl+h", "ctrl+l"), key.WithHelp("1/2/3", "tab")))
+		binds = append(binds,
+			key.NewBinding(key.WithKeys("1", "2", "3", "ctrl+h", "ctrl+l"), key.WithHelp("1/2/3", "tab")),
+			key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
+			key.NewBinding(key.WithKeys(","), key.WithHelp(",", "options")),
+		)
 	}
 	return append(binds,
-		key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
 		key.NewBinding(key.WithKeys("ctrl+o"), key.WithHelp("ctrl+o", mouse)),
 		key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "quit")),
 	)
 }
 
 func (a App) screenKeys() []key.Binding {
+	if a.modal != nil {
+		return a.modal.HelpKeys()
+	}
 	if k, ok := a.activeModel().(helpKeyer); ok {
 		return k.HelpKeys()
 	}
 	return nil
 }
 
-type profileLoadedMsg struct{ profile domain.Profile }
+type profileLoadedMsg struct {
+	profile domain.Profile
+	gen     int // the session generation this fetch was issued for
+}
 
-// fetchProfile loads the authenticated member so the header can show the username.
-func fetchProfile(d deps.Deps) tea.Cmd {
+// fetchProfile loads the authenticated member so the header can show the username. It is stamped with
+// the session generation so a result that arrives after a logout/re-login is ignored.
+func fetchProfile(d deps.Deps, gen int) tea.Cmd {
 	return func() tea.Msg {
 		p, err := d.Authed.Profile(context.Background())
 		if err != nil {
 			slog.Warn("load profile", "err", err)
 			return nil
 		}
-		return profileLoadedMsg{profile: p}
+		return profileLoadedMsg{profile: p, gen: gen}
 	}
 }

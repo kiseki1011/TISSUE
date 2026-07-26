@@ -1,5 +1,4 @@
 // Package oidcdevice runs the OIDC device authorization flow.
-// It shows the user code, opens the browser, and polls until the user authorizes or the code expires.
 package oidcdevice
 
 import (
@@ -46,7 +45,6 @@ type Model struct {
 	height int
 }
 
-// New builds the device-login screen for the given server configuration.
 func New(d deps.Deps, info domain.SystemInfo) Model {
 	return Model{deps: d, info: info, spinner: spinner.New()}
 }
@@ -185,7 +183,6 @@ func (m Model) View() string {
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, dialog)
 }
 
-// HelpKeys returns the footer hints for the current phase.
 func (m Model) HelpKeys() []key.Binding {
 	switch m.phase {
 	case phaseWaiting:
@@ -274,8 +271,7 @@ func gotoLogin(info domain.SystemInfo) tea.Cmd {
 	return func() tea.Msg { return nav.GoToLoginMsg{Info: info} }
 }
 
-// openURL opens a web page in the user's default browser. It only opens http(s) URLs, since the
-// address comes from the server.
+// openURL only opens http(s) URLs, since the address comes from the server.
 func openURL(rawURL string) error {
 	if !strings.HasPrefix(rawURL, "http://") && !strings.HasPrefix(rawURL, "https://") {
 		return nil

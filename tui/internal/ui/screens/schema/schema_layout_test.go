@@ -221,36 +221,48 @@ func TestListBoxPadding(t *testing.T) {
 		t.Fatalf("leftColumn = %d rows, want m.height=%d", got, h)
 	}
 
-	// the row right after each box's top border is padding (blank inside the border)
+	// the row right after each panel's top rule is padding (a blank interior row). The Issue Types
+	// and Workflows panels are borderless (TitledRule), so the side columns are blank spaces too.
 	for _, top := range []int{0, m.typesHeight()} {
-		if inner := strings.Trim(lines[top+1], "│ "); inner != "" {
+		if inner := strings.Trim(lines[top+1], "│┃ "); inner != "" {
 			t.Fatalf("row after the top border should be padding, got %q", lines[top+1])
 		}
 	}
 
+	// hasInset reports whether line, after its 1-cell side column and padX padding columns, begins
+	// with want — the side column is a blank space (TitledRule is borderless), skipped either way.
+	hasInset := func(line, want string) bool {
+		r := []rune(line)
+		if len(r) < 1+padX {
+			return false
+		}
+		for i := 1; i <= padX; i++ {
+			if r[i] != ' ' {
+				return false
+			}
+		}
+		return strings.HasPrefix(string(r[1+padX:]), want)
+	}
+
 	// the header row carries the column titles, inset by the padding
-	inset := "│" + strings.Repeat(" ", padX)
 	header := lines[1+padY]
-	if !strings.HasPrefix(header, inset+"Name") {
-		t.Fatalf("types header = %q, want prefix %q", header, inset+"Name")
+	if !hasInset(header, "Name") {
+		t.Fatalf("types header = %q, want %d-col inset then Name", header, padX)
 	}
 	if !strings.Contains(header, "Hierarchy") {
 		t.Errorf("types header missing the Hierarchy column: %q", header)
 	}
 
 	// the first data row sits one airy blank line below the header
-	first := lines[1+padY+1+1]
-	if !strings.HasPrefix(first, inset+"T0") {
-		t.Fatalf("first item row = %q, want prefix %q", first, inset+"T0")
+	if first := lines[1+padY+1+1]; !hasInset(first, "T0") {
+		t.Fatalf("first item row = %q, want %d-col inset then T0", first, padX)
 	}
 
-	wfHeader := lines[m.typesHeight()+1+padY]
-	if !strings.HasPrefix(wfHeader, inset+"Name") {
-		t.Fatalf("workflows header = %q, want prefix %q", wfHeader, inset+"Name")
+	if wfHeader := lines[m.typesHeight()+1+padY]; !hasInset(wfHeader, "Name") {
+		t.Fatalf("workflows header = %q, want %d-col inset then Name", wfHeader, padX)
 	}
-	wfFirst := lines[m.typesHeight()+1+padY+1+1]
-	if !strings.HasPrefix(wfFirst, inset+"W0") {
-		t.Fatalf("first workflow row = %q, want prefix %q", wfFirst, inset+"W0")
+	if wfFirst := lines[m.typesHeight()+1+padY+1+1]; !hasInset(wfFirst, "W0") {
+		t.Fatalf("first workflow row = %q, want %d-col inset then W0", wfFirst, padX)
 	}
 }
 

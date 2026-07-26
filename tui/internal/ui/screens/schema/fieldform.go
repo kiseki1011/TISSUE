@@ -17,7 +17,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// fields present in the field editor modal.
 const (
 	ffName = iota
 	ffDesc
@@ -26,9 +25,8 @@ const (
 	ffCancel
 )
 
-// fieldForm is the "Edit Field" modal for one custom field's editable metadata: name, description,
-// and the required flag. The field's type and options are not editable here (type is fixed at
-// creation; options go through their own endpoints). On save it fires the field PATCH and closes.
+// fieldForm edits one custom field's metadata (name, description, required). Type and options are
+// not editable here: type is fixed at creation and options go through their own endpoints.
 type fieldForm struct {
 	deps    deps.Deps
 	typeID  int // the owning issue type, for cache invalidation on save
@@ -46,7 +44,6 @@ type fieldForm struct {
 	submitting bool
 }
 
-// newFieldForm builds the modal seeded with the field's current values.
 func newFieldForm(d deps.Deps, typeID, fieldID int, name, desc string, required bool) fieldForm {
 	n := textinput.New()
 	n.Prompt = ""
@@ -193,8 +190,6 @@ func (f fieldForm) submit() (fieldForm, tea.Cmd) {
 	return f, tea.Batch(saveField(f.deps, f.typeID, f.fieldID, name, strings.TrimSpace(f.desc.Value()), f.required), f.spinner.Tick)
 }
 
-// ---- click routing ----
-
 func (f fieldForm) zoneID(id int) string {
 	switch id {
 	case ffName:
@@ -229,7 +224,7 @@ func (f fieldForm) onClick(msg tea.MouseClickMsg) (fieldForm, tea.Cmd) {
 		return f.focusOn(id)
 	case ffRequired:
 		ff, _ := f.focusOn(ffRequired)
-		ff.required = !ff.required // clicking the toggle flips it
+		ff.required = !ff.required
 		return ff, nil
 	case ffSubmit:
 		return f.submit()
@@ -239,11 +234,33 @@ func (f fieldForm) onClick(msg tea.MouseClickMsg) (fieldForm, tea.Cmd) {
 	return f, nil
 }
 
-// ---- view ----
-
 func (f fieldForm) View() string {
 	body := lipgloss.NewStyle().Padding(1, 1).Render(f.body())
 	return components.TitledBoxCentered("Edit Field", body, f.deps.Styles.Theme.Primary)
+}
+
+// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
+// scrolls to keep it visible. +2 = top border + the padding row above the body.
+func (f fieldForm) FocusRow() (int, int, bool) {
+	const chromeTop = 2
+	nameH := lipgloss.Height(f.field(ffName, "Name", fixEdit(f.name.View(), 1), f.nameErr))
+	descH := lipgloss.Height(f.field(ffDesc, "Description", fixEdit(f.desc.View(), editDescH), ""))
+	reqH := lipgloss.Height(f.field(ffRequired, "Required", f.requiredContent(), ""))
+	switch f.focus {
+	case ffName:
+		return chromeTop, nameH, true
+	case ffDesc:
+		return chromeTop + nameH, descH, true
+	case ffRequired:
+		return chromeTop + nameH + descH, reqH, true
+	default: // the Save/Cancel buttons row
+		line := nameH + descH + reqH
+		if f.submitting || f.status != "" {
+			line++
+		}
+		line++ // the blank row before the buttons
+		return chromeTop + line, lipgloss.Height(f.buttons()), true
+	}
 }
 
 func (f fieldForm) body() string {
@@ -262,7 +279,6 @@ func (f fieldForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// requiredContent shows the current required flag as Yes/No with a hint that space toggles it.
 func (f fieldForm) requiredContent() string {
 	t := f.deps.Styles.Theme
 	val := "No"
@@ -274,7 +290,7 @@ func (f fieldForm) requiredContent() string {
 }
 
 func (f fieldForm) field(id int, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(id, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(id, errMsg), f.focus == id)
 	if zid := f.zoneID(id); zid != "" {
 		box = zone.Mark(zid, box)
 	}
@@ -304,7 +320,7 @@ func (f fieldForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f fieldForm) fieldBorderColor(id int, errMsg string) color.Color {
@@ -341,8 +357,6 @@ func (f fieldForm) HelpKeys() []key.Binding {
 	}
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
-
-// ---- messages ----
 
 type fieldSavedMsg struct{ typeID int }
 

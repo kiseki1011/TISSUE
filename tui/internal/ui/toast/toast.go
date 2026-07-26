@@ -1,6 +1,4 @@
 // Package toast provides a bottom-right notification stack, rendered and expired by the app shell.
-// Any screen raises one by returning toast.Show(level, text) as a tea.Cmd; the shell owns the
-// stack and its auto-dismiss timers, so screens stay unaware of where or how long toasts appear.
 package toast
 
 import (
@@ -15,7 +13,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// Level is the severity of a toast, driving its color and icon.
 type Level int
 
 const (
@@ -25,27 +22,23 @@ const (
 	Error
 )
 
-// ttl is how long a toast stays before auto-dismissing.
 const ttl = 4 * time.Second
 
-// textWidth is the fixed inner text column of a toast; the border adds one inset and one rule
-// on each side, so every toast in the stack lines up to the same width.
+// textWidth is fixed. The border adds one inset and one rule on each side, so every toast in the
+// stack lines up to the same width.
 const textWidth = 32
 
-// maxVisible caps the stack so a burst of toasts cannot fill the screen; the oldest scroll off.
+// maxVisible caps the stack so a burst of toasts cannot fill the screen. The oldest scroll off.
 const maxVisible = 4
 
-// ShowMsg asks the shell to raise a toast. Screens emit it via Show.
 type ShowMsg struct {
 	Level Level
 	Text  string
 }
 
-// ExpireMsg retires the toast with the given id once its ttl elapses. It is exported so the shell
-// can route it back into the stack's Update.
+// ExpireMsg is exported so the shell can route it back into the stack's Update.
 type ExpireMsg struct{ ID int }
 
-// Show returns a command that raises a toast from any screen.
 func Show(level Level, text string) tea.Cmd {
 	return func() tea.Msg { return ShowMsg{Level: level, Text: text} }
 }
@@ -56,7 +49,6 @@ type item struct {
 	text  string
 }
 
-// Model is the toast stack, presentation-only state owned by the app shell.
 type Model struct {
 	theme  theme.Theme
 	glyphs glyph.Set
@@ -64,13 +56,11 @@ type Model struct {
 	seq    int
 }
 
-// New builds an empty stack bound to the given theme and glyph set.
 func New(t theme.Theme, g glyph.Set) Model {
 	return Model{theme: t, glyphs: g}
 }
 
-// Update handles a ShowMsg (raising a toast, returning its expiry timer) or an ExpireMsg (retiring
-// one). It ignores every other message, so the shell can forward these two types blindly.
+// Update ignores every other message, so the shell can forward these two types blindly.
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case ShowMsg:
@@ -82,7 +72,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// push appends a toast and returns the tick command that will expire it after the ttl.
 func (m Model) push(level Level, text string) (Model, tea.Cmd) {
 	m.seq++
 	id := m.seq
@@ -95,7 +84,6 @@ func (m Model) push(level Level, text string) (Model, tea.Cmd) {
 	return m, tea.Tick(ttl, func(time.Time) tea.Msg { return ExpireMsg{ID: id} })
 }
 
-// remove drops the toast with the given id, returning a fresh slice.
 func (m Model) remove(id int) []item {
 	out := make([]item, 0, len(m.items))
 	for _, it := range m.items {
@@ -106,11 +94,15 @@ func (m Model) remove(id int) []item {
 	return out
 }
 
-// Empty reports whether there is nothing to render, so the shell can skip the overlay entirely.
 func (m Model) Empty() bool { return len(m.items) == 0 }
 
+func (m Model) Retheme(t theme.Theme) Model {
+	m.theme = t
+	return m
+}
+
 // View stacks the toasts into a right-aligned block (newest at the bottom, nearest the corner),
-// or "" when empty. The shell composites the block into the bottom-right of the frame.
+// or "" when empty.
 func (m Model) View() string {
 	if len(m.items) == 0 {
 		return ""
@@ -125,8 +117,6 @@ func (m Model) View() string {
 	return lipgloss.JoinVertical(lipgloss.Right, boxes...)
 }
 
-// box renders one toast: a rounded box tinted to its severity, titled with the severity glyph and
-// label, wrapping the message to a fixed width.
 func (m Model) box(it item) string {
 	c := m.color(it.level)
 	title := lipgloss.NewStyle().Foreground(c).Bold(true).Render(m.glyph(it.level) + " " + m.label(it.level))

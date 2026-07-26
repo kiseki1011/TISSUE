@@ -1,6 +1,5 @@
 // Package auth stores credentials and injects them into API requests, keeping
-// authentication out of the UI. The token store persists tokens per server and
-// Transport refreshes them transparently on a 401.
+// authentication out of the UI.
 package auth
 
 import (
@@ -19,7 +18,6 @@ import (
 
 const keyringService = "tissue"
 
-// TokenStore persists a server's tokens between runs.
 type TokenStore interface {
 	Load(server string) (domain.TokenPair, bool, error)
 	Save(server string, tokens domain.TokenPair) error

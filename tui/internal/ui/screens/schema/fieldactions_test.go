@@ -149,8 +149,8 @@ func TestConfirmDeleteRunsDelete(t *testing.T) {
 	if !m.confirming {
 		t.Fatal("a delete failure closed the dialog")
 	}
-	if m.confirm.status != "in use" || m.confirm.submitting {
-		t.Errorf("failure not surfaced (status=%q submitting=%v)", m.confirm.status, m.confirm.submitting)
+	if m.confirm.Status != "in use" || m.confirm.Submitting {
+		t.Errorf("failure not surfaced (status=%q submitting=%v)", m.confirm.Status, m.confirm.Submitting)
 	}
 	// a success closes the dialog and refetches
 	m, cmd = m.Update(fieldDeletedMsg{typeID: 1})

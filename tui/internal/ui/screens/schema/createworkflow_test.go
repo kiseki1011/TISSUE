@@ -140,16 +140,14 @@ func TestWorkflowCreateEscNesting(t *testing.T) {
 	}
 }
 
-// The add handles and Save/Cancel carry clickable zones in the modal.
+// The add handles and Save/Cancel carry clickable zones in the modal. scanView polls until the
+// async zone scan settles (a bare Scan+Get races the background scan worker), and NewGlobal makes
+// the test self-contained rather than depending on another test to initialize the zone manager.
 func TestWorkflowCreateActionZones(t *testing.T) {
+	zone.NewGlobal()
 	f := newCreateWorkflowForm(optionsDeps())
 	view := f.View()
 	for _, id := range []string{"cw.name", "cw.desc", "cw.addstate", "cw.addtrans", "cw.save", "cw.cancel"} {
-		zone.Clear(id)
-		out := zone.Scan(view)
-		_ = out
-		if z := zone.Get(id); z == nil {
-			t.Errorf("zone %q missing", id)
-		}
+		scanView(t, view, id)
 	}
 }

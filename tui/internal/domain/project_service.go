@@ -8,7 +8,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// ProjectService performs project calls against the API
 type ProjectService struct {
 	api *client.ClientWithResponses
 }
@@ -17,7 +16,6 @@ func NewProjectService(api *client.ClientWithResponses) *ProjectService {
 	return &ProjectService{api: api}
 }
 
-// ListProjects returns the projects visible to the caller.
 // One generous project list page.
 // TODO: Might need to change to server-side project search if there is a chance of +1000 projects.
 func (s *ProjectService) ListProjects(ctx context.Context, includeArchived bool) ([]Project, error) {
@@ -36,7 +34,6 @@ func (s *ProjectService) ListProjects(ctx context.Context, includeArchived bool)
 	return toProjects(resp.JSON200.Content), nil
 }
 
-// GetProjectStats returns snapshot issue statistics for a project.
 func (s *ProjectService) GetProjectStats(ctx context.Context, projectKey string) (ProjectStats, error) {
 	resp, err := s.api.GetProjectSimpleStatsWithResponse(ctx, projectKey)
 	if err != nil {
@@ -48,7 +45,6 @@ func (s *ProjectService) GetProjectStats(ctx context.Context, projectKey string)
 	return toStats(resp.JSON200), nil
 }
 
-// CreateProject creates a project and returns its key.
 func (s *ProjectService) CreateProject(ctx context.Context, key, title, description string) (string, error) {
 	body := client.CreateProjectRequest{ProjectKey: key, Title: title}
 	if description != "" {

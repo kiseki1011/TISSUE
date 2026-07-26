@@ -2,7 +2,6 @@ package theme
 
 import lipgloss "charm.land/lipgloss/v2"
 
-// Styles holds the finished styles the views render with.
 // Views use these instead of touching Theme colors or calling lipgloss.NewStyle directly.
 type Styles struct {
 	Theme Theme
@@ -20,7 +19,6 @@ type Styles struct {
 	Hint         lipgloss.Style
 }
 
-// New builds the styles for a theme.
 func New(t Theme) Styles {
 	field := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).

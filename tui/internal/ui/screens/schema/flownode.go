@@ -29,7 +29,6 @@ const nodeFieldW = 40
 // stateCategories are the four StateCategory values in the order the sub-form cycles them.
 var stateCategories = []string{"INITIAL", "ACTIVE", "COMPLETED", "ABORTED"}
 
-// categoryColor gives each category a semantic color for its chip.
 func categoryColor(t theme.Theme, category string) color.Color {
 	switch category {
 	case "INITIAL":
@@ -44,10 +43,8 @@ func categoryColor(t theme.Theme, category string) color.Color {
 }
 
 // nodeForm creates or edits a single NEW state's fields — name, category, color — before it is
-// folded into the graph editor. Existing states are recategorized inline and renamed via the
-// per-element editor, so this form only ever backs states the graph editor will create. It never
-// touches the backend; the graph editor serializes every node together in one whole-graph
-// replace. done/cancelled tell the graph editor how the sub-form closed.
+// folded into the graph editor. It never touches the backend. The graph editor serializes every
+// node together in one whole-graph replace. done/cancelled tell the graph editor how the sub-form closed.
 type nodeForm struct {
 	deps  deps.Deps
 	title string
@@ -98,8 +95,8 @@ func (f nodeForm) Update(msg tea.Msg) (nodeForm, tea.Cmd) {
 		return f.onClick(msg)
 	case tea.MouseMotionMsg:
 		if f.picking {
-			if i := f.cpick.hitCell(msg); i >= 0 {
-				f.cpick.cursor = i
+			if i := f.cpick.HitCell(msg); i >= 0 {
+				f.cpick.Cursor = i
 			}
 			return f, nil
 		}
@@ -158,13 +155,13 @@ func (f nodeForm) onKey(msg tea.KeyPressMsg) (nodeForm, tea.Cmd) {
 func (f nodeForm) pickKey(msg tea.KeyPressMsg) nodeForm {
 	switch msg.String() {
 	case "left", "h":
-		f.cpick = f.cpick.move(-1, 0)
+		f.cpick = f.cpick.Move(-1, 0)
 	case "right", "l":
-		f.cpick = f.cpick.move(1, 0)
+		f.cpick = f.cpick.Move(1, 0)
 	case "up", "k":
-		f.cpick = f.cpick.move(0, -1)
+		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
-		f.cpick = f.cpick.move(0, 1)
+		f.cpick = f.cpick.Move(0, 1)
 	case "enter", " ":
 		return f.applyColor()
 	case "esc":
@@ -180,7 +177,7 @@ func (f nodeForm) openColorPicker() nodeForm {
 }
 
 func (f nodeForm) applyColor() nodeForm {
-	if name, ok := f.cpick.selected(); ok {
+	if name, ok := f.cpick.Selected(); ok {
 		if i := indexOf(f.colors, name); i >= 0 {
 			f.colorIx = i
 		}
@@ -232,8 +229,6 @@ func (f nodeForm) submit() (nodeForm, tea.Cmd) {
 	return f, nil
 }
 
-// ---- view ----
-
 func (f nodeForm) View() string {
 	if f.picking {
 		return f.cpick.View(f.deps.Styles)
@@ -270,7 +265,7 @@ func (f nodeForm) colorContent() string {
 }
 
 func (f nodeForm) field(id int, label, content, errMsg string) string {
-	box := zone.Mark(nodeZone(id), components.TitledBox(label, content, f.fieldBorderColor(id, errMsg)))
+	box := zone.Mark(nodeZone(id), components.TitledBoxWeighted(label, content, f.fieldBorderColor(id, errMsg), f.focus == id))
 	if id == nfName {
 		errLine := lipgloss.NewStyle().Padding(0, 1).Render(f.errText(errMsg))
 		return lipgloss.JoinVertical(lipgloss.Left, box, errLine)
@@ -297,7 +292,7 @@ func (f nodeForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f nodeForm) fieldBorderColor(id int, errMsg string) color.Color {
@@ -341,8 +336,6 @@ func (f nodeForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "back")))
 }
 
-// ---- click routing ----
-
 func nodeZone(id int) string {
 	switch id {
 	case nfName:
@@ -373,8 +366,8 @@ func (f nodeForm) onClick(msg tea.MouseClickMsg) (nodeForm, tea.Cmd) {
 		return f, nil
 	}
 	if f.picking {
-		if i := f.cpick.hitCell(msg); i >= 0 {
-			f.cpick.cursor = i
+		if i := f.cpick.HitCell(msg); i >= 0 {
+			f.cpick.Cursor = i
 			return f.applyColor(), nil
 		}
 		return f, nil
@@ -398,7 +391,6 @@ func fixNode(s string, h int) string {
 	return lipgloss.NewStyle().Width(nodeFieldW).MaxWidth(nodeFieldW).Height(h).MaxHeight(h).Render(s)
 }
 
-// cycle returns the value delta steps from cur in vals, wrapping around.
 func cycle(vals []string, cur string, delta int) string {
 	i := indexOf(vals, cur)
 	if i < 0 {

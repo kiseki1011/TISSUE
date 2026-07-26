@@ -24,7 +24,7 @@ const (
 )
 
 // edgeForm creates a new transition or rewires an existing one before it is folded into the
-// graph editor. Source and target are chosen from the editor's current states; the name is
+// graph editor. Source and target are chosen from the editor's current states. The name is
 // editable only for a new transition (an existing one is renamed via the per-element editor,
 // since a whole-graph replace preserves its name). It never touches the backend.
 type edgeForm struct {
@@ -140,7 +140,6 @@ func (f edgeForm) pickKey(msg tea.KeyPressMsg) edgeForm {
 	return f
 }
 
-// openPicker opens a dropdown of every state, seeded at the field's current value.
 func (f edgeForm) openPicker(field int) edgeForm {
 	opts := make([]pickerOption, 0, len(f.states))
 	for _, st := range f.states {
@@ -212,7 +211,7 @@ func (f edgeForm) submit() (edgeForm, tea.Cmd) {
 	}
 	if f.srcKey == "" || f.tgtKey == "" {
 		f.nameErr = ""
-		return f, nil // both endpoints are required; leave the form open
+		return f, nil // both endpoints are required — leave the form open
 	}
 	f.done = true
 	return f, nil
@@ -235,8 +234,6 @@ func (f edgeForm) stateColor(key string) string {
 	}
 	return ""
 }
-
-// ---- view ----
 
 func (f edgeForm) View() string {
 	if f.pickOpen {
@@ -280,7 +277,7 @@ func (f edgeForm) endpoint(id int, label, key string) string {
 		}
 	}
 	content := alignRow(value, hintBar(f.deps.Styles, "enter", "▾"), nodeFieldW, lipgloss.NewStyle())
-	return zone.Mark(edgeZone(id), components.TitledBox(label, content, f.fieldBorderColor(id)))
+	return zone.Mark(edgeZone(id), components.TitledBoxWeighted(label, content, f.fieldBorderColor(id), f.focus == id))
 }
 
 func (f edgeForm) buttons() string {
@@ -302,7 +299,7 @@ func (f edgeForm) button(label, id string, focused, hovered bool) string {
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f edgeForm) field(id int, label, content, errMsg string) string {
@@ -310,7 +307,7 @@ func (f edgeForm) field(id int, label, content, errMsg string) string {
 	if errMsg != "" {
 		borderCol = f.deps.Styles.Theme.Error
 	}
-	box := zone.Mark(edgeZone(id), components.TitledBox(label, content, borderCol))
+	box := zone.Mark(edgeZone(id), components.TitledBoxWeighted(label, content, borderCol, f.focus == id))
 	if id == egName {
 		errLine := lipgloss.NewStyle().Padding(0, 1).Render(f.errText(errMsg))
 		return lipgloss.JoinVertical(lipgloss.Left, box, errLine)
@@ -354,8 +351,6 @@ func (f edgeForm) HelpKeys() []key.Binding {
 	}
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "back")))
 }
-
-// ---- click routing ----
 
 func edgeZone(id int) string {
 	switch id {

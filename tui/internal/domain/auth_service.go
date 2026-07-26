@@ -10,7 +10,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// ErrInvalidCredentials is returned by Login when the server rejects the identifier and password.
 var ErrInvalidCredentials = errors.New("invalid credentials")
 
 // ErrIncompleteResponse is returned when a 200 response is missing tokens the caller needs.
@@ -26,17 +25,15 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("server returned status %d", e.Status)
 }
 
-// AuthService performs authentication calls against the API.
 type AuthService struct {
 	api *client.ClientWithResponses
 }
 
-// NewAuthService wraps the generated client.
 func NewAuthService(api *client.ClientWithResponses) *AuthService {
 	return &AuthService{api: api}
 }
 
-// SystemInfo reads the server's public configuration. It does not need credentials.
+// SystemInfo needs no credentials. The config it reads is public.
 func (s *AuthService) SystemInfo(ctx context.Context) (SystemInfo, error) {
 	resp, err := s.api.GetSystemInfoWithResponse(ctx)
 	if err != nil {
@@ -65,7 +62,6 @@ func (s *AuthService) Login(ctx context.Context, identifier, password string) (T
 	return toTokenPair(resp.JSON200.AccessToken, resp.JSON200.RefreshToken)
 }
 
-// Refresh uses the current refresh token to get a new token pair.
 func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (TokenPair, error) {
 	resp, err := s.api.RefreshTokenWithResponse(ctx, client.RefreshTokenJSONRequestBody{
 		RefreshToken: refreshToken,
@@ -79,7 +75,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (TokenPa
 	return toTokenPair(resp.JSON200.AccessToken, resp.JSON200.RefreshToken)
 }
 
-// StartDeviceLogin begins OIDC device flow.
 func (s *AuthService) StartDeviceLogin(ctx context.Context) (DeviceAuth, error) {
 	resp, err := s.api.StartOidcDeviceLoginWithResponse(ctx)
 	if err != nil {
@@ -99,7 +94,6 @@ func (s *AuthService) StartDeviceLogin(ctx context.Context) (DeviceAuth, error) 
 	}, nil
 }
 
-// PollDeviceLogin checks whether the user has authorized the OIDC device flow.
 func (s *AuthService) PollDeviceLogin(ctx context.Context, deviceCode string) (DevicePoll, error) {
 	resp, err := s.api.PollOidcDeviceLoginWithResponse(ctx, client.PollOidcDeviceLoginJSONRequestBody{
 		DeviceCode: deviceCode,
@@ -123,7 +117,6 @@ func (s *AuthService) PollDeviceLogin(ctx context.Context, deviceCode string) (D
 	return poll, nil
 }
 
-// Logout tells the server to revoke the session. Local tokens are cleared.
 func (s *AuthService) Logout(ctx context.Context) error {
 	resp, err := s.api.LogoutWithResponse(ctx)
 	if err != nil {

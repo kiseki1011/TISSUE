@@ -26,7 +26,6 @@ var fieldTypes = []string{
 	"DATE", "BOOLEAN", "PERCENTAGE", "SELECT_OPTION", "CHECKLIST",
 }
 
-// fieldTypeLabel is the human-readable name shown in the type picker.
 func fieldTypeLabel(t string) string {
 	switch t {
 	case "TEXT":
@@ -53,7 +52,7 @@ func fieldTypeLabel(t string) string {
 	return t
 }
 
-// fieldTypeGlyph maps a field type to its glyph, empty on plain terminals so the bare label shows.
+// fieldTypeGlyph returns empty on plain terminals so the bare label shows.
 func fieldTypeGlyph(g glyph.Set, fieldType string) string {
 	switch fieldType {
 	case "TEXT":
@@ -80,13 +79,11 @@ func fieldTypeGlyph(g glyph.Set, fieldType string) string {
 	return ""
 }
 
-// canHaveOptions reports whether a field type carries a predefined option list (SELECT_OPTION /
-// CHECKLIST), matching the backend's IssueFieldType.canHaveOptions.
+// canHaveOptions mirrors the backend's IssueFieldType.canHaveOptions (SELECT_OPTION / CHECKLIST).
 func canHaveOptions(fieldType string) bool {
 	return fieldType == "SELECT_OPTION" || fieldType == "CHECKLIST"
 }
 
-// create-field focus stops.
 const (
 	cffName = iota
 	cffType
@@ -318,8 +315,6 @@ func (f createFieldForm) submit() (createFieldForm, tea.Cmd) {
 	)
 }
 
-// ---- click routing ----
-
 func (f createFieldForm) zoneID(id int) string {
 	switch id {
 	case cffName:
@@ -376,14 +371,43 @@ func (f createFieldForm) onClick(msg tea.MouseClickMsg) (createFieldForm, tea.Cm
 	return f, nil
 }
 
-// ---- view ----
-
 func (f createFieldForm) View() string {
 	if f.pickOpen {
 		return f.pick.View(f.deps.Styles)
 	}
 	body := lipgloss.NewStyle().Padding(1, 1).Render(f.body())
 	return components.TitledBoxCentered("New Field", body, f.deps.Styles.Theme.Primary)
+}
+
+// FocusRow reports the focused control's row (in View coordinates) and height, so a windowed modal
+// scrolls to keep it visible. The +2 chrome offset is the top border plus the padding row above the
+// body. It reports ok=false while the type picker is open (that view replaces the form).
+func (f createFieldForm) FocusRow() (int, int, bool) {
+	if f.pickOpen {
+		return 0, 0, false
+	}
+	const chromeTop = 2
+	nameH := lipgloss.Height(f.field(cffName, "Name", fixEdit(f.name.View(), 1), f.nameErr))
+	typeH := lipgloss.Height(f.field(cffType, "Type", f.typeContent(), ""))
+	reqH := lipgloss.Height(f.field(cffRequired, "Required", f.requiredContent(), ""))
+	descH := lipgloss.Height(f.field(cffDesc, "Description", fixEdit(f.desc.View(), editDescH), ""))
+	switch f.focus {
+	case cffName:
+		return chromeTop, nameH, true
+	case cffType:
+		return chromeTop + nameH, typeH, true
+	case cffRequired:
+		return chromeTop + nameH + typeH, reqH, true
+	case cffDesc:
+		return chromeTop + nameH + typeH + reqH, descH, true
+	default: // the Create/Cancel buttons row
+		line := nameH + typeH + reqH + descH
+		if f.submitting || f.status != "" {
+			line++ // the status/saving row
+		}
+		line++ // the blank row before the buttons
+		return chromeTop + line, lipgloss.Height(f.buttons()), true
+	}
 }
 
 func (f createFieldForm) body() string {
@@ -403,7 +427,6 @@ func (f createFieldForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// typeContent shows the chosen field type as glyph + label with a hint that enter opens the picker.
 func (f createFieldForm) typeContent() string {
 	label := fieldTypeLabel(f.ftype)
 	if gl := fieldTypeGlyph(f.deps.Glyphs, f.ftype); gl != "" {
@@ -423,7 +446,7 @@ func (f createFieldForm) requiredContent() string {
 }
 
 func (f createFieldForm) field(id int, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(id, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(id, errMsg), f.focus == id)
 	if zid := f.zoneID(id); zid != "" {
 		box = zone.Mark(zid, box)
 	}
@@ -453,7 +476,7 @@ func (f createFieldForm) button(label, id string, focused, hovered bool) string 
 		borderCol = t.Secondary
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f createFieldForm) fieldBorderColor(id int, errMsg string) color.Color {
@@ -499,8 +522,6 @@ func (f createFieldForm) HelpKeys() []key.Binding {
 	}
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
-
-// ---- messages ----
 
 type fieldCreatedMsg struct{ typeID int }
 

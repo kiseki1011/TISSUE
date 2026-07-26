@@ -17,7 +17,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// vcs form focus zones.
 const (
 	vfOpened = iota
 	vfMerged
@@ -28,8 +27,7 @@ const (
 const vcsRowW = 44
 
 // vcsForm edits a workflow's VCS automation: the transition auto-fired when a linked PR is
-// opened or merged. Each field is chosen from a dropdown of the workflow's transitions (or
-// None), and the whole mapping is written back in one PATCH.
+// opened or merged, written back in one PATCH.
 type vcsForm struct {
 	deps        deps.Deps
 	wfID        int
@@ -113,7 +111,6 @@ func (f vcsForm) onKey(msg tea.KeyPressMsg) (vcsForm, tea.Cmd) {
 	return f, nil
 }
 
-// pickKey drives the open transition dropdown.
 func (f vcsForm) pickKey(msg tea.KeyPressMsg) vcsForm {
 	switch msg.String() {
 	case "up", "k":
@@ -135,8 +132,7 @@ func (f vcsForm) fieldID(field int) int {
 	return f.openedID
 }
 
-// openPicker opens a dropdown of None + every transition, seeded at the field's current value. Each
-// transition shows its source → target flow in parentheses so the direction is clear at a glance.
+// Each transition shows its source → target flow in parentheses so the direction is clear at a glance.
 func (f vcsForm) openPicker(field int) vcsForm {
 	opts := []pickerOption{{value: "0", label: "None"}}
 	for _, tr := range f.transitions {
@@ -186,7 +182,6 @@ func (f vcsForm) transitionName(id int) string {
 	return ""
 }
 
-// stateName resolves a state id to its label, or "" when unknown.
 func (f vcsForm) stateName(id int) string {
 	for _, st := range f.states {
 		if st.ID == id {
@@ -196,7 +191,6 @@ func (f vcsForm) stateName(id int) string {
 	return ""
 }
 
-// transitionFlow is "source → target" for a transition, or "" when either endpoint is unresolved.
 func (f vcsForm) transitionFlow(tr domain.WorkflowTransition) string {
 	src, tgt := f.stateName(tr.SourceID), f.stateName(tr.TargetID)
 	if src == "" || tgt == "" {
@@ -205,14 +199,12 @@ func (f vcsForm) transitionFlow(tr domain.WorkflowTransition) string {
 	return src + " → " + tgt
 }
 
-// ---- view ----
-
 func (f vcsForm) View() string {
 	if f.pickOpen {
 		return f.pick.View(f.deps.Styles)
 	}
 	t := f.deps.Styles.Theme
-	// the description is the widest fixed element, so it sets the modal's content width; the
+	// the description is the widest fixed element, so it sets the modal's content width. The
 	// field values and buttons right-align to it, landing flush at the modal's right edge
 	desc := f.deps.Styles.Muted.Render("Run a transition automatically on a linked PR event.")
 	w := lipgloss.Width(desc)
@@ -264,7 +256,7 @@ func (f vcsForm) button(label, id string, focused bool) string {
 		borderCol, textCol, bold = t.Accent, t.Accent, true
 	}
 	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBox("", body, borderCol))
+	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
 func (f vcsForm) HelpKeys() []key.Binding {
@@ -284,8 +276,6 @@ func (f vcsForm) HelpKeys() []key.Binding {
 	}
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
-
-// ---- click routing ----
 
 func vcsFieldZone(field int) string {
 	if field == vfMerged {
@@ -320,8 +310,6 @@ func (f vcsForm) onClick(msg tea.MouseClickMsg) (vcsForm, tea.Cmd) {
 	}
 	return f, nil
 }
-
-// ---- messages ----
 
 type vcsSavedMsg struct{ wfID int }
 

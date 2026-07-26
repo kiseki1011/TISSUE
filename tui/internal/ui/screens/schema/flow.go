@@ -25,7 +25,7 @@ const navRefWidth = 80
 
 // flowState is one state in the editor's working copy of the graph. key is a stable local
 // handle ("s<id>" for an existing state, "n<seq>" for a new one) that transitions reference, so
-// wiring survives reordering; on save it becomes an existing-id or temp-key node reference.
+// wiring survives reordering. On save it becomes an existing-id or temp-key node reference.
 type flowState struct {
 	id       int
 	key      string
@@ -35,7 +35,7 @@ type flowState struct {
 }
 
 // flowTrans is one transition in the working copy. src/tgt hold flowState keys. guards is carried
-// unedited (the flow editor changes topology, not guards) purely so the preview can show them; a
+// unedited (the flow editor changes topology, not guards) purely so the preview can show them. A
 // whole-graph replace preserves an existing transition's guards.
 type flowTrans struct {
 	id     int
@@ -47,9 +47,7 @@ type flowTrans struct {
 }
 
 // flowForm is the whole-graph structure editor: it holds an editable copy of the states and
-// transitions, lets the user add/delete/recategorize states and add/delete/rewire transitions,
-// then serializes the full desired graph into one optimistic-locked replace. New-node detail
-// (name/color, source/target) is captured by the node/edge sub-forms it opens over itself.
+// transitions and serializes the full desired graph into one optimistic-locked replace.
 type flowForm struct {
 	deps    deps.Deps
 	wfID    int
@@ -86,8 +84,6 @@ func newFlowForm(d deps.Deps, wf domain.WorkflowDetail) flowForm {
 }
 
 func (f flowForm) Init() tea.Cmd { return nil }
-
-// ---- focus model: a flat list of [states…, +state, transitions…, +transition, save, cancel] ----
 
 type flowItemKind int
 
@@ -226,8 +222,6 @@ func (f flowForm) clampFocus() flowForm {
 	return f
 }
 
-// ---- update ----
-
 func (f flowForm) Update(msg tea.Msg) (flowForm, tea.Cmd) {
 	switch msg := msg.(type) {
 	case flowFailedMsg:
@@ -260,7 +254,6 @@ func (f flowForm) Update(msg tea.Msg) (flowForm, tea.Cmd) {
 	return f, nil
 }
 
-// hitButton returns the action-bar button zone under the cursor, or "" when none is.
 func (f flowForm) hitButton(msg tea.MouseMsg) string {
 	for _, id := range []string{"flow.addstate", "flow.addtrans", "flow.save", "flow.cancel"} {
 		if zone.Get(id).InBounds(msg) {
@@ -302,7 +295,7 @@ func (f flowForm) onKey(msg tea.KeyPressMsg) (flowForm, tea.Cmd) {
 	if f.submitting {
 		return f, nil
 	}
-	f.hover = "" // the keyboard is driving; drop any stale mouse hover
+	f.hover = "" // the keyboard is driving — drop any stale mouse hover
 	switch msg.String() {
 	case "up", "k":
 		f.focus = f.navStep(-1)
@@ -344,7 +337,6 @@ func (f flowForm) onKey(msg tea.KeyPressMsg) (flowForm, tea.Cmd) {
 	return f, nil
 }
 
-// activateCur acts on the focused item: opens a sub-form to add/edit, or runs save/cancel.
 func (f flowForm) activateCur() (flowForm, tea.Cmd) {
 	switch it := f.cur(); it.kind {
 	case fiState:
@@ -444,7 +436,7 @@ func (f flowForm) submit() (flowForm, tea.Cmd) {
 }
 
 // buildInputs serializes the working copy into the whole-graph replace payload: existing nodes
-// carry their id (states send only their category; the rest is preserved server-side), new nodes
+// carry their id (states send only their category — the rest is preserved server-side), new nodes
 // carry a temp key plus the fields the backend needs to create them.
 func (f flowForm) buildInputs() ([]domain.GraphStateInput, []domain.GraphTransitionInput) {
 	states := make([]domain.GraphStateInput, 0, len(f.states))
@@ -483,7 +475,7 @@ func (f flowForm) ref(key string) domain.GraphRef {
 	return domain.GraphRef{}
 }
 
-// validate runs the cheap structural checks client-side for a fast error; the backend still
+// validate runs the cheap structural checks client-side for a fast error. The backend still
 // enforces connectivity, node caps, and issue migration on deleted states.
 func (f flowForm) validate() string {
 	if len(f.states) == 0 {
@@ -529,8 +521,6 @@ func (f flowForm) draftDetail() domain.WorkflowDetail {
 	return d
 }
 
-// ---- view ----
-
 // View renders only the sub-form overlays (node/edge) the in-place editor floats as centered
 // modals. The editor body itself — the draft diagram, the action bar, and the status — is drawn
 // into the Details panel by the screen (see flowEditorLines), so there is nothing to render when
@@ -545,18 +535,15 @@ func (f flowForm) View() string {
 	return ""
 }
 
-// affordance renders one action-bar item — an add/save/cancel handle — in its base color so it
-// reads as pressable, switching to the Accent focus color while it is the keyboard-selected item
-// and underlining on mouse hover. It is zone-marked so a click routes to it through flowForm.onClick.
+// affordance renders one action-bar item (an add/save/cancel handle). It is zone-marked so a
+// click routes to it through flowForm.onClick.
 func (f flowForm) affordance(id, label string, focused bool, base color.Color) string {
 	st := affordanceStyle(f.deps.Styles.Theme, base, focused, f.hover == id)
 	return zone.Mark(id, st.Render(label))
 }
 
-// actionBar is the editor's command row drawn above the draft diagram: the add handles and
-// save/cancel share one line under a section rule, with a blank line beneath. Save is the success
-// color and Cancel the error color so the commit choice reads at a glance. The line stays within
-// width so the Details panel does not wrap it (which would break its zone markers).
+// actionBar is the editor's command row above the draft diagram. The line stays within width so
+// the Details panel does not wrap it, which would break its zone markers.
 func (f flowForm) actionBar(width int) []string {
 	t := f.deps.Styles.Theme
 	row := f.affordance("flow.addstate", "+ State", f.focus == f.addStateFocus(), t.Secondary) +
@@ -566,8 +553,6 @@ func (f flowForm) actionBar(width int) []string {
 	return []string{sectionRule(f.deps.Styles, "Edit structure", width), "", row, ""}
 }
 
-// statusBlock is the contextual key hint under the action bar, plus a save spinner or a wrapped
-// error while one is pending.
 func (f flowForm) statusBlock(width int) []string {
 	s := f.deps.Styles
 	// keep the hint to one line: a wrapped hint would shift every diagram row below it out of
@@ -583,7 +568,7 @@ func (f flowForm) statusBlock(width int) []string {
 }
 
 // hint is the contextual key row. Existing states are recategorized inline and renamed from the
-// read view, so enter only edits a brand-new state; the add handles are always available.
+// read view, so enter only edits a brand-new state. The add handles are always available.
 func (f flowForm) hint() string {
 	s := f.deps.Styles
 	switch it := f.cur(); it.kind {
@@ -632,8 +617,6 @@ func (f flowForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// ---- click routing ----
-
 // onClick routes clicks on the action-bar handles. Clicks that land on a diagram element are
 // hit-tested by the screen (which owns the panel geometry) before this runs.
 func (f flowForm) onClick(msg tea.MouseClickMsg) (flowForm, tea.Cmd) {
@@ -655,8 +638,6 @@ func (f flowForm) onClick(msg tea.MouseClickMsg) (flowForm, tea.Cmd) {
 	}
 	return f, nil
 }
-
-// ---- messages ----
 
 type flowSavedMsg struct{ wfID int }
 

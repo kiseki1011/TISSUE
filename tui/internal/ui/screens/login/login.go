@@ -1,5 +1,4 @@
 // Package login is the login screen.
-// Renders the LOCAL identifier/password form or an OIDC prompt.
 package login
 
 import (
@@ -51,7 +50,6 @@ type Model struct {
 	height int
 }
 
-// New builds the login screen for the given server configuration.
 func New(d deps.Deps, info domain.SystemInfo) Model {
 	id := textinput.New()
 	id.Prompt = ""
@@ -145,7 +143,6 @@ func (m Model) focusOn(target int) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// onClick activates the field or button under a left click
 func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	if msg.Button != tea.MouseLeft {
 		return m, nil
@@ -170,7 +167,6 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onHover tracks the login button under the cursor so the view can highlight it
 func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 	m.hover = ""
 	button := "login.submit"
@@ -309,18 +305,16 @@ func (m Model) oidcDialog() string {
 	return lipgloss.JoinVertical(lipgloss.Center, rows...)
 }
 
-// field renders a text input as a rounded box whose top border carries the label.
 // content is pre-sized to a fixed width so every field lines up.
 func (m Model) field(which int, title, content string) string {
 	body := lipgloss.NewStyle().Width(formWidth - 4).MaxWidth(formWidth - 4).MaxHeight(1).Render(content)
-	box := components.TitledBox(title, body, m.fieldBorderColor(which))
+	box := components.TitledBoxWeighted(title, body, m.fieldBorderColor(which), m.focus == which)
 	if id := fieldZoneID(which); id != "" {
 		box = zone.Mark(id, box)
 	}
 	return box
 }
 
-// fieldZoneID is the click zone for an editable field, empty for the button
 func fieldZoneID(which int) string {
 	switch which {
 	case focusIdentifier:
@@ -364,7 +358,7 @@ func (m Model) button() string {
 		borderCol, textCol = t.Secondary, t.Secondary
 	}
 	body := lipgloss.NewStyle().Width(formWidth - 4).Align(lipgloss.Center).Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark("login.submit", components.TitledBox("", body, borderCol))
+	return zone.Mark("login.submit", components.TitledBoxWeighted("", body, borderCol, m.focus == focusSubmit))
 }
 
 // errorLine keeps a blank row when empty so the form does not jump as messages appear and clear.
@@ -389,7 +383,6 @@ func (m Model) idpLabel() string {
 	return "SSO"
 }
 
-// HelpKeys returns the footer hints for the current mode.
 func (m Model) HelpKeys() []key.Binding {
 	if m.info.Setup.IsOIDC() {
 		return []key.Binding{

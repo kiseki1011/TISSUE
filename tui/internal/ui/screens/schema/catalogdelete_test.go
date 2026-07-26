@@ -99,8 +99,8 @@ func TestWorkflowDeleteFailureKeepsOpen(t *testing.T) {
 	m, _ = m.setFocus(paneWorkflows)
 	m, _ = m.Update(keyD())
 	m, _ = m.Update(workflowDeleteFailedMsg{message: "in use"})
-	if !m.confirming || m.confirm.status != "in use" {
-		t.Errorf("failure not surfaced in place (confirming=%v status=%q)", m.confirming, m.confirm.status)
+	if !m.confirming || m.confirm.Status != "in use" {
+		t.Errorf("failure not surfaced in place (confirming=%v status=%q)", m.confirming, m.confirm.Status)
 	}
 }
 

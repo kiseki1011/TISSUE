@@ -7,12 +7,26 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 public interface MemberQueryRepository extends Repository<Member, Long>, JpaSpecificationExecutor<Member> {
+
+    /**
+     * Admin directory listing. The to-one team and position are fetched eagerly (they are surfaced in
+     * {@code AdminMemberSummary}), so grouping members by team/position does not trigger an N+1. Only
+     * the admin directory calls this spec-based findAll, so the graph is scoped to it.
+     */
+    @EntityGraph(attributePaths = {"team", "position"})
+    @Override
+    Page<Member> findAll(@Nullable Specification<Member> spec, Pageable pageable);
 
     Optional<Member> findById(Long id);
 

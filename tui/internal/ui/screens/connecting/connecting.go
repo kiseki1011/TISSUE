@@ -1,5 +1,4 @@
 // Package connecting shows a spinner while it reaches the server.
-// Routes to login or home depending on whether a stored session can be restored.
 package connecting
 
 import (
@@ -36,7 +35,6 @@ type Model struct {
 	height    int
 }
 
-// New builds the connecting screen for the server in deps.
 func New(d deps.Deps) Model {
 	return Model{
 		deps:    d,
@@ -172,7 +170,6 @@ func retryAfter(next int) tea.Cmd {
 	})
 }
 
-// Records the reached server as current and reports whether a stored session is available to restore.
 func finishConnect(d deps.Deps, info domain.SystemInfo) tea.Cmd {
 	return func() tea.Msg {
 		if err := d.Config.SetServer(d.Server); err != nil {
@@ -187,7 +184,6 @@ func finishConnect(d deps.Deps, info domain.SystemInfo) tea.Cmd {
 	}
 }
 
-// restore trades the stored refresh token for a fresh pair, clearing dead tokens on failure.
 func restore(d deps.Deps, info domain.SystemInfo, refresh string) tea.Cmd {
 	return func() tea.Msg {
 		tokens, err := d.Public.Refresh(context.Background(), refresh)

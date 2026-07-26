@@ -59,6 +59,7 @@ type Set struct {
 	Warning              string
 	Pen                  string
 	PenSquare            string
+	Edit                 string
 	FilePen              string
 	Copy                 string
 	Save                 string
@@ -167,7 +168,7 @@ type Set struct {
 	TransitionConnection string
 	Computer             string
 
-	nerd bool // whether nerd glyphs are in use; gates Or's fallback override
+	nerd bool // whether nerd glyphs are in use — gates Or's fallback override
 }
 
 // variant pairs a Nerd Font glyph with its plain Unicode fallback, both stored as
@@ -231,6 +232,8 @@ var (
 	pen = variant{"\uf01f", "\u270e"}
 	//   ✎
 	penSquare = variant{"\uf044", "\u270e"}
+	// nf-cod-edit (codicon, uniform size — fa-pen glyphs render a size small in some fonts)
+	edit = variant{"\uea73", "\u270e"}
 	//   📝
 	filePen = variant{"\uf05f", "\U0001f4dd"}
 	//   ⧉
@@ -363,8 +366,8 @@ var (
 	logout = variant{"\U000f0343", "\u2190"}
 	// 󰻾  🆔
 	identifier = variant{"\U000f0efe", "\U0001f194"}
-	// 󰈲  ▽
-	filter = variant{"\uf0b0", "\u25bd"}
+	// hardcoded filled down-triangle U+25BC (not a Nerd glyph): every nerd funnel/sliders glyph read off-centre in this IntelliJ font, so a plain BMP shape is used in both modes
+	filter = variant{"\u25bc", "\u25bc"}
 	//   ▤
 	listFilter = variant{"\ueb83", "\u25a4"}
 	//   ☰
@@ -399,7 +402,7 @@ var (
 	checklist     = variant{"\ueab3", "\u2611"}
 	symbolBoolean = variant{"\uea8f", "\u25d1"}
 	symbolNumeric = variant{"\uea90", "\u0023"}
-	// nf-md-decimal (\U000f10a1); plain fallback #, though the field-type picker
+	// nf-md-decimal (\U000f10a1). Plain fallback #, though the field-type picker
 	// overrides it to empty.
 	decimal = variant{"\U000f10a1", "\u0023"}
 	percent = variant{"\uf295", "\u0025"}
@@ -490,6 +493,7 @@ func New(mode Mode) Set {
 		Warning:              pick(warning),
 		Pen:                  pick(pen),
 		PenSquare:            pick(penSquare),
+		Edit:                 pick(edit),
 		FilePen:              pick(filePen),
 		Copy:                 pick(copy),
 		Save:                 pick(save),

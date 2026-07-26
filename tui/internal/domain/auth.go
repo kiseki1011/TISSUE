@@ -3,20 +3,18 @@ package domain
 
 import "strings"
 
-// TokenPair is an access/refresh token pair issued by the server.
 type TokenPair struct {
 	Access  string
 	Refresh string
 }
 
-// SystemInfo is the server's configuration, read before login to pick the authentication flow.
+// SystemInfo is read before login to pick the authentication flow.
 type SystemInfo struct {
 	ServerName string
 	Version    string
 	Setup      Setup
 }
 
-// Setup is the server's authentication configuration.
 type Setup struct {
 	AuthMode      string
 	EmailRequired bool
@@ -24,12 +22,11 @@ type Setup struct {
 	OIDC          *OIDC
 }
 
-// IsOIDC reports whether the server authenticates through an external IdP.
 func (s Setup) IsOIDC() bool {
 	return strings.EqualFold(s.AuthMode, "OIDC")
 }
 
-// OIDC describes the external IdP, present only in OIDC mode.
+// OIDC is present only in OIDC mode.
 type OIDC struct {
 	ProviderName string
 	IssuerURI    string
@@ -47,7 +44,6 @@ type DeviceAuth struct {
 	Interval                int
 }
 
-// DeviceStatus is the state of an in-progress OIDC device login.
 type DeviceStatus string
 
 const (
@@ -59,7 +55,7 @@ const (
 	DeviceError    DeviceStatus = "ERROR"
 )
 
-// DevicePoll is one device-flow poll result. Tokens are set only when Status is DeviceComplete.
+// DevicePoll's Tokens are set only when Status is DeviceComplete.
 type DevicePoll struct {
 	Status DeviceStatus
 	Tokens TokenPair

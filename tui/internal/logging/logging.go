@@ -12,7 +12,6 @@ const appName = "tissue"
 
 // Setup points slog and the standard logger at <cache>/tissue/tissue.log
 // and returns a cleanup func that closes the file.
-// Debug level is enabled when TISSUE_DEBUG is set.
 func Setup() (func(), error) {
 	base, err := os.UserCacheDir()
 	if err != nil {

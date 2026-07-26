@@ -14,16 +14,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// A top-to-bottom workflow renderer. States stack vertically down the center as color-chip
-// boxes, ordered by distance from the initial state (terminals trailing). A transition
-// between two states that land adjacent in that order is the spine arrow joining their boxes.
-// Every other transition is routed as an arrow through a side gutter: returns (to an earlier
-// state) run up the left, jumps (to a later state, e.g. cancelling into an ABORTED state) run
-// down the right, each in its own lane so nested arrows never cross. The whole diagram is
-// drawn on a display-cell canvas, so CJK/Hangul labels never skew it and line crossings merge
-// into the right box-drawing junction.
-
-// ---- box-drawing canvas ----
+// A top-to-bottom workflow renderer: states stack down the center. Off-spine transitions route
+// through side gutters in non-crossing lanes, on a display-cell canvas so CJK labels never skew it.
 
 // contRune marks the trailing display cell of a wide (2-cell) rune so the grid stays one
 // display cell per column even with CJK labels. It emits nothing.
@@ -140,7 +132,6 @@ func (c *canvas) line(r, x, bits int) {
 	}
 }
 
-// record notes a cell for the active transition path, when recording is on.
 func (c *canvas) record(r, x int) {
 	if c.rec != nil {
 		*c.rec = append(*c.rec, [2]int{r, x})
@@ -171,7 +162,6 @@ func (c *canvas) arrow(r, x int, ch rune) {
 	c.record(r, x)
 }
 
-// setFG recolors a cell's foreground, leaving its rune and background untouched.
 func (c *canvas) setFG(r, x int, fg color.Color) {
 	if c.in(r, x) {
 		c.fg[r][x] = fg
@@ -219,8 +209,6 @@ func sameColor(a, b color.Color) bool {
 	}
 	return a == b
 }
-
-// ---- ordering ----
 
 func categoryOrder(cat string) int {
 	switch cat {
@@ -294,7 +282,6 @@ func orderStates(d domain.WorkflowDetail) []domain.WorkflowState {
 	return states
 }
 
-// guardLabel shortens a guard for the diagram.
 func guardLabel(g domain.WorkflowGuard) string {
 	switch g.Type {
 	case "APPROVAL_REQUIRED":
@@ -314,7 +301,6 @@ func guardLabel(g domain.WorkflowGuard) string {
 	return strings.ToLower(g.Type)
 }
 
-// guardsInline is the comma-joined guard labels, shown after a transition as "· a, b".
 func guardsInline(guards []domain.WorkflowGuard) string {
 	if len(guards) == 0 {
 		return ""
@@ -372,8 +358,6 @@ func assignLanes(spans [][2]int) []int {
 	return lanes
 }
 
-// ---- layout ----
-
 const (
 	gvGap      = 4  // rows between stacked boxes (the spine arrow's length)
 	gvGutter   = 10 // columns reserved on each side for routed arrows
@@ -406,14 +390,8 @@ func labelRectL(r, x int, text string, w int) grect {
 	return grect{r, r, x, x + tw - 1}
 }
 
-// mixColors linearly blends a toward b by ratio in [0,1].
 func mixColors(a, b color.Color, ratio float64) color.Color {
-	ar, ag, ab, _ := a.RGBA()
-	br, bg, bb, _ := b.RGBA()
-	blend := func(x, y uint32) uint8 {
-		return uint8(float64(x>>8)*(1-ratio) + float64(y>>8)*ratio)
-	}
-	return color.RGBA{R: blend(ar, br), G: blend(ag, bg), B: blend(ab, bb), A: 0xff}
+	return components.MixColors(a, b, ratio)
 }
 
 // hoverBg is the subtle background tint for a hovered element, or ok=false on the ANSI theme,
@@ -426,7 +404,7 @@ func hoverBg(t theme.Theme) (color.Color, bool) {
 }
 
 // applyHover gives the hovered element a soft highlight: a background tint behind a box or a
-// transition label, keeping any color chip; on the ANSI theme it brightens the foreground
+// transition label, keeping any color chip. On the ANSI theme it brightens the foreground
 // instead, since there is no real surface to tint.
 func applyHover(c *canvas, hits map[wfElem]grect, hov wfElem, t theme.Theme) {
 	if hov.kind == elemNone {
@@ -456,7 +434,7 @@ func applyHover(c *canvas, hits map[wfElem]grect, hov wfElem, t theme.Theme) {
 
 // renderWorkflowGraph draws the workflow as a centered, top-to-bottom diagram no wider than
 // width. Every line is exactly width display cells, so it scrolls with the Details panel. sel
-// marks the currently selected state or transition (drawn in the accent color); the returned
+// marks the currently selected state or transition (drawn in the accent color). The returned
 // map gives each element's top row so the panel can scroll it into view. addGuard draws the
 // clickable "+ Guard" affordance under each spine transition — on in the editable Details view,
 // off in the read-only preview.
@@ -514,7 +492,7 @@ func renderWorkflowGraph(d domain.WorkflowDetail, s theme.Styles, width int, sel
 	boxX := (width - boxW) / 2
 	centerCol := boxX + boxW/2
 
-	// the gap after each box holds the spine arrow and its labels; it grows so a guarded
+	// the gap after each box holds the spine arrow and its labels. It grows so a guarded
 	// transition can stack, below a leading blank row, its name, one row per guard, and
 	// (when editable) a "+ Guard" affordance, all clear of the arrowhead
 	guardBase := 3
@@ -610,7 +588,7 @@ func renderWorkflowGraph(d domain.WorkflowDetail, s theme.Styles, width int, sel
 		}
 	}
 
-	// spine: a downward arrow whose head touches the next box; the name and, beneath it, one
+	// spine: a downward arrow whose head touches the next box. The name and, beneath it, one
 	// row per guard stack beside the arrow. The label band runs a little past the box into the
 	// gutter but stops one cell short of the innermost right lane, so it never hits a jump arrow.
 	rightEdge := boxX + boxW + 5
@@ -645,7 +623,7 @@ func renderWorkflowGraph(d domain.WorkflowDetail, s theme.Styles, width int, sel
 		}
 	}
 
-	// returns: up the left gutter, head touching the target's left side; the name rides the lane
+	// returns: up the left gutter, head touching the target's left side. The name rides the lane
 	for i, e := range backs {
 		markSel(e.tr.ID)
 		laneCol := max(1, boxX-gvStub-backLane[i]*gvLaneStep)
@@ -667,7 +645,7 @@ func renderWorkflowGraph(d domain.WorkflowDetail, s theme.Styles, width int, sel
 		}
 	}
 
-	// jumps: down the right gutter, head touching the target's right side; the name rides the lane
+	// jumps: down the right gutter, head touching the target's right side. The name rides the lane
 	for i, e := range skips {
 		markSel(e.tr.ID)
 		laneCol := min(width-2, boxX+boxW-1+gvStub+skipLane[i]*gvLaneStep)
@@ -716,22 +694,28 @@ func renderWorkflowGraph(d domain.WorkflowDetail, s theme.Styles, width int, sel
 	// into it while the boxes were drawn
 	if sel.kind == elemState {
 		if i, ok := pos[sel.id]; ok {
-			recolorBorder(c, rowTop[i], boxX, boxW, s.Theme.Accent)
+			emphasizeBorder(c, rowTop[i], boxX, boxW, s.Theme.Accent)
 		}
 	}
 	return c.lines(s), rows, hits
 }
 
-// recolorBorder repaints a box's border cells (its perimeter) in fg without changing the
-// runes, so a selected state can be outlined in the accent color.
-func recolorBorder(c *canvas, top, x, boxW int, fg color.Color) {
+// emphasizeBorder outlines a selected state box by repainting its perimeter cells in fg, so the
+// selection reads from colour. The glyphs are left unchanged (light weight), so the diagram never shifts.
+func emphasizeBorder(c *canvas, top, x, boxW int, fg color.Color) {
+	paint := func(r, xx int) {
+		if !c.in(r, xx) {
+			return
+		}
+		c.fg[r][xx] = fg
+	}
 	for xx := x; xx < x+boxW; xx++ {
-		c.setFG(top, xx, fg)
-		c.setFG(top+2, xx, fg)
+		paint(top, xx)
+		paint(top+2, xx)
 	}
 	for r := top; r <= top+2; r++ {
-		c.setFG(r, x, fg)
-		c.setFG(r, x+boxW-1, fg)
+		paint(r, x)
+		paint(r, x+boxW-1)
 	}
 }
 

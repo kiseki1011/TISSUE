@@ -55,12 +55,14 @@ func TokyoNight() Theme {
 		Muted:      hex("#565f89"),
 		Primary:    hex("#7aa2f7"),
 		Secondary:  hex("#7dcfff"),
-		Accent:     hex("#bb9af7"),
-		Success:    hex("#9ece6a"),
-		Warning:    hex("#e0af68"),
-		Error:      hex("#f7768e"),
-		Border:     hex("#414868"),
-		Selection:  hex("#33467c"),
+		// warm orange focus: the old lavender (#bb9af7) sat too close to the cool blue/cyan
+		// Primary/Secondary to read as "focused" — orange pops against the whole cool palette
+		Accent:    hex("#ff9e64"),
+		Success:   hex("#9ece6a"),
+		Warning:   hex("#e0af68"),
+		Error:     hex("#f7768e"),
+		Border:    hex("#414868"),
+		Selection: hex("#33467c"),
 	}
 }
 
@@ -112,11 +114,14 @@ func ANSI() Theme {
 		Muted:      lipgloss.ANSIColor(8),
 		Primary:    lipgloss.ANSIColor(4),
 		Secondary:  lipgloss.ANSIColor(6),
-		Accent:     lipgloss.ANSIColor(5),
-		Success:    lipgloss.ANSIColor(2),
-		Warning:    lipgloss.ANSIColor(3),
-		Error:      lipgloss.ANSIColor(1),
-		Border:     lipgloss.ANSIColor(8),
-		Selection:  lipgloss.ANSIColor(8),
+		// bright yellow (11) for focus: warm and the highest-contrast option against the cool
+		// blue/cyan Primary/Secondary in the 16-colour ANSI palette (no true orange exists there).
+		// The old magenta (5) sat too near Primary blue to stand out.
+		Accent:    lipgloss.ANSIColor(11),
+		Success:   lipgloss.ANSIColor(2),
+		Warning:   lipgloss.ANSIColor(3),
+		Error:     lipgloss.ANSIColor(1),
+		Border:    lipgloss.ANSIColor(8),
+		Selection: lipgloss.ANSIColor(8),
 	}
 }

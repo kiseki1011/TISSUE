@@ -204,10 +204,7 @@ func (f createWorkflowForm) clampFocus() createWorkflowForm {
 	return f
 }
 
-// hasOverlay reports whether a sub-form (node/edge) is open over the modal body.
 func (f createWorkflowForm) hasOverlay() bool { return f.nodeOpen || f.edgeOpen }
-
-// ---- update ----
 
 func (f createWorkflowForm) Update(msg tea.Msg) (createWorkflowForm, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -241,7 +238,6 @@ func (f createWorkflowForm) Update(msg tea.Msg) (createWorkflowForm, tea.Cmd) {
 	return f.updateInputs(msg)
 }
 
-// hitButton returns the action-bar button zone under the cursor, or "" when none is.
 func (f createWorkflowForm) hitButton(msg tea.MouseMsg) string {
 	for _, id := range []string{"cw.addstate", "cw.addtrans", "cw.save", "cw.cancel"} {
 		if zone.Get(id).InBounds(msg) {
@@ -290,7 +286,7 @@ func (f createWorkflowForm) onKey(msg tea.KeyPressMsg) (createWorkflowForm, tea.
 	if f.submitting {
 		return f, nil
 	}
-	f.hover = "" // the keyboard is driving; drop any stale mouse hover
+	f.hover = "" // the keyboard is driving — drop any stale mouse hover
 	switch msg.String() {
 	case "tab", "down":
 		return f.move(1)
@@ -422,8 +418,6 @@ func (f createWorkflowForm) typeInto(msg tea.KeyPressMsg) (createWorkflowForm, t
 	return f, cmd
 }
 
-// ---- draft graph edits (mirrors the flow editor, but every node is new) ----
-
 func (f createWorkflowForm) applyNode(name, category, colorName string) createWorkflowForm {
 	if f.editingNode >= 0 && f.editingNode < len(f.states) {
 		f.states[f.editingNode].name = name
@@ -514,8 +508,6 @@ func (f createWorkflowForm) draftDetail() domain.WorkflowDetail {
 	return d
 }
 
-// ---- submit ----
-
 func (f createWorkflowForm) validate() string {
 	name := strings.TrimSpace(f.name.Value())
 	switch n := utf8.RuneCountInString(name); {
@@ -527,7 +519,7 @@ func (f createWorkflowForm) validate() string {
 	if len(f.states) == 0 {
 		return "Add at least one state."
 	}
-	// state and transition names share the workflow's 2–32 character bound; check them here so a bad
+	// state and transition names share the workflow's 2–32 character bound. Check them here so a bad
 	// name is caught with an accurate message instead of the backend's generic graph rejection.
 	for _, st := range f.states {
 		if n := utf8.RuneCountInString(strings.TrimSpace(st.name)); n < 2 || n > 32 {
@@ -588,8 +580,6 @@ func (f createWorkflowForm) submit() (createWorkflowForm, tea.Cmd) {
 	)
 }
 
-// ---- view ----
-
 func (f createWorkflowForm) View() string {
 	if f.nodeOpen {
 		return f.node.View()
@@ -599,6 +589,56 @@ func (f createWorkflowForm) View() string {
 	}
 	body := lipgloss.NewStyle().Padding(1, 1).Render(f.body())
 	return components.TitledBoxCentered("New Workflow", body, f.deps.Styles.Theme.Primary)
+}
+
+// FocusRow reports the focused item's row (View coordinates) and height, so a windowed modal scrolls
+// to keep it visible. The row offsets are measured off the same pieces body() assembles, so they
+// cannot drift out of sync. +2 chrome = top border + the padding row above the body. ok=false while a
+// node/edge sub-form is open.
+func (f createWorkflowForm) FocusRow() (int, int, bool) {
+	if f.nodeOpen || f.edgeOpen {
+		return 0, 0, false
+	}
+	s := f.deps.Styles
+	const chromeTop = 2
+	nameRow := f.field(cwName, "Name", fixCw(f.name.View(), 1), f.nameErr)
+	descRow := f.field(cwDesc, "Description", fixCw(f.desc.View(), 1), "")
+	nameH, descH := lipgloss.Height(nameRow), lipgloss.Height(descRow)
+	rule := sectionRule(s, "Structure", cwStructW)
+	// rows body() lays down before the action bar — measured off the same pieces, not counted
+	beforeAction := lipgloss.Height(lipgloss.JoinVertical(lipgloss.Left, nameRow, descRow, "", rule, ""))
+
+	switch it := f.cur(); it.kind {
+	case cwName:
+		return chromeTop, nameH, true
+	case cwDesc:
+		return chromeTop + nameH, descH, true
+	case cwAddState, cwAddTrans, cwSave, cwCancel:
+		return chromeTop + beforeAction, 1, true // the action bar is a single line
+	case cwState, cwTrans:
+		// everything body() stacks before the draft graph
+		pre := []string{nameRow, descRow, "", rule, "", f.actionBar(), "", trunc(f.hint(), cwStructW), ""}
+		pre = append(pre, f.statusLines()...)
+		pre = append(pre, "")
+		beforeGraph := lipgloss.Height(lipgloss.JoinVertical(lipgloss.Left, pre...))
+		if sel, ok := f.selElem(); ok {
+			_, grows, ghits := renderWorkflowGraph(f.draftDetail(), s, cwStructW, sel, wfElem{}, false)
+			// prefer the element's bounding rect: it covers a state's whole box AND a routed
+			// transition's wrapped multi-row label, so the window reveals every line, not just the top
+			if rect, ok := ghits[sel]; ok {
+				return chromeTop + beforeGraph + rect.r0, rect.r1 - rect.r0 + 1, true
+			}
+			if gr, ok := grows[sel]; ok {
+				h := 1
+				if sel.kind == elemState {
+					h = 3
+				}
+				return chromeTop + beforeGraph + gr, h, true
+			}
+		}
+		return chromeTop + beforeAction, 1, true // fallback: keep the action bar in view
+	}
+	return chromeTop, 1, true
 }
 
 func (f createWorkflowForm) body() string {
@@ -636,8 +676,7 @@ func (f createWorkflowForm) statusLines() []string {
 	return []string{""}
 }
 
-// actionBar draws the add handles and Save/Cancel on one line, Save in the success color and Cancel
-// in the error color, matching the in-place flow editor.
+// actionBar draws the add handles and Save/Cancel on one line, matching the in-place flow editor.
 func (f createWorkflowForm) actionBar() string {
 	t := f.deps.Styles.Theme
 	return f.affordance("cw.addstate", "+ State", f.cur().kind == cwAddState, t.Secondary) +
@@ -667,7 +706,7 @@ func (f createWorkflowForm) hint() string {
 }
 
 func (f createWorkflowForm) field(kind createWorkflowItemKind, label, content, errMsg string) string {
-	box := components.TitledBox(label, content, f.fieldBorderColor(kind, errMsg))
+	box := components.TitledBoxWeighted(label, content, f.fieldBorderColor(kind, errMsg), f.cur().kind == kind)
 	box = zone.Mark(cwFieldZone(kind), box)
 	if kind == cwName {
 		errLine := lipgloss.NewStyle().Padding(0, 1).Render(f.errText(errMsg))
@@ -714,9 +753,6 @@ func (f createWorkflowForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// ---- click routing ----
-
-// fixCw clamps an input's rendered view to the modal field width and height.
 func fixCw(s string, h int) string {
 	return lipgloss.NewStyle().Width(cwFieldW).MaxWidth(cwFieldW).Height(h).MaxHeight(h).Render(s)
 }
@@ -754,8 +790,6 @@ func (f createWorkflowForm) onClick(msg tea.MouseClickMsg) (createWorkflowForm, 
 	}
 	return f, nil
 }
-
-// ---- messages ----
 
 type workflowCreatedMsg struct{}
 

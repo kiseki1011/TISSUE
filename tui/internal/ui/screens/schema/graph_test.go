@@ -186,12 +186,37 @@ func accentedRunes(lines []string, accentSGR string) string {
 // in the accent color, not just its name, so it reads as one highlighted unit.
 func TestGraphSelectedTransitionHighlightsArrow(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
-	accent := "38;2;187;154;247" // TokyoNight accent (#bb9af7)
+	accent := "38;2;255;158;100" // TokyoNight accent (#ff9e64)
 	// "Abandon" (id 14) is a jump: In Progress -> Cancelled, drawn through the right gutter
 	sel, _, _ := renderWorkflowGraph(exampleWorkflow(), s, 66, wfElem{elemTransition, 14}, wfElem{}, true)
 	got := accentedRunes(sel, accent)
 	if !strings.ContainsAny(got, "│─└┐┌┘├┤┬┴┼▼▶◀↺") {
 		t.Errorf("selected transition's arrow line is not accented (accented runes = %q)", got)
+	}
+}
+
+// A selected state is outlined in the accent COLOUR only — never with heavy glyphs — and the whole
+// diagram stays light-weight whether or not anything is selected (selection reads from colour).
+func TestGraphSelectedStateIsAccentOutlined(t *testing.T) {
+	s := theme.New(theme.TokyoNight())
+	const width = 66
+	accent := "38;2;255;158;100" // TokyoNight accent (#ff9e64)
+	light := graphLines(exampleWorkflow(), s, width)
+	if plain := stripANSI(strings.Join(light, "\n")); strings.ContainsAny(plain, "┏┓┗┛┃━┠┨┰┸") {
+		t.Fatalf("unselected diagram already has heavy glyphs:\n%s", plain)
+	}
+	sel, _, _ := renderWorkflowGraph(exampleWorkflow(), s, width, wfElem{elemState, 2}, wfElem{}, true)
+	// selection must never introduce heavy glyphs — it is colour-only now
+	if plain := stripANSI(strings.Join(sel, "\n")); strings.ContainsAny(plain, "┏┓┗┛┃━┠┨┰┸") {
+		t.Errorf("selecting a state introduced heavy glyphs (selection must be colour-only):\n%s", plain)
+	}
+	// the selected box's perimeter is painted accent
+	if got := accentedRunes(sel, accent); !strings.ContainsAny(got, "┌┐└┘─│") {
+		t.Errorf("selected state's box border is not accent-coloured (accented runes = %q)", got)
+	}
+	// width is preserved
+	if w1, w2 := lipgloss.Width(light[0]), lipgloss.Width(sel[0]); w1 != w2 {
+		t.Errorf("selecting a state changed the diagram width: %d vs %d", w1, w2)
 	}
 }
 
@@ -240,7 +265,7 @@ func TestGraphListsMultipleGuards(t *testing.T) {
 // element — so the panel can scroll to it and the user sees what is selected.
 func TestGraphHighlightsSelectedElement(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
-	accent := "38;2;187;154;247" // TokyoNight accent (#bb9af7)
+	accent := "38;2;255;158;100" // TokyoNight accent (#ff9e64)
 
 	// select the "In Review" state (id 3)
 	lines, rows, _ := renderWorkflowGraph(exampleWorkflow(), s, 66, wfElem{elemState, 3}, wfElem{}, true)
