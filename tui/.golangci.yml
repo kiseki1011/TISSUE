@@ -1,0 +1,25 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - errorlint      # %w, errors.Is/As misuse
+    - bodyclose      # resp.Body not closed
+    - exhaustive     # missing switch cases
+    - revive
+    - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - contextcheck
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+  exclusions:
+    presets: [comments, std-error-handling, common-false-positives]
+    rules:
+      - path: _test\.go
+        linters: [gosec, errcheck]
+
+formatters:
+  enable: [gofumpt, goimports]

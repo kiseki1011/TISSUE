@@ -75,8 +75,6 @@ spring:
       max-file-size: 20MB
       max-request-size: 25MB
 
-  mvc:
-    throw-exception-if-no-handler-found: true
   web:
     resources:
       add-mappings: false

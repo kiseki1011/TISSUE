@@ -21,13 +21,13 @@ import java.util.List;
               "order": 1
             },
             {
-              "guardType": "NOT_BLOCKED",
+              "guardType": "BLOCKING_ISSUE_RESOLVE_REQUIRED",
               "params": null,
               "order": 2
             },
             {
-              "guardType": "REQUIRED_APPROVAL",
-              "params": { "requiredCount": 2 },
+              "guardType": "APPROVAL_REQUIRED",
+              "params": { "min_approvals": 2 },
               "order": 3
             }
           ]

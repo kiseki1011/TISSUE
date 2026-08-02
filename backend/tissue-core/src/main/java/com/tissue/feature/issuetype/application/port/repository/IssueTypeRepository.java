@@ -26,6 +26,8 @@ public interface IssueTypeRepository extends Repository<IssueType, Long> {
 
     boolean existsByName_NormalizedName(String label);
 
+    boolean existsByWorkflow_Id(Long workflowId);
+
     @Query("""
            SELECT it
            FROM IssueType it

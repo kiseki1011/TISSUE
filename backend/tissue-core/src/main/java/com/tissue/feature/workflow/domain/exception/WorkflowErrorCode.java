@@ -31,6 +31,7 @@ public enum WorkflowErrorCode implements ErrorCode {
     INSUFFICIENT_APPROVALS(HttpStatus.BAD_REQUEST, "Required number of approvals has not been met"),
     WORKFLOW_STATE_IN_USE(
             HttpStatus.CONFLICT, "Cannot delete workflow states that are currently assigned to active issues"),
+    WORKFLOW_IN_USE(HttpStatus.CONFLICT, "Cannot delete a workflow that is still assigned to an issue type"),
     DUPLICATE_TRANSITION_EDGE(HttpStatus.BAD_REQUEST, "Duplicate transition between these two states already exists"),
     CANNOT_DELETE_INITIAL_STATE(
             HttpStatus.BAD_REQUEST, "Cannot delete the state categorized as 'INITIAL' in a workflow"),

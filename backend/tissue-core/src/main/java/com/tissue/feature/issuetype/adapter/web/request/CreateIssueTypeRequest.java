@@ -21,7 +21,11 @@ public record CreateIssueTypeRequest(
         @Nullable @Size(max = DESCRIPTION_MAX_LENGTH) String description,
 
         @NotNull ColorType color,
-        @NotNull IconType icon,
+
+        // Icon is optional and slated for removal; when absent it defaults server-side so the
+        // NOT NULL column stays satisfied without the client having to choose one.
+        @Nullable IconType icon,
+
         @NotNull IssueHierarchy issueHierarchy,
         @NotNull Long workflowId) {
 
@@ -30,7 +34,7 @@ public record CreateIssueTypeRequest(
                 .name(Name.of(name))
                 .description(description)
                 .color(color)
-                .icon(icon)
+                .icon(icon != null ? icon : IconType.CIRCLE_FILLED)
                 .issueHierarchy(issueHierarchy)
                 .workflowId(workflowId)
                 .build();

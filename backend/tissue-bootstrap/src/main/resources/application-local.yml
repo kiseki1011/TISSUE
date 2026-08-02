@@ -1,7 +1,13 @@
 spring:
   # Load a .env (KEY=value) for local overrides, if present
   config:
-    import: optional:file:.env[.properties]
+    import:
+      - "optional:file:.env[.properties]"
+      - "optional:file:backend/.env[.properties]"
+
+  docker:
+    compose:
+      file: "backend/compose.yaml"
 
   datasource:
     url: jdbc:postgresql://localhost:5432/tissue_local

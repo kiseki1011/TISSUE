@@ -10,6 +10,7 @@ import com.tissue.feature.workflow.application.dto.request.UpdateTransitionComma
 import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.feature.workflow.application.dto.request.UpdateWorkflowVcsSettingsCommand;
 import com.tissue.feature.workflow.application.dto.response.WorkflowCreateResponse;
+import com.tissue.feature.workflow.application.port.repository.WorkflowDeleteRepository;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
 import com.tissue.feature.workflow.application.port.usecase.WorkflowCommandUseCase;
 import com.tissue.feature.workflow.application.service.finder.WorkflowFinder;
@@ -46,6 +47,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     private final WorkflowFinder workflowFinder;
     private final WorkflowRepository workflowRepository;
+    private final WorkflowDeleteRepository workflowDeleteRepository;
     private final WorkflowValidator workflowValidator;
     private final WorkflowGraphValidator graphValidator;
     private final TransitionGuardRegistry guardRegistry;
@@ -61,8 +63,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
      * <ol>
      *   <li>Validate name uniqueness</li>
      *   <li>Persist an empty Workflow entity</li>
-     *   <li>Create states — map each tempKey to the created {@link WorkflowState}</li>
-     *   <li>Create transitions — resolve source/target states from the tempKey map</li>
+     *   <li>Create states - map each tempKey to the created {@link WorkflowState}</li>
+     *   <li>Create transitions - resolve source/target states from the tempKey map</li>
      *   <li>Validate the final graph structure</li>
      * </ol>
      *
@@ -140,13 +142,22 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Patchers.apply(cmd.color(), workflow::updateColor);
     }
 
+    /**
+     * Delete the aggregate child-to-parent in FK-safe order.
+     *
+     * <p>See {@link WorkflowDeleteRepository} for details.
+     */
     @Override
     public void delete(Long workflowId, Long actorMemberId) {
         Workflow workflow = workflowFinder.getById(workflowId);
 
         workflowValidator.ensureWorkflowDeletable(workflow);
 
-        workflowRepository.delete(workflow);
+        workflowDeleteRepository.deleteGuardConfigs(workflowId);
+        workflowDeleteRepository.deleteTransitions(workflowId);
+        workflowDeleteRepository.detachInitialState(workflowId);
+        workflowDeleteRepository.deleteStates(workflowId);
+        workflowDeleteRepository.deleteWorkflow(workflowId);
 
         log.info("Workflow deleted: workflowId={}", workflowId);
     }

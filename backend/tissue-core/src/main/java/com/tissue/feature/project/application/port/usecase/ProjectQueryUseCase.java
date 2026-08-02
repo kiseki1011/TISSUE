@@ -1,6 +1,7 @@
 package com.tissue.feature.project.application.port.usecase;
 
 import com.tissue.feature.project.application.dto.response.ProjectDetail;
+import com.tissue.feature.project.application.dto.response.ProjectSimpleStats;
 import com.tissue.feature.project.application.dto.response.ProjectSummary;
 import com.tissue.shared.dto.ProjectIdentifier;
 import org.jspecify.annotations.Nullable;
@@ -17,4 +18,6 @@ public interface ProjectQueryUseCase {
             boolean includeArchived, @Nullable String keyword, Pageable pageable, Long actorMemberId);
 
     ProjectDetail getProjectDetail(ProjectIdentifier pid, Long actorMemberId);
+
+    ProjectSimpleStats getProjectSimpleStats(ProjectIdentifier pid, Long actorMemberId);
 }

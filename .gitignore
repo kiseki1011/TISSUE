@@ -78,9 +78,11 @@ dist/
 ### File storage ###
 **/tissue-storage/
 
-### Golang ###
+### Golang + Bubbletea ###
 /tui/bin/
 /tui/dist/
+/bin/
+*.log
 
 ### AGENT.md ###
-AGENT.md
+AGENTS.md

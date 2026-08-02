@@ -1,5 +1,8 @@
 package com.tissue.feature.activitylog.domain;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum ActivityType {
     ISSUE_CREATED,
     ISSUE_UPDATED,
@@ -24,4 +27,13 @@ public enum ActivityType {
     ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM,
     SPRINT_STARTED,
     SPRINT_COMPLETED;
+
+    /**
+     * Issue-scoped activity types, comments included. Excludes sprint events.
+     */
+    public static List<ActivityType> issueTypes() {
+        return Arrays.stream(values())
+                .filter(type -> type.name().startsWith("ISSUE"))
+                .toList();
+    }
 }

@@ -3,10 +3,12 @@ package com.tissue.feature.workflow.application.service.validator;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_GUARD_TYPE;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_STATE_NAME;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.DUPLICATE_WORKFLOW_NAME;
+import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.WORKFLOW_IN_USE;
 import static com.tissue.feature.workflow.domain.exception.WorkflowErrorCode.WORKFLOW_STATE_IN_USE;
 
 import com.tissue.feature.issue.application.dto.IssueCountProjection;
 import com.tissue.feature.issue.application.port.repository.IssueQueryRepository;
+import com.tissue.feature.issuetype.application.port.repository.IssueTypeRepository;
 import com.tissue.feature.workflow.application.dto.GuardConfigData;
 import com.tissue.feature.workflow.application.dto.NodeIdentifier;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
@@ -30,6 +32,7 @@ public class WorkflowValidator {
 
     private final WorkflowRepository workflowQueryRepository;
     private final IssueQueryRepository issueRepository;
+    private final IssueTypeRepository issueTypeRepository;
 
     public void ensureNameUnique(Name name) {
         boolean dup = workflowQueryRepository.existsByName_NormalizedName(name.getNormalizedName());
@@ -39,6 +42,10 @@ public class WorkflowValidator {
     }
 
     public void ensureWorkflowDeletable(Workflow workflow) {
+        if (issueTypeRepository.existsByWorkflow_Id(workflow.getId())) {
+            throw new ResourceConflictException(WORKFLOW_IN_USE);
+        }
+
         List<Long> stateIds =
                 workflow.getStates().stream().map(WorkflowState::getId).toList();
         List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);

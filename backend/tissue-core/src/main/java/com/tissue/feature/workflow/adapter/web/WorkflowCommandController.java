@@ -279,12 +279,13 @@ public class WorkflowCommandController {
                  Replaces all existing guards with the provided list.
 
                 **Available guard types:**
-                - `NOT_BLOCKED` — Ensures the issue is not blocked by other issues. No params required.
+                - `BLOCKING_ISSUE_RESOLVE_REQUIRED` — Ensures the issue is not blocked by other issues. No params required.
                 - `ASSIGNEE_REQUIRED` — Requires at least one assignee on the issue. No params required.
-                - `CHILD_ISSUES_RESOLVED` — All child issues must be resolved. No params required.
-                - `REQUIRED_APPROVAL` — Requires reviewer approvals before transition.
+                - `CHILD_ISSUES_RESOLVE_REQUIRED` — All child issues must be resolved. No params required.
+                - `LINKED_BRANCH_REQUIRED` — Requires a linked VCS branch on the issue. No params required.
+                - `APPROVAL_REQUIRED` — Requires reviewer approvals before transition.
 
-                **`REQUIRED_APPROVAL` guard parameters:**
+                **`APPROVAL_REQUIRED` guard parameters:**
                 - `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers \
                 required to pass the guarded transition.
                 - `block_on_change_request` (boolean, default: true) — If any reviewer has \

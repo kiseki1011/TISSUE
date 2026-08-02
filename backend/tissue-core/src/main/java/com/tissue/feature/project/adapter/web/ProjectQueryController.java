@@ -1,6 +1,7 @@
 package com.tissue.feature.project.adapter.web;
 
 import com.tissue.feature.project.application.dto.response.ProjectDetail;
+import com.tissue.feature.project.application.dto.response.ProjectSimpleStats;
 import com.tissue.feature.project.application.dto.response.ProjectSummary;
 import com.tissue.feature.project.application.port.usecase.ProjectQueryUseCase;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
@@ -67,6 +68,26 @@ public class ProjectQueryController {
     public ResponseEntity<ProjectDetail> getProjectDetail(
             @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
         ProjectDetail response = projectQueryUseCase.getProjectDetail(
+                ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(operationId = "getProjectSimpleStats", summary = "Get project simple statistics", description = """
+                Snapshot statistics for a project's current issues: totals, open and completed counts, \
+                unassigned and overdue KPIs, and count breakdowns by state category, hierarchy and priority. \
+                Stats are count-based. Soft-deleted issues are excluded.
+
+                **Requirements:**
+                - Requires authentication""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Project statistics retrieved"),
+        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+    })
+    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
+    @GetMapping("/{projectKey}/simple-stats")
+    public ResponseEntity<ProjectSimpleStats> getProjectSimpleStats(
+            @PathVariable String projectKey, @CurrentMember MemberDetails memberDetails) {
+        ProjectSimpleStats response = projectQueryUseCase.getProjectSimpleStats(
                 ProjectIdentifier.ofProjectKey(projectKey), memberDetails.getMemberId());
         return ResponseEntity.ok(response);
     }

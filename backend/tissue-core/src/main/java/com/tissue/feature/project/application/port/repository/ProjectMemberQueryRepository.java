@@ -224,4 +224,23 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             """)
     Page<Member> findActiveMemberCandidatesByProjectAndKeyword(
             @Param("project") Project project, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("""
+            SELECT pm.projectKey AS projectKey, COUNT(pm) AS memberCount
+            FROM ProjectMember pm
+            WHERE pm.projectKey IN :projectKeys
+              AND pm.softDeleted = false
+            GROUP BY pm.projectKey
+            """)
+    List<ProjectMemberCountRow> countByProjectKeys(@Param("projectKeys") Collection<String> projectKeys);
+
+    @Query("""
+            SELECT pm.projectKey AS projectKey, pm.role AS role
+            FROM ProjectMember pm
+            WHERE pm.projectKey IN :projectKeys
+              AND pm.member.id = :memberId
+              AND pm.softDeleted = false
+            """)
+    List<ProjectMemberRoleRow> findRolesByProjectKeys(
+            @Param("projectKeys") Collection<String> projectKeys, @Param("memberId") Long memberId);
 }
