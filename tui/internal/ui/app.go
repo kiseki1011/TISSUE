@@ -70,7 +70,8 @@ type App struct {
 	screen      screen
 	width       int
 	height      int
-	mouse       bool // when true, capture mouse so clicks can move focus
+	mouse       bool   // when true, capture mouse so clicks can move focus
+	hoverTab    string // zone of the header tab under the cursor, "" when none
 	help        help.Model
 	toasts      toast.Model    // bottom-right notification stack, shared across screens
 	modal       appModal       // app-level overlay (help, ...), nil when none is open
@@ -168,6 +169,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "ctrl+o":
 			a.mouse = !a.mouse
+			a.hoverTab = "" // no motion events arrive while the mouse is off, so clear any stuck highlight
 			return a, nil
 		case "ctrl+l":
 			if a.tabNavActive() {
@@ -215,6 +217,18 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if a.tabNavActive() {
 			if target, ok := a.tabAt(msg); ok {
 				return a.switchTab(target)
+			}
+		}
+		return a.updateActive(msg)
+	case tea.MouseMotionMsg:
+		// track the hovered header tab for its highlight, then let the active screen hover too
+		a.hoverTab = ""
+		if a.tabNavActive() {
+			for _, tb := range tabs {
+				if zone.Get(tb.zone).InBounds(msg) {
+					a.hoverTab = tb.zone
+					break
+				}
 			}
 		}
 		return a.updateActive(msg)
@@ -797,8 +811,11 @@ func (a App) tabBar() string {
 			content = gl + " " + tab.label
 		}
 		style, numStyle := inactive, numInactive
-		if a.screen == tab.screen {
+		switch {
+		case a.screen == tab.screen:
 			style, numStyle = active, numActive
+		case a.hoverTab == tab.zone:
+			style = lipgloss.NewStyle().Foreground(t.Secondary) // hovered inactive tab brightens
 		}
 		// the digit takes the accent only on the active tab (matching its label), but stays
 		// un-underlined so the underline reads as the single active-tab marker

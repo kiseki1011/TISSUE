@@ -47,7 +47,11 @@ func (m Model) View() string {
 // header is the breadcrumb. The title takes the leftover width and is truncated (never padded).
 func (m Model) header() string {
 	t := m.deps.Styles.Theme
-	back := lipgloss.NewStyle().Foreground(t.Accent).Render("← Projects")
+	backStyle := lipgloss.NewStyle().Foreground(t.Accent)
+	if m.hover == zoneBack {
+		backStyle = backStyle.Underline(true)
+	}
+	back := backStyle.Render("← Projects")
 	sep := lipgloss.NewStyle().Foreground(t.Muted).Render("  ·  ")
 	keyPart := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(m.projectKey)
 	crumb := zone.Mark(zoneBack, back) + sep + keyPart
@@ -110,7 +114,7 @@ func (m Model) listBody(w, avail int) string {
 	visible := max(1, (avail-chrome)/rowH)
 	top := listTop(m.cursor, visible, len(m.issues))
 	for j := top; j < len(m.issues) && j < top+visible; j++ {
-		rows = append(rows, zone.Mark(issueRowZone(j), m.issueRow(m.issues[j], j, titleW)))
+		rows = append(rows, zone.Mark(issueRowZone(j), m.issueRow(m.issues[j], j, titleW, w, m.hover == issueRowZone(j))))
 	}
 	if m.loadingMore {
 		rows = append(rows, s.Muted.Render("Loading more…"))
@@ -127,7 +131,7 @@ func (m Model) headerRow(titleW int) string {
 	return head.Render(strings.Join(cols, " "))
 }
 
-func (m Model) issueRow(it domain.IssueSummary, i, titleW int) string {
+func (m Model) issueRow(it domain.IssueSummary, i, titleW, w int, hovered bool) string {
 	t := m.deps.Styles.Theme
 	sel := i == m.cursor
 	base := lipgloss.NewStyle().Foreground(t.Text)
@@ -143,7 +147,21 @@ func (m Model) issueRow(it domain.IssueSummary, i, titleW int) string {
 	title := base.Render(pad(fit(it.Title, titleW), titleW))
 	state := lipgloss.NewStyle().Foreground(stateColor(t, it.StateCategory)).Render(pad(fit(it.StateLabel, colState), colState))
 	pri := lipgloss.NewStyle().Foreground(priorityColor(t, it.Priority)).Render(pad(it.Priority, colPri))
-	return strings.Join([]string{asg, key, typ, title, state, pri}, " ")
+	row := strings.Join([]string{asg, key, typ, title, state, pri}, " ")
+	if hovered && !sel {
+		row = m.hoverBand().Width(w).Render(row)
+	}
+	return row
+}
+
+// hoverBand is the subtle background band a mouse-hovered row gets, dimmer than the selection. On the
+// ANSI theme (no real background to dim) it tints the text instead.
+func (m Model) hoverBand() lipgloss.Style {
+	t := m.deps.Styles.Theme
+	if _, noBg := t.Background.(lipgloss.NoColor); noBg {
+		return lipgloss.NewStyle().Foreground(t.Secondary)
+	}
+	return lipgloss.NewStyle().Foreground(t.Text).Background(components.MixColors(t.Selection, t.Background, 0.5))
 }
 
 func stateColor(t theme.Theme, cat string) color.Color {

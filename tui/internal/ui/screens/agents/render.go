@@ -19,6 +19,9 @@ const (
 	zoneNewToken = "agents.token.new"
 
 	rowHeight = 2 // each agent/token list row spans two lines (name + sub)
+
+	hInset = 2 // left/right padding, so the dashboard lines up with the other tabs
+	colGap = 1 // the blank column between the two panes
 )
 
 func agentRowZone(i int) string { return "agents.row." + strconv.Itoa(i) }
@@ -40,8 +43,9 @@ func listTop(cursor, visible, n int) int {
 }
 
 func (m Model) panelWidths() (int, int) {
-	left := clamp(m.width*38/100, 30, 46)
-	right := m.width - left - 1
+	usable := m.width - 2*hInset - colGap
+	left := clamp(usable*38/100, 30, 46)
+	right := usable - left
 	if right < 20 {
 		right = 20
 	}
@@ -88,15 +92,15 @@ func (m Model) agentsPane() string {
 	leftW, _ := m.panelWidths()
 	innerW := leftW - 4
 	bodyH := max(1, m.height-2)
-	rows := []string{m.newAffordance(zoneNewAgent, "New agent", "n", innerW), ""}
+	rows := []string{"", m.newAffordance(zoneNewAgent, "New agent", "n", innerW, m.hover == zoneNewAgent), ""}
 
 	if len(m.agents) == 0 {
 		rows = append(rows, m.deps.Styles.Muted.Render("No agents yet. Press "+accent(t, "n")+" to create one."))
 	} else {
-		visible := max(1, (bodyH-2)/rowHeight) // two-row rows below the two-row affordance header
+		visible := max(1, (bodyH-3)/rowHeight) // rows below the blank + affordance + blank header
 		top := listTop(m.cursor, visible, len(m.agents))
 		for j := top; j < len(m.agents) && j < top+visible; j++ {
-			rows = append(rows, zone.Mark(agentRowZone(j), m.agentRow(m.agents[j], j, innerW)))
+			rows = append(rows, zone.Mark(agentRowZone(j), m.agentRow(m.agents[j], j, innerW, m.hover == agentRowZone(j))))
 		}
 	}
 	body := lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
@@ -108,7 +112,7 @@ func (m Model) agentsPane() string {
 	return zone.Mark("agents.pane", components.TitledRule(title, "", body, border))
 }
 
-func (m Model) agentRow(a domain.Agent, i, w int) string {
+func (m Model) agentRow(a domain.Agent, i, w int, hovered bool) string {
 	t := m.deps.Styles.Theme
 	nameStyle := lipgloss.NewStyle().Foreground(t.Text)
 	if i == m.cursor {
@@ -121,7 +125,21 @@ func (m Model) agentRow(a domain.Agent, i, w int) string {
 	robot := lipgloss.NewStyle().Foreground(t.Muted).Render(m.deps.Glyphs.Or(m.deps.Glyphs.Robot, "*"))
 	head := robot + " " + nameStyle.Render(fit(a.Name, w-2))
 	sub := lipgloss.NewStyle().Foreground(t.Muted).Render(fit("  @"+a.Username, w))
+	if hovered && i != m.cursor {
+		band := m.hoverBand()
+		head, sub = band.Width(w).Render(head), band.Width(w).Render(sub)
+	}
 	return lipgloss.JoinVertical(lipgloss.Left, head, sub)
+}
+
+// hoverBand is the subtle background band a mouse-hovered row gets, dimmer than the selection. On the
+// ANSI theme (no real background to dim) it tints the text instead.
+func (m Model) hoverBand() lipgloss.Style {
+	t := m.deps.Styles.Theme
+	if _, noBg := t.Background.(lipgloss.NoColor); noBg {
+		return lipgloss.NewStyle().Foreground(t.Secondary)
+	}
+	return lipgloss.NewStyle().Foreground(t.Text).Background(components.MixColors(t.Selection, t.Background, 0.5))
 }
 
 func (m Model) detailPane() string {
@@ -138,35 +156,36 @@ func (m Model) detailPane() string {
 	if !ok {
 		body := lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(
 			m.deps.Styles.Muted.Render("Select an agent to manage its tokens."))
-		return components.TitledRule("Detail", "", body, border)
+		return components.TitledRule("Details", "", body, border)
 	}
 
 	prefix := lipgloss.JoinVertical(lipgloss.Left,
 		m.agentSummary(a, innerW), m.rule(innerW), "",
-		m.newAffordance(zoneNewToken, "New token", "a", innerW), "")
+		m.newAffordance(zoneNewToken, "New token", "a", innerW, m.hover == zoneNewToken), "")
 	tokAvail := bodyH - lipgloss.Height(prefix)
 	rows := append([]string{prefix}, m.tokensBlock(innerW, tokAvail)...)
 	body := lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
-	return zone.Mark("agents.detail", components.TitledRule("Detail", "", body, border))
+	return zone.Mark("agents.detail", components.TitledRule("Details", "", body, border))
 }
 
-// The project-inheritance note exists because agents have no per-project scoping.
 func (m Model) agentSummary(a domain.Agent, w int) string {
 	t := m.deps.Styles.Theme
+	g := m.deps.Glyphs
 	key := lipgloss.NewStyle().Foreground(t.Muted)
 	val := lipgloss.NewStyle().Foreground(t.Text)
-	line := func(k, v string) string {
-		return key.Render(fmt.Sprintf("%-10s", k)) + val.Render(fit(v, w-10))
+	const labelW = 11 // glyph + two spaces + fixed-width field name, matching other tabs' Details
+	row := func(glyph, k, v string) string {
+		return key.Render(fit(glyph+"  "+k, labelW)) + val.Render(fit(v, max(1, w-labelW)))
 	}
 	name := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(fit(a.Name, w))
-	rows := []string{
+	return lipgloss.JoinVertical(lipgloss.Left,
+		"",
 		name,
-		line("Handle", "@"+a.Username),
-		line("Model", orDash(a.DeclaredModel)),
-		line("Created", fmtDate(a.CreatedAt)),
-		line("Projects", "inherits yours"),
-	}
-	return lipgloss.JoinVertical(lipgloss.Left, rows...)
+		"",
+		row(g.Or(g.At, "@"), "Handle", "@"+a.Username),
+		row(g.Or(g.Flash, "*"), "Model", orDash(a.DeclaredModel)),
+		row(g.Or(g.Calendar, "·"), "Created", fmtDate(a.CreatedAt)),
+	)
 }
 
 // Windowed to the selected row so a long list never overflows the pane. avail is the rows left for this block.
@@ -186,12 +205,12 @@ func (m Model) tokensBlock(w, avail int) []string {
 	top := listTop(m.tokenCursor, visible, len(m.tokens))
 	now := time.Now()
 	for j := top; j < len(m.tokens) && j < top+visible; j++ {
-		rows = append(rows, zone.Mark(tokenRowZone(j), m.tokenRow(m.tokens[j], j, now, w)))
+		rows = append(rows, zone.Mark(tokenRowZone(j), m.tokenRow(m.tokens[j], j, now, w, m.hover == tokenRowZone(j))))
 	}
 	return rows
 }
 
-func (m Model) tokenRow(tok domain.Token, i int, now time.Time, w int) string {
+func (m Model) tokenRow(tok domain.Token, i int, now time.Time, w int, hovered bool) string {
 	t := m.deps.Styles.Theme
 	nameStyle := lipgloss.NewStyle().Foreground(t.Text)
 	if i == m.tokenCursor && m.focus == paneTokens {
@@ -206,6 +225,10 @@ func (m Model) tokenRow(tok domain.Token, i int, now time.Time, w int) string {
 		lipgloss.NewStyle().Foreground(t.Muted).Render(scope) + "  " + status
 	sub := lipgloss.NewStyle().Foreground(t.Muted).Render(fit(
 		fmt.Sprintf("  used %s · expires %s", fmtRelative(tok.LastUsedAt, now), fmtExpiry(tok.ExpiresAt)), w))
+	if hovered && !(i == m.tokenCursor && m.focus == paneTokens) {
+		band := m.hoverBand()
+		head, sub = band.Width(w).Render(head), band.Width(w).Render(sub)
+	}
 	return lipgloss.JoinVertical(lipgloss.Left, head, sub)
 }
 
@@ -221,9 +244,13 @@ func (m Model) tokenStatus(tok domain.Token, now time.Time) string {
 	}
 }
 
-func (m Model) newAffordance(zoneID, label, hotkey string, w int) string {
+func (m Model) newAffordance(zoneID, label, hotkey string, w int, hovered bool) string {
 	t := m.deps.Styles.Theme
-	text := lipgloss.NewStyle().Foreground(t.Primary).Render("+ "+label) +
+	labelColor := t.Primary
+	if hovered {
+		labelColor = t.Secondary
+	}
+	text := lipgloss.NewStyle().Foreground(labelColor).Render("+ "+label) +
 		lipgloss.NewStyle().Foreground(t.Muted).Render("  ("+hotkey+")")
 	return zone.Mark(zoneID, lipgloss.NewStyle().Width(w).Render(text))
 }

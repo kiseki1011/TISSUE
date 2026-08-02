@@ -55,6 +55,7 @@ type Model struct {
 	tokensErr     bool
 
 	focus pane
+	hover string // zone id of the row/button under the cursor, "" when none
 
 	// modals (only one open at a time)
 	creating       bool
@@ -207,11 +208,39 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onKey(msg)
 	case tea.MouseClickMsg:
 		return m.onClick(msg)
+	case tea.MouseMotionMsg:
+		return m.onHover(msg)
+	}
+	return m, nil
+}
+
+// onHover records the row or button under the cursor so it can be highlighted.
+func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
+	m.hover = ""
+	switch {
+	case zone.Get(zoneNewAgent).InBounds(msg):
+		m.hover = zoneNewAgent
+	case zone.Get(zoneNewToken).InBounds(msg):
+		m.hover = zoneNewToken
+	default:
+		for i := range m.agents {
+			if zone.Get(agentRowZone(i)).InBounds(msg) {
+				m.hover = agentRowZone(i)
+				return m, nil
+			}
+		}
+		for i := range m.tokens {
+			if zone.Get(tokenRowZone(i)).InBounds(msg) {
+				m.hover = tokenRowZone(i)
+				return m, nil
+			}
+		}
 	}
 	return m, nil
 }
 
 func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
+	m.hover = "" // the keyboard is driving now, so drop any stale mouse-hover highlight
 	switch msg.String() {
 	case "tab":
 		return m.togglePane(), nil
