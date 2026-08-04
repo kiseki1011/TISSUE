@@ -296,6 +296,138 @@ func (e AdminMemberSummaryStatus) Valid() bool {
 	}
 }
 
+// Defines values for AgentResponseAgentType.
+const (
+	AgentResponseAgentTypeDESIGN      AgentResponseAgentType = "DESIGN"
+	AgentResponseAgentTypeDEVELOPMENT AgentResponseAgentType = "DEVELOPMENT"
+	AgentResponseAgentTypeGENERAL     AgentResponseAgentType = "GENERAL"
+	AgentResponseAgentTypeMANAGEMENT  AgentResponseAgentType = "MANAGEMENT"
+	AgentResponseAgentTypePLANNING    AgentResponseAgentType = "PLANNING"
+	AgentResponseAgentTypeQA          AgentResponseAgentType = "QA"
+)
+
+// Valid indicates whether the value is a known member of the AgentResponseAgentType enum.
+func (e AgentResponseAgentType) Valid() bool {
+	switch e {
+	case AgentResponseAgentTypeDESIGN:
+		return true
+	case AgentResponseAgentTypeDEVELOPMENT:
+		return true
+	case AgentResponseAgentTypeGENERAL:
+		return true
+	case AgentResponseAgentTypeMANAGEMENT:
+		return true
+	case AgentResponseAgentTypePLANNING:
+		return true
+	case AgentResponseAgentTypeQA:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AiModelSummaryColor.
+const (
+	AiModelSummaryColorANSIBLACK         AiModelSummaryColor = "ANSI_BLACK"
+	AiModelSummaryColorANSIBLUE          AiModelSummaryColor = "ANSI_BLUE"
+	AiModelSummaryColorANSIBRIGHTBLACK   AiModelSummaryColor = "ANSI_BRIGHT_BLACK"
+	AiModelSummaryColorANSIBRIGHTBLUE    AiModelSummaryColor = "ANSI_BRIGHT_BLUE"
+	AiModelSummaryColorANSIBRIGHTCYAN    AiModelSummaryColor = "ANSI_BRIGHT_CYAN"
+	AiModelSummaryColorANSIBRIGHTGREEN   AiModelSummaryColor = "ANSI_BRIGHT_GREEN"
+	AiModelSummaryColorANSIBRIGHTMAGENTA AiModelSummaryColor = "ANSI_BRIGHT_MAGENTA"
+	AiModelSummaryColorANSIBRIGHTRED     AiModelSummaryColor = "ANSI_BRIGHT_RED"
+	AiModelSummaryColorANSIBRIGHTWHITE   AiModelSummaryColor = "ANSI_BRIGHT_WHITE"
+	AiModelSummaryColorANSIBRIGHTYELLOW  AiModelSummaryColor = "ANSI_BRIGHT_YELLOW"
+	AiModelSummaryColorANSICYAN          AiModelSummaryColor = "ANSI_CYAN"
+	AiModelSummaryColorANSIGREEN         AiModelSummaryColor = "ANSI_GREEN"
+	AiModelSummaryColorANSIMAGENTA       AiModelSummaryColor = "ANSI_MAGENTA"
+	AiModelSummaryColorANSIRED           AiModelSummaryColor = "ANSI_RED"
+	AiModelSummaryColorANSIWHITE         AiModelSummaryColor = "ANSI_WHITE"
+	AiModelSummaryColorANSIYELLOW        AiModelSummaryColor = "ANSI_YELLOW"
+	AiModelSummaryColorBROWN             AiModelSummaryColor = "BROWN"
+	AiModelSummaryColorDARKORANGE        AiModelSummaryColor = "DARKORANGE"
+	AiModelSummaryColorINDIGO            AiModelSummaryColor = "INDIGO"
+	AiModelSummaryColorLIGHTGREEN        AiModelSummaryColor = "LIGHTGREEN"
+	AiModelSummaryColorLIGHTYELLOW       AiModelSummaryColor = "LIGHTYELLOW"
+	AiModelSummaryColorLIMEGREEN         AiModelSummaryColor = "LIMEGREEN"
+	AiModelSummaryColorMAGENTA           AiModelSummaryColor = "MAGENTA"
+	AiModelSummaryColorMAROON            AiModelSummaryColor = "MAROON"
+	AiModelSummaryColorMEDIUMBLUE        AiModelSummaryColor = "MEDIUMBLUE"
+	AiModelSummaryColorMIDNIGHTBLUE      AiModelSummaryColor = "MIDNIGHTBLUE"
+	AiModelSummaryColorORANGERED         AiModelSummaryColor = "ORANGERED"
+	AiModelSummaryColorPINK              AiModelSummaryColor = "PINK"
+	AiModelSummaryColorRED               AiModelSummaryColor = "RED"
+	AiModelSummaryColorTAN               AiModelSummaryColor = "TAN"
+)
+
+// Valid indicates whether the value is a known member of the AiModelSummaryColor enum.
+func (e AiModelSummaryColor) Valid() bool {
+	switch e {
+	case AiModelSummaryColorANSIBLACK:
+		return true
+	case AiModelSummaryColorANSIBLUE:
+		return true
+	case AiModelSummaryColorANSIBRIGHTBLACK:
+		return true
+	case AiModelSummaryColorANSIBRIGHTBLUE:
+		return true
+	case AiModelSummaryColorANSIBRIGHTCYAN:
+		return true
+	case AiModelSummaryColorANSIBRIGHTGREEN:
+		return true
+	case AiModelSummaryColorANSIBRIGHTMAGENTA:
+		return true
+	case AiModelSummaryColorANSIBRIGHTRED:
+		return true
+	case AiModelSummaryColorANSIBRIGHTWHITE:
+		return true
+	case AiModelSummaryColorANSIBRIGHTYELLOW:
+		return true
+	case AiModelSummaryColorANSICYAN:
+		return true
+	case AiModelSummaryColorANSIGREEN:
+		return true
+	case AiModelSummaryColorANSIMAGENTA:
+		return true
+	case AiModelSummaryColorANSIRED:
+		return true
+	case AiModelSummaryColorANSIWHITE:
+		return true
+	case AiModelSummaryColorANSIYELLOW:
+		return true
+	case AiModelSummaryColorBROWN:
+		return true
+	case AiModelSummaryColorDARKORANGE:
+		return true
+	case AiModelSummaryColorINDIGO:
+		return true
+	case AiModelSummaryColorLIGHTGREEN:
+		return true
+	case AiModelSummaryColorLIGHTYELLOW:
+		return true
+	case AiModelSummaryColorLIMEGREEN:
+		return true
+	case AiModelSummaryColorMAGENTA:
+		return true
+	case AiModelSummaryColorMAROON:
+		return true
+	case AiModelSummaryColorMEDIUMBLUE:
+		return true
+	case AiModelSummaryColorMIDNIGHTBLUE:
+		return true
+	case AiModelSummaryColorORANGERED:
+		return true
+	case AiModelSummaryColorPINK:
+		return true
+	case AiModelSummaryColorRED:
+		return true
+	case AiModelSummaryColorTAN:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AttachWikiTagRequestColor.
 const (
 	AttachWikiTagRequestColorANSIBLACK         AttachWikiTagRequestColor = "ANSI_BLACK"
@@ -455,6 +587,138 @@ func (e ChangeSystemRoleRequestRole) Valid() bool {
 	case ChangeSystemRoleRequestRoleSUPERADMIN:
 		return true
 	case ChangeSystemRoleRequestRoleUSER:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAgentRequestAgentType.
+const (
+	CreateAgentRequestAgentTypeDESIGN      CreateAgentRequestAgentType = "DESIGN"
+	CreateAgentRequestAgentTypeDEVELOPMENT CreateAgentRequestAgentType = "DEVELOPMENT"
+	CreateAgentRequestAgentTypeGENERAL     CreateAgentRequestAgentType = "GENERAL"
+	CreateAgentRequestAgentTypeMANAGEMENT  CreateAgentRequestAgentType = "MANAGEMENT"
+	CreateAgentRequestAgentTypePLANNING    CreateAgentRequestAgentType = "PLANNING"
+	CreateAgentRequestAgentTypeQA          CreateAgentRequestAgentType = "QA"
+)
+
+// Valid indicates whether the value is a known member of the CreateAgentRequestAgentType enum.
+func (e CreateAgentRequestAgentType) Valid() bool {
+	switch e {
+	case CreateAgentRequestAgentTypeDESIGN:
+		return true
+	case CreateAgentRequestAgentTypeDEVELOPMENT:
+		return true
+	case CreateAgentRequestAgentTypeGENERAL:
+		return true
+	case CreateAgentRequestAgentTypeMANAGEMENT:
+		return true
+	case CreateAgentRequestAgentTypePLANNING:
+		return true
+	case CreateAgentRequestAgentTypeQA:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAiModelRequestColor.
+const (
+	CreateAiModelRequestColorANSIBLACK         CreateAiModelRequestColor = "ANSI_BLACK"
+	CreateAiModelRequestColorANSIBLUE          CreateAiModelRequestColor = "ANSI_BLUE"
+	CreateAiModelRequestColorANSIBRIGHTBLACK   CreateAiModelRequestColor = "ANSI_BRIGHT_BLACK"
+	CreateAiModelRequestColorANSIBRIGHTBLUE    CreateAiModelRequestColor = "ANSI_BRIGHT_BLUE"
+	CreateAiModelRequestColorANSIBRIGHTCYAN    CreateAiModelRequestColor = "ANSI_BRIGHT_CYAN"
+	CreateAiModelRequestColorANSIBRIGHTGREEN   CreateAiModelRequestColor = "ANSI_BRIGHT_GREEN"
+	CreateAiModelRequestColorANSIBRIGHTMAGENTA CreateAiModelRequestColor = "ANSI_BRIGHT_MAGENTA"
+	CreateAiModelRequestColorANSIBRIGHTRED     CreateAiModelRequestColor = "ANSI_BRIGHT_RED"
+	CreateAiModelRequestColorANSIBRIGHTWHITE   CreateAiModelRequestColor = "ANSI_BRIGHT_WHITE"
+	CreateAiModelRequestColorANSIBRIGHTYELLOW  CreateAiModelRequestColor = "ANSI_BRIGHT_YELLOW"
+	CreateAiModelRequestColorANSICYAN          CreateAiModelRequestColor = "ANSI_CYAN"
+	CreateAiModelRequestColorANSIGREEN         CreateAiModelRequestColor = "ANSI_GREEN"
+	CreateAiModelRequestColorANSIMAGENTA       CreateAiModelRequestColor = "ANSI_MAGENTA"
+	CreateAiModelRequestColorANSIRED           CreateAiModelRequestColor = "ANSI_RED"
+	CreateAiModelRequestColorANSIWHITE         CreateAiModelRequestColor = "ANSI_WHITE"
+	CreateAiModelRequestColorANSIYELLOW        CreateAiModelRequestColor = "ANSI_YELLOW"
+	CreateAiModelRequestColorBROWN             CreateAiModelRequestColor = "BROWN"
+	CreateAiModelRequestColorDARKORANGE        CreateAiModelRequestColor = "DARKORANGE"
+	CreateAiModelRequestColorINDIGO            CreateAiModelRequestColor = "INDIGO"
+	CreateAiModelRequestColorLIGHTGREEN        CreateAiModelRequestColor = "LIGHTGREEN"
+	CreateAiModelRequestColorLIGHTYELLOW       CreateAiModelRequestColor = "LIGHTYELLOW"
+	CreateAiModelRequestColorLIMEGREEN         CreateAiModelRequestColor = "LIMEGREEN"
+	CreateAiModelRequestColorMAGENTA           CreateAiModelRequestColor = "MAGENTA"
+	CreateAiModelRequestColorMAROON            CreateAiModelRequestColor = "MAROON"
+	CreateAiModelRequestColorMEDIUMBLUE        CreateAiModelRequestColor = "MEDIUMBLUE"
+	CreateAiModelRequestColorMIDNIGHTBLUE      CreateAiModelRequestColor = "MIDNIGHTBLUE"
+	CreateAiModelRequestColorORANGERED         CreateAiModelRequestColor = "ORANGERED"
+	CreateAiModelRequestColorPINK              CreateAiModelRequestColor = "PINK"
+	CreateAiModelRequestColorRED               CreateAiModelRequestColor = "RED"
+	CreateAiModelRequestColorTAN               CreateAiModelRequestColor = "TAN"
+)
+
+// Valid indicates whether the value is a known member of the CreateAiModelRequestColor enum.
+func (e CreateAiModelRequestColor) Valid() bool {
+	switch e {
+	case CreateAiModelRequestColorANSIBLACK:
+		return true
+	case CreateAiModelRequestColorANSIBLUE:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTBLACK:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTBLUE:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTCYAN:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTGREEN:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTMAGENTA:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTRED:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTWHITE:
+		return true
+	case CreateAiModelRequestColorANSIBRIGHTYELLOW:
+		return true
+	case CreateAiModelRequestColorANSICYAN:
+		return true
+	case CreateAiModelRequestColorANSIGREEN:
+		return true
+	case CreateAiModelRequestColorANSIMAGENTA:
+		return true
+	case CreateAiModelRequestColorANSIRED:
+		return true
+	case CreateAiModelRequestColorANSIWHITE:
+		return true
+	case CreateAiModelRequestColorANSIYELLOW:
+		return true
+	case CreateAiModelRequestColorBROWN:
+		return true
+	case CreateAiModelRequestColorDARKORANGE:
+		return true
+	case CreateAiModelRequestColorINDIGO:
+		return true
+	case CreateAiModelRequestColorLIGHTGREEN:
+		return true
+	case CreateAiModelRequestColorLIGHTYELLOW:
+		return true
+	case CreateAiModelRequestColorLIMEGREEN:
+		return true
+	case CreateAiModelRequestColorMAGENTA:
+		return true
+	case CreateAiModelRequestColorMAROON:
+		return true
+	case CreateAiModelRequestColorMEDIUMBLUE:
+		return true
+	case CreateAiModelRequestColorMIDNIGHTBLUE:
+		return true
+	case CreateAiModelRequestColorORANGERED:
+		return true
+	case CreateAiModelRequestColorPINK:
+		return true
+	case CreateAiModelRequestColorRED:
+		return true
+	case CreateAiModelRequestColorTAN:
 		return true
 	default:
 		return false
@@ -4238,13 +4502,16 @@ type AdminSystemInfo struct {
 
 // AgentResponse defines model for AgentResponse.
 type AgentResponse struct {
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	// AgentType Functional category of the agent
+	AgentType *AgentResponseAgentType `json:"agentType,omitempty"`
+	CreatedAt *time.Time              `json:"createdAt,omitempty"`
 
-	// DeclaredModel Model of the agent
-	DeclaredModel *string `json:"declaredModel,omitempty"`
+	// Description Free-form description of the agent
+	Description *string `json:"description,omitempty"`
 
 	// Id Agent member id
-	Id *int64 `json:"id,omitempty"`
+	Id    *int64          `json:"id,omitempty"`
+	Model *AiModelSummary `json:"model,omitempty"`
 
 	// Name Owner facing agent name
 	Name *string `json:"name,omitempty"`
@@ -4252,6 +4519,25 @@ type AgentResponse struct {
 	// Username Globally unique handle generated by the server
 	Username *string `json:"username,omitempty"`
 }
+
+// AgentResponseAgentType Functional category of the agent
+type AgentResponseAgentType string
+
+// AiModelResponse defines model for AiModelResponse.
+type AiModelResponse struct {
+	ModelId *int64 `json:"modelId,omitempty"`
+}
+
+// AiModelSummary defines model for AiModelSummary.
+type AiModelSummary struct {
+	Color       *AiModelSummaryColor `json:"color,omitempty"`
+	Description *string              `json:"description,omitempty"`
+	Id          *int64               `json:"id,omitempty"`
+	Name        *string              `json:"name,omitempty"`
+}
+
+// AiModelSummaryColor defines model for AiModelSummary.Color.
+type AiModelSummaryColor string
 
 // AssignMemberTeamRequest defines model for AssignMemberTeamRequest.
 type AssignMemberTeamRequest struct {
@@ -4371,12 +4657,31 @@ type ConfigureTransitionGuardsRequest struct {
 
 // CreateAgentRequest defines model for CreateAgentRequest.
 type CreateAgentRequest struct {
-	// DeclaredModel Model the agent reports running
-	DeclaredModel *string `json:"declaredModel,omitempty"`
+	// AgentType Functional category of the agent (defaults to GENERAL)
+	AgentType *CreateAgentRequestAgentType `json:"agentType,omitempty"`
+
+	// Description Free-form description of the agent
+	Description *string `json:"description,omitempty"`
+
+	// ModelId Id of the AI model catalog entry the agent runs
+	ModelId *int64 `json:"modelId,omitempty"`
 
 	// Name Owner facing agent name (must be unique among your agents)
 	Name string `json:"name"`
 }
+
+// CreateAgentRequestAgentType Functional category of the agent (defaults to GENERAL)
+type CreateAgentRequestAgentType string
+
+// CreateAiModelRequest defines model for CreateAiModelRequest.
+type CreateAiModelRequest struct {
+	Color       CreateAiModelRequestColor `json:"color"`
+	Description *string                   `json:"description,omitempty"`
+	Name        string                    `json:"name"`
+}
+
+// CreateAiModelRequestColor defines model for CreateAiModelRequest.Color.
+type CreateAiModelRequestColor string
 
 // CreateDocumentRequest defines model for CreateDocumentRequest.
 type CreateDocumentRequest struct {
@@ -4984,6 +5289,9 @@ type MemberCandidateSummary struct {
 
 // MemberProfile Member profile information
 type MemberProfile struct {
+	// Description Free-form description / bio
+	Description *string `json:"description,omitempty"`
+
 	// Email Email address (`null` if `email-required` is disabled)
 	Email         *string          `json:"email,omitempty"`
 	JoinedAt      *time.Time       `json:"joinedAt,omitempty"`
@@ -5868,6 +6176,20 @@ type TransitionDetail struct {
 	TargetStateId *int64         `json:"targetStateId,omitempty"`
 }
 
+// UpdateAgentRequest defines model for UpdateAgentRequest.
+type UpdateAgentRequest struct {
+	AgentType   nullable.Nullable[string] `json:"agentType,omitempty"`
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+	ModelId     nullable.Nullable[int64]  `json:"modelId,omitempty"`
+}
+
+// UpdateAiModelRequest defines model for UpdateAiModelRequest.
+type UpdateAiModelRequest struct {
+	Color       nullable.Nullable[string] `json:"color,omitempty"`
+	Description nullable.Nullable[string] `json:"description,omitempty"`
+	Name        nullable.Nullable[string] `json:"name,omitempty"`
+}
+
 // UpdateCommentRequest defines model for UpdateCommentRequest.
 type UpdateCommentRequest struct {
 	Content            string    `json:"content"`
@@ -5919,6 +6241,12 @@ type UpdateIssueTypeRequest struct {
 	Description nullable.Nullable[string] `json:"description,omitempty"`
 	Icon        nullable.Nullable[string] `json:"icon,omitempty"`
 	Name        nullable.Nullable[string] `json:"name,omitempty"`
+}
+
+// UpdateMemberDescriptionRequest defines model for UpdateMemberDescriptionRequest.
+type UpdateMemberDescriptionRequest struct {
+	// Description Free-form description / bio. Send `null` to clear it.
+	Description *string `json:"description,omitempty"`
 }
 
 // UpdateMemberEmailRequest defines model for UpdateMemberEmailRequest.
@@ -6493,6 +6821,9 @@ type AdminChangeSystemRoleJSONRequestBody = ChangeSystemRoleRequest
 // CreateAgentJSONRequestBody defines body for CreateAgent for application/json ContentType.
 type CreateAgentJSONRequestBody = CreateAgentRequest
 
+// UpdateAgentJSONRequestBody defines body for UpdateAgent for application/json ContentType.
+type UpdateAgentJSONRequestBody = UpdateAgentRequest
+
 // IssueAgentTokenJSONRequestBody defines body for IssueAgentToken for application/json ContentType.
 type IssueAgentTokenJSONRequestBody = CreatePatRequest
 
@@ -6565,6 +6896,9 @@ type SubmitIssueReviewJSONRequestBody = SubmitReviewRequest
 // WithdrawMemberJSONRequestBody defines body for WithdrawMember for application/json ContentType.
 type WithdrawMemberJSONRequestBody = WithdrawMemberRequest
 
+// UpdateMemberDescriptionJSONRequestBody defines body for UpdateMemberDescription for application/json ContentType.
+type UpdateMemberDescriptionJSONRequestBody = UpdateMemberDescriptionRequest
+
 // UpdateMemberEmailJSONRequestBody defines body for UpdateMemberEmail for application/json ContentType.
 type UpdateMemberEmailJSONRequestBody = UpdateMemberEmailRequest
 
@@ -6603,6 +6937,12 @@ type AssignMemberTeamJSONRequestBody = AssignMemberTeamRequest
 
 // RestoreMemberJSONRequestBody defines body for RestoreMember for application/json ContentType.
 type RestoreMemberJSONRequestBody = RestoreMemberRequest
+
+// CreateAiModelJSONRequestBody defines body for CreateAiModel for application/json ContentType.
+type CreateAiModelJSONRequestBody = CreateAiModelRequest
+
+// UpdateAiModelJSONRequestBody defines body for UpdateAiModel for application/json ContentType.
+type UpdateAiModelJSONRequestBody = UpdateAiModelRequest
 
 // UpdateNotificationPreferencesJSONRequestBody defines body for UpdateNotificationPreferences for application/json ContentType.
 type UpdateNotificationPreferencesJSONRequestBody = UpdateNotificationPreferenceRequest
@@ -6839,6 +7179,11 @@ type ClientInterface interface {
 
 	// DeactivateAgent request
 	DeactivateAgent(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAgentWithBody request with any body
+	UpdateAgentWithBody(ctx context.Context, agentId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAgent(ctx context.Context, agentId int64, body UpdateAgentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAgentTokens request
 	ListAgentTokens(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7080,6 +7425,11 @@ type ClientInterface interface {
 
 	WithdrawMember(ctx context.Context, body WithdrawMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateMemberDescriptionWithBody request with any body
+	UpdateMemberDescriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateMemberDescription(ctx context.Context, body UpdateMemberDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// UpdateMemberEmailWithBody request with any body
 	UpdateMemberEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -7159,6 +7509,22 @@ type ClientInterface interface {
 	RestoreMemberWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	RestoreMember(ctx context.Context, body RestoreMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAiModels request
+	ListAiModels(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAiModelWithBody request with any body
+	CreateAiModelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAiModel(ctx context.Context, body CreateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAiModel request
+	DeleteAiModel(ctx context.Context, modelId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAiModelWithBody request with any body
+	UpdateAiModelWithBody(ctx context.Context, modelId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAiModel(ctx context.Context, modelId int64, body UpdateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListNotifications request
 	ListNotifications(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7758,6 +8124,30 @@ func (c *Client) CreateAgent(ctx context.Context, body CreateAgentJSONRequestBod
 
 func (c *Client) DeactivateAgent(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeactivateAgentRequest(c.Server, agentId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAgentWithBody(ctx context.Context, agentId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAgentRequestWithBody(c.Server, agentId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAgent(ctx context.Context, agentId int64, body UpdateAgentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAgentRequest(c.Server, agentId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8824,6 +9214,30 @@ func (c *Client) WithdrawMember(ctx context.Context, body WithdrawMemberJSONRequ
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpdateMemberDescriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMemberDescriptionRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMemberDescription(ctx context.Context, body UpdateMemberDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMemberDescriptionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) UpdateMemberEmailWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateMemberEmailRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -9186,6 +9600,78 @@ func (c *Client) RestoreMemberWithBody(ctx context.Context, contentType string, 
 
 func (c *Client) RestoreMember(ctx context.Context, body RestoreMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRestoreMemberRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAiModels(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAiModelsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAiModelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAiModelRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAiModel(ctx context.Context, body CreateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAiModelRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAiModel(ctx context.Context, modelId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAiModelRequest(c.Server, modelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAiModelWithBody(ctx context.Context, modelId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAiModelRequestWithBody(c.Server, modelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAiModel(ctx context.Context, modelId int64, body UpdateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAiModelRequest(c.Server, modelId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11608,6 +12094,53 @@ func NewDeactivateAgentRequest(server string, agentId int64) (*http.Request, err
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateAgentRequest calls the generic UpdateAgent builder with application/json body
+func NewUpdateAgentRequest(server string, agentId int64, body UpdateAgentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAgentRequestWithBody(server, agentId, "application/json", bodyReader)
+}
+
+// NewUpdateAgentRequestWithBody generates requests for UpdateAgent with any type of body
+func NewUpdateAgentRequestWithBody(server string, agentId int64, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "agentId", agentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/agents/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -14426,6 +14959,46 @@ func NewWithdrawMemberRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
+// NewUpdateMemberDescriptionRequest calls the generic UpdateMemberDescription builder with application/json body
+func NewUpdateMemberDescriptionRequest(server string, body UpdateMemberDescriptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateMemberDescriptionRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateMemberDescriptionRequestWithBody generates requests for UpdateMemberDescription with any type of body
+func NewUpdateMemberDescriptionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/members/description")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewUpdateMemberEmailRequest calls the generic UpdateMemberEmail builder with application/json body
 func NewUpdateMemberEmailRequest(server string, body UpdateMemberEmailJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -15139,6 +15712,154 @@ func NewRestoreMemberRequestWithBody(server string, contentType string, body io.
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListAiModelsRequest generates requests for ListAiModels
+func NewListAiModelsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/models")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAiModelRequest calls the generic CreateAiModel builder with application/json body
+func NewCreateAiModelRequest(server string, body CreateAiModelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAiModelRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAiModelRequestWithBody generates requests for CreateAiModel with any type of body
+func NewCreateAiModelRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/models")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAiModelRequest generates requests for DeleteAiModel
+func NewDeleteAiModelRequest(server string, modelId int64) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "modelId", modelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/models/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAiModelRequest calls the generic UpdateAiModel builder with application/json body
+func NewUpdateAiModelRequest(server string, modelId int64, body UpdateAiModelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAiModelRequestWithBody(server, modelId, "application/json", bodyReader)
+}
+
+// NewUpdateAiModelRequestWithBody generates requests for UpdateAiModel with any type of body
+func NewUpdateAiModelRequestWithBody(server string, modelId int64, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "modelId", modelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/models/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -19661,6 +20382,11 @@ type ClientWithResponsesInterface interface {
 	// DeactivateAgentWithResponse request
 	DeactivateAgentWithResponse(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*DeactivateAgentResp, error)
 
+	// UpdateAgentWithBodyWithResponse request with any body
+	UpdateAgentWithBodyWithResponse(ctx context.Context, agentId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAgentResp, error)
+
+	UpdateAgentWithResponse(ctx context.Context, agentId int64, body UpdateAgentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAgentResp, error)
+
 	// ListAgentTokensWithResponse request
 	ListAgentTokensWithResponse(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*ListAgentTokensResp, error)
 
@@ -19901,6 +20627,11 @@ type ClientWithResponsesInterface interface {
 
 	WithdrawMemberWithResponse(ctx context.Context, body WithdrawMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*WithdrawMemberResp, error)
 
+	// UpdateMemberDescriptionWithBodyWithResponse request with any body
+	UpdateMemberDescriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemberDescriptionResp, error)
+
+	UpdateMemberDescriptionWithResponse(ctx context.Context, body UpdateMemberDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMemberDescriptionResp, error)
+
 	// UpdateMemberEmailWithBodyWithResponse request with any body
 	UpdateMemberEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemberEmailResp, error)
 
@@ -19980,6 +20711,22 @@ type ClientWithResponsesInterface interface {
 	RestoreMemberWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RestoreMemberResp, error)
 
 	RestoreMemberWithResponse(ctx context.Context, body RestoreMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*RestoreMemberResp, error)
+
+	// ListAiModelsWithResponse request
+	ListAiModelsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAiModelsResp, error)
+
+	// CreateAiModelWithBodyWithResponse request with any body
+	CreateAiModelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiModelResp, error)
+
+	CreateAiModelWithResponse(ctx context.Context, body CreateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAiModelResp, error)
+
+	// DeleteAiModelWithResponse request
+	DeleteAiModelWithResponse(ctx context.Context, modelId int64, reqEditors ...RequestEditorFn) (*DeleteAiModelResp, error)
+
+	// UpdateAiModelWithBodyWithResponse request with any body
+	UpdateAiModelWithBodyWithResponse(ctx context.Context, modelId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAiModelResp, error)
+
+	UpdateAiModelWithResponse(ctx context.Context, modelId int64, body UpdateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAiModelResp, error)
 
 	// ListNotificationsWithResponse request
 	ListNotificationsWithResponse(ctx context.Context, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResp, error)
@@ -20874,6 +21621,35 @@ func (r DeactivateAgentResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r DeactivateAgentResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateAgentResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAgentResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAgentResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateAgentResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -22766,6 +23542,35 @@ func (r WithdrawMemberResp) ContentType() string {
 	return ""
 }
 
+type UpdateMemberDescriptionResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateMemberDescriptionResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateMemberDescriptionResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateMemberDescriptionResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type UpdateMemberEmailResp struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23288,6 +24093,124 @@ func (r RestoreMemberResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r RestoreMemberResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListAiModelsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]AiModelSummary
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAiModelsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAiModelsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListAiModelsResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateAiModelResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *AiModelResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAiModelResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAiModelResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateAiModelResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteAiModelResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAiModelResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAiModelResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteAiModelResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateAiModelResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAiModelResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAiModelResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateAiModelResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -26392,6 +27315,23 @@ func (c *ClientWithResponses) DeactivateAgentWithResponse(ctx context.Context, a
 	return ParseDeactivateAgentResp(rsp)
 }
 
+// UpdateAgentWithBodyWithResponse request with arbitrary body returning *UpdateAgentResp
+func (c *ClientWithResponses) UpdateAgentWithBodyWithResponse(ctx context.Context, agentId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAgentResp, error) {
+	rsp, err := c.UpdateAgentWithBody(ctx, agentId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAgentResp(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAgentWithResponse(ctx context.Context, agentId int64, body UpdateAgentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAgentResp, error) {
+	rsp, err := c.UpdateAgent(ctx, agentId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAgentResp(rsp)
+}
+
 // ListAgentTokensWithResponse request returning *ListAgentTokensResp
 func (c *ClientWithResponses) ListAgentTokensWithResponse(ctx context.Context, agentId int64, reqEditors ...RequestEditorFn) (*ListAgentTokensResp, error) {
 	rsp, err := c.ListAgentTokens(ctx, agentId, reqEditors...)
@@ -27160,6 +28100,23 @@ func (c *ClientWithResponses) WithdrawMemberWithResponse(ctx context.Context, bo
 	return ParseWithdrawMemberResp(rsp)
 }
 
+// UpdateMemberDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateMemberDescriptionResp
+func (c *ClientWithResponses) UpdateMemberDescriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemberDescriptionResp, error) {
+	rsp, err := c.UpdateMemberDescriptionWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMemberDescriptionResp(rsp)
+}
+
+func (c *ClientWithResponses) UpdateMemberDescriptionWithResponse(ctx context.Context, body UpdateMemberDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMemberDescriptionResp, error) {
+	rsp, err := c.UpdateMemberDescription(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMemberDescriptionResp(rsp)
+}
+
 // UpdateMemberEmailWithBodyWithResponse request with arbitrary body returning *UpdateMemberEmailResp
 func (c *ClientWithResponses) UpdateMemberEmailWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemberEmailResp, error) {
 	rsp, err := c.UpdateMemberEmailWithBody(ctx, contentType, body, reqEditors...)
@@ -27424,6 +28381,58 @@ func (c *ClientWithResponses) RestoreMemberWithResponse(ctx context.Context, bod
 		return nil, err
 	}
 	return ParseRestoreMemberResp(rsp)
+}
+
+// ListAiModelsWithResponse request returning *ListAiModelsResp
+func (c *ClientWithResponses) ListAiModelsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAiModelsResp, error) {
+	rsp, err := c.ListAiModels(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAiModelsResp(rsp)
+}
+
+// CreateAiModelWithBodyWithResponse request with arbitrary body returning *CreateAiModelResp
+func (c *ClientWithResponses) CreateAiModelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiModelResp, error) {
+	rsp, err := c.CreateAiModelWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAiModelResp(rsp)
+}
+
+func (c *ClientWithResponses) CreateAiModelWithResponse(ctx context.Context, body CreateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAiModelResp, error) {
+	rsp, err := c.CreateAiModel(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAiModelResp(rsp)
+}
+
+// DeleteAiModelWithResponse request returning *DeleteAiModelResp
+func (c *ClientWithResponses) DeleteAiModelWithResponse(ctx context.Context, modelId int64, reqEditors ...RequestEditorFn) (*DeleteAiModelResp, error) {
+	rsp, err := c.DeleteAiModel(ctx, modelId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAiModelResp(rsp)
+}
+
+// UpdateAiModelWithBodyWithResponse request with arbitrary body returning *UpdateAiModelResp
+func (c *ClientWithResponses) UpdateAiModelWithBodyWithResponse(ctx context.Context, modelId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAiModelResp, error) {
+	rsp, err := c.UpdateAiModelWithBody(ctx, modelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAiModelResp(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAiModelWithResponse(ctx context.Context, modelId int64, body UpdateAiModelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAiModelResp, error) {
+	rsp, err := c.UpdateAiModel(ctx, modelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAiModelResp(rsp)
 }
 
 // ListNotificationsWithResponse request returning *ListNotificationsResp
@@ -28975,6 +29984,22 @@ func ParseDeactivateAgentResp(rsp *http.Response) (*DeactivateAgentResp, error) 
 	return response, nil
 }
 
+// ParseUpdateAgentResp parses an HTTP response from a UpdateAgentWithResponse call
+func ParseUpdateAgentResp(rsp *http.Response) (*UpdateAgentResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAgentResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseListAgentTokensResp parses an HTTP response from a ListAgentTokensWithResponse call
 func ParseListAgentTokensResp(rsp *http.Response) (*ListAgentTokensResp, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -30299,6 +31324,22 @@ func ParseWithdrawMemberResp(rsp *http.Response) (*WithdrawMemberResp, error) {
 	return response, nil
 }
 
+// ParseUpdateMemberDescriptionResp parses an HTTP response from a UpdateMemberDescriptionWithResponse call
+func ParseUpdateMemberDescriptionResp(rsp *http.Response) (*UpdateMemberDescriptionResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateMemberDescriptionResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseUpdateMemberEmailResp parses an HTTP response from a UpdateMemberEmailWithResponse call
 func ParseUpdateMemberEmailResp(rsp *http.Response) (*UpdateMemberEmailResp, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -30640,6 +31681,90 @@ func ParseRestoreMemberResp(rsp *http.Response) (*RestoreMemberResp, error) {
 	}
 
 	response := &RestoreMemberResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAiModelsResp parses an HTTP response from a ListAiModelsWithResponse call
+func ParseListAiModelsResp(rsp *http.Response) (*ListAiModelsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAiModelsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []AiModelSummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAiModelResp parses an HTTP response from a CreateAiModelWithResponse call
+func ParseCreateAiModelResp(rsp *http.Response) (*CreateAiModelResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAiModelResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest AiModelResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAiModelResp parses an HTTP response from a DeleteAiModelWithResponse call
+func ParseDeleteAiModelResp(rsp *http.Response) (*DeleteAiModelResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAiModelResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAiModelResp parses an HTTP response from a UpdateAiModelWithResponse call
+func ParseUpdateAiModelResp(rsp *http.Response) (*UpdateAiModelResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAiModelResp{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

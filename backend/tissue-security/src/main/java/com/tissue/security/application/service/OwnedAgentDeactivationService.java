@@ -1,6 +1,6 @@
 package com.tissue.security.application.service;
 
-import com.tissue.feature.member.application.service.AgentService;
+import com.tissue.feature.agent.application.service.AgentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -276,7 +276,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		a.schema, cmd = a.schema.Update(msg)
 		return a, cmd
-	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg:
+	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg, agents.ModelsLoadedMsg:
 		// route the background agents prefetch to the Agents screen even while another tab is active
 		var cmd tea.Cmd
 		a.agents, cmd = a.agents.Update(msg)

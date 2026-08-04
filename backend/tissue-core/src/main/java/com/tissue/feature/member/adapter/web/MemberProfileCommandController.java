@@ -1,5 +1,6 @@
 package com.tissue.feature.member.adapter.web;
 
+import com.tissue.feature.member.adapter.web.request.UpdateMemberDescriptionRequest;
 import com.tissue.feature.member.adapter.web.request.UpdateMemberLanguageRequest;
 import com.tissue.feature.member.adapter.web.request.UpdateMemberNameRequest;
 import com.tissue.feature.member.adapter.web.request.UpdateMemberPositionRequest;
@@ -83,6 +84,22 @@ public class MemberProfileCommandController {
     public ResponseEntity<Void> updateMemberPosition(
             @RequestBody @Valid UpdateMemberPositionRequest request, @CurrentMember MemberDetails memberDetails) {
         memberProfileCommandUseCase.updatePosition(request.positionId(), memberDetails.getMemberId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(operationId = "updateMemberDescription", summary = "Update my description", description = """
+                Set the current user's own description / bio. Send `null` to clear it.""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Description updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
+    @PatchMapping("/description")
+    public ResponseEntity<Void> updateMemberDescription(
+            @RequestBody @Valid UpdateMemberDescriptionRequest request, @CurrentMember MemberDetails memberDetails) {
+        memberProfileCommandUseCase.updateDescription(request.description(), memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

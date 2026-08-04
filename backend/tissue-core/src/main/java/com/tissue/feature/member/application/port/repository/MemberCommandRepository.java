@@ -1,5 +1,6 @@
 package com.tissue.feature.member.application.port.repository;
 
+import com.tissue.feature.agent.model.domain.AiModel;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.organization.team.domain.Team;
@@ -18,4 +19,8 @@ public interface MemberCommandRepository extends Repository<Member, Long> {
     @Modifying
     @Query("UPDATE Member m SET m.team = null WHERE m.team = :team")
     void clearTeamAssignments(Team team);
+
+    @Modifying
+    @Query("UPDATE Member m SET m.model = null WHERE m.model = :model")
+    void clearModelAssignments(AiModel model);
 }

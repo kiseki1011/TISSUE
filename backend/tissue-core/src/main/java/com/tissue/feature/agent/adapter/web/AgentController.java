@@ -1,8 +1,9 @@
-package com.tissue.feature.member.adapter.web;
+package com.tissue.feature.agent.adapter.web;
 
-import com.tissue.feature.member.adapter.web.request.CreateAgentRequest;
-import com.tissue.feature.member.application.dto.AgentResponse;
-import com.tissue.feature.member.application.port.usecase.AgentUseCase;
+import com.tissue.feature.agent.adapter.web.request.CreateAgentRequest;
+import com.tissue.feature.agent.adapter.web.request.UpdateAgentRequest;
+import com.tissue.feature.agent.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.port.usecase.AgentUseCase;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,10 +45,27 @@ public class AgentController {
     @PostMapping
     public ResponseEntity<AgentResponse> createAgent(
             @RequestBody @Valid CreateAgentRequest request, @CurrentMember MemberDetails memberDetails) {
-        AgentResponse response =
-                agentUseCase.createAgent(memberDetails.getMemberId(), request.name(), request.declaredModel());
+        AgentResponse response = agentUseCase.createAgent(memberDetails.getMemberId(), request.toCommand());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(operationId = "updateAgent", summary = "Update an agent", description = """
+                    Update one of your agents' type, model, or description. Only provided fields are
+                    updated.""")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Agent updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+    })
+    @PatchMapping("/{agentId}")
+    public ResponseEntity<Void> updateAgent(
+            @PathVariable Long agentId,
+            @RequestBody @Valid UpdateAgentRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+        agentUseCase.updateAgent(memberDetails.getMemberId(), agentId, request.toCommand());
+
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(

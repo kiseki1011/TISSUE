@@ -3,7 +3,6 @@ package agents
 import (
 	"context"
 	"errors"
-	"image/color"
 	"net/http"
 	"regexp"
 	"strings"
@@ -24,48 +23,56 @@ import (
 // create-agent focus stops.
 const (
 	caName = iota
+	caType
 	caModel
+	caDesc
 	caSubmit
 	caCancel
 	caCount
 )
 
-const caFieldW = 38
-
 // agentNamePattern mirrors the backend: letters (many scripts) and spaces only — no digits or
 // punctuation.
 var agentNamePattern = regexp.MustCompile(`^[A-Za-z\x{00C0}-\x{024F}\x{0370}-\x{03FF}\x{0400}-\x{04FF}\x{4E00}-\x{9FFF}\x{3040}-\x{30FF}\x{AC00}-\x{D7A3} ]+$`)
 
-// createAgentForm is the "New Agent" modal: an owner-facing name and an optional declared model.
+// createAgentForm is the "New Agent" modal: name, type, model (from the catalog), and description.
 type createAgentForm struct {
 	deps deps.Deps
 
-	name    textinput.Model
-	model   textinput.Model
-	spinner spinner.Model
-	focus   int
-	hover   int
+	name      textinput.Model
+	typePick  picker
+	models    []domain.AiModel
+	modelPick picker
+	desc      textinput.Model
+	spinner   spinner.Model
+	focus     int
+	hover     int
 
 	nameErr    string
 	status     string
 	submitting bool
 }
 
-func newCreateAgentForm(d deps.Deps) createAgentForm {
+func newCreateAgentForm(d deps.Deps, models []domain.AiModel) createAgentForm {
 	line := func(placeholder string) textinput.Model {
 		in := textinput.New()
 		in.Prompt = ""
 		in.Placeholder = placeholder
-		in.SetWidth(caFieldW)
+		in.SetWidth(agentFieldW)
 		return in
 	}
+	desc := line("What is this agent for? (optional)")
+	desc.CharLimit = agentDescMax
 	f := createAgentForm{
-		deps:    d,
-		name:    line("Build Bot"),
-		model:   line("claude-opus-4-8 (optional)"),
-		spinner: spinner.New(),
-		focus:   caName,
-		hover:   -1,
+		deps:      d,
+		name:      line("Build Bot"),
+		typePick:  newTypePicker(""),
+		models:    models,
+		modelPick: newModelPicker(models, 0),
+		desc:      desc,
+		spinner:   spinner.New(),
+		focus:     caName,
+		hover:     -1,
 	}
 	f.name.Focus()
 	return f
@@ -101,8 +108,12 @@ func (f createAgentForm) hitZone(msg tea.MouseMsg) int {
 	switch {
 	case zone.Get("agents.create.name").InBounds(msg):
 		return caName
+	case zone.Get("agents.create.type").InBounds(msg):
+		return caType
 	case zone.Get("agents.create.model").InBounds(msg):
 		return caModel
+	case zone.Get("agents.create.desc").InBounds(msg):
+		return caDesc
 	case zone.Get("agents.create.submit").InBounds(msg):
 		return caSubmit
 	case zone.Get("agents.create.cancel").InBounds(msg):
@@ -116,8 +127,14 @@ func (f createAgentForm) onClick(msg tea.MouseClickMsg) (createAgentForm, tea.Cm
 		return f, nil
 	}
 	switch f.hitZone(msg) {
-	case caName, caModel:
+	case caName, caDesc:
 		return f.focusOn(f.hitZone(msg))
+	case caType:
+		f.typePick.cycle(1)
+		return f.focusOn(caType)
+	case caModel:
+		f.modelPick.cycle(1)
+		return f.focusOn(caModel)
 	case caSubmit:
 		return f.submit()
 	case caCancel:
@@ -137,17 +154,38 @@ func (f createAgentForm) onKey(msg tea.KeyPressMsg) (createAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelCreate
+	case "left":
+		if f.cycleFocused(-1) {
+			return f, nil
+		}
+	case "right":
+		if f.cycleFocused(1) {
+			return f, nil
+		}
 	case "enter":
 		switch f.focus {
 		case caSubmit:
 			return f.submit()
 		case caCancel:
 			return f, cancelCreate
-		case caName, caModel:
+		default:
 			return f.moveFocus(1)
 		}
 	}
 	return f.typeIntoFocused(msg)
+}
+
+// cycleFocused advances a focused type/model picker and reports whether it handled the key.
+func (f *createAgentForm) cycleFocused(delta int) bool {
+	switch f.focus {
+	case caType:
+		f.typePick.cycle(delta)
+		return true
+	case caModel:
+		f.modelPick.cycle(delta)
+		return true
+	}
+	return false
 }
 
 func (f createAgentForm) moveFocus(delta int) (createAgentForm, tea.Cmd) {
@@ -157,13 +195,13 @@ func (f createAgentForm) moveFocus(delta int) (createAgentForm, tea.Cmd) {
 func (f createAgentForm) focusOn(target int) (createAgentForm, tea.Cmd) {
 	f.focus = target
 	f.name.Blur()
-	f.model.Blur()
+	f.desc.Blur()
 	var cmd tea.Cmd
 	switch target {
 	case caName:
 		cmd = f.name.Focus()
-	case caModel:
-		cmd = f.model.Focus()
+	case caDesc:
+		cmd = f.desc.Focus()
 	}
 	return f, cmd
 }
@@ -175,23 +213,22 @@ func (f createAgentForm) typeIntoFocused(msg tea.KeyPressMsg) (createAgentForm, 
 	case caName:
 		f.nameErr = ""
 		f.name, cmd = f.name.Update(msg)
-	case caModel:
-		f.model, cmd = f.model.Update(msg)
+	case caDesc:
+		f.desc, cmd = f.desc.Update(msg)
 	}
 	return f, cmd
 }
 
 func (f createAgentForm) updateInputs(msg tea.Msg) (createAgentForm, tea.Cmd) {
-	var nc, mc tea.Cmd
+	var nc, dc tea.Cmd
 	f.name, nc = f.name.Update(msg)
-	f.model, mc = f.model.Update(msg)
-	return f, tea.Batch(nc, mc)
+	f.desc, dc = f.desc.Update(msg)
+	return f, tea.Batch(nc, dc)
 }
 
 func (f createAgentForm) submit() (createAgentForm, tea.Cmd) {
 	f.nameErr, f.status = "", ""
 	name := strings.TrimSpace(f.name.Value())
-	model := strings.TrimSpace(f.model.Value())
 
 	switch n := utf8.RuneCountInString(name); {
 	case name == "":
@@ -205,28 +242,33 @@ func (f createAgentForm) submit() (createAgentForm, tea.Cmd) {
 		return f.focusOn(caName)
 	}
 	f.submitting = true
-	return f, tea.Batch(createAgentCmd(f.deps, name, model), f.spinner.Tick)
+	cmd := createAgentCmd(f.deps, name, typeValue(f.typePick), modelValue(f.models, f.modelPick), strings.TrimSpace(f.desc.Value()))
+	return f, tea.Batch(cmd, f.spinner.Tick)
 }
 
 func (f createAgentForm) View() string {
+	t := f.deps.Styles.Theme
 	rows := []string{
 		f.field(caName, "Name", f.name.View(), f.nameErr),
-		f.field(caModel, "Declared model", f.model.View(), ""),
+		f.field(caType, "Type", cyclerContent(t, f.typePick.label(), agentFieldW), ""),
+		f.field(caModel, "Model", cyclerContent(t, f.modelPick.label(), agentFieldW), ""),
+		f.field(caDesc, "Description", f.desc.View(), ""),
 	}
 	switch {
 	case f.submitting:
-		rows = append(rows, lipgloss.NewStyle().Foreground(f.deps.Styles.Theme.Warning).Padding(0, 1).Render(f.spinner.View()+" Creating…"))
+		rows = append(rows, lipgloss.NewStyle().Foreground(t.Warning).Padding(0, 1).Render(f.spinner.View()+" Creating…"))
 	case f.status != "":
-		rows = append(rows, f.deps.Styles.Error.Width(caFieldW).Padding(0, 1).Render(f.status))
+		rows = append(rows, f.deps.Styles.Error.Width(agentFieldW).Padding(0, 1).Render(f.status))
 	}
 	rows = append(rows, "", f.buttons())
 	body := lipgloss.NewStyle().Padding(1, 2).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
-	return components.TitledBoxCentered("New Agent", body, f.deps.Styles.Theme.Primary)
+	return components.TitledBoxCentered("New Agent", body, t.Primary)
 }
 
 func (f createAgentForm) field(which int, label, content, errMsg string) string {
-	fixed := lipgloss.NewStyle().Width(caFieldW).MaxWidth(caFieldW).Height(1).MaxHeight(1).Render(content)
-	box := components.TitledBoxWeighted(label, fixed, f.fieldBorderColor(which, errMsg), f.focus == which)
+	t := f.deps.Styles.Theme
+	fixed := lipgloss.NewStyle().Width(agentFieldW).MaxWidth(agentFieldW).Height(1).MaxHeight(1).Render(content)
+	box := components.TitledBoxWeighted(label, fixed, fieldBorderColor(t, f.focus == which, f.hover == which, errMsg != ""), f.focus == which)
 	box = zone.Mark(f.fieldZone(which), box)
 	err := " "
 	if errMsg != "" {
@@ -239,46 +281,24 @@ func (f createAgentForm) fieldZone(which int) string {
 	switch which {
 	case caName:
 		return "agents.create.name"
+	case caType:
+		return "agents.create.type"
 	case caModel:
 		return "agents.create.model"
+	case caDesc:
+		return "agents.create.desc"
 	}
 	return ""
 }
 
-func (f createAgentForm) fieldBorderColor(which int, errMsg string) color.Color {
-	t := f.deps.Styles.Theme
-	switch {
-	case errMsg != "":
-		return t.Error
-	case f.focus == which:
-		return t.Accent
-	case f.hover == which:
-		return t.Secondary
-	default:
-		return t.Primary
-	}
-}
-
 func (f createAgentForm) buttons() string {
-	group := lipgloss.JoinHorizontal(lipgloss.Top,
-		f.button("Create", "agents.create.submit", f.focus == caSubmit, f.hover == caSubmit),
-		" ",
-		f.button("Cancel", "agents.create.cancel", f.focus == caCancel, f.hover == caCancel),
-	)
-	return lipgloss.PlaceHorizontal(caFieldW+4, lipgloss.Right, group)
-}
-
-func (f createAgentForm) button(label, id string, focused, hovered bool) string {
 	t := f.deps.Styles.Theme
-	borderCol, textCol, bold := t.Primary, t.Text, false
-	switch {
-	case focused:
-		borderCol, textCol, bold = t.Accent, t.Accent, true
-	case hovered:
-		borderCol = t.Secondary
-	}
-	body := lipgloss.NewStyle().Foreground(textCol).Bold(bold).Render(label)
-	return zone.Mark(id, components.TitledBoxWeighted("", body, borderCol, focused))
+	group := lipgloss.JoinHorizontal(lipgloss.Top,
+		formButton(t, "Create", "agents.create.submit", f.focus == caSubmit, f.hover == caSubmit),
+		" ",
+		formButton(t, "Cancel", "agents.create.cancel", f.focus == caCancel, f.hover == caCancel),
+	)
+	return lipgloss.PlaceHorizontal(agentFieldW+4, lipgloss.Right, group)
 }
 
 func (f createAgentForm) HelpKeys() []key.Binding {
@@ -287,6 +307,7 @@ func (f createAgentForm) HelpKeys() []key.Binding {
 	}
 	return []key.Binding{
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
+		key.NewBinding(key.WithKeys("left", "right"), key.WithHelp("←/→", "change")),
 		key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "confirm")),
 		key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
 	}
@@ -297,9 +318,9 @@ type createCancelledMsg struct{}
 
 func cancelCreate() tea.Msg { return createCancelledMsg{} }
 
-func createAgentCmd(d deps.Deps, name, model string) tea.Cmd {
+func createAgentCmd(d deps.Deps, name, agentType string, modelID int64, description string) tea.Cmd {
 	return func() tea.Msg {
-		a, err := d.Agents.CreateAgent(context.Background(), name, model)
+		a, err := d.Agents.CreateAgent(context.Background(), name, agentType, modelID, description)
 		if err != nil {
 			return createFailedMsg{message: createAgentError(err)}
 		}

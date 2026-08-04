@@ -76,6 +76,8 @@ func (m Model) View() string {
 	switch {
 	case m.creating:
 		return m.overlayModal(view, m.create.View())
+	case m.editing:
+		return m.overlayModal(view, m.edit.View())
 	case m.issuing:
 		return m.overlayModal(view, m.issue.View())
 	case m.revealing:
@@ -183,7 +185,9 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 		name,
 		"",
 		row(g.Or(g.At, "@"), "Handle", "@"+a.Username),
-		row(g.Or(g.Flash, "*"), "Model", orDash(a.DeclaredModel)),
+		row(g.Or(g.Tag, "#"), "Type", orDash(titleCase(a.AgentType))),
+		row(g.Or(g.Flash, "*"), "Model", orDash(a.ModelName)),
+		row(g.Or(g.FileText, "-"), "About", orDash(a.Description)),
 		row(g.Or(g.Calendar, "·"), "Created", fmtDate(a.CreatedAt)),
 	)
 }

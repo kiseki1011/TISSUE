@@ -1,5 +1,7 @@
 package com.tissue.feature.member.domain;
 
+import com.tissue.feature.agent.domain.AgentType;
+import com.tissue.feature.agent.model.domain.AiModel;
 import com.tissue.feature.organization.position.domain.Position;
 import com.tissue.feature.organization.team.domain.Team;
 import com.tissue.shared.entity.BaseDateEntity;
@@ -72,14 +74,25 @@ public class Member extends BaseDateEntity {
     @Column(name = "member_type", nullable = false)
     private MemberType memberType = MemberType.HUMAN;
 
+    // TODO: Separate to AgentProfile VO
     @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private Member owner;
 
     @Nullable
-    @Column(name = "declared_model")
-    private String declaredModel;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "agent_type")
+    private AgentType agentType;
+
+    @Nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "model_id")
+    private AiModel model;
+
+    @Nullable
+    @Column(name = "description")
+    private String description;
 
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
@@ -104,7 +117,13 @@ public class Member extends BaseDateEntity {
         return buildWithoutEmail(username, name, SystemRole.SUPER_ADMIN);
     }
 
-    public static Member createAgent(Member owner, String username, String name, @Nullable String declaredModel) {
+    public static Member createAgent(
+            Member owner,
+            String username,
+            String name,
+            @Nullable AgentType agentType,
+            @Nullable AiModel model,
+            @Nullable String description) {
         Member member = new Member();
         member.email = null;
         member.username = Objects.requireNonNull(username);
@@ -113,7 +132,9 @@ public class Member extends BaseDateEntity {
         member.role = SystemRole.USER;
         member.memberType = MemberType.AGENT;
         member.owner = Objects.requireNonNull(owner, "An agent must have an owner");
-        member.declaredModel = declaredModel;
+        member.agentType = Objects.requireNonNullElse(agentType, AgentType.GENERAL);
+        member.model = model;
+        member.description = description;
         return member;
     }
 
@@ -239,5 +260,17 @@ public class Member extends BaseDateEntity {
 
     public void assignTeam(@Nullable Team team) {
         this.team = team;
+    }
+
+    public void assignModel(@Nullable AiModel model) {
+        this.model = model;
+    }
+
+    public void updateAgentType(@Nullable AgentType agentType) {
+        this.agentType = Objects.requireNonNullElse(agentType, AgentType.GENERAL);
+    }
+
+    public void updateDescription(@Nullable String description) {
+        this.description = description;
     }
 }

@@ -48,6 +48,8 @@ type Model struct {
 	loading bool
 	loadErr bool
 
+	models []domain.AiModel // AI model catalog, for the create/edit pickers
+
 	tokens        []domain.Token
 	tokensAgent   int64 // id of the agent whose tokens are loaded (0 = none)
 	tokenCursor   int
@@ -60,6 +62,8 @@ type Model struct {
 	// modals (only one open at a time)
 	creating       bool
 	create         createAgentForm
+	editing        bool
+	edit           editAgentForm
 	issuing        bool
 	issue          issueTokenForm
 	revealing      bool
@@ -78,7 +82,7 @@ func New(d deps.Deps) Model {
 	return Model{deps: d, loading: true, focus: paneAgents}
 }
 
-func (m Model) Init() tea.Cmd { return loadAgents(m.deps) }
+func (m Model) Init() tea.Cmd { return tea.Batch(loadAgents(m.deps), loadModels(m.deps)) }
 
 func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
@@ -88,7 +92,7 @@ func (m Model) Retheme(d deps.Deps) Model {
 // CapturingInput reports that a modal owns the keyboard, so the app shell suppresses its global
 // tab-switch keys while the user types.
 func (m Model) CapturingInput() bool {
-	return m.creating || m.issuing || m.revealing || m.confirming
+	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
 
 func (m Model) selectedAgent() (domain.Agent, bool) {
@@ -131,11 +135,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case ModelsLoadedMsg:
+		if !msg.Err {
+			m.models = msg.Models
+		}
+		return m, nil
+
 	case agentCreatedMsg:
 		m.creating = false
 		return m, tea.Batch(loadAgents(m.deps), toast.Show(toast.Success, "Agent \""+msg.agent.Name+"\" created."))
 	case createCancelledMsg:
 		m.creating = false
+		return m, nil
+
+	case agentUpdatedMsg:
+		m.editing = false
+		return m, tea.Batch(loadAgents(m.deps), toast.Show(toast.Success, "Agent updated."))
+	case editCancelledMsg:
+		m.editing = false
 		return m, nil
 
 	case agentDeactivatedMsg:
@@ -188,6 +205,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case m.creating:
 		var cmd tea.Cmd
 		m.create, cmd = m.create.Update(msg)
+		return m, cmd
+	case m.editing:
+		var cmd tea.Cmd
+		m.edit, cmd = m.edit.Update(msg)
 		return m, cmd
 	case m.issuing:
 		var cmd tea.Cmd
@@ -258,6 +279,8 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 		return m.moveCursor(1)
 	case "n":
 		return m.openCreate()
+	case "e":
+		return m.openEdit()
 	case "a":
 		return m.openIssueToken()
 	case "d", "x":
@@ -290,8 +313,27 @@ func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 
 func (m Model) openCreate() (Model, tea.Cmd) {
 	m.creating, m.modalScroll = true, 0
-	m.create = newCreateAgentForm(m.deps)
-	return m, m.create.Init()
+	m.create = newCreateAgentForm(m.deps, m.models)
+	return m, tea.Batch(m.create.Init(), m.ensureModels())
+}
+
+func (m Model) openEdit() (Model, tea.Cmd) {
+	a, ok := m.selectedAgent()
+	if !ok {
+		return m, nil
+	}
+	m.editing, m.modalScroll = true, 0
+	m.edit = newEditAgentForm(m.deps, a, m.models)
+	return m, tea.Batch(m.edit.Init(), m.ensureModels())
+}
+
+// ensureModels re-fetches the catalog when opening a form found it empty, so a failed or still-pending
+// boot prefetch recovers on the next open instead of stranding the picker on "None".
+func (m Model) ensureModels() tea.Cmd {
+	if len(m.models) == 0 {
+		return loadModels(m.deps)
+	}
+	return nil
 }
 
 func (m Model) openIssueToken() (Model, tea.Cmd) {
@@ -408,6 +450,9 @@ func (m Model) HelpKeys() []key.Binding {
 	if m.creating {
 		return m.create.HelpKeys()
 	}
+	if m.editing {
+		return m.edit.HelpKeys()
+	}
 	if m.issuing {
 		return m.issue.HelpKeys()
 	}
@@ -421,13 +466,14 @@ func (m Model) HelpKeys() []key.Binding {
 		key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "pane")),
 		key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new agent")),
+		key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit agent")),
 		key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add token")),
 		key.NewBinding(key.WithKeys("d"), key.WithHelp("d", "deactivate/revoke")),
 	}
 }
 
 func (m Model) anyModalOpen() bool {
-	return m.creating || m.issuing || m.revealing || m.confirming
+	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
 
 // activeModalView renders the open modal, mirroring View's dispatch, so the host can measure and
@@ -436,6 +482,8 @@ func (m Model) activeModalView() string {
 	switch {
 	case m.creating:
 		return m.create.View()
+	case m.editing:
+		return m.edit.View()
 	case m.issuing:
 		return m.issue.View()
 	case m.revealing:
@@ -491,6 +539,12 @@ type TokensLoadedMsg struct {
 	Err     bool
 }
 
+// ModelsLoadedMsg carries the AI model catalog for the create/edit pickers.
+type ModelsLoadedMsg struct {
+	Models []domain.AiModel
+	Err    bool
+}
+
 type agentCreatedMsg struct{ agent domain.Agent }
 type agentDeactivatedMsg struct{}
 type tokenIssuedMsg struct{ issued domain.IssuedToken }
@@ -501,6 +555,13 @@ func loadAgents(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		agents, err := d.Agents.ListAgents(context.Background())
 		return AgentsLoadedMsg{Agents: agents, Err: err != nil}
+	}
+}
+
+func loadModels(d deps.Deps) tea.Cmd {
+	return func() tea.Msg {
+		models, err := d.Agents.ListModels(context.Background())
+		return ModelsLoadedMsg{Models: models, Err: err != nil}
 	}
 }
 

@@ -1,4 +1,4 @@
-package com.tissue.feature.member.domain.exception;
+package com.tissue.feature.agent.domain.exception;
 
 import com.tissue.shared.exception.ErrorCode;
 import lombok.Getter;

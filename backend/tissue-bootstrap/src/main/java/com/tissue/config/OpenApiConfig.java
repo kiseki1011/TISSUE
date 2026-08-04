@@ -3,6 +3,7 @@ package com.tissue.config;
 import static com.tissue.shared.meta.LLMInvolvement.VIBE_CODED;
 
 import com.tissue.feature.notification.adapter.web.NotificationErrors;
+import com.tissue.global.openapi.AiModelErrors;
 import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.CommentErrors;
 import com.tissue.global.openapi.CommonErrors;
@@ -243,6 +244,7 @@ public class OpenApiConfig {
             addIfPresent(handlerMethod, MemberErrors.class, MemberErrors::value, codes);
             addIfPresent(handlerMethod, PositionErrors.class, PositionErrors::value, codes);
             addIfPresent(handlerMethod, TeamErrors.class, TeamErrors::value, codes);
+            addIfPresent(handlerMethod, AiModelErrors.class, AiModelErrors::value, codes);
             addIfPresent(handlerMethod, ProjectErrors.class, ProjectErrors::value, codes);
             addIfPresent(handlerMethod, IssueErrors.class, IssueErrors::value, codes);
             addIfPresent(handlerMethod, IssueTypeErrors.class, IssueTypeErrors::value, codes);
@@ -311,6 +313,9 @@ public class OpenApiConfig {
                 new Tag().name("Member Account").description("Account management for authenticated members"),
                 new Tag().name("Member Profile").description("Member profile management"),
                 new Tag().name("Member Administration").description("Administrative member management (system admin)"),
+                new Tag().name("Agents").description("Agent (AI/automation) account management for the current member"),
+                new Tag().name("Agent Tokens").description("Personal access token (PAT) management for an agent"),
+                new Tag().name("Agent Model").description("Global AI model catalog management (system admin)"),
                 new Tag().name("Position").description("Global position (job title) management"),
                 new Tag().name("Team").description("Global team management"),
                 new Tag().name("Project").description("Project management"),

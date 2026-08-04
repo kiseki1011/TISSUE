@@ -23,6 +23,8 @@ var jsonNullableUnderlying = map[string]map[string]any{
 	"JsonNullableIconType":          {"type": "string"},
 	"JsonNullableIssuePriority":     {"type": "string"},
 	"JsonNullableProjectVisibility": {"type": "string"},
+	"JsonNullableAgentType":         {"type": "string"},
+	"JsonNullableLong":              {"type": "integer", "format": "int64"},
 }
 
 func main() {

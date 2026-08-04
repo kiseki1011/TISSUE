@@ -1,4 +1,4 @@
-package com.tissue.feature.member.domain.event;
+package com.tissue.feature.agent.domain.event;
 
 import com.tissue.shared.event.DomainEvent;
 import java.time.Instant;

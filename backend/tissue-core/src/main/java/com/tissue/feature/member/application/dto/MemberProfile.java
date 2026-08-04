@@ -25,6 +25,9 @@ public record MemberProfile(
         @Schema(description = "System-level role for this member", example = "USER")
         SystemRole role,
 
+        @Schema(description = "Free-form description / bio") @Nullable
+        String description,
+
         @Schema(description = "Assigned position") @Nullable PositionSummary position,
 
         @Schema(description = "Assigned team") @Nullable TeamSummary team,
@@ -37,6 +40,7 @@ public record MemberProfile(
                 .username(member.getUsername())
                 .name(member.getName())
                 .role(member.getRole())
+                .description(member.getDescription())
                 .position(member.getPosition() == null ? null : PositionSummary.from(member.getPosition()))
                 .team(member.getTeam() == null ? null : TeamSummary.from(member.getTeam()))
                 .joinedAt(member.getCreatedAt())

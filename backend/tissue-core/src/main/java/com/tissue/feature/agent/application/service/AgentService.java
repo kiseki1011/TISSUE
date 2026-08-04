@@ -1,16 +1,22 @@
-package com.tissue.feature.member.application.service;
+package com.tissue.feature.agent.application.service;
 
-import com.tissue.feature.member.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.CreateAgentCommand;
+import com.tissue.feature.agent.application.dto.PatchAgentCommand;
+import com.tissue.feature.agent.application.port.usecase.AgentUseCase;
+import com.tissue.feature.agent.domain.event.AgentCreatedEvent;
+import com.tissue.feature.agent.domain.exception.AgentErrorCode;
+import com.tissue.feature.agent.model.application.service.finder.AiModelFinder;
+import com.tissue.feature.agent.model.domain.AiModel;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
-import com.tissue.feature.member.application.port.usecase.AgentUseCase;
+import com.tissue.feature.member.application.service.MemberFinder;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.member.domain.MemberStatus;
-import com.tissue.feature.member.domain.event.AgentCreatedEvent;
-import com.tissue.feature.member.domain.exception.AgentErrorCode;
 import com.tissue.shared.exception.base.ForbiddenException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import com.tissue.shared.exception.base.ResourceNotFoundException;
+import com.tissue.support.util.Patchers;
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
@@ -28,21 +34,39 @@ public class AgentService implements AgentUseCase {
     private final MemberFinder memberFinder;
     private final MemberQueryRepository memberQueryRepository;
     private final MemberCommandRepository memberCommandRepository;
+    private final AiModelFinder aiModelFinder;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
-    public AgentResponse createAgent(Long ownerId, String name, @Nullable String declaredModel) {
+    public AgentResponse createAgent(Long ownerId, CreateAgentCommand cmd) {
         Member owner = memberFinder.getActiveById(ownerId);
 
         ensureOwnerIsHuman(owner);
-        ensureAgentNameUniqueByOwner(ownerId, name);
+        ensureAgentNameUniqueByOwner(ownerId, cmd.name());
 
-        String username = generateUniqueUsername(owner.getUsername(), name);
-        Member agent = memberCommandRepository.save(Member.createAgent(owner, username, name, declaredModel));
+        String username = generateUniqueUsername(owner.getUsername(), cmd.name());
+        AiModel model = resolveModel(cmd.modelId());
+        Member agent = memberCommandRepository.save(
+                Member.createAgent(owner, username, cmd.name(), cmd.agentType(), model, cmd.description()));
         eventPublisher.publishEvent(AgentCreatedEvent.create(agent.getId()));
 
         return AgentResponse.from(agent);
+    }
+
+    @Override
+    @Transactional
+    public void updateAgent(Long ownerId, Long agentId, PatchAgentCommand cmd) {
+        Member agent = getOwnedActiveAgent(ownerId, agentId);
+
+        Patchers.apply(cmd.agentType(), agent::updateAgentType);
+        Patchers.apply(cmd.modelId(), modelId -> agent.assignModel(resolveModel(modelId)));
+        Patchers.apply(cmd.description(), agent::updateDescription);
+    }
+
+    @Nullable
+    private AiModel resolveModel(@Nullable Long modelId) {
+        return modelId == null ? null : aiModelFinder.getById(modelId);
     }
 
     @Override

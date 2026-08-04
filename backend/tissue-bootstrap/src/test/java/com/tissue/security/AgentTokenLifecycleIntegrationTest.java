@@ -2,10 +2,11 @@ package com.tissue.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.feature.member.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.CreateAgentCommand;
+import com.tissue.feature.agent.application.service.AgentService;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
 import com.tissue.feature.member.application.port.repository.MemberQueryRepository;
-import com.tissue.feature.member.application.service.AgentService;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.application.service.MemberPurgeService;
@@ -53,7 +54,8 @@ class AgentTokenLifecycleIntegrationTest extends IntegrationTestSupport {
     void tokenAuthenticatesAsAgent() {
         // given
         Member owner = newOwner("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Mybot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Mybot").build());
         GeneratedToken generated = issueToken(agent, PatScope.READ_ONLY);
 
         // when
@@ -69,7 +71,8 @@ class AgentTokenLifecycleIntegrationTest extends IntegrationTestSupport {
     void deactivatedAgentTokenIsRejected() {
         // given
         Member owner = newOwner("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Mybot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Mybot").build());
         GeneratedToken generated = issueToken(agent, PatScope.READ_WRITE);
         assertThat(personalAccessTokenService.authenticate(generated.rawToken()))
                 .isPresent();
@@ -87,7 +90,8 @@ class AgentTokenLifecycleIntegrationTest extends IntegrationTestSupport {
     void ownerWithdrawalCascades() {
         // given
         Member owner = newOwner("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Mybot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Mybot").build());
         GeneratedToken generated = issueToken(agent, PatScope.READ_WRITE);
         assertThat(personalAccessTokenService.authenticate(generated.rawToken()))
                 .isPresent();
@@ -111,7 +115,8 @@ class AgentTokenLifecycleIntegrationTest extends IntegrationTestSupport {
     void purgeRemovesAgentTokens() {
         // given
         Member owner = newOwner("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Mybot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Mybot").build());
         issueToken(agent, PatScope.READ_ONLY);
         agentService.deactivateAgent(owner.getId(), agent.id());
         assertThat(personalAccessTokenService.listFor(agent.id())).hasSize(1);

@@ -113,7 +113,7 @@ func TestOpenCreateCapturesInput(t *testing.T) {
 
 // The create-agent form rejects an empty name, rejects digits, and accepts a letters/spaces name.
 func TestCreateAgentValidation(t *testing.T) {
-	f := newCreateAgentForm(testDeps())
+	f := newCreateAgentForm(testDeps(), nil)
 	if _, _ = f.submit(); f.nameErr == "" {
 		// submit returns a copy; re-run capturing it
 	}
@@ -278,7 +278,7 @@ func TestTokenStatusLabels(t *testing.T) {
 // Name length is validated in characters, not bytes, so multi-byte scripts the regex allows (e.g.
 // Hangul) are measured the same way the backend measures them.
 func TestCreateAgentNameLengthIsRuneBased(t *testing.T) {
-	f := newCreateAgentForm(testDeps())
+	f := newCreateAgentForm(testDeps(), nil)
 	// 12 Hangul characters = 36 bytes but 12 runes — within the 35-char limit, must be accepted.
 	f.name.SetValue("가나다라마바사아자차카타")
 	f2, _ := f.submit()

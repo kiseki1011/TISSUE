@@ -37,4 +37,10 @@ public class MemberProfileCommandService implements MemberProfileCommandUseCase 
         Position position = positionId == null ? null : positionFinder.getById(positionId);
         member.assignPosition(position);
     }
+
+    @Override
+    public void updateDescription(@Nullable String description, Long memberId) {
+        Member member = memberFinder.getActiveById(memberId);
+        member.updateDescription(description);
+    }
 }
