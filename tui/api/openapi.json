@@ -10207,7 +10207,7 @@
         },
         "summary": "List AI models",
         "tags": [
-          "AI Model"
+          "Agent Model"
         ]
       },
       "post": {
@@ -10246,7 +10246,7 @@
         },
         "summary": "Create AI model",
         "tags": [
-          "AI Model"
+          "Agent Model"
         ]
       }
     },
@@ -10278,7 +10278,7 @@
         },
         "summary": "Delete AI model",
         "tags": [
-          "AI Model"
+          "Agent Model"
         ]
       },
       "patch": {
@@ -10324,7 +10324,7 @@
         },
         "summary": "Update AI model",
         "tags": [
-          "AI Model"
+          "Agent Model"
         ]
       }
     },
@@ -14524,8 +14524,20 @@
       "name": "Member Profile"
     },
     {
-      "description": "Administrative member management (system admin)",
+      "description": "Administrative member management for `ADMIN`",
       "name": "Member Administration"
+    },
+    {
+      "description": "Agent (AI/automation) account management for the current member",
+      "name": "Agents"
+    },
+    {
+      "description": "Personal access token (PAT) management for an agent",
+      "name": "Agent Tokens"
+    },
+    {
+      "description": "Global AI model catalog management",
+      "name": "Agent Model"
     },
     {
       "description": "Global position (job title) management",

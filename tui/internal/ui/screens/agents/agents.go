@@ -51,7 +51,8 @@ type Model struct {
 	models []domain.AiModel // AI model catalog, for the create/edit pickers
 
 	tokens        []domain.Token
-	tokensAgent   int64 // id of the agent whose tokens are loaded (0 = none)
+	tokenCache    map[int64][]domain.Token // per-agent tokens prefetched on load, so switching agents is instant
+	tokensAgent   int64                    // id of the agent whose tokens are loaded (0 = none)
 	tokenCursor   int
 	tokensLoading bool
 	tokensErr     bool
@@ -79,7 +80,7 @@ type Model struct {
 
 // New loads nothing until Init runs.
 func New(d deps.Deps) Model {
-	return Model{deps: d, loading: true, focus: paneAgents}
+	return Model{deps: d, loading: true, focus: paneAgents, tokenCache: map[int64][]domain.Token{}}
 }
 
 func (m Model) Init() tea.Cmd { return tea.Batch(loadAgents(m.deps), loadModels(m.deps)) }
@@ -122,11 +123,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.cursor >= len(m.agents) {
 			m.cursor = max(0, len(m.agents)-1)
 		}
-		return m, m.selectTokens()
+		return m, tea.Batch(m.selectTokens(), m.prefetchTokens())
 
 	case TokensLoadedMsg:
+		if !msg.Err {
+			if m.tokenCache == nil {
+				m.tokenCache = map[int64][]domain.Token{}
+			}
+			m.tokenCache[msg.AgentID] = msg.Tokens // cache every load, including prefetches for non-selected agents
+		}
 		if msg.AgentID != m.selectedAgentID() {
-			return m, nil // a stale load for an agent no longer selected
+			return m, nil // a prefetch or stale load for an agent that is not currently selected
 		}
 		m.tokensLoading, m.tokensErr = false, msg.Err
 		m.tokens = msg.Tokens
@@ -243,6 +250,8 @@ func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 		m.hover = zoneNewAgent
 	case zone.Get(zoneNewToken).InBounds(msg):
 		m.hover = zoneNewToken
+	case zone.Get(zoneAgentEdit).InBounds(msg):
+		m.hover = zoneAgentEdit
 	default:
 		for i := range m.agents {
 			if zone.Get(agentRowZone(i)).InBounds(msg) {
@@ -394,6 +403,9 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	if zone.Get(zoneNewToken).InBounds(msg) {
 		return m.openIssueToken()
 	}
+	if zone.Get(zoneAgentEdit).InBounds(msg) {
+		return m.openEdit()
+	}
 	for i := range m.agents {
 		if zone.Get(agentRowZone(i)).InBounds(msg) {
 			before := m.cursor
@@ -420,7 +432,8 @@ func (m Model) selectedAgentID() int64 {
 	return 0
 }
 
-// selectTokens loads the selected agent's tokens if they are not already loaded.
+// selectTokens shows the selected agent's tokens, from the prefetch cache when available (no loading
+// flash) or by fetching on a cache miss.
 func (m *Model) selectTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {
@@ -430,17 +443,44 @@ func (m *Model) selectTokens() tea.Cmd {
 	if id == m.tokensAgent {
 		return nil
 	}
-	m.tokens, m.tokensAgent, m.tokenCursor = nil, id, 0
+	m.tokensAgent, m.tokenCursor = id, 0
+	if cached, ok := m.tokenCache[id]; ok {
+		m.tokens = cached
+		m.tokensLoading, m.tokensErr = false, false
+		return nil
+	}
+	m.tokens = nil
 	m.tokensLoading, m.tokensErr = true, false
 	return loadTokens(m.deps, id)
 }
 
-// reloadTokens forces a reload of the currently selected agent's tokens (after issue/revoke).
+// prefetchTokens loads tokens for every agent not already cached, so arrowing between agents shows
+// their tokens instantly instead of flashing a loading state. The owner's agent count is small.
+func (m *Model) prefetchTokens() tea.Cmd {
+	var cmds []tea.Cmd
+	for _, a := range m.agents {
+		if a.ID == m.tokensAgent {
+			continue // selectTokens already loads (or has cached) the selected agent
+		}
+		if _, ok := m.tokenCache[a.ID]; ok {
+			continue
+		}
+		cmds = append(cmds, loadTokens(m.deps, a.ID))
+	}
+	if len(cmds) == 0 {
+		return nil
+	}
+	return tea.Batch(cmds...)
+}
+
+// reloadTokens forces a fresh fetch of the currently selected agent's tokens (after issue/revoke),
+// invalidating the cache entry so the refreshed list replaces the stale one.
 func (m *Model) reloadTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {
 		return nil
 	}
+	delete(m.tokenCache, id)
 	m.tokensAgent = id
 	m.tokensLoading, m.tokensErr = true, false
 	return loadTokens(m.deps, id)

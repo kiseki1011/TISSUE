@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	zoneNewAgent = "agents.new"
-	zoneNewToken = "agents.token.new"
+	zoneNewAgent  = "agents.new"
+	zoneNewToken  = "agents.token.new"
+	zoneAgentEdit = "agents.edit" // the "Edit" pen beside the selected agent's name in Details
 
 	rowHeight = 2 // each agent/token list row spans two lines (name + sub)
 
@@ -162,7 +163,7 @@ func (m Model) detailPane() string {
 	}
 
 	prefix := lipgloss.JoinVertical(lipgloss.Left,
-		m.agentSummary(a, innerW), m.rule(innerW), "",
+		m.agentSummary(a, innerW), "",
 		m.newAffordance(zoneNewToken, "New token", "a", innerW, m.hover == zoneNewToken), "")
 	tokAvail := bodyH - lipgloss.Height(prefix)
 	rows := append([]string{prefix}, m.tokensBlock(innerW, tokAvail)...)
@@ -179,17 +180,40 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 	row := func(glyph, k, v string) string {
 		return key.Render(fit(glyph+"  "+k, labelW)) + val.Render(fit(v, max(1, w-labelW)))
 	}
-	name := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(fit(a.Name, w))
-	return lipgloss.JoinVertical(lipgloss.Left,
+	lines := []string{
 		"",
-		name,
+		m.agentTitle(a, w),
 		"",
 		row(g.Or(g.At, "@"), "Handle", "@"+a.Username),
 		row(g.Or(g.Tag, "#"), "Type", orDash(titleCase(a.AgentType))),
 		row(g.Or(g.Flash, "*"), "Model", orDash(a.ModelName)),
-		row(g.Or(g.FileText, "-"), "About", orDash(a.Description)),
 		row(g.Or(g.Calendar, "·"), "Created", fmtDate(a.CreatedAt)),
-	)
+		"",
+	}
+	// The description (Member.description) can run long, so it reads as a wrapped block below the
+	// fields rather than a truncated fixed-width value. The rule follows it (or the blank after
+	// Created when there is none), keeping the summary visually closed off from the token section.
+	if a.Description != "" {
+		lines = append(lines, val.Width(w).Render(a.Description), "")
+	}
+	lines = append(lines, m.rule(w))
+	return lipgloss.JoinVertical(lipgloss.Left, lines...)
+}
+
+// agentTitle lays the agent's name on the left with a right-aligned "Edit" pen, mirroring the Schema
+// tab's issue-type/workflow title pens so the edit action is discoverable by mouse (not just the e key).
+func (m Model) agentTitle(a domain.Agent, w int) string {
+	t := m.deps.Styles.Theme
+	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "Edit")
+	penColor := t.Primary
+	if m.hover == zoneAgentEdit {
+		penColor = t.Secondary
+	}
+	penStr := zone.Mark(zoneAgentEdit, lipgloss.NewStyle().Foreground(penColor).Render(" "+pen+" "))
+	nameW := max(1, w-lipgloss.Width(penStr))
+	name := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(fit(a.Name, nameW))
+	gap := max(0, w-lipgloss.Width(name)-lipgloss.Width(penStr))
+	return name + strings.Repeat(" ", gap) + penStr
 }
 
 // Windowed to the selected row so a long list never overflows the pane. avail is the rows left for this block.
