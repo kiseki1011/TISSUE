@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
@@ -14,6 +15,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
 // edit-agent focus stops (the name is immutable, so it is shown but not editable).
@@ -26,20 +28,23 @@ const (
 	eaCount
 )
 
-// editAgentForm is the "Edit Agent" modal: change an existing agent's type, model, and description.
 type editAgentForm struct {
 	deps deps.Deps
 
 	agentID   int64
 	agentName string
 
-	typePick  picker
+	agentType string
 	models    []domain.AiModel
-	modelPick picker
+	modelID   int64
 	desc      textinput.Model
 	spinner   spinner.Model
 	focus     int
 	hover     int
+
+	picking   bool
+	pick      widgets.ListPicker
+	pickField int
 
 	status     string
 	submitting bool
@@ -53,13 +58,17 @@ func newEditAgentForm(d deps.Deps, agent domain.Agent, models []domain.AiModel) 
 	desc.CharLimit = agentDescMax
 	desc.SetValue(agent.Description)
 	models = withModel(models, agent.ModelID, agent.ModelName, agent.ModelColor)
+	agentType := agent.AgentType
+	if agentType == "" {
+		agentType = "GENERAL"
+	}
 	f := editAgentForm{
 		deps:      d,
 		agentID:   agent.ID,
 		agentName: agent.Name,
-		typePick:  newTypePicker(agent.AgentType),
+		agentType: agentType,
 		models:    models,
-		modelPick: newModelPicker(models, agent.ModelID),
+		modelID:   agent.ModelID,
 		desc:      desc,
 		spinner:   spinner.New(),
 		focus:     eaType,
@@ -86,7 +95,9 @@ func (f editAgentForm) Update(msg tea.Msg) (editAgentForm, tea.Cmd) {
 	case tea.MouseClickMsg:
 		return f.onClick(msg)
 	case tea.MouseMotionMsg:
-		f.hover = f.hitZone(msg)
+		if !f.picking {
+			f.hover = f.hitZone(msg)
+		}
 		return f, nil
 	case tea.KeyPressMsg:
 		return f.onKey(msg)
@@ -116,15 +127,22 @@ func (f editAgentForm) onClick(msg tea.MouseClickMsg) (editAgentForm, tea.Cmd) {
 	if msg.Button != tea.MouseLeft || f.submitting {
 		return f, nil
 	}
+	if f.picking {
+		if i := f.pick.HitOption(msg); i >= 0 {
+			f.pick.Cursor = i
+			return f.applyPick(), nil
+		}
+		return f, nil
+	}
 	switch f.hitZone(msg) {
 	case eaDesc:
 		return f.focusOn(eaDesc)
 	case eaType:
-		f.typePick.cycle(1)
-		return f.focusOn(eaType)
+		ff, _ := f.focusOn(eaType)
+		return ff.openPicker(eaType), nil
 	case eaModel:
-		f.modelPick.cycle(1)
-		return f.focusOn(eaModel)
+		ff, _ := f.focusOn(eaModel)
+		return ff.openPicker(eaModel), nil
 	case eaSubmit:
 		return f.submit()
 	case eaCancel:
@@ -137,6 +155,9 @@ func (f editAgentForm) onKey(msg tea.KeyPressMsg) (editAgentForm, tea.Cmd) {
 	if f.submitting {
 		return f, nil
 	}
+	if f.picking {
+		return f.pickKey(msg), nil
+	}
 	switch msg.String() {
 	case "tab", "down":
 		return f.moveFocus(1)
@@ -144,22 +165,20 @@ func (f editAgentForm) onKey(msg tea.KeyPressMsg) (editAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelEdit
-	case "left":
-		if f.cycleFocused(-1) {
-			return f, nil
-		}
-	case "right":
-		if f.cycleFocused(1) {
-			return f, nil
-		}
-	case "enter":
+	case "enter", " ":
 		switch f.focus {
+		case eaType:
+			return f.openPicker(eaType), nil
+		case eaModel:
+			return f.openPicker(eaModel), nil
 		case eaSubmit:
 			return f.submit()
 		case eaCancel:
 			return f, cancelEdit
 		default:
-			return f.moveFocus(1)
+			if msg.String() == "enter" {
+				return f.moveFocus(1)
+			}
 		}
 	}
 	if f.focus == eaDesc {
@@ -171,16 +190,42 @@ func (f editAgentForm) onKey(msg tea.KeyPressMsg) (editAgentForm, tea.Cmd) {
 	return f, nil
 }
 
-func (f *editAgentForm) cycleFocused(delta int) bool {
-	switch f.focus {
-	case eaType:
-		f.typePick.cycle(delta)
-		return true
-	case eaModel:
-		f.modelPick.cycle(delta)
-		return true
+func (f editAgentForm) pickKey(msg tea.KeyPressMsg) editAgentForm {
+	switch msg.String() {
+	case "up", "k":
+		f.pick = f.pick.Move(-1)
+	case "down", "j":
+		f.pick = f.pick.Move(1)
+	case "enter", " ":
+		return f.applyPick()
+	case "esc":
+		f.picking = false
 	}
-	return false
+	return f
+}
+
+func (f editAgentForm) openPicker(field int) editAgentForm {
+	f.picking, f.pickField = true, field
+	if field == eaType {
+		f.pick = widgets.NewListPicker("Type", agentTypeOptions(), f.agentType, agentPickRows, agentFieldW)
+	} else {
+		f.pick = widgets.NewListPicker("Model", agentModelOptions(f.models), strconv.FormatInt(f.modelID, 10), agentPickRows, agentFieldW)
+	}
+	return f
+}
+
+func (f editAgentForm) applyPick() editAgentForm {
+	opt, ok := f.pick.Selected()
+	f.picking = false
+	if ok {
+		if f.pickField == eaType {
+			f.agentType = opt.Value
+		} else {
+			id, _ := strconv.ParseInt(opt.Value, 10, 64)
+			f.modelID = id
+		}
+	}
+	return f
 }
 
 func (f editAgentForm) moveFocus(delta int) (editAgentForm, tea.Cmd) {
@@ -199,19 +244,22 @@ func (f editAgentForm) focusOn(target int) (editAgentForm, tea.Cmd) {
 func (f editAgentForm) submit() (editAgentForm, tea.Cmd) {
 	f.status = ""
 	f.submitting = true
-	cmd := updateAgentCmd(f.deps, f.agentID, typeValue(f.typePick), modelValue(f.models, f.modelPick), strings.TrimSpace(f.desc.Value()))
+	cmd := updateAgentCmd(f.deps, f.agentID, f.agentType, f.modelID, strings.TrimSpace(f.desc.Value()))
 	return f, tea.Batch(cmd, f.spinner.Tick)
 }
 
 func (f editAgentForm) View() string {
+	if f.picking {
+		return f.pick.View(f.deps.Styles)
+	}
 	t := f.deps.Styles.Theme
 	header := lipgloss.NewStyle().Foreground(t.Muted).Padding(0, 1).Render("Editing " +
 		lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(f.agentName))
 	rows := []string{
 		header,
 		"",
-		f.field(eaType, "Type", cyclerContent(t, f.typePick.label(), agentFieldW)),
-		f.field(eaModel, "Model", cyclerContent(t, f.modelPick.label(), agentFieldW)),
+		f.field(eaType, "Type", dropdownContent(t, titleCase(f.agentType), agentFieldW)),
+		f.field(eaModel, "Model", dropdownContent(t, modelName(f.models, f.modelID), agentFieldW)),
 		f.field(eaDesc, "Description", f.desc.View()),
 	}
 	switch {
@@ -259,12 +307,21 @@ func (f editAgentForm) HelpKeys() []key.Binding {
 	if f.submitting {
 		return nil
 	}
-	return []key.Binding{
-		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
-		key.NewBinding(key.WithKeys("left", "right"), key.WithHelp("←/→", "change")),
-		key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "confirm")),
-		key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
+	if f.picking {
+		return []key.Binding{
+			key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
+			key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select")),
+			key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "back")),
+		}
 	}
+	binds := []key.Binding{key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next"))}
+	switch f.focus {
+	case eaType, eaModel:
+		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "pick")))
+	default:
+		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "confirm")))
+	}
+	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
 type agentUpdatedMsg struct{}

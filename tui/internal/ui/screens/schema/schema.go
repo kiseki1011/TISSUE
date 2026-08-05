@@ -992,10 +992,8 @@ func (m *Model) syncSelection() tea.Cmd {
 	return nil
 }
 
-// prefetchAll eagerly loads every issue type's fields and every workflow's graph so drilling into or
-// arrowing between catalog items shows their Details instantly, instead of flashing empty while a
-// per-item fetch round-trips. The catalogs are small, and the per-id pending/failed guards dedupe
-// against the selected item's own fetch from syncSelection.
+// prefetchAll loads every type's fields and workflow's graph up front so the Details panel never
+// flashes empty on first visit. The per-id pending/failed guards dedupe the selected item's own fetch.
 func (m *Model) prefetchAll() tea.Cmd {
 	var cmds []tea.Cmd
 	for _, t := range m.types {

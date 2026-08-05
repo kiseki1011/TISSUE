@@ -190,9 +190,7 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 		row(g.Or(g.Calendar, "·"), "Created", fmtDate(a.CreatedAt)),
 		"",
 	}
-	// The description (Member.description) can run long, so it reads as a wrapped block below the
-	// fields rather than a truncated fixed-width value. The rule follows it (or the blank after
-	// Created when there is none), keeping the summary visually closed off from the token section.
+	// A long description reads as a wrapped block rather than a truncated fixed-width row.
 	if a.Description != "" {
 		lines = append(lines, val.Width(w).Render(a.Description), "")
 	}
@@ -200,8 +198,6 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-// agentTitle lays the agent's name on the left with a right-aligned "Edit" pen, mirroring the Schema
-// tab's issue-type/workflow title pens so the edit action is discoverable by mouse (not just the e key).
 func (m Model) agentTitle(a domain.Agent, w int) string {
 	t := m.deps.Styles.Theme
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "Edit")

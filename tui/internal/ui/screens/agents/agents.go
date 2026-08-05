@@ -51,7 +51,7 @@ type Model struct {
 	models []domain.AiModel // AI model catalog, for the create/edit pickers
 
 	tokens        []domain.Token
-	tokenCache    map[int64][]domain.Token // per-agent tokens prefetched on load, so switching agents is instant
+	tokenCache    map[int64][]domain.Token // per-agent tokens, prefetched for instant switching
 	tokensAgent   int64                    // id of the agent whose tokens are loaded (0 = none)
 	tokenCursor   int
 	tokensLoading bool
@@ -432,8 +432,6 @@ func (m Model) selectedAgentID() int64 {
 	return 0
 }
 
-// selectTokens shows the selected agent's tokens, from the prefetch cache when available (no loading
-// flash) or by fetching on a cache miss.
 func (m *Model) selectTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {
@@ -454,8 +452,7 @@ func (m *Model) selectTokens() tea.Cmd {
 	return loadTokens(m.deps, id)
 }
 
-// prefetchTokens loads tokens for every agent not already cached, so arrowing between agents shows
-// their tokens instantly instead of flashing a loading state. The owner's agent count is small.
+// prefetchTokens loads tokens for every uncached agent so switching never flashes a loading state.
 func (m *Model) prefetchTokens() tea.Cmd {
 	var cmds []tea.Cmd
 	for _, a := range m.agents {
@@ -473,8 +470,7 @@ func (m *Model) prefetchTokens() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-// reloadTokens forces a fresh fetch of the currently selected agent's tokens (after issue/revoke),
-// invalidating the cache entry so the refreshed list replaces the stale one.
+// reloadTokens invalidates the cache and refetches the selected agent's tokens (after issue/revoke).
 func (m *Model) reloadTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {

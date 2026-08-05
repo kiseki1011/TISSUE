@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -18,9 +19,9 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// create-agent focus stops.
 const (
 	caName = iota
 	caType
@@ -31,22 +32,25 @@ const (
 	caCount
 )
 
-// agentNamePattern mirrors the backend: letters (many scripts) and spaces only — no digits or
-// punctuation.
+// agentNamePattern is the backend rule for agent names. Letters (many scripts) and spaces only,
+// no digits or punctuation.
 var agentNamePattern = regexp.MustCompile(`^[A-Za-z\x{00C0}-\x{024F}\x{0370}-\x{03FF}\x{0400}-\x{04FF}\x{4E00}-\x{9FFF}\x{3040}-\x{30FF}\x{AC00}-\x{D7A3} ]+$`)
 
-// createAgentForm is the "New Agent" modal: name, type, model (from the catalog), and description.
 type createAgentForm struct {
 	deps deps.Deps
 
 	name      textinput.Model
-	typePick  picker
+	agentType string
 	models    []domain.AiModel
-	modelPick picker
+	modelID   int64
 	desc      textinput.Model
 	spinner   spinner.Model
 	focus     int
 	hover     int
+
+	picking   bool
+	pick      widgets.ListPicker
+	pickField int
 
 	nameErr    string
 	status     string
@@ -66,9 +70,9 @@ func newCreateAgentForm(d deps.Deps, models []domain.AiModel) createAgentForm {
 	f := createAgentForm{
 		deps:      d,
 		name:      line("Build Bot"),
-		typePick:  newTypePicker(""),
+		agentType: "GENERAL",
 		models:    models,
-		modelPick: newModelPicker(models, 0),
+		modelID:   0,
 		desc:      desc,
 		spinner:   spinner.New(),
 		focus:     caName,
@@ -96,7 +100,9 @@ func (f createAgentForm) Update(msg tea.Msg) (createAgentForm, tea.Cmd) {
 	case tea.MouseClickMsg:
 		return f.onClick(msg)
 	case tea.MouseMotionMsg:
-		f.hover = f.hitZone(msg)
+		if !f.picking {
+			f.hover = f.hitZone(msg)
+		}
 		return f, nil
 	case tea.KeyPressMsg:
 		return f.onKey(msg)
@@ -126,15 +132,22 @@ func (f createAgentForm) onClick(msg tea.MouseClickMsg) (createAgentForm, tea.Cm
 	if msg.Button != tea.MouseLeft || f.submitting {
 		return f, nil
 	}
+	if f.picking {
+		if i := f.pick.HitOption(msg); i >= 0 {
+			f.pick.Cursor = i
+			return f.applyPick(), nil
+		}
+		return f, nil
+	}
 	switch f.hitZone(msg) {
 	case caName, caDesc:
 		return f.focusOn(f.hitZone(msg))
 	case caType:
-		f.typePick.cycle(1)
-		return f.focusOn(caType)
+		ff, _ := f.focusOn(caType)
+		return ff.openPicker(caType), nil
 	case caModel:
-		f.modelPick.cycle(1)
-		return f.focusOn(caModel)
+		ff, _ := f.focusOn(caModel)
+		return ff.openPicker(caModel), nil
 	case caSubmit:
 		return f.submit()
 	case caCancel:
@@ -147,6 +160,9 @@ func (f createAgentForm) onKey(msg tea.KeyPressMsg) (createAgentForm, tea.Cmd) {
 	if f.submitting {
 		return f, nil
 	}
+	if f.picking {
+		return f.pickKey(msg), nil
+	}
 	switch msg.String() {
 	case "tab", "down":
 		return f.moveFocus(1)
@@ -154,38 +170,61 @@ func (f createAgentForm) onKey(msg tea.KeyPressMsg) (createAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelCreate
-	case "left":
-		if f.cycleFocused(-1) {
-			return f, nil
-		}
-	case "right":
-		if f.cycleFocused(1) {
-			return f, nil
-		}
-	case "enter":
+	case "enter", " ":
 		switch f.focus {
+		case caType:
+			return f.openPicker(caType), nil
+		case caModel:
+			return f.openPicker(caModel), nil
 		case caSubmit:
 			return f.submit()
 		case caCancel:
 			return f, cancelCreate
 		default:
-			return f.moveFocus(1)
+			if msg.String() == "enter" {
+				return f.moveFocus(1)
+			}
 		}
 	}
 	return f.typeIntoFocused(msg)
 }
 
-// cycleFocused advances a focused type/model picker and reports whether it handled the key.
-func (f *createAgentForm) cycleFocused(delta int) bool {
-	switch f.focus {
-	case caType:
-		f.typePick.cycle(delta)
-		return true
-	case caModel:
-		f.modelPick.cycle(delta)
-		return true
+func (f createAgentForm) pickKey(msg tea.KeyPressMsg) createAgentForm {
+	switch msg.String() {
+	case "up", "k":
+		f.pick = f.pick.Move(-1)
+	case "down", "j":
+		f.pick = f.pick.Move(1)
+	case "enter", " ":
+		return f.applyPick()
+	case "esc":
+		f.picking = false
 	}
-	return false
+	return f
+}
+
+func (f createAgentForm) openPicker(field int) createAgentForm {
+	f.picking, f.pickField = true, field
+	if field == caType {
+		f.pick = widgets.NewListPicker("Type", agentTypeOptions(), f.agentType, agentPickRows, agentFieldW)
+	} else {
+		f.pick = widgets.NewListPicker("Model", agentModelOptions(f.models), strconv.FormatInt(f.modelID, 10), agentPickRows, agentFieldW)
+	}
+	return f
+}
+
+func (f createAgentForm) applyPick() createAgentForm {
+	opt, ok := f.pick.Selected()
+	f.picking = false
+	if ok {
+		if f.pickField == caType {
+			f.agentType = opt.Value
+		} else {
+			id, _ := strconv.ParseInt(opt.Value, 10, 64)
+			f.modelID = id
+		}
+	}
+	return f
 }
 
 func (f createAgentForm) moveFocus(delta int) (createAgentForm, tea.Cmd) {
@@ -242,16 +281,19 @@ func (f createAgentForm) submit() (createAgentForm, tea.Cmd) {
 		return f.focusOn(caName)
 	}
 	f.submitting = true
-	cmd := createAgentCmd(f.deps, name, typeValue(f.typePick), modelValue(f.models, f.modelPick), strings.TrimSpace(f.desc.Value()))
+	cmd := createAgentCmd(f.deps, name, f.agentType, f.modelID, strings.TrimSpace(f.desc.Value()))
 	return f, tea.Batch(cmd, f.spinner.Tick)
 }
 
 func (f createAgentForm) View() string {
+	if f.picking {
+		return f.pick.View(f.deps.Styles)
+	}
 	t := f.deps.Styles.Theme
 	rows := []string{
 		f.field(caName, "Name", f.name.View(), f.nameErr),
-		f.field(caType, "Type", cyclerContent(t, f.typePick.label(), agentFieldW), ""),
-		f.field(caModel, "Model", cyclerContent(t, f.modelPick.label(), agentFieldW), ""),
+		f.field(caType, "Type", dropdownContent(t, titleCase(f.agentType), agentFieldW), ""),
+		f.field(caModel, "Model", dropdownContent(t, modelName(f.models, f.modelID), agentFieldW), ""),
 		f.field(caDesc, "Description", f.desc.View(), ""),
 	}
 	switch {
@@ -305,12 +347,21 @@ func (f createAgentForm) HelpKeys() []key.Binding {
 	if f.submitting {
 		return nil
 	}
-	return []key.Binding{
-		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
-		key.NewBinding(key.WithKeys("left", "right"), key.WithHelp("←/→", "change")),
-		key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "confirm")),
-		key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
+	if f.picking {
+		return []key.Binding{
+			key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
+			key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select")),
+			key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "back")),
+		}
 	}
+	binds := []key.Binding{key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next"))}
+	switch f.focus {
+	case caType, caModel:
+		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "pick")))
+	default:
+		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "confirm")))
+	}
+	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
 type createFailedMsg struct{ message string }
