@@ -130,6 +130,7 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 		Config:    cfg,
 		Styles:    theme.New(theme.ByName(resolveTheme(cfg))),
 		Glyphs:    glyph.New(glyph.ParseMode(resolveIcons(cfg))),
+		Icons:     glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
 	}, nil
 }
 

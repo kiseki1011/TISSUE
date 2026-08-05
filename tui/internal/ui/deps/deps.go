@@ -25,4 +25,5 @@ type Deps struct {
 	Config    *config.Config
 	Styles    theme.Styles
 	Glyphs    glyph.Set
+	Icons     string // active glyph mode (auto/nerd/unicode), so the Options picker can reflect and change it
 }

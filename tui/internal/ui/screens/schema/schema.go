@@ -123,6 +123,11 @@ type Model struct {
 	optionsEditing bool
 	options        optionsForm
 
+	// a just-created select/checklist field whose options editor should auto-open once its type's
+	// detail reloads (the create call returns no id, so the field is matched by name)
+	pendingOptionsType int
+	pendingOptionsName string
+
 	creatingWorkflow bool
 	cworkflow        createWorkflowForm
 
@@ -187,6 +192,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		if m.optionsEditing && msg.Err == nil && msg.ID == m.options.typeID {
 			m.reseedOptions(msg.Detail)
+		}
+		if m.pendingOptionsType == msg.ID {
+			name := m.pendingOptionsName
+			m.pendingOptionsType, m.pendingOptionsName = 0, ""
+			if msg.Err == nil {
+				if mm, cmd, ok := m.openOptionsForNewField(msg.ID, name); ok {
+					return mm, cmd
+				}
+			}
 		}
 		return m, nil
 	case fieldsReorderedMsg:

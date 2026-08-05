@@ -17,6 +17,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/nav"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/agents"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/connecting"
@@ -199,6 +200,8 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case themeSelectedMsg:
 		return a.applyTheme(msg.name)
+	case iconsSelectedMsg:
+		return a.applyIcons(msg.mode)
 	case logoutMsg:
 		// revoke + clear tokens in the background. The probe runs once that completes (loggedOutMsg)
 		a.modal, a.modalScroll = nil, 0
@@ -560,6 +563,25 @@ func (a App) applyTheme(name string) (tea.Model, tea.Cmd) {
 	t := a.deps.Styles.Theme
 	a.help = newHelpModel(t)
 	a.toasts = a.toasts.Retheme(t)
+	a.home = a.home.Retheme(a.deps)
+	a.schema = a.schema.Retheme(a.deps)
+	a.agents = a.agents.Retheme(a.deps)
+	a.project = a.project.Retheme(a.deps)
+	return a, nil
+}
+
+// applyIcons switches the glyph set live and persists the choice, mirroring applyTheme. The header
+// reads deps.Glyphs on each render, so only the cached consumers (toasts, screens) need refreshing.
+func (a App) applyIcons(mode string) (tea.Model, tea.Cmd) {
+	a.deps.Glyphs = glyph.New(glyph.ParseMode(mode))
+	a.deps.Icons = mode
+	if a.deps.Config != nil {
+		a.deps.Config.Icons = mode
+		if err := a.deps.Config.Save(); err != nil {
+			slog.Warn("save icons", "mode", mode, "err", err)
+		}
+	}
+	a.toasts = a.toasts.Reglyph(a.deps.Glyphs)
 	a.home = a.home.Retheme(a.deps)
 	a.schema = a.schema.Retheme(a.deps)
 	a.agents = a.agents.Retheme(a.deps)

@@ -31,6 +31,7 @@ const (
 const (
 	pickerNone = iota
 	pickerTheme
+	pickerIcons
 	pickerPosition
 )
 
@@ -40,6 +41,9 @@ var sectionLabels = []string{"Info", "Settings", "Account"}
 
 // themeSelectedMsg asks the shell to switch the whole app to the named theme (and persist it).
 type themeSelectedMsg struct{ name string }
+
+// iconsSelectedMsg asks the shell to switch the glyph set (and persist it).
+type iconsSelectedMsg struct{ mode string }
 
 // logoutMsg asks the shell to drop the session and return to login.
 type logoutMsg struct{}
@@ -102,6 +106,9 @@ type optionsModal struct {
 	themes  []string
 	themeIx int // index of the applied theme
 
+	iconsModes []string
+	iconsIx    int
+
 	section int
 	focus   int // control index within the current section
 
@@ -123,9 +130,18 @@ func newOptionsModal(d deps.Deps, user domain.Profile) (optionsModal, tea.Cmd) {
 			ix = i
 		}
 	}
+	iconsModes := []string{"auto", "nerd", "unicode"}
+	iconsIx := 0
+	for i, n := range iconsModes {
+		if n == d.Icons {
+			iconsIx = i
+		}
+	}
 	m := optionsModal{
 		deps: d, theme: d.Styles.Theme, user: user,
-		themes: themes, themeIx: ix, section: sectionInfo, positionsLoading: true,
+		themes: themes, themeIx: ix,
+		iconsModes: iconsModes, iconsIx: iconsIx,
+		section: sectionInfo, positionsLoading: true,
 	}
 	return m, loadOptionPositions(d)
 }
@@ -133,7 +149,7 @@ func newOptionsModal(d deps.Deps, user domain.Profile) (optionsModal, tea.Cmd) {
 func (m optionsModal) controls() int {
 	switch m.section {
 	case sectionSettings:
-		return 1 // theme
+		return 2 // theme, icons
 	case sectionAccount:
 		return 2 // position, logout
 	default:
@@ -142,6 +158,7 @@ func (m optionsModal) controls() int {
 }
 
 func (m optionsModal) onThemeControl() bool { return m.section == sectionSettings && m.focus == 0 }
+func (m optionsModal) onIconsControl() bool { return m.section == sectionSettings && m.focus == 1 }
 func (m optionsModal) onPositionControl() bool {
 	return m.section == sectionAccount && m.focus == 0
 }
@@ -220,6 +237,8 @@ func (m optionsModal) activate() (appModal, tea.Cmd) {
 	switch {
 	case m.onThemeControl():
 		return m.openThemePicker(), nil
+	case m.onIconsControl():
+		return m.openIconsPicker(), nil
 	case m.onPositionControl():
 		return m.openPositionPicker(), nil
 	case m.onLogoutControl():
@@ -255,6 +274,25 @@ func (m optionsModal) openThemePicker() optionsModal {
 	return m
 }
 
+func (m optionsModal) openIconsPicker() optionsModal {
+	opts := make([]widgets.PickerOption, len(m.iconsModes))
+	for i, n := range m.iconsModes {
+		opts[i] = widgets.PickerOption{Value: n, Label: iconsLabel(n)}
+	}
+	m.pick = widgets.NewListPicker("Icons", opts, m.iconsModes[m.iconsIx], len(m.iconsModes), 22)
+	m.picking = pickerIcons
+	return m
+}
+
+func (m optionsModal) selectIcons(mode string) (appModal, tea.Cmd) {
+	for i, n := range m.iconsModes {
+		if n == mode {
+			m.iconsIx = i
+		}
+	}
+	return m, func() tea.Msg { return iconsSelectedMsg{mode: mode} }
+}
+
 // openPositionPicker stays closed while the list is loading or failed to load — there is nothing to
 // choose.
 func (m optionsModal) openPositionPicker() optionsModal {
@@ -281,6 +319,8 @@ func (m optionsModal) applyPick() (appModal, tea.Cmd) {
 	switch which {
 	case pickerTheme:
 		return m.selectTheme(sel.Value)
+	case pickerIcons:
+		return m.selectIcons(sel.Value)
 	case pickerPosition:
 		return m.selectPosition(sel.Value)
 	}
@@ -346,6 +386,9 @@ func (m optionsModal) onClick(msg tea.MouseClickMsg) (appModal, tea.Cmd) {
 	case zone.Get("opt.theme").InBounds(msg):
 		m.section, m.focus = sectionSettings, 0
 		return m.openThemePicker(), nil
+	case zone.Get("opt.icons").InBounds(msg):
+		m.section, m.focus = sectionSettings, 1
+		return m.openIconsPicker(), nil
 	case zone.Get("opt.pos").InBounds(msg):
 		m.section, m.focus = sectionAccount, 0
 		return m.openPositionPicker(), nil
@@ -415,6 +458,9 @@ func (m optionsModal) settingsBody() string {
 	rows := []string{
 		m.head("Theme"),
 		"  " + m.themeButton(),
+		"",
+		m.head("Icons"),
+		"  " + m.iconsButton(),
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
@@ -446,6 +492,10 @@ func (m optionsModal) serverValue() string {
 
 func (m optionsModal) themeButton() string {
 	return zone.Mark("opt.theme", m.dropdownButton(themeLabel(m.themes[m.themeIx]), m.onThemeControl()))
+}
+
+func (m optionsModal) iconsButton() string {
+	return zone.Mark("opt.icons", m.dropdownButton(iconsLabel(m.iconsModes[m.iconsIx]), m.onIconsControl()))
 }
 
 // positionEditable gates the dropdown affordance, the enter/click action, and the footer hint together
@@ -574,6 +624,8 @@ func (m optionsModal) HelpKeys() []key.Binding {
 	switch {
 	case m.onThemeControl():
 		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "theme")))
+	case m.onIconsControl():
+		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "icons")))
 	case m.onPositionControl():
 		// only advertise the action when the position can actually be edited (list loaded, not
 		// saving). Otherwise enter is a no-op and the hint would promise nothing
@@ -651,6 +703,17 @@ func themeLabel(name string) string {
 		}
 	}
 	return strings.Join(parts, " ")
+}
+
+func iconsLabel(mode string) string {
+	switch mode {
+	case "nerd":
+		return "Nerd Font"
+	case "unicode":
+		return "Unicode"
+	default:
+		return "Auto"
+	}
 }
 
 func roleLabel(role string) string {
