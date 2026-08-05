@@ -178,16 +178,19 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 	val := lipgloss.NewStyle().Foreground(t.Text)
 	const labelW = 11 // glyph + two spaces + fixed-width field name, matching other tabs' Details
 	row := func(glyph, k, v string) string {
-		return key.Render(fit(glyph+"  "+k, labelW)) + val.Render(fit(v, max(1, w-labelW)))
+		if glyph != "" {
+			k = glyph + "  " + k
+		}
+		return key.Render(fit(k, labelW)) + val.Render(fit(v, max(1, w-labelW)))
 	}
 	lines := []string{
 		"",
 		m.agentTitle(a, w),
 		"",
-		row(g.Or(g.At, "@"), "Handle", "@"+a.Username),
-		row(g.Or(g.Tag, "#"), "Type", orDash(titleCase(a.AgentType))),
-		row(g.Or(g.Flash, "*"), "Model", orDash(a.ModelName)),
-		row(g.Or(g.Calendar, "·"), "Created", fmtDate(a.CreatedAt)),
+		row(g.Or(g.At, ""), "Handle", "@"+a.Username),
+		row(g.Or(g.Tag, ""), "Type", orDash(titleCase(a.AgentType))),
+		row(g.Or(g.Flash, ""), "Model", orDash(a.ModelName)),
+		row(g.Or(g.Calendar, ""), "Created", fmtDate(a.CreatedAt)),
 		"",
 	}
 	// A long description reads as a wrapped block rather than a truncated fixed-width row.
