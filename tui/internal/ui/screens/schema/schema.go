@@ -1384,8 +1384,7 @@ func (m Model) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 			s.Error.Render("Failed to load catalogs."))
 	}
-	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.leftColumn(), " ", m.detailPanel())
-	view := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
+	view := m.dashboard()
 	switch {
 	case m.editing:
 		return m.overlayModal(view, m.edit.View())
@@ -1411,6 +1410,17 @@ func (m Model) View() string {
 		return m.overlayModal(view, m.flow.View())
 	}
 	return view
+}
+
+// dashboard arranges the catalog lists and the Details panel: side by side, or stacked (Details above
+// the lists) on a narrow-and-tall terminal.
+func (m Model) dashboard() string {
+	if m.stacked() {
+		stack := lipgloss.JoinVertical(lipgloss.Left, m.detailPanel(), m.leftColumn())
+		return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, stack)
+	}
+	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.leftColumn(), " ", m.detailPanel())
+	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
 }
 
 // overlayModal centers a modal over a dimmed copy of the dashboard, splicing it in by hand so
@@ -1559,15 +1569,50 @@ func (m Model) followModalFocus() Model {
 // panelWidths splits the dashboard 3:2 — the two catalog lists on the left, the Details panel
 // on the right — matching the Projects tab's list/detail ratio for a consistent look.
 func (m Model) panelWidths() (left, right int) {
+	if m.stacked() {
+		full := m.width - 2*hInset
+		return full, full
+	}
 	usable := m.width - 2*hInset - colGap
 	left = usable * 3 / 5
 	right = usable - left
 	return left, right
 }
 
-// typesHeight/workflowsHeight split the left column 1:1.
-func (m Model) typesHeight() int    { return m.height / 2 }
-func (m Model) workflowHeight() int { return m.height - m.typesHeight() }
+const (
+	// below this width, a tall-enough terminal stacks the Details above the lists instead of beside them
+	stackBelowW = 100
+	stackMinH   = 24
+)
+
+// stacked reports whether the narrow-and-tall terminal should stack the Details above the lists.
+func (m Model) stacked() bool {
+	return components.StackVertically(m.width, m.height, stackBelowW, stackMinH)
+}
+
+// stackDetailH is the Details' top slice when stacked; the lists take the rest.
+func (m Model) stackDetailH() int { return min(max(m.height*9/20, 8), m.height-8) }
+
+// colHeight is the height the catalog lists occupy: the full height side by side, or the bottom
+// slice beneath the Details when stacked.
+func (m Model) colHeight() int {
+	if m.stacked() {
+		return m.height - m.stackDetailH()
+	}
+	return m.height
+}
+
+// detailHeight is the Details panel's height: the full height side by side, or the top slice when stacked.
+func (m Model) detailHeight() int {
+	if m.stacked() {
+		return m.stackDetailH()
+	}
+	return m.height
+}
+
+// typesHeight/workflowsHeight split the catalog-list column 1:1.
+func (m Model) typesHeight() int    { return m.colHeight() / 2 }
+func (m Model) workflowHeight() int { return m.colHeight() - m.typesHeight() }
 
 // typesInnerH / wfInnerH are the number of visible two-line data rows in each list box: the
 // box height less its borders, vertical padding, and the one header row, floored to whole
@@ -1916,7 +1961,7 @@ func padBody(lines []string, contentW int) string {
 func (m Model) detailPanel() string {
 	_, rightW := m.panelWidths()
 	t := m.deps.Styles.Theme
-	totalRows := max(1, m.height-2)
+	totalRows := max(1, m.detailHeight()-2)
 	viewH := m.detailViewHeight()
 	contentW := m.detailContentW()
 
@@ -1963,7 +2008,7 @@ func (m Model) detailContentW() int {
 	return max(1, rightW-detailInsetL-detailInsetR-detailScrollbar)
 }
 
-func (m Model) detailViewHeight() int { return max(1, m.height-2-detailPadBottom) }
+func (m Model) detailViewHeight() int { return max(1, m.detailHeight()-2-detailPadBottom) }
 
 func (m Model) detailScrollMax() int {
 	return max(0, len(m.detailContent())-m.detailViewHeight())

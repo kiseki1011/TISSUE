@@ -28,6 +28,20 @@ const (
 	paneTokens
 )
 
+// layoutKind is how the list and detail panes share the screen.
+type layoutKind int
+
+const (
+	layoutSide    layoutKind = iota // list left, detail right
+	layoutStacked                   // detail on top, list below (narrow and tall terminals)
+)
+
+const (
+	// below this width, a tall-enough terminal stacks the panes instead of splitting side by side
+	stackBelowW = 90
+	stackMinH   = 20
+)
+
 // confirmKind records what an open confirm dialog will do when accepted, so one shared ConfirmForm
 // serves both destructive actions.
 type confirmKind int

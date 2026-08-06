@@ -801,6 +801,9 @@ func (m Model) View() string {
 
 func (m Model) dashboard() string {
 	left := lipgloss.JoinVertical(lipgloss.Left, m.searchRow(), m.listPanel())
+	if m.stacked() {
+		return lipgloss.JoinVertical(lipgloss.Left, m.detailPanel(), left)
+	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, " ", m.detailPanel())
 }
 
@@ -939,7 +942,7 @@ func (m Model) detailBody() string {
 }
 
 func (m Model) detailBodyRows() int {
-	return max(1, m.height-2)
+	return max(1, m.detailHeight()-2)
 }
 
 func (m Model) detailBodyHeight() int {
@@ -1042,8 +1045,29 @@ func (m Model) innerWidth() int {
 	return m.width - 2*hInset
 }
 
-// panelWidths splits the inner width into a 3:2 list/detail pair with a one-cell gap.
+// stacked reports whether the narrow-and-tall terminal should stack the Details above the list.
+func (m Model) stacked() bool {
+	return components.StackVertically(m.width, m.height, m.sideFloor(), stackMinH)
+}
+
+// stackDetailH is the Details' top slice when stacked; the search row and list take the rest.
+func (m Model) stackDetailH() int { return min(max(m.height*9/20, 8), m.height-8) }
+
+// detailHeight is the Details panel's height: the full height side by side, the top slice when stacked.
+func (m Model) detailHeight() int {
+	if m.stacked() {
+		return m.stackDetailH()
+	}
+	return m.height
+}
+
+// panelWidths splits the inner width into a 3:2 list/detail pair with a one-cell gap. When stacked
+// each occupies the full inner width, one above the other.
 func (m Model) panelWidths() (left, right int) {
+	if m.stacked() {
+		full := m.innerWidth()
+		return full, full
+	}
 	usable := m.innerWidth() - 1
 	left = usable * 3 / 5
 	right = usable - left
@@ -1065,17 +1089,33 @@ const (
 // fallback words, so nerd mode floors lower). But if the six-column layout would not
 // yet fit by the width it reappears at, hold the floor there instead so the band where
 // Repository shows is never rendered broken.
+// stackMinH is the height at or above which a too-narrow terminal stacks the Details above a
+// full-width list instead of refusing to render.
+const stackMinH = 30
+
+// minWidth is the smallest terminal width that still renders the dashboard. A tall terminal stacks
+// the Details above a full-width list, which fits the project table at a narrower width than the
+// side-by-side floor.
 func (m Model) minWidth() int {
-	if floor6 := m.tableFloorWidth(true, titleColFloor); floor6 > repoColMinWidth {
+	return m.floorWidth(m.height >= stackMinH)
+}
+
+// sideFloor is the width below which the side-by-side layout can no longer render the table.
+func (m Model) sideFloor() int { return m.floorWidth(false) }
+
+// floorWidth is the width floor for the given arrangement: stacked gives the table the full inner
+// width, side by side gives it 3/5 of it.
+func (m Model) floorWidth(stacked bool) int {
+	if floor6 := m.tableFloorWidth(true, titleColFloor, stacked); floor6 > repoColMinWidth {
 		return floor6
 	}
-	return m.tableFloorWidth(false, titleColComfort)
+	return m.tableFloorWidth(false, titleColComfort, stacked)
 }
 
 // tableFloorWidth is the smallest terminal width at which the project table's Title
 // column still reaches titleMin cells for the given column set. It inverts the
 // panelWidths -> tableW -> projectColumns chain.
-func (m Model) tableFloorWidth(showRepo bool, titleMin int) int {
+func (m Model) tableFloorWidth(showRepo bool, titleMin int, stacked bool) int {
 	_, vis, arch := columnTitles(m.deps.Glyphs)
 	visW, archW := glyphColW(vis), glyphColW(arch)
 	ncols, fixed := 5, activityColW+10+visW+archW // activity + key + vis + arch
@@ -1083,12 +1123,18 @@ func (m Model) tableFloorWidth(showRepo bool, titleMin int) int {
 		ncols, fixed = 6, activityColW+10+21+visW+archW // + repository
 	}
 	tableMin := titleMin + 2*ncols + fixed // projectColumns: titleW = tableW - 2*ncols - fixed
-	leftMin := tableMin + 6                // relayout: tableW = leftW - 6
-	usable := (leftMin*5 + 2) / 3          // panelWidths: leftW = usable*3/5, inverted and ceil'd
-	return usable + 5                      // innerWidth = width - 4. usable = innerWidth - 1
+	if stacked {
+		return tableMin + 6 + 2*hInset // relayout: tableW = leftW - 6, leftW = innerWidth = width - 2*hInset
+	}
+	leftMin := tableMin + 6       // relayout: tableW = leftW - 6
+	usable := (leftMin*5 + 2) / 3 // panelWidths: leftW = usable*3/5, inverted and ceil'd
+	return usable + 5             // innerWidth = width - 4. usable = innerWidth - 1
 }
 
 func (m Model) panelHeight() int {
+	if m.stacked() {
+		return m.height - m.stackDetailH() - searchRowH // the list takes the bottom slice under the Details
+	}
 	return m.height - searchRowH
 }
 

@@ -307,14 +307,15 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 	m, _ = m.Update(AgentsLoadedMsg{Agents: many})
 	m.cursor = 39 // last agent, far past the fold
 
-	pane := plain(m.agentsPane())
+	leftW, _ := m.panelWidths()
+	pane := plain(m.agentsPane(leftW, m.height))
 	if got := len(strings.Split(pane, "\n")); got > h {
 		t.Errorf("agents pane = %d rows, want <= height %d (list overflowed)", got, h)
 	}
 	// the selected row carries its click zone this frame, proving it is within the window
 	m.View()
 	for i := 0; i < 1000; i++ {
-		if _ = zone.Scan(m.agentsPane()); zone.Get(agentRowZone(39)) != nil {
+		if _ = zone.Scan(m.agentsPane(leftW, m.height)); zone.Get(agentRowZone(39)) != nil {
 			break
 		}
 	}
@@ -325,7 +326,7 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 
 // The view renders without panicking across a range of sizes, including below the minimum.
 func TestViewNoPanic(t *testing.T) {
-	for _, sz := range [][2]int{{40, 8}, {60, 12}, {100, 24}, {200, 50}} {
+	for _, sz := range [][2]int{{40, 8}, {60, 12}, {70, 40}, {100, 24}, {200, 50}} {
 		zone.NewGlobal()
 		m := New(testDeps())
 		m, _ = m.Update(tea.WindowSizeMsg{Width: sz[0], Height: sz[1]})

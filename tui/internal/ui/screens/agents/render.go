@@ -71,8 +71,7 @@ func (m Model) View() string {
 			s.Error.Render("Failed to load agents."))
 	}
 
-	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.agentsPane(), " ", m.detailPane())
-	view := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
+	view := m.dashboard()
 
 	switch {
 	case m.creating:
@@ -89,12 +88,40 @@ func (m Model) View() string {
 	return view
 }
 
+// dashboard arranges the agents list and the detail pane per the active layout: side by side, or
+// stacked (detail above the list) on a narrow-and-tall terminal.
+func (m Model) dashboard() string {
+	if m.layout() == layoutStacked {
+		w, detailH := m.stackWidth(), m.stackDetailH()
+		stack := lipgloss.JoinVertical(lipgloss.Left, m.detailPane(w, detailH), m.agentsPane(w, m.height-detailH))
+		return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, stack)
+	}
+	leftW, rightW := m.panelWidths()
+	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.agentsPane(leftW, m.height), " ", m.detailPane(rightW, m.height))
+	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
+}
+
+// layout resolves the arrangement from the terminal size: stacked when narrow and tall, else side by side.
+func (m Model) layout() layoutKind {
+	if components.StackVertically(m.width, m.height, stackBelowW, stackMinH) {
+		return layoutStacked
+	}
+	return layoutSide
+}
+
+// stackWidth is the single-column width the stacked and list-only arrangements use, capped so a very
+// wide terminal does not stretch rows to an unreadable measure.
+func (m Model) stackWidth() int { return clamp(m.width-2*hInset, 24, 84) }
+
+// stackDetailH gives the detail (summary block plus a few tokens) the top slice, leaving the rest for
+// the list below.
+func (m Model) stackDetailH() int { return clamp(m.height*45/100, 10, m.height-6) }
+
 // The list windows to the selected row so a long list never overflows the pane.
-func (m Model) agentsPane() string {
+func (m Model) agentsPane(w, h int) string {
 	t := m.deps.Styles.Theme
-	leftW, _ := m.panelWidths()
-	innerW := leftW - 4
-	bodyH := max(1, m.height-2)
+	innerW := w - 4
+	bodyH := max(1, h-2)
 	rows := []string{"", m.newAffordance(zoneNewAgent, "New agent", "n", innerW, m.hover == zoneNewAgent), ""}
 
 	if len(m.agents) == 0 {
@@ -145,30 +172,28 @@ func (m Model) hoverBand() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(t.Text).Background(components.MixColors(t.Selection, t.Background, 0.5))
 }
 
-func (m Model) detailPane() string {
-	t := m.deps.Styles.Theme
-	_, rightW := m.panelWidths()
-	innerW := rightW - 4
-	border := t.Primary
+func (m Model) detailPane(w, h int) string {
+	border := m.deps.Styles.Theme.Primary
 	if m.focus == paneTokens {
-		border = t.Accent
+		border = m.deps.Styles.Theme.Accent
 	}
+	return zone.Mark("agents.detail", components.TitledRule("Details", "", m.detailContent(w-4, max(1, h-2)), border))
+}
 
-	bodyH := max(1, m.height-2)
+// detailContent is the inner block shared by the inline pane and the stacked pane: the agent summary, the
+// new-token affordance, and the windowed tokens list, sized to innerW x bodyH.
+func (m Model) detailContent(innerW, bodyH int) string {
 	a, ok := m.selectedAgent()
 	if !ok {
-		body := lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(
+		return lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(
 			m.deps.Styles.Muted.Render("Select an agent to manage its tokens."))
-		return components.TitledRule("Details", "", body, border)
 	}
-
 	prefix := lipgloss.JoinVertical(lipgloss.Left,
 		m.agentSummary(a, innerW), "",
 		m.newAffordance(zoneNewToken, "New token", "a", innerW, m.hover == zoneNewToken), "")
 	tokAvail := bodyH - lipgloss.Height(prefix)
 	rows := append([]string{prefix}, m.tokensBlock(innerW, tokAvail)...)
-	body := lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
-	return zone.Mark("agents.detail", components.TitledRule("Details", "", body, border))
+	return lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
 }
 
 func (m Model) agentSummary(a domain.Agent, w int) string {
