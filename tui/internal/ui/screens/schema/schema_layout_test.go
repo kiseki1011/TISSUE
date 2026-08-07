@@ -31,7 +31,7 @@ func fieldOptions(names ...string) []domain.FieldOption {
 
 func mk(w, h, nTypes, nWf int, longNames bool) Model {
 	zone.NewGlobal()
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: w, Height: h})
 	var ts []domain.IssueTypeSummary
@@ -123,7 +123,7 @@ func TestFieldRowsFitContentWidth(t *testing.T) {
 func TestControlCharactersDoNotSplitRows(t *testing.T) {
 	const w, h = 160, 25 // wide enough that the field description is not merely width-clipped
 	zone.NewGlobal()
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: w, Height: h})
 	m, _ = m.Update(LoadedMsg{

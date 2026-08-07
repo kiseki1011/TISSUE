@@ -12,7 +12,7 @@ import (
 )
 
 func autoOpenModel() Model {
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 120, Height: 30})
 	m, _ = m.Update(LoadedMsg{Types: []domain.IssueTypeSummary{{ID: 1, Name: "Bug"}}})

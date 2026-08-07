@@ -26,4 +26,5 @@ type Deps struct {
 	Styles    theme.Styles
 	Glyphs    glyph.Set
 	Icons     string // active glyph mode (auto/nerd/unicode), so the Options picker can reflect and change it
+	Mouse     bool   // whether mouse capture is on, so screens hide click-only affordances (Edit pens, + buttons) when off
 }

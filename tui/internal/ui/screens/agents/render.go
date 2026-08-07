@@ -122,12 +122,18 @@ func (m Model) agentsPane(w, h int) string {
 	t := m.deps.Styles.Theme
 	innerW := w - 4
 	bodyH := max(1, h-2)
-	rows := []string{"", m.newAffordance(zoneNewAgent, "New agent", "n", innerW, m.hover == zoneNewAgent), ""}
+	rows := []string{""}
+	headerH := 1 // the leading blank row
+	if m.deps.Mouse {
+		// the "+ New agent" click affordance is hidden when the mouse is off (n does the same)
+		rows = append(rows, m.newAffordance(zoneNewAgent, "New agent", "n", innerW, m.hover == zoneNewAgent), "")
+		headerH = 3
+	}
 
 	if len(m.agents) == 0 {
 		rows = append(rows, m.deps.Styles.Muted.Render("No agents yet. Press "+accent(t, "n")+" to create one."))
 	} else {
-		visible := max(1, (bodyH-3)/rowHeight) // rows below the blank + affordance + blank header
+		visible := max(1, (bodyH-headerH)/rowHeight) // rows below the header block
 		top := listTop(m.cursor, visible, len(m.agents))
 		for j := top; j < len(m.agents) && j < top+visible; j++ {
 			rows = append(rows, zone.Mark(agentRowZone(j), m.agentRow(m.agents[j], j, innerW, m.hover == agentRowZone(j))))
@@ -188,9 +194,12 @@ func (m Model) detailContent(innerW, bodyH int) string {
 		return lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(
 			m.deps.Styles.Muted.Render("Select an agent to manage its tokens."))
 	}
-	prefix := lipgloss.JoinVertical(lipgloss.Left,
-		m.agentSummary(a, innerW), "",
-		m.newAffordance(zoneNewToken, "New token", "a", innerW, m.hover == zoneNewToken), "")
+	parts := []string{m.agentSummary(a, innerW), ""}
+	if m.deps.Mouse {
+		// the "+ New token" click affordance is hidden when the mouse is off (a does the same)
+		parts = append(parts, m.newAffordance(zoneNewToken, "New token", "a", innerW, m.hover == zoneNewToken), "")
+	}
+	prefix := lipgloss.JoinVertical(lipgloss.Left, parts...)
 	tokAvail := bodyH - lipgloss.Height(prefix)
 	rows := append([]string{prefix}, m.tokensBlock(innerW, tokAvail)...)
 	return lipgloss.NewStyle().Width(innerW).Height(bodyH).MaxHeight(bodyH).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
@@ -228,6 +237,10 @@ func (m Model) agentSummary(a domain.Agent, w int) string {
 
 func (m Model) agentTitle(a domain.Agent, w int) string {
 	t := m.deps.Styles.Theme
+	nameStyle := lipgloss.NewStyle().Foreground(t.Primary).Bold(true)
+	if !m.deps.Mouse {
+		return nameStyle.Render(fit(a.Name, w)) // no Edit pen when the mouse is off (e does the same)
+	}
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "Edit")
 	penColor := t.Primary
 	if m.hover == zoneAgentEdit {
@@ -235,7 +248,7 @@ func (m Model) agentTitle(a domain.Agent, w int) string {
 	}
 	penStr := zone.Mark(zoneAgentEdit, lipgloss.NewStyle().Foreground(penColor).Render(" "+pen+" "))
 	nameW := max(1, w-lipgloss.Width(penStr))
-	name := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render(fit(a.Name, nameW))
+	name := nameStyle.Render(fit(a.Name, nameW))
 	gap := max(0, w-lipgloss.Width(name)-lipgloss.Width(penStr))
 	return name + strings.Repeat(" ", gap) + penStr
 }

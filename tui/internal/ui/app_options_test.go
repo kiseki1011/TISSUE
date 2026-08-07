@@ -195,6 +195,75 @@ func TestOptionsIconsSwitchPersists(t *testing.T) {
 	}
 }
 
+// Toggling the mouse control turns capture off app-wide (a.mouse + deps.Mouse) and repaints the
+// modal checkbox.
+func TestOptionsMouseToggleApplies(t *testing.T) {
+	zone.NewGlobal()
+	d := deps.Deps{
+		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode),
+		Server: "http://localhost:8080", Mouse: true,
+	}
+	a := New(d)
+	a.screen = screenSchema
+	a.schema = schema.New(d)
+	a.width, a.height = 100, 32
+	if !a.mouse {
+		t.Fatal("app should start with the mouse on")
+	}
+
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings (theme control)
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons
+	m, _ = m.(App).Update(keyPress("down")) // icons -> mouse
+	m, cmd := m.(App).Update(optKeyEnter()) // toggle
+	if cmd == nil {
+		t.Fatal("toggling the mouse control emitted no command")
+	}
+	m, _ = m.(App).Update(cmd()) // deliver the mouseSelectedMsg
+	app := m.(App)
+	if app.mouse || app.deps.Mouse {
+		t.Errorf("mouse not turned off: app.mouse=%v deps.Mouse=%v", app.mouse, app.deps.Mouse)
+	}
+	if om, ok := app.modal.(optionsModal); !ok || om.mouseOn {
+		t.Error("the modal checkbox did not repaint to off")
+	}
+}
+
+// A mouse toggle is written to the config file so it survives a restart.
+func TestOptionsMouseTogglePersists(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("load config: %v", err)
+	}
+	zone.NewGlobal()
+	d := deps.Deps{
+		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode),
+		Server: "http://localhost:8080", Config: cfg, Mouse: true,
+	}
+	a := New(d)
+	a.screen = screenSchema
+	a.schema = schema.New(d)
+	a.width, a.height = 100, 32
+
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons
+	m, _ = m.(App).Update(keyPress("down")) // icons -> mouse
+	m, cmd := m.(App).Update(optKeyEnter()) // toggle
+	m.(App).Update(cmd())                   // applyMouse -> Config.Save()
+
+	reloaded, err := config.Load()
+	if err != nil {
+		t.Fatalf("reload config: %v", err)
+	}
+	if reloaded.Mouse != "off" {
+		t.Errorf("mouse setting not persisted to disk: %q, want off", reloaded.Mouse)
+	}
+}
+
 // Mouse clicks on the theme control (Settings) open its list popup, and on the logout button (Account)
 // drop the session — the same effects as the keyboard.
 func TestOptionsClickZones(t *testing.T) {

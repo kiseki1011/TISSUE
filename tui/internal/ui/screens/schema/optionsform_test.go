@@ -14,7 +14,7 @@ import (
 func keyO() tea.KeyPressMsg { return tea.KeyPressMsg{Code: 'o', Text: "o"} }
 
 func optionsDeps() deps.Deps {
-	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
 
 // Pressing o on a SELECT_OPTION field opens the options editor seeded with the field's options; on

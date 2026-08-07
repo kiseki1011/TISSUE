@@ -2094,7 +2094,11 @@ func (m Model) titleWithEdit(name string, focused bool, contentW int) string {
 	if focused {
 		style = lipgloss.NewStyle().Foreground(s.Theme.Accent).Bold(true)
 	}
-	return rightAlignAction(style.Render(name), m.typeEditButton(focused), contentW)
+	title := style.Render(name)
+	if !m.deps.Mouse {
+		return title // no Edit pen when the mouse is off (the focused block's e/enter still edits)
+	}
+	return rightAlignAction(title, m.typeEditButton(focused), contentW)
 }
 
 // typeEditButton is the pen affordance that opens the issue type metadata editor: Accent while its
@@ -2112,7 +2116,11 @@ func (m Model) workflowTitleWithEdit(name string, focused bool, contentW int) st
 	if focused {
 		style = lipgloss.NewStyle().Foreground(s.Theme.Accent).Bold(true)
 	}
-	return rightAlignAction(style.Render(name), m.wfEditButton(focused), contentW)
+	title := style.Render(name)
+	if !m.deps.Mouse {
+		return title // no Edit pen when the mouse is off (the focused block's e/enter still edits)
+	}
+	return rightAlignAction(title, m.wfEditButton(focused), contentW)
 }
 
 // wfEditButton is the pen affordance that opens the workflow metadata editor: Accent while its
@@ -2273,6 +2281,9 @@ func indentedWrap(style lipgloss.Style, text string, indent, contentW int) []str
 }
 
 func (m Model) fieldEditButton(fieldID int, focused bool) string {
+	if !m.deps.Mouse {
+		return "" // no per-field edit pen when the mouse is off (the focused field's e/enter still edits)
+	}
 	zoneID := fieldEditZone(fieldID)
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "edit")
 	return zone.Mark(zoneID, m.penStyle(zoneID, focused).Render(" "+pen+" "))

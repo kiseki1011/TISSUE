@@ -25,6 +25,7 @@ func testDeps() deps.Deps {
 		Server: "https://tissue.example.com",
 		Styles: theme.New(theme.TokyoNight()),
 		Glyphs: glyph.New(glyph.Unicode),
+		Mouse:  true,
 	}
 }
 

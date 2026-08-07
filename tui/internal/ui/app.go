@@ -109,7 +109,7 @@ func New(d deps.Deps) App {
 		deps:       d,
 		screen:     screenConnecting,
 		connecting: connecting.New(d),
-		mouse:      true,
+		mouse:      d.Mouse,
 		help:       newHelpModel(t),
 		toasts:     toast.New(t, d.Glyphs),
 	}
@@ -168,10 +168,6 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.tabNavActive() {
 				return a.openOptions()
 			}
-		case "ctrl+o":
-			a.mouse = !a.mouse
-			a.hoverTab = "" // no motion events arrive while the mouse is off, so clear any stuck highlight
-			return a, nil
 		case "ctrl+l":
 			if a.tabNavActive() {
 				return a.switchTab(a.stepTab(1))
@@ -202,6 +198,8 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a.applyTheme(msg.name)
 	case iconsSelectedMsg:
 		return a.applyIcons(msg.mode)
+	case mouseSelectedMsg:
+		return a.applyMouse(msg.on)
 	case logoutMsg:
 		// revoke + clear tokens in the background. The probe runs once that completes (loggedOutMsg)
 		a.modal, a.modalScroll = nil, 0
@@ -589,6 +587,34 @@ func (a App) applyIcons(mode string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+// applyMouse toggles mouse capture and persists the choice. The View reads a.mouse to set the mouse
+// mode, and the screens read deps.Mouse (refreshed via Retheme) to hide their click-only affordances.
+func (a App) applyMouse(on bool) (tea.Model, tea.Cmd) {
+	a.mouse = on
+	a.deps.Mouse = on
+	if !on {
+		a.hoverTab = "" // no motion events arrive while the mouse is off, so clear any stuck highlight
+	}
+	if a.deps.Config != nil {
+		a.deps.Config.Mouse = mouseSetting(on)
+		if err := a.deps.Config.Save(); err != nil {
+			slog.Warn("save mouse setting", "on", on, "err", err)
+		}
+	}
+	a.home = a.home.Retheme(a.deps)
+	a.schema = a.schema.Retheme(a.deps)
+	a.agents = a.agents.Retheme(a.deps)
+	a.project = a.project.Retheme(a.deps)
+	return a, nil
+}
+
+func mouseSetting(on bool) string {
+	if on {
+		return "on"
+	}
+	return "off"
+}
+
 type loggedOutMsg struct{}
 
 // logoutCmd revokes the session server-side so a token that survives a failed local clear cannot be
@@ -864,10 +890,6 @@ func (a App) footerView() string {
 }
 
 func (a App) globalKeys() []key.Binding {
-	mouse := "mouse: off"
-	if a.mouse {
-		mouse = "mouse: on"
-	}
 	binds := make([]key.Binding, 0, 6)
 	// tab-switch, help and options are gated to the same condition their handlers are (tab screens,
 	// no modal), so the footer never advertises a shortcut that is inert on the current screen.
@@ -879,7 +901,6 @@ func (a App) globalKeys() []key.Binding {
 		)
 	}
 	return append(binds,
-		key.NewBinding(key.WithKeys("ctrl+o"), key.WithHelp("ctrl+o", mouse)),
 		key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "quit")),
 	)
 }
