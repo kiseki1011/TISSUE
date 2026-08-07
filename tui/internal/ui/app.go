@@ -4,6 +4,7 @@ package ui
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
+	"github.com/kiseki1011/TISSUE/tui/internal/realtime"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
@@ -79,6 +81,9 @@ type App struct {
 	modalScroll int            // wheel scroll offset when the open modal is taller than the terminal
 	user        domain.Profile // authenticated member, populated after login
 	sessionGen  int            // bumped on login/logout so a stale in-flight profile fetch is ignored
+
+	rt      *realtime.Consumer // user-scoped SSE stream, live only while authenticated
+	rtState realtime.State     // last connection state, drives the header indicator
 
 	connecting connecting.Model
 	login      login.Model
@@ -200,11 +205,14 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a.applyIcons(msg.mode)
 	case mouseSelectedMsg:
 		return a.applyMouse(msg.on)
+	case realtimeUpdateMsg:
+		return a.applyRealtime(msg.u)
 	case logoutMsg:
 		// revoke + clear tokens in the background. The probe runs once that completes (loggedOutMsg)
 		a.modal, a.modalScroll = nil, 0
 		a.user = domain.Profile{}
 		a.sessionGen++
+		a.stopRealtime() // drop the SSE stream so a logged-out session streams nothing
 		a.screen = screenConnecting
 		a.connecting = connecting.New(a.deps)
 		return a, logoutCmd(a.deps)
@@ -256,9 +264,10 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.home = home.New(a.deps, msg.Info, msg.Welcome)
 		a.schema = schema.New(a.deps)
 		a.agents = agents.New(a.deps)
+		rtCmd := a.startRealtime() // open the user-scoped SSE stream for this session
 		m, cmd := a.withSize(a.home.Init())
 		// prefetch the Schema catalog and the agents list so both tabs are ready when opened
-		return m, tea.Batch(cmd, fetchProfile(a.deps, a.sessionGen), a.schema.Init(), a.agents.Init())
+		return m, tea.Batch(cmd, rtCmd, fetchProfile(a.deps, a.sessionGen), a.schema.Init(), a.agents.Init())
 	case profileLoadedMsg:
 		if msg.gen == a.sessionGen { // drop a profile that belongs to a superseded session
 			a.user = msg.profile
@@ -640,6 +649,67 @@ func logoutCmd(d deps.Deps) tea.Cmd {
 	}
 }
 
+// realtimeUpdateMsg carries one connection-state change or event off the SSE consumer.
+type realtimeUpdateMsg struct{ u realtime.Update }
+
+// startRealtime (re)opens the user-scoped SSE stream for the current session and returns the command
+// that waits for its first update. Any prior stream is stopped first. It no-ops without an authed
+// transport (as in tests), leaving the indicator disconnected.
+func (a *App) startRealtime() tea.Cmd {
+	if a.deps.Transport == nil || a.deps.Server == "" {
+		return nil
+	}
+	if a.rt != nil {
+		a.rt.Stop()
+	}
+	a.rtState = realtime.Connecting
+	c := realtime.New(a.deps.Server, &http.Client{Transport: a.deps.Transport}, a.sessionGen)
+	a.rt = c
+	c.Start()
+	return waitForRealtime(c)
+}
+
+// stopRealtime tears the stream down (on logout) and resets the indicator.
+func (a *App) stopRealtime() {
+	if a.rt != nil {
+		a.rt.Stop()
+		a.rt = nil
+	}
+	a.rtState = realtime.Disconnected
+}
+
+// applyRealtime folds one consumer update into the model and re-arms the wait. Updates from a
+// superseded session (a re-login/logout bumped the generation) are dropped without re-arming, ending
+// that stream's command chain.
+func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
+	if a.rt == nil || u.Gen != a.sessionGen {
+		return a, nil
+	}
+	switch u.Kind {
+	case realtime.StateUpdate:
+		a.rtState = u.State
+	case realtime.EventUpdate:
+		// Phase 1: events have no screen consumers yet (project home pending). Log for the live smoke
+		// test; issue/sprint list patching lands when those screens exist.
+		slog.Debug("realtime event", "category", u.Event.Category, "type", u.Event.Type,
+			"project", u.Event.ProjectKey, "issue", u.Event.IssueKey)
+	}
+	return a, waitForRealtime(a.rt)
+}
+
+// waitForRealtime blocks on the consumer's next update and re-arms itself after each one — the standard
+// BubbleTea pattern for consuming a channel. A closed channel (the consumer was stopped) yields nil,
+// ending the chain harmlessly.
+func waitForRealtime(c *realtime.Consumer) tea.Cmd {
+	return func() tea.Msg {
+		u, ok := <-c.Updates()
+		if !ok {
+			return nil
+		}
+		return realtimeUpdateMsg{u: u}
+	}
+}
+
 // updateModal routes interactive input to the open modal. A left click outside the modal's box
 // dismisses it. Everything else is the modal's to handle (it emits modalClosedMsg to close).
 func (a App) updateModal(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -808,7 +878,7 @@ func (a App) headerView() string {
 		return ""
 	}
 	t := a.deps.Styles.Theme
-	brand := lipgloss.NewStyle().Foreground(t.Success).Bold(true).Render(a.deps.Glyphs.Connected + " Tissue Server")
+	brand := a.connectionBrand()
 	muted := lipgloss.NewStyle().Foreground(t.Muted)
 	left := brand + muted.Render(" · "+a.deps.Server)
 	if a.user.Username != "" {
@@ -823,6 +893,21 @@ func (a App) headerView() string {
 	}
 	line := strings.Repeat(" ", pad) + left + strings.Repeat(" ", gap) + right + strings.Repeat(" ", pad)
 	return lipgloss.NewStyle().MaxWidth(a.width).Render(line)
+}
+
+// connectionBrand renders the "● Tissue Server" label, its dot glyph and colour reflecting the live
+// SSE connection state: connected (success ●), connecting (warning ◐), disconnected (error ✕).
+func (a App) connectionBrand() string {
+	t := a.deps.Styles.Theme
+	g := a.deps.Glyphs
+	dot, col := g.Disconnected, t.Error
+	switch a.rtState {
+	case realtime.Connected:
+		dot, col = g.Connected, t.Success
+	case realtime.Connecting:
+		dot, col = g.Connecting, t.Warning
+	}
+	return lipgloss.NewStyle().Foreground(col).Bold(true).Render(dot + " Tissue Server")
 }
 
 // tabGlyph maps a tab to its nerd glyph. The fallback is empty so plain terminals show
