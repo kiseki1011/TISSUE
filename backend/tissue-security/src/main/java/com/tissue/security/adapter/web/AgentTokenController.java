@@ -1,6 +1,6 @@
 package com.tissue.security.adapter.web;
 
-import com.tissue.feature.member.application.service.AgentService;
+import com.tissue.feature.agent.application.service.AgentService;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.security.adapter.web.request.CreatePatRequest;
 import com.tissue.security.application.dto.GeneratedToken;

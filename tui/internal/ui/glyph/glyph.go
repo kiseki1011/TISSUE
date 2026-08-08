@@ -29,6 +29,17 @@ func ParseMode(value string) Mode {
 	}
 }
 
+func ModeName(m Mode) string {
+	switch m {
+	case Nerd:
+		return "nerd"
+	case Unicode:
+		return "unicode"
+	default:
+		return "auto"
+	}
+}
+
 // Set holds the resolved symbol for each named glyph.
 type Set struct {
 	Connected            string

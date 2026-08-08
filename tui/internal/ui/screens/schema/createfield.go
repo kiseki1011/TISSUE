@@ -523,7 +523,11 @@ func (f createFieldForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-type fieldCreatedMsg struct{ typeID int }
+type fieldCreatedMsg struct {
+	typeID    int
+	fieldType string
+	name      string
+}
 
 type createFieldFailedMsg struct{ message string }
 
@@ -536,6 +540,6 @@ func createField(d deps.Deps, typeID int, name, desc, ftype string, required boo
 		if err := d.Catalog.CreateIssueField(context.Background(), typeID, name, desc, ftype, required, position, nil); err != nil {
 			return createFieldFailedMsg{message: editErrorMessage(err)}
 		}
-		return fieldCreatedMsg{typeID: typeID}
+		return fieldCreatedMsg{typeID: typeID, fieldType: ftype, name: name}
 	}
 }

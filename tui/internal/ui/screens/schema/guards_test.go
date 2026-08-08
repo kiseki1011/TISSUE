@@ -15,7 +15,7 @@ func keyRune(r rune) tea.KeyPressMsg { return tea.KeyPressMsg{Code: r, Text: str
 func keyEnter() tea.KeyPressMsg      { return tea.KeyPressMsg{Code: tea.KeyEnter} }
 
 func guardsDeps() deps.Deps {
-	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
 
 // Pressing g on a selected transition opens the guard editor seeded with its guards; on a

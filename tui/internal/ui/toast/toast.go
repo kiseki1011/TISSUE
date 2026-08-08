@@ -101,6 +101,11 @@ func (m Model) Retheme(t theme.Theme) Model {
 	return m
 }
 
+func (m Model) Reglyph(g glyph.Set) Model {
+	m.glyphs = g
+	return m
+}
+
 // View stacks the toasts into a right-aligned block (newest at the bottom, nearest the corner),
 // or "" when empty.
 func (m Model) View() string {

@@ -345,7 +345,7 @@ func TestGraphFitsWidthWithCJK(t *testing.T) {
 // with Hangul labels, so the right border and scrollbar never drift.
 func TestWorkflowPanelRowsExactWidthCJK(t *testing.T) {
 	zone.NewGlobal()
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 118, Height: 26})
 	m, _ = m.Update(LoadedMsg{Workflows: []domain.WorkflowSummary{{ID: 1, Name: "개발"}}})
@@ -369,7 +369,7 @@ func TestWorkflowPanelRowsExactWidthCJK(t *testing.T) {
 // never exceeds the terminal width.
 func TestWorkflowDetailFlowsVertically(t *testing.T) {
 	zone.NewGlobal()
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 120, Height: 20})
 	m, _ = m.Update(LoadedMsg{Workflows: []domain.WorkflowSummary{{ID: 1, Name: "Development"}}})

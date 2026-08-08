@@ -94,7 +94,7 @@ func TestFieldSaveRefetchesType(t *testing.T) {
 
 // The field form toggles required with space and rejects an empty name before any network call.
 func TestFieldFormRequiredToggleAndValidation(t *testing.T) {
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newFieldForm(d, 1, 11, "Story Points", "effort", false)
 
 	f, _ = f.focusOn(ffRequired)

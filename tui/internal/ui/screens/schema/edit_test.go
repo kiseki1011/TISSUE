@@ -17,7 +17,7 @@ import (
 func mkWorkflowModel(t *testing.T) Model {
 	t.Helper()
 	zone.NewGlobal()
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	m := New(d)
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 160, Height: 30}) // wide enough for the example graph in a 40%-width Details
 	m, _ = m.Update(LoadedMsg{Workflows: []domain.WorkflowSummary{{ID: 1, Name: "Development"}}})
@@ -116,7 +116,7 @@ func TestEditSaveInvalidatesAndRefetches(t *testing.T) {
 // Enter on the color field opens the swatch grid seeded at the current color; navigating and
 // pressing enter commits the highlighted swatch and closes the grid.
 func TestColorGridPicksSwatch(t *testing.T) {
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editState, 1, 3, "Edit State", "In Review", "ANSI_BLACK", "", true)
 
 	f, _ = f.focusOn(efColor)
@@ -141,7 +141,7 @@ func TestColorGridPicksSwatch(t *testing.T) {
 
 // Esc closes the grid without changing the color, and leaves the edit form open.
 func TestColorGridEscKeepsColor(t *testing.T) {
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editState, 1, 3, "Edit State", "In Review", "ANSI_BLACK", "", true)
 	f, _ = f.focusOn(efColor)
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
@@ -157,7 +157,7 @@ func TestColorGridEscKeepsColor(t *testing.T) {
 
 // Submitting with an empty name is rejected before any network call.
 func TestEditRequiresName(t *testing.T) {
-	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editTransition, 1, 13, "Edit Transition", "Reject", "", "", false)
 	f.name.SetValue("   ")
 	f, _ = f.submit()

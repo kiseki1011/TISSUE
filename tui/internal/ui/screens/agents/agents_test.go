@@ -25,6 +25,7 @@ func testDeps() deps.Deps {
 		Server: "https://tissue.example.com",
 		Styles: theme.New(theme.TokyoNight()),
 		Glyphs: glyph.New(glyph.Unicode),
+		Mouse:  true,
 	}
 }
 
@@ -113,7 +114,7 @@ func TestOpenCreateCapturesInput(t *testing.T) {
 
 // The create-agent form rejects an empty name, rejects digits, and accepts a letters/spaces name.
 func TestCreateAgentValidation(t *testing.T) {
-	f := newCreateAgentForm(testDeps())
+	f := newCreateAgentForm(testDeps(), nil)
 	if _, _ = f.submit(); f.nameErr == "" {
 		// submit returns a copy; re-run capturing it
 	}
@@ -278,7 +279,7 @@ func TestTokenStatusLabels(t *testing.T) {
 // Name length is validated in characters, not bytes, so multi-byte scripts the regex allows (e.g.
 // Hangul) are measured the same way the backend measures them.
 func TestCreateAgentNameLengthIsRuneBased(t *testing.T) {
-	f := newCreateAgentForm(testDeps())
+	f := newCreateAgentForm(testDeps(), nil)
 	// 12 Hangul characters = 36 bytes but 12 runes — within the 35-char limit, must be accepted.
 	f.name.SetValue("가나다라마바사아자차카타")
 	f2, _ := f.submit()
@@ -307,14 +308,15 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 	m, _ = m.Update(AgentsLoadedMsg{Agents: many})
 	m.cursor = 39 // last agent, far past the fold
 
-	pane := plain(m.agentsPane())
+	leftW, _ := m.panelWidths()
+	pane := plain(m.agentsPane(leftW, m.height))
 	if got := len(strings.Split(pane, "\n")); got > h {
 		t.Errorf("agents pane = %d rows, want <= height %d (list overflowed)", got, h)
 	}
 	// the selected row carries its click zone this frame, proving it is within the window
 	m.View()
 	for i := 0; i < 1000; i++ {
-		if _ = zone.Scan(m.agentsPane()); zone.Get(agentRowZone(39)) != nil {
+		if _ = zone.Scan(m.agentsPane(leftW, m.height)); zone.Get(agentRowZone(39)) != nil {
 			break
 		}
 	}
@@ -325,7 +327,7 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 
 // The view renders without panicking across a range of sizes, including below the minimum.
 func TestViewNoPanic(t *testing.T) {
-	for _, sz := range [][2]int{{40, 8}, {60, 12}, {100, 24}, {200, 50}} {
+	for _, sz := range [][2]int{{40, 8}, {60, 12}, {70, 40}, {100, 24}, {200, 50}} {
 		zone.NewGlobal()
 		m := New(testDeps())
 		m, _ = m.Update(tea.WindowSizeMsg{Width: sz[0], Height: sz[1]})

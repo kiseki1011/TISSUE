@@ -25,6 +25,9 @@ type Config struct {
 	// - "unicode"
 	Icons string `json:"icons"`
 
+	// Mouse toggles mouse capture (click + hover). "" or "on" enables it, "off" disables it.
+	Mouse string `json:"mouse,omitempty"`
+
 	// Pinned maps a server URL to its pinned project keys, in pin order.
 	Pinned map[string][]string `json:"pinned,omitempty"`
 

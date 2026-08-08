@@ -123,6 +123,11 @@ type Model struct {
 	optionsEditing bool
 	options        optionsForm
 
+	// a just-created select/checklist field whose options editor should auto-open once its type's
+	// detail reloads (the create call returns no id, so the field is matched by name)
+	pendingOptionsType int
+	pendingOptionsName string
+
 	creatingWorkflow bool
 	cworkflow        createWorkflowForm
 
@@ -177,7 +182,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.loading = false
 		m.err = msg.Err
 		m.types, m.workflows = msg.Types, msg.Workflows
-		return m, m.syncSelection()
+		return m, tea.Batch(m.syncSelection(), m.prefetchAll())
 	case TypeDetailLoadedMsg:
 		delete(m.detailPending, msg.ID)
 		if msg.Err != nil {
@@ -187,6 +192,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		if m.optionsEditing && msg.Err == nil && msg.ID == m.options.typeID {
 			m.reseedOptions(msg.Detail)
+		}
+		if m.pendingOptionsType == msg.ID {
+			name := m.pendingOptionsName
+			m.pendingOptionsType, m.pendingOptionsName = 0, ""
+			if msg.Err == nil {
+				if mm, cmd, ok := m.openOptionsForNewField(msg.ID, name); ok {
+					return mm, cmd
+				}
+			}
 		}
 		return m, nil
 	case fieldsReorderedMsg:
@@ -992,6 +1006,26 @@ func (m *Model) syncSelection() tea.Cmd {
 	return nil
 }
 
+// prefetchAll loads every type's fields and workflow's graph up front so the Details panel never
+// flashes empty on first visit. The per-id pending/failed guards dedupe the selected item's own fetch.
+func (m *Model) prefetchAll() tea.Cmd {
+	var cmds []tea.Cmd
+	for _, t := range m.types {
+		if c := m.fetchDetail(t.ID); c != nil {
+			cmds = append(cmds, c)
+		}
+	}
+	for _, w := range m.workflows {
+		if c := m.fetchWorkflow(w.ID); c != nil {
+			cmds = append(cmds, c)
+		}
+	}
+	if len(cmds) == 0 {
+		return nil
+	}
+	return tea.Batch(cmds...)
+}
+
 func (m *Model) fetchDetail(id int) tea.Cmd {
 	if _, ok := m.typeDetail[id]; ok {
 		return nil
@@ -1350,8 +1384,7 @@ func (m Model) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
 			s.Error.Render("Failed to load catalogs."))
 	}
-	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.leftColumn(), " ", m.detailPanel())
-	view := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
+	view := m.dashboard()
 	switch {
 	case m.editing:
 		return m.overlayModal(view, m.edit.View())
@@ -1377,6 +1410,17 @@ func (m Model) View() string {
 		return m.overlayModal(view, m.flow.View())
 	}
 	return view
+}
+
+// dashboard arranges the catalog lists and the Details panel: side by side, or stacked (Details above
+// the lists) on a narrow-and-tall terminal.
+func (m Model) dashboard() string {
+	if m.stacked() {
+		stack := lipgloss.JoinVertical(lipgloss.Left, m.detailPanel(), m.leftColumn())
+		return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, stack)
+	}
+	dash := lipgloss.JoinHorizontal(lipgloss.Top, m.leftColumn(), " ", m.detailPanel())
+	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
 }
 
 // overlayModal centers a modal over a dimmed copy of the dashboard, splicing it in by hand so
@@ -1525,15 +1569,50 @@ func (m Model) followModalFocus() Model {
 // panelWidths splits the dashboard 3:2 — the two catalog lists on the left, the Details panel
 // on the right — matching the Projects tab's list/detail ratio for a consistent look.
 func (m Model) panelWidths() (left, right int) {
+	if m.stacked() {
+		full := m.width - 2*hInset
+		return full, full
+	}
 	usable := m.width - 2*hInset - colGap
 	left = usable * 3 / 5
 	right = usable - left
 	return left, right
 }
 
-// typesHeight/workflowsHeight split the left column 1:1.
-func (m Model) typesHeight() int    { return m.height / 2 }
-func (m Model) workflowHeight() int { return m.height - m.typesHeight() }
+const (
+	// below this width, a tall-enough terminal stacks the Details above the lists instead of beside them
+	stackBelowW = 100
+	stackMinH   = 24
+)
+
+// stacked reports whether the narrow-and-tall terminal should stack the Details above the lists.
+func (m Model) stacked() bool {
+	return components.StackVertically(m.width, m.height, stackBelowW, stackMinH)
+}
+
+// stackDetailH is the Details' top slice when stacked; the lists take the rest.
+func (m Model) stackDetailH() int { return min(max(m.height*9/20, 8), m.height-8) }
+
+// colHeight is the height the catalog lists occupy: the full height side by side, or the bottom
+// slice beneath the Details when stacked.
+func (m Model) colHeight() int {
+	if m.stacked() {
+		return m.height - m.stackDetailH()
+	}
+	return m.height
+}
+
+// detailHeight is the Details panel's height: the full height side by side, or the top slice when stacked.
+func (m Model) detailHeight() int {
+	if m.stacked() {
+		return m.stackDetailH()
+	}
+	return m.height
+}
+
+// typesHeight/workflowsHeight split the catalog-list column 1:1.
+func (m Model) typesHeight() int    { return m.colHeight() / 2 }
+func (m Model) workflowHeight() int { return m.colHeight() - m.typesHeight() }
 
 // typesInnerH / wfInnerH are the number of visible two-line data rows in each list box: the
 // box height less its borders, vertical padding, and the one header row, floored to whole
@@ -1882,7 +1961,7 @@ func padBody(lines []string, contentW int) string {
 func (m Model) detailPanel() string {
 	_, rightW := m.panelWidths()
 	t := m.deps.Styles.Theme
-	totalRows := max(1, m.height-2)
+	totalRows := max(1, m.detailHeight()-2)
 	viewH := m.detailViewHeight()
 	contentW := m.detailContentW()
 
@@ -1929,7 +2008,7 @@ func (m Model) detailContentW() int {
 	return max(1, rightW-detailInsetL-detailInsetR-detailScrollbar)
 }
 
-func (m Model) detailViewHeight() int { return max(1, m.height-2-detailPadBottom) }
+func (m Model) detailViewHeight() int { return max(1, m.detailHeight()-2-detailPadBottom) }
 
 func (m Model) detailScrollMax() int {
 	return max(0, len(m.detailContent())-m.detailViewHeight())
@@ -2015,7 +2094,11 @@ func (m Model) titleWithEdit(name string, focused bool, contentW int) string {
 	if focused {
 		style = lipgloss.NewStyle().Foreground(s.Theme.Accent).Bold(true)
 	}
-	return rightAlignAction(style.Render(name), m.typeEditButton(focused), contentW)
+	title := style.Render(name)
+	if !m.deps.Mouse {
+		return title // no Edit pen when the mouse is off (the focused block's e/enter still edits)
+	}
+	return rightAlignAction(title, m.typeEditButton(focused), contentW)
 }
 
 // typeEditButton is the pen affordance that opens the issue type metadata editor: Accent while its
@@ -2033,7 +2116,11 @@ func (m Model) workflowTitleWithEdit(name string, focused bool, contentW int) st
 	if focused {
 		style = lipgloss.NewStyle().Foreground(s.Theme.Accent).Bold(true)
 	}
-	return rightAlignAction(style.Render(name), m.wfEditButton(focused), contentW)
+	title := style.Render(name)
+	if !m.deps.Mouse {
+		return title // no Edit pen when the mouse is off (the focused block's e/enter still edits)
+	}
+	return rightAlignAction(title, m.wfEditButton(focused), contentW)
 }
 
 // wfEditButton is the pen affordance that opens the workflow metadata editor: Accent while its
@@ -2194,6 +2281,9 @@ func indentedWrap(style lipgloss.Style, text string, indent, contentW int) []str
 }
 
 func (m Model) fieldEditButton(fieldID int, focused bool) string {
+	if !m.deps.Mouse {
+		return "" // no per-field edit pen when the mouse is off (the focused field's e/enter still edits)
+	}
 	zoneID := fieldEditZone(fieldID)
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "edit")
 	return zone.Mark(zoneID, m.penStyle(zoneID, focused).Render(" "+pen+" "))

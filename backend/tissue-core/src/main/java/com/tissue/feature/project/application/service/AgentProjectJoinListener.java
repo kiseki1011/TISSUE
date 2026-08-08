@@ -1,6 +1,6 @@
 package com.tissue.feature.project.application.service;
 
-import com.tissue.feature.member.domain.event.AgentCreatedEvent;
+import com.tissue.feature.agent.domain.event.AgentCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

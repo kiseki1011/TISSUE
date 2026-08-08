@@ -44,6 +44,9 @@ func (m Model) updateCreateField(msg tea.Msg) (Model, tea.Cmd) {
 		delete(m.typeDetail, msg.typeID)
 		delete(m.detailFailed, msg.typeID)
 		m.detailPending[msg.typeID] = true
+		if canHaveOptions(msg.fieldType) {
+			m.pendingOptionsType, m.pendingOptionsName = msg.typeID, msg.name
+		}
 		return m, loadDetail(m.deps, msg.typeID)
 	case createFieldCancelledMsg:
 		m.creatingField = false
@@ -217,6 +220,23 @@ func (m Model) selectedFieldHasOptions() bool {
 		}
 	}
 	return false
+}
+
+// openOptionsForNewField opens the options editor for a just-created SELECT_OPTION/CHECKLIST field,
+// found by name in the reloaded detail (the create call does not return the new id).
+func (m Model) openOptionsForNewField(typeID int, name string) (Model, tea.Cmd, bool) {
+	d, ok := m.typeDetail[typeID]
+	if !ok {
+		return m, nil, false
+	}
+	for _, f := range d.Fields {
+		if f.Name == name && canHaveOptions(f.Type) {
+			m.options = newOptionsForm(m.deps, typeID, f.ID, f.Name, f.Options)
+			m.optionsEditing = true
+			return m, m.options.Init(), true
+		}
+	}
+	return m, nil, false
 }
 
 func (m Model) openFieldOptions() (Model, tea.Cmd, bool) {

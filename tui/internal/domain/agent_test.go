@@ -32,11 +32,20 @@ func TestTokenIsUsable(t *testing.T) {
 // toAgent must be nil-safe on every optional field and copy the id/name/username/model/created.
 func TestToAgentMapping(t *testing.T) {
 	created := time.Date(2026, 8, 1, 9, 0, 0, 0, time.UTC)
+	agentType := client.AgentResponseAgentTypeDEVELOPMENT
+	modelColor := client.AiModelSummaryColor("ANSI_BLUE")
 	got := toAgent(&client.AgentResponse{
 		Id: ptr(int64(7)), Name: ptr("Build Bot"), Username: ptr("agent-alice-build-bot"),
-		DeclaredModel: ptr("claude-opus-4-8"), CreatedAt: ptr(created),
+		AgentType:   &agentType,
+		Model:       &client.AiModelSummary{Id: ptr(int64(3)), Name: ptr("claude-opus-4-8"), Color: &modelColor},
+		Description: ptr("Reviews PRs"),
+		CreatedAt:   ptr(created),
 	})
-	want := Agent{ID: 7, Name: "Build Bot", Username: "agent-alice-build-bot", DeclaredModel: "claude-opus-4-8", CreatedAt: created}
+	want := Agent{
+		ID: 7, Name: "Build Bot", Username: "agent-alice-build-bot",
+		AgentType: "DEVELOPMENT", ModelID: 3, ModelName: "claude-opus-4-8", ModelColor: "ANSI_BLUE",
+		Description: "Reviews PRs", CreatedAt: created,
+	}
 	if got != want {
 		t.Errorf("toAgent = %+v, want %+v", got, want)
 	}

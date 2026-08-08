@@ -131,6 +131,139 @@ func TestOptionsThemeSwitchPersists(t *testing.T) {
 	}
 }
 
+// Picking an icon set from the Settings popup swaps the glyph set app-wide and repaints the modal.
+func TestOptionsIconsSwitchApplies(t *testing.T) {
+	a := optionsApp(nil) // deps.Icons "" -> Auto
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings (theme control)
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons control
+	m, _ = m.(App).Update(optKeyEnter())    // open the icons popup (seeded auto)
+	if om, ok := m.(App).modal.(optionsModal); !ok || om.picking != pickerIcons {
+		t.Fatalf("enter on the icons control did not open the icons popup")
+	}
+	m, _ = m.(App).Update(keyPress("down")) // auto -> nerd
+	m, cmd := m.(App).Update(optKeyEnter()) // apply
+	if cmd == nil {
+		t.Fatal("picking the icon set emitted no command")
+	}
+	m, _ = m.(App).Update(cmd()) // deliver the iconsSelectedMsg
+	app := m.(App)
+	if app.deps.Icons != "nerd" {
+		t.Errorf("icons mode not applied: %q, want nerd", app.deps.Icons)
+	}
+	if app.deps.Glyphs.Connected != glyph.New(glyph.Nerd).Connected {
+		t.Error("glyph set was not rebuilt for the new mode")
+	}
+	if om, ok := app.modal.(optionsModal); !ok || om.iconsModes[om.iconsIx] != "nerd" {
+		t.Error("the modal did not reflect the new icon set")
+	}
+}
+
+// An icon-set switch is written to the config file so it survives a restart.
+func TestOptionsIconsSwitchPersists(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("load config: %v", err)
+	}
+	zone.NewGlobal()
+	d := deps.Deps{
+		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode),
+		Server: "http://localhost:8080", Config: cfg,
+	}
+	a := New(d)
+	a.screen = screenSchema
+	a.schema = schema.New(d)
+	a.width, a.height = 100, 32
+
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons
+	m, _ = m.(App).Update(optKeyEnter())    // open the icons popup
+	m, _ = m.(App).Update(keyPress("down")) // auto -> nerd
+	m, cmd := m.(App).Update(optKeyEnter()) // apply
+	m.(App).Update(cmd())                   // applyIcons -> Config.Save()
+
+	reloaded, err := config.Load()
+	if err != nil {
+		t.Fatalf("reload config: %v", err)
+	}
+	if reloaded.Icons != "nerd" {
+		t.Errorf("icons not persisted to disk: %q, want nerd", reloaded.Icons)
+	}
+}
+
+// Toggling the mouse control turns capture off app-wide (a.mouse + deps.Mouse) and repaints the
+// modal checkbox.
+func TestOptionsMouseToggleApplies(t *testing.T) {
+	zone.NewGlobal()
+	d := deps.Deps{
+		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode),
+		Server: "http://localhost:8080", Mouse: true,
+	}
+	a := New(d)
+	a.screen = screenSchema
+	a.schema = schema.New(d)
+	a.width, a.height = 100, 32
+	if !a.mouse {
+		t.Fatal("app should start with the mouse on")
+	}
+
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings (theme control)
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons
+	m, _ = m.(App).Update(keyPress("down")) // icons -> mouse
+	m, cmd := m.(App).Update(optKeyEnter()) // toggle
+	if cmd == nil {
+		t.Fatal("toggling the mouse control emitted no command")
+	}
+	m, _ = m.(App).Update(cmd()) // deliver the mouseSelectedMsg
+	app := m.(App)
+	if app.mouse || app.deps.Mouse {
+		t.Errorf("mouse not turned off: app.mouse=%v deps.Mouse=%v", app.mouse, app.deps.Mouse)
+	}
+	if om, ok := app.modal.(optionsModal); !ok || om.mouseOn {
+		t.Error("the modal checkbox did not repaint to off")
+	}
+}
+
+// A mouse toggle is written to the config file so it survives a restart.
+func TestOptionsMouseTogglePersists(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("load config: %v", err)
+	}
+	zone.NewGlobal()
+	d := deps.Deps{
+		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode),
+		Server: "http://localhost:8080", Config: cfg, Mouse: true,
+	}
+	a := New(d)
+	a.screen = screenSchema
+	a.schema = schema.New(d)
+	a.width, a.height = 100, 32
+
+	m, _ := a.Update(keyComma())
+	m, _ = m.(App).Update(optKeyTab())      // Info -> Settings
+	m, _ = m.(App).Update(keyPress("down")) // theme -> icons
+	m, _ = m.(App).Update(keyPress("down")) // icons -> mouse
+	m, cmd := m.(App).Update(optKeyEnter()) // toggle
+	m.(App).Update(cmd())                   // applyMouse -> Config.Save()
+
+	reloaded, err := config.Load()
+	if err != nil {
+		t.Fatalf("reload config: %v", err)
+	}
+	if reloaded.Mouse != "off" {
+		t.Errorf("mouse setting not persisted to disk: %q, want off", reloaded.Mouse)
+	}
+}
+
 // Mouse clicks on the theme control (Settings) open its list popup, and on the logout button (Account)
 // drop the session — the same effects as the keyboard.
 func TestOptionsClickZones(t *testing.T) {

@@ -28,6 +28,20 @@ const (
 	paneTokens
 )
 
+// layoutKind is how the list and detail panes share the screen.
+type layoutKind int
+
+const (
+	layoutSide    layoutKind = iota // list left, detail right
+	layoutStacked                   // detail on top, list below (narrow and tall terminals)
+)
+
+const (
+	// below this width, a tall-enough terminal stacks the panes instead of splitting side by side
+	stackBelowW = 90
+	stackMinH   = 20
+)
+
 // confirmKind records what an open confirm dialog will do when accepted, so one shared ConfirmForm
 // serves both destructive actions.
 type confirmKind int
@@ -48,17 +62,23 @@ type Model struct {
 	loading bool
 	loadErr bool
 
+	models []domain.AiModel // AI model catalog, for the create/edit pickers
+
 	tokens        []domain.Token
-	tokensAgent   int64 // id of the agent whose tokens are loaded (0 = none)
+	tokenCache    map[int64][]domain.Token // per-agent tokens, prefetched for instant switching
+	tokensAgent   int64                    // id of the agent whose tokens are loaded (0 = none)
 	tokenCursor   int
 	tokensLoading bool
 	tokensErr     bool
 
 	focus pane
+	hover string // zone id of the row/button under the cursor, "" when none
 
 	// modals (only one open at a time)
 	creating       bool
 	create         createAgentForm
+	editing        bool
+	edit           editAgentForm
 	issuing        bool
 	issue          issueTokenForm
 	revealing      bool
@@ -74,10 +94,10 @@ type Model struct {
 
 // New loads nothing until Init runs.
 func New(d deps.Deps) Model {
-	return Model{deps: d, loading: true, focus: paneAgents}
+	return Model{deps: d, loading: true, focus: paneAgents, tokenCache: map[int64][]domain.Token{}}
 }
 
-func (m Model) Init() tea.Cmd { return loadAgents(m.deps) }
+func (m Model) Init() tea.Cmd { return tea.Batch(loadAgents(m.deps), loadModels(m.deps)) }
 
 func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
@@ -87,7 +107,7 @@ func (m Model) Retheme(d deps.Deps) Model {
 // CapturingInput reports that a modal owns the keyboard, so the app shell suppresses its global
 // tab-switch keys while the user types.
 func (m Model) CapturingInput() bool {
-	return m.creating || m.issuing || m.revealing || m.confirming
+	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
 
 func (m Model) selectedAgent() (domain.Agent, bool) {
@@ -117,11 +137,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.cursor >= len(m.agents) {
 			m.cursor = max(0, len(m.agents)-1)
 		}
-		return m, m.selectTokens()
+		return m, tea.Batch(m.selectTokens(), m.prefetchTokens())
 
 	case TokensLoadedMsg:
+		if !msg.Err {
+			if m.tokenCache == nil {
+				m.tokenCache = map[int64][]domain.Token{}
+			}
+			m.tokenCache[msg.AgentID] = msg.Tokens // cache every load, including prefetches for non-selected agents
+		}
 		if msg.AgentID != m.selectedAgentID() {
-			return m, nil // a stale load for an agent no longer selected
+			return m, nil // a prefetch or stale load for an agent that is not currently selected
 		}
 		m.tokensLoading, m.tokensErr = false, msg.Err
 		m.tokens = msg.Tokens
@@ -130,11 +156,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case ModelsLoadedMsg:
+		if !msg.Err {
+			m.models = msg.Models
+		}
+		return m, nil
+
 	case agentCreatedMsg:
 		m.creating = false
 		return m, tea.Batch(loadAgents(m.deps), toast.Show(toast.Success, "Agent \""+msg.agent.Name+"\" created."))
 	case createCancelledMsg:
 		m.creating = false
+		return m, nil
+
+	case agentUpdatedMsg:
+		m.editing = false
+		return m, tea.Batch(loadAgents(m.deps), toast.Show(toast.Success, "Agent updated."))
+	case editCancelledMsg:
+		m.editing = false
 		return m, nil
 
 	case agentDeactivatedMsg:
@@ -188,6 +227,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.create, cmd = m.create.Update(msg)
 		return m, cmd
+	case m.editing:
+		var cmd tea.Cmd
+		m.edit, cmd = m.edit.Update(msg)
+		return m, cmd
 	case m.issuing:
 		var cmd tea.Cmd
 		m.issue, cmd = m.issue.Update(msg)
@@ -207,11 +250,41 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onKey(msg)
 	case tea.MouseClickMsg:
 		return m.onClick(msg)
+	case tea.MouseMotionMsg:
+		return m.onHover(msg)
+	}
+	return m, nil
+}
+
+// onHover records the row or button under the cursor so it can be highlighted.
+func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
+	m.hover = ""
+	switch {
+	case zone.Get(zoneNewAgent).InBounds(msg):
+		m.hover = zoneNewAgent
+	case zone.Get(zoneNewToken).InBounds(msg):
+		m.hover = zoneNewToken
+	case zone.Get(zoneAgentEdit).InBounds(msg):
+		m.hover = zoneAgentEdit
+	default:
+		for i := range m.agents {
+			if zone.Get(agentRowZone(i)).InBounds(msg) {
+				m.hover = agentRowZone(i)
+				return m, nil
+			}
+		}
+		for i := range m.tokens {
+			if zone.Get(tokenRowZone(i)).InBounds(msg) {
+				m.hover = tokenRowZone(i)
+				return m, nil
+			}
+		}
 	}
 	return m, nil
 }
 
 func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
+	m.hover = "" // the keyboard is driving now, so drop any stale mouse-hover highlight
 	switch msg.String() {
 	case "tab":
 		return m.togglePane(), nil
@@ -229,6 +302,8 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 		return m.moveCursor(1)
 	case "n":
 		return m.openCreate()
+	case "e":
+		return m.openEdit()
 	case "a":
 		return m.openIssueToken()
 	case "d", "x":
@@ -261,8 +336,27 @@ func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 
 func (m Model) openCreate() (Model, tea.Cmd) {
 	m.creating, m.modalScroll = true, 0
-	m.create = newCreateAgentForm(m.deps)
-	return m, m.create.Init()
+	m.create = newCreateAgentForm(m.deps, m.models)
+	return m, tea.Batch(m.create.Init(), m.ensureModels())
+}
+
+func (m Model) openEdit() (Model, tea.Cmd) {
+	a, ok := m.selectedAgent()
+	if !ok {
+		return m, nil
+	}
+	m.editing, m.modalScroll = true, 0
+	m.edit = newEditAgentForm(m.deps, a, m.models)
+	return m, tea.Batch(m.edit.Init(), m.ensureModels())
+}
+
+// ensureModels re-fetches the catalog when opening a form found it empty, so a failed or still-pending
+// boot prefetch recovers on the next open instead of stranding the picker on "None".
+func (m Model) ensureModels() tea.Cmd {
+	if len(m.models) == 0 {
+		return loadModels(m.deps)
+	}
+	return nil
 }
 
 func (m Model) openIssueToken() (Model, tea.Cmd) {
@@ -323,6 +417,9 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	if zone.Get(zoneNewToken).InBounds(msg) {
 		return m.openIssueToken()
 	}
+	if zone.Get(zoneAgentEdit).InBounds(msg) {
+		return m.openEdit()
+	}
 	for i := range m.agents {
 		if zone.Get(agentRowZone(i)).InBounds(msg) {
 			before := m.cursor
@@ -349,7 +446,6 @@ func (m Model) selectedAgentID() int64 {
 	return 0
 }
 
-// selectTokens loads the selected agent's tokens if they are not already loaded.
 func (m *Model) selectTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {
@@ -359,17 +455,42 @@ func (m *Model) selectTokens() tea.Cmd {
 	if id == m.tokensAgent {
 		return nil
 	}
-	m.tokens, m.tokensAgent, m.tokenCursor = nil, id, 0
+	m.tokensAgent, m.tokenCursor = id, 0
+	if cached, ok := m.tokenCache[id]; ok {
+		m.tokens = cached
+		m.tokensLoading, m.tokensErr = false, false
+		return nil
+	}
+	m.tokens = nil
 	m.tokensLoading, m.tokensErr = true, false
 	return loadTokens(m.deps, id)
 }
 
-// reloadTokens forces a reload of the currently selected agent's tokens (after issue/revoke).
+// prefetchTokens loads tokens for every uncached agent so switching never flashes a loading state.
+func (m *Model) prefetchTokens() tea.Cmd {
+	var cmds []tea.Cmd
+	for _, a := range m.agents {
+		if a.ID == m.tokensAgent {
+			continue // selectTokens already loads (or has cached) the selected agent
+		}
+		if _, ok := m.tokenCache[a.ID]; ok {
+			continue
+		}
+		cmds = append(cmds, loadTokens(m.deps, a.ID))
+	}
+	if len(cmds) == 0 {
+		return nil
+	}
+	return tea.Batch(cmds...)
+}
+
+// reloadTokens invalidates the cache and refetches the selected agent's tokens (after issue/revoke).
 func (m *Model) reloadTokens() tea.Cmd {
 	id := m.selectedAgentID()
 	if id == 0 {
 		return nil
 	}
+	delete(m.tokenCache, id)
 	m.tokensAgent = id
 	m.tokensLoading, m.tokensErr = true, false
 	return loadTokens(m.deps, id)
@@ -378,6 +499,9 @@ func (m *Model) reloadTokens() tea.Cmd {
 func (m Model) HelpKeys() []key.Binding {
 	if m.creating {
 		return m.create.HelpKeys()
+	}
+	if m.editing {
+		return m.edit.HelpKeys()
 	}
 	if m.issuing {
 		return m.issue.HelpKeys()
@@ -392,13 +516,14 @@ func (m Model) HelpKeys() []key.Binding {
 		key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "pane")),
 		key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new agent")),
+		key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit agent")),
 		key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add token")),
 		key.NewBinding(key.WithKeys("d"), key.WithHelp("d", "deactivate/revoke")),
 	}
 }
 
 func (m Model) anyModalOpen() bool {
-	return m.creating || m.issuing || m.revealing || m.confirming
+	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
 
 // activeModalView renders the open modal, mirroring View's dispatch, so the host can measure and
@@ -407,6 +532,8 @@ func (m Model) activeModalView() string {
 	switch {
 	case m.creating:
 		return m.create.View()
+	case m.editing:
+		return m.edit.View()
 	case m.issuing:
 		return m.issue.View()
 	case m.revealing:
@@ -462,6 +589,12 @@ type TokensLoadedMsg struct {
 	Err     bool
 }
 
+// ModelsLoadedMsg carries the AI model catalog for the create/edit pickers.
+type ModelsLoadedMsg struct {
+	Models []domain.AiModel
+	Err    bool
+}
+
 type agentCreatedMsg struct{ agent domain.Agent }
 type agentDeactivatedMsg struct{}
 type tokenIssuedMsg struct{ issued domain.IssuedToken }
@@ -472,6 +605,13 @@ func loadAgents(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		agents, err := d.Agents.ListAgents(context.Background())
 		return AgentsLoadedMsg{Agents: agents, Err: err != nil}
+	}
+}
+
+func loadModels(d deps.Deps) tea.Cmd {
+	return func() tea.Msg {
+		models, err := d.Agents.ListModels(context.Background())
+		return ModelsLoadedMsg{Models: models, Err: err != nil}
 	}
 }
 

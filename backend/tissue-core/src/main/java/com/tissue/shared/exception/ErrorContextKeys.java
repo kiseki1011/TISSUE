@@ -112,6 +112,11 @@ public final class ErrorContextKeys {
     public static final String TEAM_ID = "teamId";
 
     /**
+     * AI Model
+     */
+    public static final String MODEL_ID = "modelId";
+
+    /**
      * NOTIFICATION
      */
     public static final String NOTIFICATION_ID = "notificationId";

@@ -130,6 +130,8 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 		Config:    cfg,
 		Styles:    theme.New(theme.ByName(resolveTheme(cfg))),
 		Glyphs:    glyph.New(glyph.ParseMode(resolveIcons(cfg))),
+		Icons:     glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
+		Mouse:     resolveMouse(cfg),
 	}, nil
 }
 
@@ -152,4 +154,9 @@ func resolveIcons(cfg *config.Config) string {
 		return iconsFlag
 	}
 	return cfg.Icons
+}
+
+// resolveMouse defaults to on: only an explicit "off" in the config disables mouse capture.
+func resolveMouse(cfg *config.Config) bool {
+	return cfg.Mouse != "off"
 }

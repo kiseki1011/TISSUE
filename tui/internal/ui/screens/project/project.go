@@ -32,7 +32,8 @@ type Model struct {
 	loading     bool             // first page in flight
 	loadingMore bool             // a subsequent page in flight
 	loadErr     bool
-	reqGen      int // bumped on reload so a superseded in-flight load is ignored when it lands
+	reqGen      int    // bumped on reload so a superseded in-flight load is ignored when it lands
+	hover       string // zone id of the row/button under the cursor, "" when none
 }
 
 func New(d deps.Deps, projectKey, title string) Model {
@@ -85,6 +86,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onKey(msg)
 	case tea.MouseClickMsg:
 		return m.onClick(msg)
+	case tea.MouseMotionMsg:
+		return m.onHover(msg)
 	case tea.MouseWheelMsg:
 		switch msg.Button {
 		case tea.MouseWheelUp:
@@ -96,7 +99,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
+// onHover records the row or button under the cursor so it can be highlighted.
+func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
+	m.hover = ""
+	if zone.Get(zoneBack).InBounds(msg) {
+		m.hover = zoneBack
+		return m, nil
+	}
+	for i := range m.issues {
+		if zone.Get(issueRowZone(i)).InBounds(msg) {
+			m.hover = issueRowZone(i)
+			return m, nil
+		}
+	}
+	return m, nil
+}
+
 func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
+	m.hover = "" // the keyboard is driving now, so drop any stale mouse-hover highlight
 	switch msg.String() {
 	case "esc", "q", "backspace":
 		return m, back

@@ -4,6 +4,7 @@ package ui
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -15,8 +16,10 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
+	"github.com/kiseki1011/TISSUE/tui/internal/realtime"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/nav"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/agents"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/connecting"
@@ -70,13 +73,17 @@ type App struct {
 	screen      screen
 	width       int
 	height      int
-	mouse       bool // when true, capture mouse so clicks can move focus
+	mouse       bool   // when true, capture mouse so clicks can move focus
+	hoverTab    string // zone of the header tab under the cursor, "" when none
 	help        help.Model
 	toasts      toast.Model    // bottom-right notification stack, shared across screens
 	modal       appModal       // app-level overlay (help, ...), nil when none is open
 	modalScroll int            // wheel scroll offset when the open modal is taller than the terminal
 	user        domain.Profile // authenticated member, populated after login
 	sessionGen  int            // bumped on login/logout so a stale in-flight profile fetch is ignored
+
+	rt      *realtime.Consumer // user-scoped SSE stream, live only while authenticated
+	rtState realtime.State     // last connection state, drives the header indicator
 
 	connecting connecting.Model
 	login      login.Model
@@ -107,7 +114,7 @@ func New(d deps.Deps) App {
 		deps:       d,
 		screen:     screenConnecting,
 		connecting: connecting.New(d),
-		mouse:      true,
+		mouse:      d.Mouse,
 		help:       newHelpModel(t),
 		toasts:     toast.New(t, d.Glyphs),
 	}
@@ -166,9 +173,6 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.tabNavActive() {
 				return a.openOptions()
 			}
-		case "ctrl+o":
-			a.mouse = !a.mouse
-			return a, nil
 		case "ctrl+l":
 			if a.tabNavActive() {
 				return a.switchTab(a.stepTab(1))
@@ -197,11 +201,18 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case themeSelectedMsg:
 		return a.applyTheme(msg.name)
+	case iconsSelectedMsg:
+		return a.applyIcons(msg.mode)
+	case mouseSelectedMsg:
+		return a.applyMouse(msg.on)
+	case realtimeUpdateMsg:
+		return a.applyRealtime(msg.u)
 	case logoutMsg:
 		// revoke + clear tokens in the background. The probe runs once that completes (loggedOutMsg)
 		a.modal, a.modalScroll = nil, 0
 		a.user = domain.Profile{}
 		a.sessionGen++
+		a.stopRealtime() // drop the SSE stream so a logged-out session streams nothing
 		a.screen = screenConnecting
 		a.connecting = connecting.New(a.deps)
 		return a, logoutCmd(a.deps)
@@ -215,6 +226,18 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if a.tabNavActive() {
 			if target, ok := a.tabAt(msg); ok {
 				return a.switchTab(target)
+			}
+		}
+		return a.updateActive(msg)
+	case tea.MouseMotionMsg:
+		// track the hovered header tab for its highlight, then let the active screen hover too
+		a.hoverTab = ""
+		if a.tabNavActive() {
+			for _, tb := range tabs {
+				if zone.Get(tb.zone).InBounds(msg) {
+					a.hoverTab = tb.zone
+					break
+				}
 			}
 		}
 		return a.updateActive(msg)
@@ -241,9 +264,10 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.home = home.New(a.deps, msg.Info, msg.Welcome)
 		a.schema = schema.New(a.deps)
 		a.agents = agents.New(a.deps)
+		rtCmd := a.startRealtime() // open the user-scoped SSE stream for this session
 		m, cmd := a.withSize(a.home.Init())
 		// prefetch the Schema catalog and the agents list so both tabs are ready when opened
-		return m, tea.Batch(cmd, fetchProfile(a.deps, a.sessionGen), a.schema.Init(), a.agents.Init())
+		return m, tea.Batch(cmd, rtCmd, fetchProfile(a.deps, a.sessionGen), a.schema.Init(), a.agents.Init())
 	case profileLoadedMsg:
 		if msg.gen == a.sessionGen { // drop a profile that belongs to a superseded session
 			a.user = msg.profile
@@ -262,7 +286,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		a.schema, cmd = a.schema.Update(msg)
 		return a, cmd
-	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg:
+	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg, agents.ModelsLoadedMsg:
 		// route the background agents prefetch to the Agents screen even while another tab is active
 		var cmd tea.Cmd
 		a.agents, cmd = a.agents.Update(msg)
@@ -553,6 +577,53 @@ func (a App) applyTheme(name string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+// applyIcons switches the glyph set live and persists the choice, mirroring applyTheme. The header
+// reads deps.Glyphs on each render, so only the cached consumers (toasts, screens) need refreshing.
+func (a App) applyIcons(mode string) (tea.Model, tea.Cmd) {
+	a.deps.Glyphs = glyph.New(glyph.ParseMode(mode))
+	a.deps.Icons = mode
+	if a.deps.Config != nil {
+		a.deps.Config.Icons = mode
+		if err := a.deps.Config.Save(); err != nil {
+			slog.Warn("save icons", "mode", mode, "err", err)
+		}
+	}
+	a.toasts = a.toasts.Reglyph(a.deps.Glyphs)
+	a.home = a.home.Retheme(a.deps)
+	a.schema = a.schema.Retheme(a.deps)
+	a.agents = a.agents.Retheme(a.deps)
+	a.project = a.project.Retheme(a.deps)
+	return a, nil
+}
+
+// applyMouse toggles mouse capture and persists the choice. The View reads a.mouse to set the mouse
+// mode, and the screens read deps.Mouse (refreshed via Retheme) to hide their click-only affordances.
+func (a App) applyMouse(on bool) (tea.Model, tea.Cmd) {
+	a.mouse = on
+	a.deps.Mouse = on
+	if !on {
+		a.hoverTab = "" // no motion events arrive while the mouse is off, so clear any stuck highlight
+	}
+	if a.deps.Config != nil {
+		a.deps.Config.Mouse = mouseSetting(on)
+		if err := a.deps.Config.Save(); err != nil {
+			slog.Warn("save mouse setting", "on", on, "err", err)
+		}
+	}
+	a.home = a.home.Retheme(a.deps)
+	a.schema = a.schema.Retheme(a.deps)
+	a.agents = a.agents.Retheme(a.deps)
+	a.project = a.project.Retheme(a.deps)
+	return a, nil
+}
+
+func mouseSetting(on bool) string {
+	if on {
+		return "on"
+	}
+	return "off"
+}
+
 type loggedOutMsg struct{}
 
 // logoutCmd revokes the session server-side so a token that survives a failed local clear cannot be
@@ -575,6 +646,67 @@ func logoutCmd(d deps.Deps) tea.Cmd {
 			d.Transport.Clear()
 		}
 		return loggedOutMsg{}
+	}
+}
+
+// realtimeUpdateMsg carries one connection-state change or event off the SSE consumer.
+type realtimeUpdateMsg struct{ u realtime.Update }
+
+// startRealtime (re)opens the user-scoped SSE stream for the current session and returns the command
+// that waits for its first update. Any prior stream is stopped first. It no-ops without an authed
+// transport (as in tests), leaving the indicator disconnected.
+func (a *App) startRealtime() tea.Cmd {
+	if a.deps.Transport == nil || a.deps.Server == "" {
+		return nil
+	}
+	if a.rt != nil {
+		a.rt.Stop()
+	}
+	a.rtState = realtime.Connecting
+	c := realtime.New(a.deps.Server, &http.Client{Transport: a.deps.Transport}, a.sessionGen)
+	a.rt = c
+	c.Start()
+	return waitForRealtime(c)
+}
+
+// stopRealtime tears the stream down (on logout) and resets the indicator.
+func (a *App) stopRealtime() {
+	if a.rt != nil {
+		a.rt.Stop()
+		a.rt = nil
+	}
+	a.rtState = realtime.Disconnected
+}
+
+// applyRealtime folds one consumer update into the model and re-arms the wait. Updates from a
+// superseded session (a re-login/logout bumped the generation) are dropped without re-arming, ending
+// that stream's command chain.
+func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
+	if a.rt == nil || u.Gen != a.sessionGen {
+		return a, nil
+	}
+	switch u.Kind {
+	case realtime.StateUpdate:
+		a.rtState = u.State
+	case realtime.EventUpdate:
+		// Phase 1: events have no screen consumers yet (project home pending). Log for the live smoke
+		// test; issue/sprint list patching lands when those screens exist.
+		slog.Debug("realtime event", "category", u.Event.Category, "type", u.Event.Type,
+			"project", u.Event.ProjectKey, "issue", u.Event.IssueKey)
+	}
+	return a, waitForRealtime(a.rt)
+}
+
+// waitForRealtime blocks on the consumer's next update and re-arms itself after each one — the standard
+// BubbleTea pattern for consuming a channel. A closed channel (the consumer was stopped) yields nil,
+// ending the chain harmlessly.
+func waitForRealtime(c *realtime.Consumer) tea.Cmd {
+	return func() tea.Msg {
+		u, ok := <-c.Updates()
+		if !ok {
+			return nil
+		}
+		return realtimeUpdateMsg{u: u}
 	}
 }
 
@@ -746,7 +878,7 @@ func (a App) headerView() string {
 		return ""
 	}
 	t := a.deps.Styles.Theme
-	brand := lipgloss.NewStyle().Foreground(t.Success).Bold(true).Render(a.deps.Glyphs.Connected + " Tissue Server")
+	brand := a.connectionBrand()
 	muted := lipgloss.NewStyle().Foreground(t.Muted)
 	left := brand + muted.Render(" · "+a.deps.Server)
 	if a.user.Username != "" {
@@ -761,6 +893,21 @@ func (a App) headerView() string {
 	}
 	line := strings.Repeat(" ", pad) + left + strings.Repeat(" ", gap) + right + strings.Repeat(" ", pad)
 	return lipgloss.NewStyle().MaxWidth(a.width).Render(line)
+}
+
+// connectionBrand renders the "● Tissue Server" label, its dot glyph and colour reflecting the live
+// SSE connection state: connected (success ●), connecting (warning ◐), disconnected (error ✕).
+func (a App) connectionBrand() string {
+	t := a.deps.Styles.Theme
+	g := a.deps.Glyphs
+	dot, col := g.Disconnected, t.Error
+	switch a.rtState {
+	case realtime.Connected:
+		dot, col = g.Connected, t.Success
+	case realtime.Connecting:
+		dot, col = g.Connecting, t.Warning
+	}
+	return lipgloss.NewStyle().Foreground(col).Bold(true).Render(dot + " Tissue Server")
 }
 
 // tabGlyph maps a tab to its nerd glyph. The fallback is empty so plain terminals show
@@ -797,8 +944,11 @@ func (a App) tabBar() string {
 			content = gl + " " + tab.label
 		}
 		style, numStyle := inactive, numInactive
-		if a.screen == tab.screen {
+		switch {
+		case a.screen == tab.screen:
 			style, numStyle = active, numActive
+		case a.hoverTab == tab.zone:
+			style = lipgloss.NewStyle().Foreground(t.Secondary) // hovered inactive tab brightens
 		}
 		// the digit takes the accent only on the active tab (matching its label), but stays
 		// un-underlined so the underline reads as the single active-tab marker
@@ -825,10 +975,6 @@ func (a App) footerView() string {
 }
 
 func (a App) globalKeys() []key.Binding {
-	mouse := "mouse: off"
-	if a.mouse {
-		mouse = "mouse: on"
-	}
 	binds := make([]key.Binding, 0, 6)
 	// tab-switch, help and options are gated to the same condition their handlers are (tab screens,
 	// no modal), so the footer never advertises a shortcut that is inert on the current screen.
@@ -840,7 +986,6 @@ func (a App) globalKeys() []key.Binding {
 		)
 	}
 	return append(binds,
-		key.NewBinding(key.WithKeys("ctrl+o"), key.WithHelp("ctrl+o", mouse)),
 		key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "quit")),
 	)
 }

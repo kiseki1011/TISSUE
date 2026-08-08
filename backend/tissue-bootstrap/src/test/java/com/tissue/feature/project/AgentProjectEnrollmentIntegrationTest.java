@@ -2,9 +2,10 @@ package com.tissue.feature.project;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tissue.feature.member.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.AgentResponse;
+import com.tissue.feature.agent.application.dto.CreateAgentCommand;
+import com.tissue.feature.agent.application.service.AgentService;
 import com.tissue.feature.member.application.port.repository.MemberCommandRepository;
-import com.tissue.feature.member.application.service.AgentService;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.dto.request.CreateProjectCommand;
 import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
@@ -76,7 +77,8 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
         addAsMember(proj2, owner);
 
         // when
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Bot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
 
         // then
         assertThat(projectMemberQueryRepository.findByProjectAndMemberId(proj1, agent.id()))
@@ -92,7 +94,8 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
     void enrollsAgentWhenOwnerCreatesProject() {
         // given
         Member owner = newHuman("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Bot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
 
         // when
         projectService.create(
@@ -114,7 +117,8 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
         // given
         Member manager = newHuman("manager");
         Member owner = newHuman("owner");
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Bot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
         Project project = newProject("PROJ");
         addAsManager(project, manager);
 
@@ -133,7 +137,8 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
         Member owner = newHuman("owner");
         Project project = newProject("PROJ");
         addAsMember(project, owner);
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Bot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
         assertThat(projectMemberQueryRepository.findByProjectAndMemberId(project, agent.id()))
                 .isPresent();
 
@@ -154,7 +159,8 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
         Member owner = newHuman("owner");
         Project project = newProject("PROJ");
         addAsMember(project, owner);
-        AgentResponse agent = agentService.createAgent(owner.getId(), "Bot", null);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
         agentProjectJoinService.revokeAgentsOfMember(owner.getId(), project);
         assertThat(projectMemberQueryRepository.findByProjectAndMemberId(project, agent.id()))
                 .isEmpty();

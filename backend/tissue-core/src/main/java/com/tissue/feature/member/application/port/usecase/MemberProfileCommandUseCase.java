@@ -10,4 +10,6 @@ public interface MemberProfileCommandUseCase {
     void updateLanguage(SupportedLanguage language, Long memberId);
 
     void updatePosition(@Nullable Long positionId, Long memberId);
+
+    void updateDescription(@Nullable String description, Long memberId);
 }
