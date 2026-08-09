@@ -30,7 +30,7 @@ func (s *AuthService) Profile(ctx context.Context) (Profile, error) {
 		return Profile{}, fmt.Errorf("get profile: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return Profile{}, &APIError{Status: resp.StatusCode()}
+		return Profile{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	p := resp.JSON200
 	role := ""

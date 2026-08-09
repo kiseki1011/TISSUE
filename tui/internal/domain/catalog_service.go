@@ -71,7 +71,7 @@ func (s *CatalogService) GetIssueType(ctx context.Context, id int) (IssueTypeDet
 		return IssueTypeDetail{}, fmt.Errorf("get issue type: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return IssueTypeDetail{}, &APIError{Status: resp.StatusCode()}
+		return IssueTypeDetail{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	d := resp.JSON200
 	hierarchy := ""
@@ -170,7 +170,7 @@ func (s *CatalogService) GetWorkflow(ctx context.Context, id int) (WorkflowDetai
 		return WorkflowDetail{}, fmt.Errorf("get workflow: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return WorkflowDetail{}, &APIError{Status: resp.StatusCode()}
+		return WorkflowDetail{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	d := resp.JSON200
 	out := WorkflowDetail{
@@ -241,7 +241,7 @@ func (s *CatalogService) UpdateWorkflowState(ctx context.Context, workflowID, st
 	if err != nil {
 		return fmt.Errorf("update workflow state: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // UpdateWorkflowVcsSettings maps the PR-opened/merged VCS events to transitions (whole-record
@@ -260,7 +260,7 @@ func (s *CatalogService) UpdateWorkflowVcsSettings(ctx context.Context, workflow
 	if err != nil {
 		return fmt.Errorf("update workflow vcs settings: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // Source and target are not editable here — rewiring goes through the whole-graph replace.
@@ -273,7 +273,7 @@ func (s *CatalogService) UpdateWorkflowTransition(ctx context.Context, workflowI
 	if err != nil {
 		return fmt.Errorf("update workflow transition: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 type GuardInput struct {
@@ -301,7 +301,7 @@ func (s *CatalogService) ConfigureTransitionGuards(ctx context.Context, workflow
 	if err != nil {
 		return fmt.Errorf("configure transition guards: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // GraphRef identifies a node in a whole-graph replace: an existing state by its ID, or a new
@@ -388,7 +388,7 @@ func (s *CatalogService) ReplaceWorkflowGraph(
 	if err != nil {
 		return fmt.Errorf("replace workflow graph: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 func graphRef(r GraphRef) client.Ref {
@@ -411,7 +411,7 @@ func (s *CatalogService) UpdateIssueField(ctx context.Context, fieldID int, name
 	if err != nil {
 		return fmt.Errorf("update issue field: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // CreateIssueField adds a custom field to an issue type. position is the field's display order
@@ -437,7 +437,7 @@ func (s *CatalogService) CreateIssueField(
 	if err != nil {
 		return fmt.Errorf("create issue field: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // The backend rejects the delete with 409 if any issue currently holds a value for it.
@@ -446,7 +446,7 @@ func (s *CatalogService) DeleteIssueField(ctx context.Context, fieldID int) erro
 	if err != nil {
 		return fmt.Errorf("delete issue field: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // ReorderIssueFields sets the display order of an issue type's fields to the given id sequence
@@ -462,7 +462,7 @@ func (s *CatalogService) ReorderIssueFields(ctx context.Context, typeID int, ord
 	if err != nil {
 		return fmt.Errorf("reorder issue fields: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 func (s *CatalogService) AddFieldOption(ctx context.Context, fieldID int, optionName string) error {
@@ -471,7 +471,7 @@ func (s *CatalogService) AddFieldOption(ctx context.Context, fieldID int, option
 	if err != nil {
 		return fmt.Errorf("add field option: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 func (s *CatalogService) RenameFieldOption(ctx context.Context, fieldID, optionID int, name string) error {
@@ -480,7 +480,7 @@ func (s *CatalogService) RenameFieldOption(ctx context.Context, fieldID, optionI
 	if err != nil {
 		return fmt.Errorf("rename field option: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // The backend rejects it with 409 if the option is in use by an issue.
@@ -489,7 +489,7 @@ func (s *CatalogService) DeleteFieldOption(ctx context.Context, fieldID, optionI
 	if err != nil {
 		return fmt.Errorf("delete field option: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // CreateIssueType creates a global issue type and returns its new id. hierarchy is one of EPIC,
@@ -510,7 +510,7 @@ func (s *CatalogService) CreateIssueType(ctx context.Context, name, description,
 		return 0, fmt.Errorf("create issue type: %w", err)
 	}
 	if resp.StatusCode() < 200 || resp.StatusCode() >= 300 {
-		return 0, &APIError{Status: resp.StatusCode()}
+		return 0, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	if resp.JSON201 != nil {
 		return derefInt64(resp.JSON201.IssueTypeId), nil
@@ -529,7 +529,7 @@ func (s *CatalogService) UpdateIssueType(ctx context.Context, id int, name, colo
 	if err != nil {
 		return fmt.Errorf("update issue type: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // This affects every project, so the backend rejects the delete with 409 if any issue still uses the type.
@@ -538,7 +538,7 @@ func (s *CatalogService) DeleteIssueType(ctx context.Context, id int) error {
 	if err != nil {
 		return fmt.Errorf("delete issue type: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // WorkflowStateCreate is one brand-new state in a workflow creation payload. Every state is new,
@@ -601,7 +601,7 @@ func (s *CatalogService) CreateWorkflow(
 		return 0, fmt.Errorf("create workflow: %w", err)
 	}
 	if resp.StatusCode() < 200 || resp.StatusCode() >= 300 {
-		return 0, &APIError{Status: resp.StatusCode()}
+		return 0, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	if resp.JSON201 != nil {
 		return derefInt64(resp.JSON201.WorkflowId), nil
@@ -624,7 +624,7 @@ func (s *CatalogService) UpdateWorkflow(ctx context.Context, workflowID int, nam
 	if err != nil {
 		return fmt.Errorf("update workflow: %w", err)
 	}
-	return statusError(resp.StatusCode())
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 // The backend rejects the delete with 409 if any issue type still references it.
@@ -633,14 +633,7 @@ func (s *CatalogService) DeleteWorkflow(ctx context.Context, id int) error {
 	if err != nil {
 		return fmt.Errorf("delete workflow: %w", err)
 	}
-	return statusError(resp.StatusCode())
-}
-
-func statusError(code int) error {
-	if code < 200 || code >= 300 {
-		return &APIError{Status: code}
-	}
-	return nil
+	return apiError(resp.StatusCode(), resp.Body)
 }
 
 type PositionSummary struct {
@@ -656,7 +649,7 @@ func (s *CatalogService) ListIssueTypes(ctx context.Context) ([]IssueTypeSummary
 		return nil, fmt.Errorf("list issue types: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]IssueTypeSummary, 0, len(*resp.JSON200))
 	for _, t := range *resp.JSON200 {
@@ -687,7 +680,7 @@ func (s *CatalogService) ListWorkflows(ctx context.Context) ([]WorkflowSummary, 
 		return nil, fmt.Errorf("list workflows: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]WorkflowSummary, 0, len(*resp.JSON200))
 	for _, w := range *resp.JSON200 {
@@ -707,7 +700,7 @@ func (s *CatalogService) ListPositions(ctx context.Context) ([]PositionSummary, 
 		return nil, fmt.Errorf("list positions: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]PositionSummary, 0, len(*resp.JSON200))
 	for _, p := range *resp.JSON200 {
@@ -738,7 +731,7 @@ func (s *CatalogService) SetMyPosition(ctx context.Context, positionID *int) err
 		return fmt.Errorf("set my position: %w", err)
 	}
 	if resp.StatusCode() >= 300 {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }

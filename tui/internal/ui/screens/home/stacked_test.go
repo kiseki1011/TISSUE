@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	zone "github.com/lrstanley/bubblezone/v2"
@@ -19,6 +20,20 @@ var stackCSI = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func stackPlain(s string) string { return stackCSI.ReplaceAllString(zone.Scan(s), "") }
 
+// zoneAfter scans v and waits for the async zone manager to register id, so a following read is
+// reliable. zone.Scan hands the parsed zones to a worker goroutine, so zone.Get right after a Scan
+// can race and see the zone as not-yet-registered (flaky under parallel test load).
+func zoneAfter(v, id string) *zone.ZoneInfo {
+	zone.Scan(v)
+	for i := 0; i < 500; i++ {
+		if z := zone.Get(id); z != nil && !z.IsZero() {
+			return z
+		}
+		time.Sleep(time.Millisecond)
+	}
+	return zone.Get(id)
+}
+
 func stackModel(t *testing.T, w, h int) Model {
 	t.Helper()
 	zone.NewGlobal()
@@ -27,7 +42,7 @@ func stackModel(t *testing.T, w, h int) Model {
 		Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Nerd),
 	}, domain.SystemInfo{}, "")
 	m, _ = m.Update(tea.WindowSizeMsg{Width: w, Height: h})
-	m, _ = m.Update(projectsLoadedMsg{projects: []domain.Project{
+	m, _ = m.Update(ProjectsLoadedMsg{projects: []domain.Project{
 		{Key: "ALPHA", Title: "Alpha", Visibility: "PUBLIC", MyRole: "MANAGER"},
 		{Key: "BETA", Title: "Beta", Visibility: "PRIVATE"},
 	}})
@@ -41,7 +56,8 @@ func TestHomeStackedLayout(t *testing.T) {
 	if !m.stacked() {
 		t.Fatalf("expected stacked at 95x40 (sideFloor=%d, minWidth=%d)", m.sideFloor(), m.minWidth())
 	}
-	view := stackPlain(m.View())
+	raw := m.View()
+	view := stackPlain(raw)
 	if got := len(strings.Split(view, "\n")); got != 40 {
 		t.Errorf("stacked view = %d rows, want 40 (the list overflowed its slice)", got)
 	}
@@ -54,7 +70,7 @@ func TestHomeStackedLayout(t *testing.T) {
 	}
 	// the list zone sits below the Details slice, and its click hit-testing is zone-relative, so a
 	// click resolves to the right row even though the list moved down
-	if z := zone.Get("home.list"); z == nil || z.IsZero() {
+	if z := zoneAfter(raw, "home.list"); z == nil || z.IsZero() {
 		t.Error("home.list zone did not register in the stacked layout")
 	} else if z.StartY < m.stackDetailH()/2 {
 		t.Errorf("home.list zone (StartY=%d) is not offset below the Details slice (~%d)", z.StartY, m.stackDetailH())

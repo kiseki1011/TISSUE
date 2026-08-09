@@ -118,20 +118,23 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 	}
 
 	return deps.Deps{
-		Server:    server,
-		Public:    public,
-		Authed:    domain.NewAuthService(authedAPI),
-		Projects:  domain.NewProjectService(authedAPI),
-		Catalog:   domain.NewCatalogService(authedAPI),
-		Agents:    domain.NewAgentService(authedAPI),
-		Issues:    domain.NewIssueService(authedAPI),
-		Store:     store,
-		Transport: transport,
-		Config:    cfg,
-		Styles:    theme.New(theme.ByName(resolveTheme(cfg))),
-		Glyphs:    glyph.New(glyph.ParseMode(resolveIcons(cfg))),
-		Icons:     glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
-		Mouse:     resolveMouse(cfg),
+		Server:   server,
+		Public:   public,
+		Authed:   domain.NewAuthService(authedAPI),
+		Projects: domain.NewProjectService(authedAPI),
+		Catalog:  domain.NewCatalogService(authedAPI),
+		Agents:   domain.NewAgentService(authedAPI),
+		Issues:   domain.NewIssueService(authedAPI),
+		Sprints:  domain.NewSprintService(authedAPI),
+
+		Notifications: domain.NewNotificationService(authedAPI),
+		Store:         store,
+		Transport:     transport,
+		Config:        cfg,
+		Styles:        theme.New(theme.ByName(resolveTheme(cfg))),
+		Glyphs:        glyph.New(glyph.ParseMode(resolveIcons(cfg))),
+		Icons:         glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
+		Mouse:         resolveMouse(cfg),
 	}, nil
 }
 

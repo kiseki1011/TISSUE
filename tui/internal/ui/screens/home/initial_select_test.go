@@ -27,7 +27,7 @@ func TestInitialLoadSelectsTopRow(t *testing.T) {
 
 	// window sizes first (before the list loads), mirroring the real startup order
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 140, Height: 20})
-	m, _ = m.Update(projectsLoadedMsg{projects: []domain.Project{
+	m, _ = m.Update(ProjectsLoadedMsg{projects: []domain.Project{
 		{Key: "ALPHA", Title: "Alpha", Visibility: "PUBLIC"},
 		{Key: "BETA", Title: "Beta", Visibility: "PUBLIC"},
 	}})

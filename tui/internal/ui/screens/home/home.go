@@ -18,7 +18,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
-	"github.com/kiseki1011/TISSUE/tui/internal/ui/nav"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
 // Focus order for Tab:
@@ -48,6 +48,7 @@ type Model struct {
 
 	projects []domain.Project
 	loading  bool
+	loaded   bool // a projects list has landed at least once, so a later refresh failure keeps it rather than erroring
 	err      error
 	status   string
 
@@ -62,6 +63,15 @@ type Model struct {
 
 	filtering bool
 	filter    filterForm
+
+	// join gate: pressing Enter on a project the caller has not joined offers to join it first, then opens
+	// it on success (its issues/members/sprints all require membership to read, so browsing without joining
+	// is not possible). isAdmin (a system admin may self-join even a PRIVATE project) is back-filled from
+	// the profile; joinTarget is the project being joined.
+	joining    bool
+	joinTarget domain.Project
+	joinUI     widgets.ConfirmForm
+	isAdmin    bool
 
 	// wheel scroll offset for a modal that overflows the terminal (the filter form — the create form scrolls itself)
 	modalScroll int
@@ -124,8 +134,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.create = m.create.resize(m.modalBodyHeight())
 		}
 		return m, nil
-	case projectsLoadedMsg:
-		m.loading, m.err, m.projects = false, nil, msg.projects
+	case RefreshMsg:
+		// a silent reload (the list stays visible, only the title shows "(loading)"), so returning to the
+		// dashboard - or a manual refresh - reflects changes made elsewhere (e.g. a project's settings)
+		m.loading = true
+		return m, loadProjects(m.deps)
+	case ProjectsLoadedMsg:
+		m.loading, m.err, m.projects, m.loaded = false, nil, msg.projects, true
 		m.rebuildRows()
 		// The window sizes before the list loads, so the initial relayout ran SetRows on an empty
 		// list and drove the table cursor to -1 (SetRows clamps to len-1). With rows present now,
@@ -136,8 +151,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.ensureCursorVisible()
 		}
 		return m, m.fetchStats()
-	case projectsErrMsg:
-		m.loading, m.err = false, msg.err
+	case ProjectsErrMsg:
+		m.loading = false
+		if m.loaded {
+			// a refresh (silent post-action or manual "R") failed, but the list we were showing is still
+			// good: keep it - and its Details panel - rather than replacing the whole dashboard with an
+			// error over a transient blip (mirrors the Config panel's post-action refresh handling)
+			return m, nil
+		}
+		m.err = msg.err
 		return m, nil
 	case StatsLoadedMsg:
 		delete(m.statsPending, msg.key)
@@ -148,6 +170,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.statsFailed[msg.key] = true
 		slog.Warn("load project stats", "key", msg.key, "err", msg.err)
 		return m, m.nextStatsPrefetch()
+	case joinDoneMsg:
+		return m.onJoinDone(msg)
 	}
 
 	if m.creating {
@@ -155,6 +179,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 	if m.filtering {
 		return m.updateFilter(msg)
+	}
+	if m.joining {
+		return m.updateJoin(msg)
 	}
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
@@ -274,7 +301,7 @@ func (m Model) onKeyButton(msg tea.KeyPressMsg, activate func(Model) (Model, tea
 		return m.focusSearch()
 	case "esc":
 		return m.focusList()
-	case "enter", " ", "space":
+	case "enter", "space":
 		return activate(m)
 	}
 	return m, nil
@@ -294,11 +321,16 @@ func (m Model) onKeyList(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 		}
 	case "c":
 		return m.openCreate()
+	case "f":
+		return m.openFilter()
 	case "p":
 		return m.togglePin()
+	case "R":
+		m.loading = true
+		return m, loadProjects(m.deps)
 	case "enter":
 		if p, ok := m.selectedProject(); ok {
-			return m, func() tea.Msg { return nav.OpenProjectMsg{ProjectKey: p.Key, Title: p.Title} }
+			return m.enterProject(p)
 		}
 		return m, nil
 	}
@@ -351,7 +383,26 @@ func (m Model) setFocus(target int) (Model, tea.Cmd) {
 }
 
 func (m Model) cycleFocus(delta int) (Model, tea.Cmd) {
-	return m.setFocus((m.focus + delta + focusCount) % focusCount)
+	next := m.focus
+	// skip any focus that is not a live Tab stop right now (the click-only filter/create buttons when the
+	// mouse is off), so the ring never lands on an invisible control. focusList is always available.
+	for i := 0; i < focusCount; i++ {
+		next = (next + delta + focusCount) % focusCount
+		if m.focusAvailable(next) {
+			break
+		}
+	}
+	return m.setFocus(next)
+}
+
+// focusAvailable reports whether target is a live Tab stop. The filter and create buttons are click
+// affordances hidden with the mouse off, when the f / c keys drive them instead.
+func (m Model) focusAvailable(target int) bool {
+	switch target {
+	case focusFilter, focusPlus:
+		return m.deps.Mouse
+	}
+	return true
 }
 
 func (m Model) focusSearch() (Model, tea.Cmd) { return m.setFocus(focusSearch) }
@@ -630,7 +681,7 @@ func (m Model) projectRows(showRepo bool) []table.Row {
 		if p.Archived {
 			arch = g.Or(g.ArchiveCheck, "YES")
 		}
-		act := humanizeSince(effectiveActivity(p))
+		act := components.HumanizeSince(effectiveActivity(p))
 		var cells []string
 		switch {
 		case i == cursor, i == m.hoverRow:
@@ -793,7 +844,7 @@ func (m Model) View() string {
 			m.deps.Styles.Muted.Render("Terminal too small"))
 	}
 
-	if m.creating || m.filtering {
+	if m.creating || m.filtering || m.joining {
 		return m.modalView()
 	}
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, m.dashboard())
@@ -816,6 +867,9 @@ func (m Model) modalView() string {
 		t := m.deps.Styles.Theme
 		modal, _, _ = components.ScrollBox(m.filter.View(), m.height, m.modalScroll, t.Primary, t.Border)
 	}
+	if m.joining {
+		modal = m.joinUI.View()
+	}
 	mx := max(0, (m.width-lipgloss.Width(modal))/2)
 	my := max(0, (m.height-lipgloss.Height(modal))/2)
 	return overlayDim(backdrop, modal, mx, my, m.deps.Styles.Theme.Muted)
@@ -826,11 +880,21 @@ const (
 	filterButtonW = 5
 )
 
+// trailingButtonsW is the width the filter + create buttons and their one-cell gaps take at the right of
+// the search row. They are click-only, so with the mouse off they are hidden and the search box reclaims
+// the space (the f / c keys still open the filter and the create form).
+func (m Model) trailingButtonsW() int {
+	if !m.deps.Mouse {
+		return 0
+	}
+	return plusButtonW + filterButtonW + 2 // two one-cell gaps between the three boxes
+}
+
 // searchBoxW is the outer width of the search box, sized so the search row (search
 // box + filter + create buttons) exactly fills the list column below it.
 func (m Model) searchBoxW() int {
 	leftW, _ := m.panelWidths()
-	return leftW - plusButtonW - filterButtonW - 2 // two one-cell gaps between the three
+	return leftW - m.trailingButtonsW()
 }
 
 func (m Model) searchRow() string {
@@ -850,6 +914,9 @@ func (m Model) searchRow() string {
 	inputBody := lipgloss.NewStyle().Width(boxW - 4).MaxWidth(boxW - 4).MaxHeight(1).Render(inner)
 	searchBox := zone.Mark("home.search", components.TitledBoxWeighted("Search", inputBody, searchBorder, m.focus == focusSearch))
 
+	if !m.deps.Mouse {
+		return searchBox // the filter/create buttons are click-only, so the box fills the whole row
+	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, searchBox, " ", m.filterButton(), " ", m.plusButton())
 }
 
@@ -1145,7 +1212,7 @@ func (m Model) showRepo() bool {
 // CapturingInput reports whether the screen owns the keyboard (search field focused or a
 // modal open), so the app shell suppresses its global tab-switch keys.
 func (m Model) CapturingInput() bool {
-	return m.focus == focusSearch || m.creating || m.filtering
+	return m.focus == focusSearch || m.creating || m.filtering || m.joining
 }
 
 // Retheme swaps in new deps on a live theme change. The table caches both its styles and its built
@@ -1155,6 +1222,11 @@ func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
 	m.table.SetStyles(tableStyles(d))
 	m.rebuildRows()
+	// turning the mouse off can strand focus on a now-hidden filter/create button; snap it to the list.
+	if !m.focusAvailable(m.focus) {
+		m.focus = focusList
+		m.search.Blur()
+	}
 	return m
 }
 
@@ -1175,6 +1247,9 @@ func (m Model) HelpKeys() []key.Binding {
 	}
 	if m.filtering {
 		return m.filter.HelpKeys()
+	}
+	if m.joining {
+		return m.joinUI.HelpKeys()
 	}
 	if m.focus == focusSearch {
 		return []key.Binding{
@@ -1202,22 +1277,33 @@ func (m Model) HelpKeys() []key.Binding {
 		key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "focus")),
 		key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "search")),
+		key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "filter")),
 		key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "new project")),
 		key.NewBinding(key.WithKeys("p"), key.WithHelp("p", "pin/unpin")),
+		key.NewBinding(key.WithKeys("R"), key.WithHelp("R", "refresh")),
 	}
 }
 
-type projectsLoadedMsg struct{ projects []domain.Project }
+// ProjectsLoadedMsg and ProjectsErrMsg carry the background projects-list fetch back to the dashboard.
+// They are exported so the app shell can route them to home even when a silent restore has deep-linked
+// past the dashboard into a project - otherwise the result would land on the active project screen and
+// be dropped, leaving the dashboard stuck on "Projects (loading)".
+type ProjectsLoadedMsg struct{ projects []domain.Project }
 
-type projectsErrMsg struct{ err error }
+type ProjectsErrMsg struct{ err error }
+
+// RefreshMsg asks the dashboard to silently reload its projects list. It is exported so the app shell can
+// fire it when returning to the dashboard from a project drill-in, so edits made there (settings,
+// membership) show up on the list without a manual refresh.
+type RefreshMsg struct{}
 
 func loadProjects(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		projects, err := d.Projects.ListProjects(context.Background(), true)
 		if err != nil {
-			return projectsErrMsg{err: err}
+			return ProjectsErrMsg{err: err}
 		}
-		return projectsLoadedMsg{projects: projects}
+		return ProjectsLoadedMsg{projects: projects}
 	}
 }
 

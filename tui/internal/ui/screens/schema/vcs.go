@@ -15,6 +15,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 const (
@@ -98,7 +99,7 @@ func (f vcsForm) onKey(msg tea.KeyPressMsg) (vcsForm, tea.Cmd) {
 		f.focus = (f.focus + 1) % (vfCancel + 1)
 	case "shift+tab":
 		f.focus = (f.focus - 1 + vfCancel + 1) % (vfCancel + 1)
-	case "enter", " ":
+	case "enter", "space":
 		switch f.focus {
 		case vfOpened, vfMerged:
 			return f.openPicker(f.focus), nil
@@ -117,7 +118,7 @@ func (f vcsForm) pickKey(msg tea.KeyPressMsg) vcsForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false
@@ -329,6 +330,9 @@ func saveVcs(d deps.Deps, wfID, openedID, mergedID int) tea.Cmd {
 }
 
 func vcsErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -337,6 +341,9 @@ func vcsErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not save VCS settings. Try again."
 }

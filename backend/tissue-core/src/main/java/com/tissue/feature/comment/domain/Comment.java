@@ -4,6 +4,7 @@ import static com.tissue.feature.comment.domain.exception.CommentErrorCode.COMME
 import static com.tissue.feature.comment.domain.exception.CommentErrorCode.NESTED_COMMENT_LIMIT_EXCEEDED;
 
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.exception.ProjectArchivedException;
@@ -12,6 +13,8 @@ import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -51,6 +54,16 @@ public class Comment extends SoftDeleteEntity {
     @OneToMany(mappedBy = "parentComment")
     private final List<Comment> childComments = new ArrayList<>();
 
+    /**
+     * The verdict this comment was submitted with, or null for an ordinary comment. Frozen at
+     * submission: {@link com.tissue.feature.issue.domain.IssueReviewer} keeps only the reviewer's
+     * current status and resets it when a re-review is requested, so a comment that reads its verdict
+     * back from there would silently change meaning.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status")
+    private @Nullable ReviewStatus reviewStatus;
+
     @SuppressWarnings("NullAway.Init")
     protected Comment() {}
 
@@ -68,6 +81,21 @@ public class Comment extends SoftDeleteEntity {
         }
 
         return comment;
+    }
+
+    /**
+     * Creates the feedback body of a submitted review. Always a root comment: a verdict is a statement
+     * about the issue, not a reply within someone else's thread.
+     */
+    public static Comment createReview(Member author, Issue issue, String content, ReviewStatus reviewStatus) {
+        Comment comment = create(author, issue, content, null);
+        comment.reviewStatus = reviewStatus;
+
+        return comment;
+    }
+
+    public boolean isReview() {
+        return reviewStatus != null;
     }
 
     public void updateContent(String content) {

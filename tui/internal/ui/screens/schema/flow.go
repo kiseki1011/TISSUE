@@ -16,6 +16,7 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // navRefWidth is a fixed width used only to order the draft elements top-to-bottom for keyboard
@@ -331,7 +332,7 @@ func (f flowForm) onKey(msg tea.KeyPressMsg) (flowForm, tea.Cmd) {
 		return f.deleteCur(), nil
 	case "ctrl+s":
 		return f.submit()
-	case "enter", " ":
+	case "enter", "space":
 		return f.activateCur()
 	}
 	return f, nil
@@ -657,6 +658,9 @@ func saveFlow(d deps.Deps, wfID, version int, states []domain.GraphStateInput, t
 }
 
 func flowErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -667,6 +671,9 @@ func flowErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this workflow."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not save the graph. Try again."
 }

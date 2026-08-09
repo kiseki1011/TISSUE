@@ -175,7 +175,7 @@ func (f createTypeForm) colorKey(msg tea.KeyPressMsg) createTypeForm {
 		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
 		f.cpick = f.cpick.Move(0, 1)
-	case "enter", " ":
+	case "enter", "space":
 		if name, ok := f.cpick.Selected(); ok {
 			f.color = name
 		}
@@ -192,7 +192,7 @@ func (f createTypeForm) pickKey(msg tea.KeyPressMsg) createTypeForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false

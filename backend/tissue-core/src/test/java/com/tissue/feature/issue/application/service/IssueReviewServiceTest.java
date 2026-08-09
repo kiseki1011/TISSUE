@@ -2,8 +2,12 @@ package com.tissue.feature.issue.application.service;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 
+import com.tissue.feature.comment.application.port.usecase.CommentCommandUseCase;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
@@ -34,6 +38,9 @@ class IssueReviewServiceTest {
     @Mock
     private IssueEventPublisher eventPublisher;
 
+    @Mock
+    private CommentCommandUseCase commentCommandUseCase;
+
     @InjectMocks
     private IssueReviewService sut;
 
@@ -62,11 +69,69 @@ class IssueReviewServiceTest {
             given(reviewer.getStatus()).willReturn(ReviewStatus.APPROVED);
 
             // when
-            sut.submitReview(iid, true, actorMemberId);
+            sut.submitReview(iid, true, null, actorMemberId);
 
             // then
             then(reviewer).should().approve();
             then(eventPublisher).should().publishReviewSubmitted(issue, ReviewStatus.APPROVED, actor);
+            then(commentCommandUseCase).should(never()).createReview(any(), any(), any(), anyLong());
+        }
+
+        @Test
+        @DisplayName("success: feedback is stored as a comment stamped with the verdict")
+        void successReviewWithFeedback() {
+            // given
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
+            Long actorMemberId = 1L;
+
+            ProjectMember actor = mock(ProjectMember.class);
+            Issue issue = mock(Issue.class);
+            IssueParticipants participants = mock(IssueParticipants.class);
+            IssueReviewer reviewer = mock(IssueReviewer.class);
+
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+            given(issue.getParticipants()).willReturn(participants);
+            given(participants.getReviewers()).willReturn(Set.of(reviewer));
+            given(reviewer.getReviewer()).willReturn(actor);
+            given(reviewer.getStatus()).willReturn(ReviewStatus.CHANGES_REQUESTED);
+
+            // when
+            sut.submitReview(iid, false, "rename the method", actorMemberId);
+
+            // then
+            then(reviewer).should().reject();
+            then(commentCommandUseCase)
+                    .should()
+                    .createReview(iid, "rename the method", ReviewStatus.CHANGES_REQUESTED, actorMemberId);
+        }
+
+        @Test
+        @DisplayName("success: a blank feedback body leaves only the status change")
+        void blankFeedbackCreatesNoComment() {
+            // given
+            IssueIdentifier iid = new IssueIdentifier("PROJ", "PROJ-1");
+            Long actorMemberId = 1L;
+
+            ProjectMember actor = mock(ProjectMember.class);
+            Issue issue = mock(Issue.class);
+            IssueParticipants participants = mock(IssueParticipants.class);
+            IssueReviewer reviewer = mock(IssueReviewer.class);
+
+            given(projectMemberFinder.getByProjectKey(iid.projectKey(), actorMemberId))
+                    .willReturn(actor);
+            given(issueFinder.getWithProjectByIssueKey(iid.issueKey())).willReturn(issue);
+            given(issue.getParticipants()).willReturn(participants);
+            given(participants.getReviewers()).willReturn(Set.of(reviewer));
+            given(reviewer.getReviewer()).willReturn(actor);
+            given(reviewer.getStatus()).willReturn(ReviewStatus.APPROVED);
+
+            // when
+            sut.submitReview(iid, true, "   ", actorMemberId);
+
+            // then
+            then(commentCommandUseCase).should(never()).createReview(any(), any(), any(), anyLong());
         }
     }
 

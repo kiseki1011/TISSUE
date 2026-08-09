@@ -18,6 +18,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // editKind selects which metadata endpoint a save hits.
@@ -184,7 +185,7 @@ func (f editForm) pickKey(msg tea.KeyPressMsg) editForm {
 		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
 		f.cpick = f.cpick.Move(0, 1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyColor()
 	case "esc":
 		f.picking = false
@@ -512,6 +513,9 @@ func saveEdit(d deps.Deps, kind editKind, wfID, elemID int, name, color, desc st
 }
 
 func editErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -522,6 +526,9 @@ func editErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not save. Try again."
 }

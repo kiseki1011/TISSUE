@@ -9,6 +9,7 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
@@ -75,6 +76,9 @@ func deleteWorkflowCmd(d deps.Deps, id int, name string) tea.Cmd {
 
 // 409 in-use is the common case: a global type/workflow still referenced by issues or types.
 func deleteCatalogErrorMessage(err error, noun string) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -83,6 +87,9 @@ func deleteCatalogErrorMessage(err error, noun string) string {
 		case http.StatusForbidden:
 			return "You do not have permission to delete this " + noun + "."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not delete the " + noun + ". Try again."
 }

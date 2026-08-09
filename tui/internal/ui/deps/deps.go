@@ -19,6 +19,9 @@ type Deps struct {
 	Catalog  *domain.CatalogService
 	Agents   *domain.AgentService
 	Issues   *domain.IssueService
+	Sprints  *domain.SprintService
+
+	Notifications *domain.NotificationService
 
 	Store     auth.TokenStore
 	Transport *auth.Transport

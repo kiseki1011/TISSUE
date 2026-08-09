@@ -1,11 +1,9 @@
 package com.tissue.feature.issue.adapter.web;
 
-import com.tissue.feature.comment.application.dto.response.CommentDetailResponse;
-import com.tissue.feature.comment.application.port.usecase.CommentQueryUseCase;
 import com.tissue.feature.issue.adapter.web.request.IssueSearchRequest;
+import com.tissue.feature.issue.application.dto.request.IssueDetailSection;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
-import com.tissue.feature.issue.application.dto.response.IssueDetail;
 import com.tissue.feature.issue.application.dto.response.IssueDetailView;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
@@ -15,6 +13,7 @@ import com.tissue.feature.issue.application.dto.response.TransitionDetail;
 import com.tissue.feature.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.feature.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.feature.issue.application.dto.response.info.ProjectMemberInfo;
+import com.tissue.feature.issue.application.port.usecase.IssueDetailViewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTrashUseCase;
@@ -35,7 +34,6 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,9 +48,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
+    private final IssueDetailViewUseCase issueDetailViewUseCase;
     private final IssueFullTextSearchUseCase issueFtsUseCase;
     private final IssueTrashUseCase issueTrashUseCase;
-    private final CommentQueryUseCase commentQueryUseCase;
 
     @Operation(operationId = "searchProjectIssues", summary = "Search project issues", description = """
                     Search issues in a project by keyword. The keyword is matched against the issue's \
@@ -203,21 +201,12 @@ public class IssueQueryController {
             @PathVariable String issueKey,
             @RequestParam(value = "commentSize", defaultValue = "20") int commentSize,
             @CurrentMember MemberDetails memberDetails) {
-        IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
-        Long actorMemberId = memberDetails.getMemberId();
+        IssueDetailView response = issueDetailViewUseCase.getDetailView(
+                IssueIdentifier.ofIssueKey(issueKey),
+                IssueDetailSection.all(),
+                commentSize,
+                memberDetails.getMemberId());
 
-        IssueDetail detail = issueQueryUseCase.getDetail(iid, actorMemberId);
-        Page<CommentDetailResponse> comments =
-                commentQueryUseCase.getIssueComments(iid, PageRequest.of(0, commentSize), actorMemberId);
-
-        IssueDetailView response = new IssueDetailView(
-                detail.common(),
-                detail.customFields(),
-                issueQueryUseCase.getAvailableTransitions(iid, actorMemberId),
-                issueQueryUseCase.getParent(iid, actorMemberId),
-                issueQueryUseCase.getChildren(iid, actorMemberId),
-                issueQueryUseCase.getRelations(iid, actorMemberId),
-                PageResponse.from(comments));
         return ResponseEntity.ok(response);
     }
 

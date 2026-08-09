@@ -9,6 +9,7 @@ import com.tissue.feature.comment.domain.Comment;
 import com.tissue.feature.comment.domain.exception.CommentNotFoundException;
 import com.tissue.feature.issue.application.service.finder.IssueFinder;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import com.tissue.feature.project.application.service.finder.ProjectAccessResolver;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.ProjectMember;
@@ -45,6 +46,22 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         commentRepository.save(comment);
 
         eventPublisher.publishCommentAdded(issue, comment, cmd.mentionedUsernames(), actor);
+
+        return new CommentCreateResponse(iid.issueKey(), comment.getId());
+    }
+
+    @Override
+    public CommentCreateResponse createReview(
+            IssueIdentifier iid, String content, ReviewStatus reviewStatus, Long memberId) {
+        ProjectMember actor = projectMemberFinder.getByProjectKey(iid.projectKey(), memberId);
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+
+        Comment comment = Comment.createReview(actor.getMember(), issue, content, reviewStatus);
+        commentRepository.save(comment);
+
+        // No comment-added event on purpose. The caller publishes IssueReviewSubmittedEvent for the same
+        // action, and both notify the assignee and reporter - firing each would notify them twice for one
+        // review.
 
         return new CommentCreateResponse(iid.issueKey(), comment.getId());
     }

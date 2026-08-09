@@ -26,7 +26,7 @@ func (s *AgentService) ListAgents(ctx context.Context) ([]Agent, error) {
 		return nil, fmt.Errorf("list agents: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]Agent, 0, len(*resp.JSON200))
 	for _, a := range *resp.JSON200 {
@@ -56,7 +56,7 @@ func (s *AgentService) CreateAgent(ctx context.Context, name, agentType string, 
 		return Agent{}, fmt.Errorf("create agent: %w", err)
 	}
 	if resp.JSON201 == nil {
-		return Agent{}, &APIError{Status: resp.StatusCode()}
+		return Agent{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return toAgent(resp.JSON201), nil
 }
@@ -80,7 +80,7 @@ func (s *AgentService) UpdateAgent(ctx context.Context, agentID int64, agentType
 		return fmt.Errorf("update agent: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }
@@ -92,7 +92,7 @@ func (s *AgentService) ListModels(ctx context.Context) ([]AiModel, error) {
 		return nil, fmt.Errorf("list models: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]AiModel, 0, len(*resp.JSON200))
 	for _, m := range *resp.JSON200 {
@@ -117,7 +117,7 @@ func (s *AgentService) DeactivateAgent(ctx context.Context, agentID int64) error
 		return fmt.Errorf("deactivate agent: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }
@@ -129,7 +129,7 @@ func (s *AgentService) ListTokens(ctx context.Context, agentID int64) ([]Token, 
 		return nil, fmt.Errorf("list tokens: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]Token, 0, len(*resp.JSON200))
 	for _, t := range *resp.JSON200 {
@@ -151,7 +151,7 @@ func (s *AgentService) IssueToken(ctx context.Context, agentID int64, name, scop
 		return IssuedToken{}, fmt.Errorf("issue token: %w", err)
 	}
 	if resp.JSON201 == nil || resp.JSON201.Token == nil {
-		return IssuedToken{}, &APIError{Status: resp.StatusCode()}
+		return IssuedToken{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return IssuedToken{Secret: *resp.JSON201.Token, Token: toToken(resp.JSON201.Pat)}, nil
 }
@@ -163,7 +163,7 @@ func (s *AgentService) RevokeToken(ctx context.Context, agentID, tokenID int64) 
 		return fmt.Errorf("revoke token: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }

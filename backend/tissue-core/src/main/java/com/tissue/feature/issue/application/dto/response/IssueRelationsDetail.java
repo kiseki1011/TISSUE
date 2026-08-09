@@ -14,6 +14,11 @@ public record IssueRelationsDetail(
         List<RelatedIssueInfo> causedBy,
         List<RelatedIssueInfo> relevant) {
 
+    /** No relations, for a caller that did not ask for them. */
+    public static IssueRelationsDetail empty() {
+        return new IssueRelationsDetail(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+    }
+
     public static IssueRelationsDetail from(List<IssueRelation> outgoing, List<IssueRelation> incoming) {
         List<RelatedIssueInfo> blocks = new ArrayList<>();
         List<RelatedIssueInfo> duplicates = new ArrayList<>();

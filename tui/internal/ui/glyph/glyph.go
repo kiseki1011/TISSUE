@@ -133,6 +133,7 @@ type Set struct {
 	ArchiveCheck         string
 	AccountSearch        string
 	LastUpdated          string
+	Priority             string
 	AccountBadge         string
 	Login                string
 	Logout               string
@@ -315,8 +316,9 @@ var (
 	mail = variant{"\uf42f", "\u2709"}
 	//   📬
 	mailRead = variant{"\ueb1b", "\U0001f4ec"}
-	//   ↩
-	reply = variant{"\uf112", "\u21a9"}
+	// hardcoded U+21A9 leftwards-arrow-with-hook in both modes (like filter): the plain BMP hook-arrow
+	// reads the same everywhere, so the reply affordance stays visually consistent regardless of font
+	reply = variant{"\u21a9", "\u21a9"}
 	//   🎯
 	goal = variant{"\uf4de", "\U0001f3af"}
 	//   ⌂
@@ -369,6 +371,9 @@ var (
 	accountSearch = variant{"\U000f0016", "\U0001f50d"}
 	// nf-fa-history, fallback clockwise arrow
 	lastUpdated = variant{"\uf1da", "\u21bb"}
+	// \udb82\udcbe  nf-md-priority (plane-15). Empty fallback: call sites pass their own text (list header "Pri",
+	// Details ""). Nerd terminals show the glyph; fallback mode uses the override.
+	priority = variant{"\U000f08be", ""}
 	// nf-fa-id-badge, fallback white diamond with small diamond
 	accountBadge = variant{"\uf2c2", "\u25c8"}
 	// 󰍂  →
@@ -464,6 +469,34 @@ func (s Set) Or(g string, override ...string) string {
 		return g
 	}
 	return override[0]
+}
+
+// FieldTypeGlyph returns the glyph for an IssueFieldType, empty on plain terminals so the bare label
+// shows. Shared by the schema field picker and the issue detail's custom fields so both agree.
+func (s Set) FieldTypeGlyph(fieldType string) string {
+	switch fieldType {
+	case "TEXT":
+		return s.Or(s.SymbolString, "")
+	case "SHORT_TEXT":
+		return s.Or(s.WholeWord, "")
+	case "SELECT_OPTION":
+		return s.Or(s.SymbolEnum, "")
+	case "CHECKLIST":
+		return s.Or(s.Checklist, "")
+	case "BOOLEAN":
+		return s.Or(s.SymbolBoolean, "")
+	case "DATE":
+		return s.Or(s.Calendar, "")
+	case "DECIMAL":
+		return s.Or(s.Decimal, "")
+	case "INTEGER":
+		return s.Or(s.Number, "")
+	case "PERCENTAGE":
+		return s.Or(s.Percent, "")
+	case "TIMESTAMP":
+		return s.Or(s.Clock, "")
+	}
+	return ""
 }
 
 // New resolves every glyph for the given mode.
@@ -567,6 +600,7 @@ func New(mode Mode) Set {
 		ArchiveCheck:         pick(archiveCheck),
 		AccountSearch:        pick(accountSearch),
 		LastUpdated:          pick(lastUpdated),
+		Priority:             pick(priority),
 		AccountBadge:         pick(accountBadge),
 		Login:                pick(login),
 		Logout:               pick(logout),

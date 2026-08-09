@@ -52,31 +52,10 @@ func fieldTypeLabel(t string) string {
 	return t
 }
 
-// fieldTypeGlyph returns empty on plain terminals so the bare label shows.
+// fieldTypeGlyph returns empty on plain terminals so the bare label shows. The mapping lives on
+// glyph.Set so the issue detail's custom fields render the same per-type glyph.
 func fieldTypeGlyph(g glyph.Set, fieldType string) string {
-	switch fieldType {
-	case "TEXT":
-		return g.Or(g.SymbolString, "")
-	case "SHORT_TEXT":
-		return g.Or(g.WholeWord, "")
-	case "SELECT_OPTION":
-		return g.Or(g.SymbolEnum, "")
-	case "CHECKLIST":
-		return g.Or(g.Checklist, "")
-	case "BOOLEAN":
-		return g.Or(g.SymbolBoolean, "")
-	case "DATE":
-		return g.Or(g.Calendar, "")
-	case "DECIMAL":
-		return g.Or(g.Decimal, "")
-	case "INTEGER":
-		return g.Or(g.Number, "")
-	case "PERCENTAGE":
-		return g.Or(g.Percent, "")
-	case "TIMESTAMP":
-		return g.Or(g.Clock, "")
-	}
-	return ""
+	return g.FieldTypeGlyph(fieldType)
 }
 
 // canHaveOptions mirrors the backend's IssueFieldType.canHaveOptions (SELECT_OPTION / CHECKLIST).
@@ -221,7 +200,7 @@ func (f createFieldForm) pickKey(msg tea.KeyPressMsg) createFieldForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false

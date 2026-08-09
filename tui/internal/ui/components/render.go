@@ -140,6 +140,45 @@ func join(head, tail string, w int, fill lipgloss.Style) string {
 	return FitLine(head+fill.Render(strings.Repeat(" ", gap))+tail, w)
 }
 
+// RuleWithTitle renders a titled top rule for a borderless panel ("─── Title ───"), the "Details" look.
+// The colour c carries focus (no border weight change).
+func RuleWithTitle(title string, width int, c color.Color) string {
+	label := " " + title + " "
+	const lead = 2
+	rest := width - lead - lipgloss.Width(label)
+	if rest < 0 {
+		rest = 0
+	}
+	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat("─", lead) + label + strings.Repeat("─", rest))
+}
+
+// ScrollbarColumn returns view cells drawing a scrollbar for a list of total rows scrolled to off. It
+// is blank when everything fits; otherwise a thumb (thumb colour, "█") rides a track (track colour, "│").
+func ScrollbarColumn(off, total, view int, thumb, track color.Color) []string {
+	cells := make([]string, view)
+	if total <= view {
+		for i := range cells {
+			cells[i] = " "
+		}
+		return cells
+	}
+	size := max(1, view*view/total)
+	pos := 0
+	if span := total - view; span > 0 {
+		pos = off * (view - size) / span
+	}
+	trackCell := lipgloss.NewStyle().Foreground(track).Render("│")
+	thumbCell := lipgloss.NewStyle().Foreground(thumb).Render("█")
+	for i := range cells {
+		if i >= pos && i < pos+size {
+			cells[i] = thumbCell
+		} else {
+			cells[i] = trackCell
+		}
+	}
+	return cells
+}
+
 // HintBar renders an inline shortcut hint as "key label · key label …", tinting the key glyphs
 // (Secondary) so they read as pressable while the labels stay muted. Arguments alternate key, label —
 // a label may be empty for a bare key affordance.

@@ -496,6 +496,13 @@ func (m *Model) reloadTokens() tea.Cmd {
 	return loadTokens(m.deps, id)
 }
 
+func (m Model) HelpTitle() string { return "Agents" }
+
+func (m Model) HelpAbout() string {
+	return "Manage the AI agents that connect over MCP. Create an agent, issue and revoke its access " +
+		"tokens, and edit its metadata."
+}
+
 func (m Model) HelpKeys() []key.Binding {
 	if m.creating {
 		return m.create.HelpKeys()

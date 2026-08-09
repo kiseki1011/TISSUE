@@ -1,8 +1,10 @@
 package com.tissue.feature.vcs.domain;
 
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
+import com.tissue.global.crypto.EncryptedStringConverter;
 import com.tissue.shared.entity.HardDeleteEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,6 +29,7 @@ public class ProjectVcsIntegration extends HardDeleteEntity {
     @Column(name = "project_key", nullable = false)
     private String projectKey;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "webhook_secret", nullable = false)
     private String webhookSecret;
 

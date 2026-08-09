@@ -18,6 +18,7 @@ public class RateLimitService {
     private static final String LOGIN_PREFIX = "rate:login:";
     private static final String EMAIL_VERIFICATION_PREFIX = "rate:signup-verify:";
     private static final String PASSWORD_RESET_PREFIX = "rate:password-reset:";
+    private static final String WEBHOOK_PREFIX = "rate:vcs-webhook:";
 
     public void checkLoginRateLimit(String clientIp, String identifier) {
         String key = LOGIN_PREFIX + clientIp + ":" + identifier;
@@ -35,6 +36,19 @@ public class RateLimitService {
     public void checkEmailVerificationRateLimit(String email) {
         RateLimitProperties.EmailVerification config = properties.getEmailVerification();
         String key = EMAIL_VERIFICATION_PREFIX + email;
+        int count = rateLimitStore.incrementAndGet(key, config.getWindow());
+        if (count > config.getMaxAttempts()) {
+            throw new RateLimitExceededException(CommonErrorCode.RATE_LIMITED);
+        }
+    }
+
+    /**
+     * Limits inbound webhook traffic per client address. Keyed on the address alone rather than on the
+     * project, so a caller cannot win a fresh budget by inventing project keys.
+     */
+    public void checkWebhookRateLimit(String clientIp) {
+        RateLimitProperties.Webhook config = properties.getWebhook();
+        String key = WEBHOOK_PREFIX + clientIp;
         int count = rateLimitStore.incrementAndGet(key, config.getWindow());
         if (count > config.getMaxAttempts()) {
             throw new RateLimitExceededException(CommonErrorCode.RATE_LIMITED);

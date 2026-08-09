@@ -2,6 +2,7 @@ package com.tissue.feature.notification.adapter.web;
 
 import com.tissue.feature.notification.application.dto.response.NotificationResponse;
 import com.tissue.feature.notification.application.port.usecase.NotificationQueryUseCase;
+import com.tissue.feature.notification.domain.enums.NotificationType;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.CursorPage;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,10 @@ public class NotificationQueryController {
             @Parameter(description = "Filter by unread notifications only")
                     @RequestParam(required = false, defaultValue = "false")
                     boolean unreadOnly,
+            @Parameter(description = "Filter by notification types (e.g. ISSUE_MENTIONED). Omit for all types.")
+                    @RequestParam(required = false)
+                    @Nullable
+                    List<NotificationType> types,
             @Parameter(description = "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.")
                     @RequestParam(required = false)
                     @Nullable
@@ -50,8 +56,8 @@ public class NotificationQueryController {
             @Parameter(description = "Number of items per page", example = "20") @RequestParam(defaultValue = "20")
                     int limit,
             @CurrentMember MemberDetails memberDetails) {
-        CursorPage<NotificationResponse> notifications =
-                notificationQueryUseCase.getNotifications(memberDetails.getMemberId(), unreadOnly, cursor, limit);
+        CursorPage<NotificationResponse> notifications = notificationQueryUseCase.getNotifications(
+                memberDetails.getMemberId(), unreadOnly, types, cursor, limit);
 
         return ResponseEntity.ok(notifications);
     }

@@ -53,9 +53,10 @@ public class IssueWriteTool {
 
     @McpTool(name = "create_issue", description = """
             Create a new issue in a project. Call get_issue_types first to choose an issueTypeId and learn which \
-            custom fields the type requires. The issue starts in its workflow's initial state and is unscheduled \
-            (no sprint), so it lands in the backlog. Returns the new issue key (ex: "PROJ-123"). You usually \
-            call claim_issue next (to set yourself as the assignee), then transition it as you make progress.""")
+            custom fields the type requires, and whether the type needs a parent. The issue starts in its \
+            workflow's initial state, and lands in the backlog unless you put it in a sprint. Returns the new \
+            issue key (ex: "PROJ-123"). You usually call claim_issue next (to set yourself as the assignee), \
+            then transition it as you make progress.""")
     public IssueCreateResponse createIssue(
             @McpToolParam(required = true, description = "The project key to create the issue in. ex: \"PROJ\".")
                     String projectKey,
@@ -76,6 +77,21 @@ public class IssueWriteTool {
             @McpToolParam(required = false, description = "Member id to assign on creation. Omit to leave unassigned.")
                     @Nullable
                     Long assigneeMemberId,
+            @McpToolParam(
+                            required = false,
+                            description = "Key of the issue this one belongs under, ex: \"PROJ-100\". The parent "
+                                    + "must sit exactly one hierarchy level above the type you chose (see the "
+                                    + "hierarchy field from get_issue_types). Types low in the hierarchy "
+                                    + "(SUBTASK, MICROTASK) cannot be created without one. Omit for a top-level "
+                                    + "issue.")
+                    @Nullable
+                    String parentIssueKey,
+            @McpToolParam(
+                            required = false,
+                            description = "Id of the sprint to schedule the issue into, from list_sprints. "
+                                    + "Omit to leave the issue in the backlog.")
+                    @Nullable
+                    Long sprintId,
             @McpToolParam(required = false, description = """
                                     Custom field values for the chosen issue type. A map of field id (the id from \
                                     get_issue_types, as a string key) to value. Include every field whose required \
@@ -98,6 +114,8 @@ public class IssueWriteTool {
                 .issueTypeId(issueTypeId)
                 .customFields(toCustomFields(customFields))
                 .assigneeMemberId(assigneeMemberId)
+                .parentKey(parentIssueKey)
+                .sprintId(sprintId)
                 .build();
 
         return issueLifecycleUseCase.create(

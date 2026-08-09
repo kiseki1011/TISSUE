@@ -64,10 +64,10 @@ func (s State) String() string {
 	}
 }
 
-// Event is one parsed SSE frame. Category is the SSE `event:` name ("issue" or
-// "sprint"); the rest come from the JSON `data:` payload (RealtimeMessage).
+// Event is one parsed SSE frame. Category is the SSE `event:` name ("issue",
+// "sprint", or "notification"); the rest come from the JSON `data:` payload (RealtimeMessage).
 type Event struct {
-	Category      string         // SSE event name: "issue" | "sprint"
+	Category      string         // SSE event name: "issue" | "sprint" | "notification"
 	ID            string         // SSE id: the domain event UUID
 	Type          string         // data.type: ISSUE_CREATED, SPRINT_STARTED, ...
 	ProjectKey    string         // data.projectKey

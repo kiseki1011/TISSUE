@@ -1,6 +1,7 @@
 package com.tissue.feature.notification.application.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -10,6 +11,7 @@ import com.tissue.feature.member.application.port.repository.MemberContactInfo;
 import com.tissue.feature.notification.application.port.repository.NotificationRepository;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
+import com.tissue.feature.notification.domain.event.NotificationCreatedEvent;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
 import com.tissue.shared.enums.SupportedLanguage;
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCommandServiceTest {
@@ -39,6 +42,9 @@ class NotificationCommandServiceTest {
 
     @Mock
     NotificationDispatchService processor;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     NotificationCommandService sut;
@@ -73,6 +79,7 @@ class NotificationCommandServiceTest {
             // then
             then(repository).should().saveAll(anyList());
             then(processor).should().dispatch(anyList());
+            then(eventPublisher).should().publishEvent(any(NotificationCreatedEvent.class));
         }
 
         @Test

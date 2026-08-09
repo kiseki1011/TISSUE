@@ -11,6 +11,7 @@ public record IssueSearchCondition(
         @Nullable Set<IssuePriority> priorities,
         @Nullable Set<StateCategory> stateCategories,
         @Nullable Set<Long> currentStateIds,
+        @Nullable Set<Long> issueTypeIds,
         @Nullable Set<Long> tagIds,
         @Nullable Set<Long> authorMemberIds,
         @Nullable Set<Long> assigneeMemberIds,
@@ -25,7 +26,7 @@ public record IssueSearchCondition(
 
     public static IssueSearchCondition empty() {
         return new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -38,6 +39,7 @@ public record IssueSearchCondition(
         return notEmpty(priorities)
                 || notEmpty(stateCategories)
                 || notEmpty(currentStateIds)
+                || notEmpty(issueTypeIds)
                 || notEmpty(tagIds)
                 || notEmpty(authorMemberIds)
                 || notEmpty(assigneeMemberIds)

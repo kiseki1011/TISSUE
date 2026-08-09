@@ -19,6 +19,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
@@ -170,7 +171,7 @@ func (f createAgentForm) onKey(msg tea.KeyPressMsg) (createAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelCreate
-	case "enter", " ":
+	case "enter", "space":
 		switch f.focus {
 		case caType:
 			return f.openPicker(caType), nil
@@ -195,7 +196,7 @@ func (f createAgentForm) pickKey(msg tea.KeyPressMsg) createAgentForm {
 		f.pick = f.pick.Move(-1)
 	case "down", "j":
 		f.pick = f.pick.Move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.picking = false
@@ -380,6 +381,9 @@ func createAgentCmd(d deps.Deps, name, agentType string, modelID int64, descript
 }
 
 func createAgentError(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -390,6 +394,9 @@ func createAgentError(err error) string {
 		case http.StatusBadRequest:
 			return "Invalid agent name."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not create the agent. Try again."
 }

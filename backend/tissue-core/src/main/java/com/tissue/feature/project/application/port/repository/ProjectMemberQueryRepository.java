@@ -140,26 +140,35 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     boolean existsByProjectAndMemberIdIncludingSoftDeleted(
             @Param("project") Project project, @Param("memberId") Long memberId);
 
+    /**
+     * Project members for the roster and the assignee/reviewer pickers. Excludes PURGED members: a purged
+     * account is anonymized to "Deleted User" but its ProjectMember row survives, so without this filter it
+     * would still be offered as a pickable assignee/reviewer.
+     */
     @Query(value = """
             SELECT pm FROM ProjectMember pm
             JOIN FETCH pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
+              AND m.status <> com.tissue.feature.member.domain.MemberStatus.PURGED
               AND (:role IS NULL OR pm.role = :role)
             """, countQuery = """
             SELECT COUNT(pm) FROM ProjectMember pm
             WHERE pm.project = :project
               AND pm.softDeleted = false
+              AND pm.member.status <> com.tissue.feature.member.domain.MemberStatus.PURGED
               AND (:role IS NULL OR pm.role = :role)
             """)
     Page<ProjectMember> findAllByProject(
             @Param("project") Project project, @Param("role") @Nullable ProjectRole role, Pageable pageable);
 
+    /** Keyword variant of {@link #findAllByProject}; likewise excludes PURGED ("Deleted User") members. */
     @Query(value = """
             SELECT pm FROM ProjectMember pm
             JOIN FETCH pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
+              AND m.status <> com.tissue.feature.member.domain.MemberStatus.PURGED
               AND (:role IS NULL OR pm.role = :role)
               AND (LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(m.name)  LIKE LOWER(CONCAT('%', :keyword, '%')))
@@ -168,6 +177,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             JOIN pm.member m
             WHERE pm.project = :project
               AND pm.softDeleted = false
+              AND m.status <> com.tissue.feature.member.domain.MemberStatus.PURGED
               AND (:role IS NULL OR pm.role = :role)
               AND (LOWER(m.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(m.name)  LIKE LOWER(CONCAT('%', :keyword, '%')))
@@ -225,11 +235,13 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     Page<Member> findActiveMemberCandidatesByProjectAndKeyword(
             @Param("project") Project project, @Param("keyword") String keyword, Pageable pageable);
 
+    // Excludes PURGED members so the "active members" count matches the roster/picker list (findAllByProject).
     @Query("""
             SELECT pm.projectKey AS projectKey, COUNT(pm) AS memberCount
             FROM ProjectMember pm
             WHERE pm.projectKey IN :projectKeys
               AND pm.softDeleted = false
+              AND pm.member.status <> com.tissue.feature.member.domain.MemberStatus.PURGED
             GROUP BY pm.projectKey
             """)
     List<ProjectMemberCountRow> countByProjectKeys(@Param("projectKeys") Collection<String> projectKeys);

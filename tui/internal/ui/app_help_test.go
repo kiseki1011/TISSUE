@@ -12,6 +12,7 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/agents"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/schema"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
@@ -108,5 +109,29 @@ func TestHelpModalScrolls(t *testing.T) {
 	nm := next.(helpModal)
 	if got := nm.vp.YOffset(); got <= before {
 		t.Errorf("down did not scroll the viewport: offset %d -> %d", before, got)
+	}
+}
+
+// The Agents tab titles its help "Agents · Help" - it satisfies describer like Projects and Schema, so it
+// no longer falls back to the "Help · Help" default.
+func TestAgentsHelpTitle(t *testing.T) {
+	zone.NewGlobal()
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://localhost:8080"}
+	a := New(d)
+	a.screen = screenAgents
+	a.agents = agents.New(d)
+	a.width, a.height = 100, 30
+
+	m, _ := a.Update(keyPress("?"))
+	app := m.(App)
+	if app.modal == nil {
+		t.Fatal("? did not open the help modal on the Agents tab")
+	}
+	view := stripCSI(app.modal.View())
+	if !strings.Contains(view, "Agents") {
+		t.Errorf("agents help modal title is not \"Agents\":\n%s", view)
+	}
+	if strings.Contains(view, "Help · Help") {
+		t.Errorf("agents help modal fell back to the default title:\n%s", view)
 	}
 }

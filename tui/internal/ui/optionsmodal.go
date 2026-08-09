@@ -16,6 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
@@ -90,9 +91,15 @@ func setOptionPosition(d deps.Deps, id *int, name string, cleared bool) tea.Cmd 
 }
 
 func positionErrMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) && apiErr.Status == http.StatusForbidden {
 		return "Not allowed."
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not update. Try again."
 }
@@ -225,7 +232,7 @@ func (m optionsModal) onKey(msg tea.KeyPressMsg) (appModal, tea.Cmd) {
 			m.focus++
 		}
 		return m, nil
-	case "enter", " ":
+	case "enter", "space":
 		return m.activate()
 	}
 	return m, nil
@@ -267,7 +274,7 @@ func (m optionsModal) pickerKey(msg tea.KeyPressMsg) (appModal, tea.Cmd) {
 	case "down", "j":
 		m.pick = m.pick.Move(1)
 		return m, nil
-	case "enter", " ":
+	case "enter", "space":
 		return m.applyPick()
 	}
 	return m, nil

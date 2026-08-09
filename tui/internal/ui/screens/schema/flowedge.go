@@ -132,7 +132,7 @@ func (f edgeForm) pickKey(msg tea.KeyPressMsg) edgeForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false

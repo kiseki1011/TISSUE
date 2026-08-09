@@ -80,7 +80,7 @@ func (f ConfirmForm) onKey(msg tea.KeyPressMsg) (ConfirmForm, tea.Cmd) {
 		} else {
 			f.focus = cnfAccept
 		}
-	case "enter", " ":
+	case "enter", "space":
 		if f.focus == cnfAccept {
 			return f.acceptNow()
 		}

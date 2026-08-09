@@ -205,6 +205,8 @@ func gotoLogin(info domain.SystemInfo) tea.Cmd {
 	return func() tea.Msg { return nav.GoToLoginMsg{Info: info} }
 }
 
+// gotoHome routes to the dashboard after a silent session restore, so Restore is set: the shell
+// deep-links back into the last-open project. Fresh logins take the login/oidc paths instead.
 func gotoHome(info domain.SystemInfo, welcome string) tea.Cmd {
-	return func() tea.Msg { return nav.GoToHomeMsg{Info: info, Welcome: welcome} }
+	return func() tea.Msg { return nav.GoToHomeMsg{Info: info, Welcome: welcome, Restore: true} }
 }

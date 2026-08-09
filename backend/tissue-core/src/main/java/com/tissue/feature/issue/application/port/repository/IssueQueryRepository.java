@@ -4,6 +4,8 @@ import com.tissue.feature.issue.application.dto.IssueCountProjection;
 import com.tissue.feature.issue.application.dto.IssueCountStats;
 import com.tissue.feature.issue.application.dto.IssuePointStats;
 import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.IssueBranch;
+import com.tissue.feature.issue.domain.IssuePullRequest;
 import com.tissue.feature.issuetype.domain.IssueType;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
@@ -106,6 +108,22 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             ORDER BY child.createdAt ASC
         """)
     List<Issue> findChildrenByParentKey(@Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT b
+            FROM IssueBranch b
+            WHERE b.issue.key.value = :issueKey
+            ORDER BY b.branchName ASC
+        """)
+    List<IssueBranch> findBranchesByIssueKey(@Param("issueKey") String issueKey);
+
+    @Query("""
+            SELECT pr
+            FROM IssuePullRequest pr
+            WHERE pr.issue.key.value = :issueKey
+            ORDER BY pr.number DESC
+        """)
+    List<IssuePullRequest> findPullRequestsByIssueKey(@Param("issueKey") String issueKey);
 
     @Query("""
             SELECT COUNT(child) > 0

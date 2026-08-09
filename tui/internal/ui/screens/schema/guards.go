@@ -14,6 +14,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // guardTypes in the order the picker cycles them. APPROVAL_REQUIRED is the only one with a parameter (min_approvals).
@@ -180,7 +181,7 @@ func (f guardsForm) onKey(msg tea.KeyPressMsg) (guardsForm, tea.Cmd) {
 		if f.onRow() {
 			return f.removeRow(f.focus), nil
 		}
-	case "enter", " ":
+	case "enter", "space":
 		switch {
 		case f.onRow():
 			return f.openTypePicker(f.focus), nil
@@ -201,7 +202,7 @@ func (f guardsForm) pickKey(msg tea.KeyPressMsg) guardsForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false
@@ -494,6 +495,9 @@ func saveGuards(d deps.Deps, wfID, transID int, guards []domain.GuardInput) tea.
 }
 
 func guardsErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -504,6 +508,9 @@ func guardsErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit guards."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not save guards. Try again."
 }

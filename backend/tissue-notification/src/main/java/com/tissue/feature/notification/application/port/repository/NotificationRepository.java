@@ -1,6 +1,8 @@
 package com.tissue.feature.notification.application.port.repository;
 
 import com.tissue.feature.notification.domain.Notification;
+import com.tissue.feature.notification.domain.enums.NotificationType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
@@ -46,4 +48,17 @@ public interface NotificationRepository extends Repository<Notification, Long> {
             + "ORDER BY n.id DESC")
     List<Notification> findUnreadByKeyset(
             @Param("memberId") Long memberId, @Nullable @Param("keysetId") Long keysetId, Pageable pageable);
+
+    @Query("SELECT n FROM Notification n "
+            + "WHERE n.receiverMemberId = :memberId "
+            + "AND (:unreadOnly = false OR n.isRead = false) "
+            + "AND n.notificationType IN :types "
+            + "AND (:keysetId IS NULL OR n.id < :keysetId) "
+            + "ORDER BY n.id DESC")
+    List<Notification> findByKeysetAndTypes(
+            @Param("memberId") Long memberId,
+            @Param("unreadOnly") boolean unreadOnly,
+            @Param("types") Collection<NotificationType> types,
+            @Nullable @Param("keysetId") Long keysetId,
+            Pageable pageable);
 }

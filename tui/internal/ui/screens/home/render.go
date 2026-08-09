@@ -139,37 +139,13 @@ func yesNo(b bool) string {
 	return "No"
 }
 
+// formatDate renders an instant as the calendar day it falls on in the viewer's own timezone. The server
+// serializes instants as UTC, so formatting one raw would show UTC's day rather than the viewer's.
 func formatDate(t time.Time) string {
 	if t.IsZero() {
 		return "-"
 	}
-	return t.Format("2006-01-02")
-}
-
-func humanizeSince(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	d := time.Since(t)
-	if d < 0 {
-		d = 0
-	}
-	switch {
-	case d < time.Minute:
-		return fmt.Sprintf("%ds", int(d.Seconds()))
-	case d < time.Hour:
-		return fmt.Sprintf("%dm", int(d.Minutes()))
-	case d < 24*time.Hour:
-		return fmt.Sprintf("%dh", int(d.Hours()))
-	case d < 7*24*time.Hour:
-		return fmt.Sprintf("%dd", int(d.Hours())/24)
-	case d < 30*24*time.Hour:
-		return fmt.Sprintf("%dw", int(d.Hours())/(24*7))
-	case d < 365*24*time.Hour:
-		return fmt.Sprintf("%dmon", int(d.Hours())/(24*30))
-	default:
-		return fmt.Sprintf("%dyr", int(d.Hours())/(24*365))
-	}
+	return t.Local().Format("2006-01-02")
 }
 
 // The ANSI-strip, overlay, and color-mix helpers live in components. These thin wrappers keep this
@@ -237,39 +213,11 @@ func sectionRule(s theme.Styles, width int) string {
 
 // Focus is signalled by the rule COLOUR (c), not weight.
 func ruleWithTitle(title string, width int, c color.Color) string {
-	dash := "─"
-	label := " " + title + " "
-	const lead = 2
-	rest := width - lead - lipgloss.Width(label)
-	if rest < 0 {
-		rest = 0
-	}
-	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat(dash, lead) + label + strings.Repeat(dash, rest))
+	return components.RuleWithTitle(title, width, c)
 }
 
 func scrollbarColumn(off, total, view int, t theme.Theme) []string {
-	cells := make([]string, view)
-	if total <= view {
-		for i := range cells {
-			cells[i] = " "
-		}
-		return cells
-	}
-	thumb := max(1, view*view/total)
-	pos := 0
-	if span := total - view; span > 0 {
-		pos = off * (view - thumb) / span
-	}
-	track := lipgloss.NewStyle().Foreground(t.Muted).Render("│")
-	head := lipgloss.NewStyle().Foreground(t.Primary).Render("█")
-	for i := range cells {
-		if i >= pos && i < pos+thumb {
-			cells[i] = head
-		} else {
-			cells[i] = track
-		}
-	}
-	return cells
+	return components.ScrollbarColumn(off, total, view, t.Primary, t.Muted)
 }
 
 func kpiRows(s theme.Styles, st domain.ProjectStats) []string {

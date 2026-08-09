@@ -153,6 +153,18 @@ tissue:
 
   base-url: ${TISSUE_BASE_URL:http://localhost:8080}
 
+  # Inbound VCS webhook handling. Deliveries are stored on arrival and processed asynchronously, so these
+  # control how hard a failed delivery is retried and how long the delivery history is kept.
+  vcs:
+    webhook:
+      max-attempts: 5           # total attempts before a delivery is parked as dead
+      retry-backoff: 1m         # delay before the first retry (doubles each further attempt)
+      max-retry-backoff: 1h     # upper bound on that doubling
+      retry-batch-size: 50      # how many due deliveries one sweep picks up
+      retry-scan-ms: 60000      # how often the retry sweep runs
+      retention: 30d            # how long processed deliveries are kept as history
+      purge-cron: "0 30 3 * * *"
+
   # Self-service signup. The initial user can always sign up (initial admin bootstrap) even when closed.
   #   TISSUE_SIGNUP_ENABLED:  true | false
   #     true:                 anyone may register an account.
@@ -164,6 +176,12 @@ tissue:
       secret: ${JWT_SECRET:}
       access-token-validity: 1h
       refresh-token-validity: 14d
+    # Key for secrets that must be readable again rather than hashed (VCS webhook signing keys).
+    # Defaults to the JWT secret so upgrading an existing instance needs no new configuration. Set a
+    # dedicated key to decouple the two: rotating JWT_SECRET otherwise leaves stored secrets
+    # undecryptable, and they must be regenerated and re-registered with the provider.
+    encryption:
+      key: ${TISSUE_ENCRYPTION_KEY:}
     rate-limit:
       login:
         max-attempts: 10
@@ -174,6 +192,12 @@ tissue:
       password-reset:
         max-attempts: 5
         window: 1h
+      # Inbound VCS webhooks. Unauthenticated, so this caps what a caller with no valid signature can cost
+      # us. Real webhook traffic is a handful per minute; behind a reverse proxy every caller shares one
+      # bucket because the client address is the proxy's.
+      webhook:
+        max-attempts: 120
+        window: 1m
 
   # Authentication mode for this instance.
   #   mode: LOCAL | OIDC

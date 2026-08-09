@@ -754,7 +754,7 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 				return m.setFocus(paneTypes)
 			}
 			return m.setFocus(paneWorkflows)
-		case "enter", " ":
+		case "enter", "space":
 			if mm, cmd, ok := m.activateDetailAction(); ok {
 				return mm, cmd
 			}

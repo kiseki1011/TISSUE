@@ -78,6 +78,25 @@ class ProjectMemberInfoIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @DisplayName("excludes purged (anonymized) members from the count")
+    void excludesPurgedMembers() {
+        // given - a purged member's ProjectMember row survives (purge does not soft-delete it)
+        Project apple = createProject("APPLE");
+        projectMemberRepository.save(ProjectMember.create(apple, saveMember("a@tissue.com", "amember")));
+        Member purged = saveMember("b@tissue.com", "bmember");
+        projectMemberRepository.save(ProjectMember.create(apple, purged));
+        purged.anonymize();
+        memberRepository.save(purged);
+        em.flush();
+
+        // when
+        long memberCount = summaryOf("APPLE").memberCount();
+
+        // then - the "active members" count matches the roster, which also excludes the purged member
+        assertThat(memberCount).isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("returns the caller's role as MEMBER")
     void returnsCallerRoleMember() {
         // given

@@ -57,4 +57,26 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
             """)
     Page<Project> findAllByKeyword(
             @Param("includeArchived") boolean includeArchived, @Param("keyword") String keyword, Pageable pageable);
+
+    /**
+     * Projects the member actually belongs to. Everything else is unreachable to them anyway, so a caller
+     * working on their own behalf (rather than browsing for a project to join) asks for these.
+     */
+    @Query(value = """
+            SELECT p FROM Project p
+            WHERE (:includeArchived = true OR p.archived = false)
+              AND EXISTS (SELECT 1 FROM ProjectMember pm
+                          WHERE pm.project = p
+                            AND pm.member.id = :memberId
+                            AND pm.softDeleted = false)
+            """, countQuery = """
+            SELECT COUNT(p) FROM Project p
+            WHERE (:includeArchived = true OR p.archived = false)
+              AND EXISTS (SELECT 1 FROM ProjectMember pm
+                          WHERE pm.project = p
+                            AND pm.member.id = :memberId
+                            AND pm.softDeleted = false)
+            """)
+    Page<Project> findMemberProjects(
+            @Param("includeArchived") boolean includeArchived, @Param("memberId") Long memberId, Pageable pageable);
 }

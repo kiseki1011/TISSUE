@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.feature.issue.adapter.web.IssueQueryController;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
+import com.tissue.feature.issue.application.dto.response.IssueBranchView;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueDetail;
@@ -19,6 +20,8 @@ import com.tissue.feature.issue.application.dto.response.info.RelatedIssueInfo;
 import com.tissue.feature.issue.application.service.IssueLifecycleService;
 import com.tissue.feature.issue.application.service.IssueQueryService;
 import com.tissue.feature.issue.application.service.IssueRelationService;
+import com.tissue.feature.issue.domain.Issue;
+import com.tissue.feature.issue.domain.IssueBranch;
 import com.tissue.feature.issue.domain.enums.IssueHierarchy;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.issue.domain.enums.IssueRelationType;
@@ -306,6 +309,93 @@ class IssueQueryServiceIntegrationTest extends IntegrationTestSupport {
         assertThat(view.relations().blocks()).isEmpty();
         assertThat(view.comments().content()).isEmpty();
         assertThat(view.comments().totalElements()).isZero();
+        assertThat(view.branches()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getBranches returns empty when the issue has no linked branch")
+    void getBranches_empty() {
+        // given
+        IssueIdentifier iid = createIssue("standalone", IssuePriority.P3, Map.of(fieldId, "v"));
+
+        // when & then
+        assertThat(sut.getBranches(iid, actor.getId())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getBranches returns the issue's linked branches, name-ordered, with ready-to-open links")
+    void getBranches_returnsLinkedBranches() {
+        // given - two branches linked to the issue, added out of alphabetical order
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P2, Map.of(fieldId, "v"));
+        Instant pushedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        linkBranch(
+                iid.issueKey(),
+                "https://github.com/acme/repo",
+                "feature/PROJ-1-login",
+                "https://github.com/acme/repo/tree/feature/PROJ-1-login",
+                "abc1234",
+                "add login",
+                "https://github.com/acme/repo/commit/abc1234",
+                "octocat",
+                pushedAt);
+        linkBranch(
+                iid.issueKey(),
+                "https://github.com/acme/repo",
+                "bugfix/PROJ-1-npe",
+                "https://github.com/acme/repo/tree/bugfix/PROJ-1-npe",
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        // when
+        List<IssueBranchView> branches = sut.getBranches(iid, actor.getId());
+
+        // then - ordered by branch name, so bugfix sorts before feature
+        assertThat(branches)
+                .extracting(IssueBranchView::branchName)
+                .containsExactly("bugfix/PROJ-1-npe", "feature/PROJ-1-login");
+        IssueBranchView feature = branches.get(1);
+        assertThat(feature.repoUrl()).isEqualTo("https://github.com/acme/repo");
+        assertThat(feature.branchUrl()).isEqualTo("https://github.com/acme/repo/tree/feature/PROJ-1-login");
+        assertThat(feature.latestCommitHash()).isEqualTo("abc1234");
+        assertThat(feature.latestCommitUrl()).isEqualTo("https://github.com/acme/repo/commit/abc1234");
+        assertThat(feature.pusherName()).isEqualTo("octocat");
+        assertThat(feature.pushedAt()).isEqualTo(pushedAt);
+        // the bugfix branch has no commit pushed yet, so its commit fields stay null
+        assertThat(branches.get(0).latestCommitHash()).isNull();
+        assertThat(branches.get(0).pushedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("getBranches rejects if not project member")
+    void getBranches_nonMemberRejected() {
+        // given
+        IssueIdentifier iid = createIssue("ticket", IssuePriority.P2, Map.of(fieldId, "v"));
+
+        // when & then
+        assertThatThrownBy(() -> sut.getBranches(iid, outsider.getId()))
+                .isInstanceOf(ProjectMemberNotFoundException.class);
+    }
+
+    private void linkBranch(
+            String issueKey,
+            String repoUrl,
+            String branchName,
+            String branchUrl,
+            String hash,
+            String message,
+            String commitUrl,
+            String pusher,
+            Instant pushedAt) {
+        Issue issue = em.createQuery("SELECT i FROM Issue i WHERE i.key.value = :k", Issue.class)
+                .setParameter("k", issueKey)
+                .getSingleResult();
+        issue.addBranch(
+                IssueBranch.create(issue, repoUrl, branchName, branchUrl, hash, message, commitUrl, pusher, pushedAt));
+        em.flush();
+        em.clear();
     }
 
     @Test

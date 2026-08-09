@@ -16,6 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // id 0 marks a new option not yet on the server.
@@ -126,7 +127,7 @@ func (f optionsForm) onKey(msg tea.KeyPressMsg) (optionsForm, tea.Cmd) {
 		if f.onRow() {
 			return f.removeRow(f.focus), nil
 		}
-	case "enter", " ":
+	case "enter", "space":
 		switch {
 		case f.onRow():
 			return f.openRename(f.focus), nil
@@ -479,6 +480,9 @@ func tempRenameNames(n int, avoid map[string]bool) []string {
 }
 
 func optionsErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -489,6 +493,9 @@ func optionsErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit options."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not save options. Some changes may have applied."
 }

@@ -1,5 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.dto.response.MyReviewStatusView;
@@ -8,19 +9,26 @@ import com.tissue.feature.issue.application.port.repository.IssueReviewerQueryRe
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
+import com.tissue.feature.member.application.service.MemberFinder;
+import com.tissue.feature.member.domain.Member;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.application.service.finder.ProjectFinder;
 import com.tissue.feature.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.feature.project.domain.Project;
+import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.shared.dto.PageSizes;
 import com.tissue.shared.dto.ProjectIdentifier;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +45,8 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
     private final IssueFullTextSearchRepository ftsRepository;
     private final IssueReviewerQueryRepository reviewerQueryRepository;
     private final IssueSearchPolicy policy;
+    private final MemberFinder memberFinder;
+    private final ActivityLogQueryRepository activityLogQueryRepository;
 
     @LLMGenerated(
             llmInvolvement = LLMInvolvement.ASSISTED,
@@ -53,7 +63,7 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
 
         IssueSearchCondition resolved = policy.resolveCurrentSprint(condition, project);
 
-        return withMyReviewStatus(ftsRepository.ftsByProjectRanked(project, resolved, pageable), actorMemberId);
+        return enrich(ftsRepository.ftsByProjectRanked(project, resolved, pageable), actorMemberId);
     }
 
     /**
@@ -83,25 +93,49 @@ public class IssueFullTextSearchService implements IssueFullTextSearchUseCase {
             return Page.empty(pageable);
         }
 
-        return withMyReviewStatus(ftsRepository.ftsAllRanked(projectIds, condition, pageable), actorMemberId);
+        return enrich(ftsRepository.ftsAllRanked(projectIds, condition, pageable), actorMemberId);
     }
 
     /**
-     * Enriches a page of issues with the caller's own review status per issue, in a single query
-     * (keyed by issue id) rather than N+1 lookups. An issue the caller does not review maps to a
-     * null status.
+     * Maps the page of issues to summaries, adding the caller's review status and each assignee's
+     * display name - both batched into one query apiece to avoid per-issue (N+1) lookups.
      */
     @LLMGenerated(
             llmInvolvement = LLMInvolvement.ASSISTED,
             evaluation = Evaluation.NOT_REVIEWED,
             evaluationReason = "Integration test passes, but still needs review.",
             model = "claude-opus-4-8")
-    private Page<IssueSummary> withMyReviewStatus(Page<Issue> issues, Long actorMemberId) {
+    private Page<IssueSummary> enrich(Page<Issue> issues, Long actorMemberId) {
         Set<Long> issueIds = issues.getContent().stream().map(Issue::getId).collect(Collectors.toSet());
         Map<Long, ReviewStatus> myStatuses = issueIds.isEmpty()
                 ? Map.of()
                 : reviewerQueryRepository.findMyReviewStatuses(actorMemberId, issueIds).stream()
                         .collect(Collectors.toMap(MyReviewStatusView::issueId, MyReviewStatusView::status));
-        return issues.map(issue -> IssueSummary.from(issue, myStatuses.get(issue.getId())));
+
+        Set<Long> assigneeIds = issues.getContent().stream()
+                .map(IssueFullTextSearchService::assigneeIdOf)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> assigneeNames = assigneeIds.isEmpty()
+                ? Map.of()
+                : memberFinder.getAllActiveByIds(assigneeIds).stream()
+                        .collect(Collectors.toMap(Member::getId, Member::getName));
+
+        List<String> issueKeys = issues.getContent().stream().map(Issue::getKey).toList();
+        Map<String, Instant> lastActivity = activityLogQueryRepository.findLastActivityAtByIssueKeys(issueKeys);
+
+        return issues.map(issue -> {
+            Long assigneeId = assigneeIdOf(issue);
+            return IssueSummary.from(
+                    issue,
+                    myStatuses.get(issue.getId()),
+                    assigneeId == null ? null : assigneeNames.get(assigneeId),
+                    lastActivity.get(issue.getKey()));
+        });
+    }
+
+    private static @Nullable Long assigneeIdOf(Issue issue) {
+        ProjectMember assignee = issue.getParticipants().getAssignee();
+        return assignee != null ? assignee.getMemberId() : null;
     }
 }

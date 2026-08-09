@@ -19,6 +19,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 const cwFieldW = 48
@@ -304,24 +305,24 @@ func (f createWorkflowForm) onKey(msg tea.KeyPressMsg) (createWorkflowForm, tea.
 		return f.transKey(msg, it.idx)
 	case cwAddState:
 		switch msg.String() {
-		case "enter", " ", "a":
+		case "enter", "space", "a":
 			return f.openAddState(), nil
 		case "t":
 			return f.openAddTrans(""), nil
 		}
 	case cwAddTrans:
 		switch msg.String() {
-		case "enter", " ", "t":
+		case "enter", "space", "t":
 			return f.openAddTrans(""), nil
 		case "a":
 			return f.openAddState(), nil
 		}
 	case cwSave:
-		if msg.String() == "enter" || msg.String() == " " {
+		if msg.String() == "enter" || msg.String() == "space" {
 			return f.submit()
 		}
 	case cwCancel:
-		if msg.String() == "enter" || msg.String() == " " {
+		if msg.String() == "enter" || msg.String() == "space" {
 			return f, cancelCreateWorkflow
 		}
 	}
@@ -338,7 +339,7 @@ func (f createWorkflowForm) stateKey(msg tea.KeyPressMsg, idx int) (createWorkfl
 		f = f.enforceInitial(idx)
 	case "x", "delete", "backspace":
 		return f.deleteState(idx), nil
-	case "enter", " ":
+	case "enter", "space":
 		st := f.states[idx]
 		f.node, f.editingNode, f.nodeOpen = newNodeForm(f.deps, "Edit state", st.name, st.category, st.color), idx, true
 	case "a":
@@ -351,7 +352,7 @@ func (f createWorkflowForm) stateKey(msg tea.KeyPressMsg, idx int) (createWorkfl
 
 func (f createWorkflowForm) transKey(msg tea.KeyPressMsg, idx int) (createWorkflowForm, tea.Cmd) {
 	switch msg.String() {
-	case "enter", " ":
+	case "enter", "space":
 		tr := f.trans[idx]
 		f.edge, f.editingEdge, f.edgeOpen = newEdgeForm(f.deps, "Rewire transition", true, tr.name, tr.src, tr.tgt, f.states), idx, true
 	case "x", "delete", "backspace":
@@ -809,6 +810,9 @@ func createWorkflow(d deps.Deps, name, colorName, desc string, states []domain.W
 }
 
 func createWorkflowErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -819,6 +823,9 @@ func createWorkflowErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to create workflows."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // the server explained the failure; prefer it over the generic line
 	}
 	return "Could not create the workflow. Try again."
 }

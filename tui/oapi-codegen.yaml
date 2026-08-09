@@ -6,3 +6,9 @@ generate:
 output-options:
   nullable-type: true
   response-type-suffix: Resp
+compatibility:
+  # Always prefix enum constants with their type name. Without this, oapi-codegen emits bare constants
+  # (e.g. ACTIVE) for whichever enum "wins" a shared value set, and reassigns the winner whenever the spec
+  # gains another enum with overlapping values - silently renaming ListProjectSprintsParamsStatusesACTIVE
+  # and breaking callers. Prefixing keeps names stable and unambiguous across regenerations.
+  always-prefix-enum-values: true

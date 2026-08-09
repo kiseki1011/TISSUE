@@ -62,7 +62,7 @@ class NotificationQueryServiceTest {
                     .willReturn(List.of(notification));
 
             // when
-            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, 20);
+            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -86,12 +86,31 @@ class NotificationQueryServiceTest {
                     .willReturn(List.of(notification));
 
             // when
-            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, true, null, 20);
+            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, true, null, null, 20);
 
             // then
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().getFirst().id()).isEqualTo(200L);
             assertThat(result.hasNext()).isFalse();
+        }
+
+        @Test
+        @DisplayName("success: routes to findByKeysetAndTypes when a types filter is present")
+        void success_TypesFilter() {
+            // given
+            Long memberId = 1L;
+            List<NotificationType> types = List.of(NotificationType.ISSUE_MENTIONED);
+            Notification notification = createMockNotification(300L);
+
+            given(repository.findByKeysetAndTypes(eq(memberId), eq(false), any(), eq(null), any(Pageable.class)))
+                    .willReturn(List.of(notification));
+
+            // when
+            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, types, null, 20);
+
+            // then
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().getFirst().id()).isEqualTo(300L);
         }
 
         @Test
@@ -106,7 +125,7 @@ class NotificationQueryServiceTest {
                     .willReturn(List.of(first, extra));
 
             // when
-            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, 1);
+            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, null, 1);
 
             // then
             assertThat(result.content()).hasSize(1);
@@ -126,7 +145,7 @@ class NotificationQueryServiceTest {
                     .willReturn(List.of());
 
             // when
-            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, 20);
+            CursorPage<NotificationResponse> result = sut.getNotifications(memberId, false, null, null, 20);
 
             // then
             assertThat(result.content()).isEmpty();

@@ -56,6 +56,7 @@ public class IssueFullTextSearchAdapter implements IssueFullTextSearchRepository
         return Specification.where(IssueSearchSpecs.hasPriorities(condition.priorities()))
                 .and(IssueSearchSpecs.hasStateCategories(condition.stateCategories()))
                 .and(IssueSearchSpecs.hasCurrentStateIds(condition.currentStateIds()))
+                .and(IssueSearchSpecs.hasIssueTypes(condition.issueTypeIds()))
                 .and(IssueSearchSpecs.hasAuthors(condition.authorMemberIds()))
                 .and(IssueSearchSpecs.hasAssignees(condition.assigneeMemberIds()))
                 .and(IssueSearchSpecs.hasReviewers(condition.reviewerMemberIds(), condition.reviewerStatuses()))

@@ -1,5 +1,6 @@
 package com.tissue.feature.issue.application.service;
 
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogQueryRepository;
 import com.tissue.feature.issue.application.dto.IssueSearchCursor;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
 import com.tissue.feature.issue.application.port.repository.IssueListQueryRepository;
@@ -14,7 +15,9 @@ import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.PageSizes;
 import com.tissue.shared.dto.ProjectIdentifier;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,7 @@ public class IssueListQueryService implements IssueListQueryUseCase {
     private final ProjectMemberFinder projectMemberFinder;
     private final SprintFinder sprintFinder;
     private final IssueListQueryRepository listRepository;
+    private final ActivityLogQueryRepository activityLogQueryRepository;
 
     @Override
     public CursorPage<IssueSummary> getMyWork(
@@ -85,6 +89,13 @@ public class IssueListQueryService implements IssueListQueryUseCase {
             Issue last = page.getLast();
             nextCursor = new IssueSearchCursor(last.getPriority(), last.getId()).encode();
         }
-        return CursorPage.of(page.stream().map(IssueSummary::from).toList(), nextCursor);
+
+        List<String> issueKeys = page.stream().map(Issue::getKey).toList();
+        Map<String, Instant> lastActivity = activityLogQueryRepository.findLastActivityAtByIssueKeys(issueKeys);
+        return CursorPage.of(
+                page.stream()
+                        .map(issue -> IssueSummary.from(issue, lastActivity.get(issue.getKey())))
+                        .toList(),
+                nextCursor);
     }
 }
