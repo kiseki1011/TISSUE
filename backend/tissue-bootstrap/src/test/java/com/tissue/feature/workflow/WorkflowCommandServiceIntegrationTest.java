@@ -168,5 +168,118 @@ public class WorkflowCommandServiceIntegrationTest extends IntegrationTestSuppor
             assertThat(transition.getGuardConfigs().get(1).getGuardType()).isEqualTo(GuardType.APPROVAL_REQUIRED);
             assertThat(transition.getGuardConfigs().get(1).getGuardParams()).containsEntry("min_approvals", 2);
         }
+
+        /**
+         * Re-configuring is the common case: a user tunes min_approvals and saves again. The replacement
+         * reuses the same execution_order values, so the new rows collide with the old ones unless the
+         * clear is written to the database before the inserts are.
+         */
+        @Test
+        @DisplayName("guards can be reconfigured, reusing the same execution orders")
+        void guardsCanBeReconfigured() {
+            // given
+            CreateWorkflowCommand createCmd = CreateWorkflowCommand.builder()
+                    .name(Name.of("Reconfigure Workflow"))
+                    .color(ColorType.ANSI_YELLOW)
+                    .stateDefinitions(List.of(
+                            new CreateStateDefinition(
+                                    "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
+                            new CreateStateDefinition(
+                                    "s2", Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED)))
+                    .transitionDefinitions(
+                            List.of(new CreateTransitionDefinition(Name.of("Complete"), null, "s1", "s2")))
+                    .build();
+
+            WorkflowCreateResponse created = workflowService.create(createCmd, admin.getId());
+            em.flush();
+            em.clear();
+
+            Workflow workflow =
+                    workflowRepository.findById(created.workflowId()).orElseThrow();
+            Long transitionId = workflow.getTransitions().getFirst().getId();
+
+            workflowService.configureTransitionGuards(
+                    workflow.getId(),
+                    transitionId,
+                    new ConfigureTransitionGuardsCommand(List.of(
+                            new GuardConfigData(GuardType.ASSIGNEE_REQUIRED, null, 1),
+                            new GuardConfigData(GuardType.APPROVAL_REQUIRED, Map.of("min_approvals", 2), 2))),
+                    admin.getId());
+            em.flush();
+            em.clear();
+
+            // when - the same guard types at the same orders, only the parameter changes
+            workflowService.configureTransitionGuards(
+                    workflow.getId(),
+                    transitionId,
+                    new ConfigureTransitionGuardsCommand(List.of(
+                            new GuardConfigData(GuardType.ASSIGNEE_REQUIRED, null, 1),
+                            new GuardConfigData(GuardType.APPROVAL_REQUIRED, Map.of("min_approvals", 1), 2))),
+                    admin.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            Workflow reloaded = workflowRepository.findById(workflow.getId()).orElseThrow();
+            WorkflowTransition transition = reloaded.getTransitions().getFirst();
+
+            assertThat(transition.getGuardConfigs()).hasSize(2);
+            assertThat(transition.getGuardConfigs().get(1).getGuardParams()).containsEntry("min_approvals", 1);
+        }
+
+        /** Dropping a guard must leave the transition with only the guards that were re-submitted. */
+        @Test
+        @DisplayName("a guard removed from the request is gone after reconfiguring")
+        void removedGuardIsDropped() {
+            // given
+            CreateWorkflowCommand createCmd = CreateWorkflowCommand.builder()
+                    .name(Name.of("Shrink Workflow"))
+                    .color(ColorType.ANSI_YELLOW)
+                    .stateDefinitions(List.of(
+                            new CreateStateDefinition(
+                                    "s1", Name.of("Open"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL),
+                            new CreateStateDefinition(
+                                    "s2", Name.of("Done"), null, ColorType.ANSI_BLACK, StateCategory.COMPLETED)))
+                    .transitionDefinitions(
+                            List.of(new CreateTransitionDefinition(Name.of("Complete"), null, "s1", "s2")))
+                    .build();
+
+            WorkflowCreateResponse created = workflowService.create(createCmd, admin.getId());
+            em.flush();
+            em.clear();
+
+            Workflow workflow =
+                    workflowRepository.findById(created.workflowId()).orElseThrow();
+            Long transitionId = workflow.getTransitions().getFirst().getId();
+
+            workflowService.configureTransitionGuards(
+                    workflow.getId(),
+                    transitionId,
+                    new ConfigureTransitionGuardsCommand(List.of(
+                            new GuardConfigData(GuardType.ASSIGNEE_REQUIRED, null, 1),
+                            new GuardConfigData(GuardType.APPROVAL_REQUIRED, Map.of("min_approvals", 2), 2))),
+                    admin.getId());
+            em.flush();
+            em.clear();
+
+            // when - only the second guard survives, and it takes over execution order 1
+            workflowService.configureTransitionGuards(
+                    workflow.getId(),
+                    transitionId,
+                    new ConfigureTransitionGuardsCommand(
+                            List.of(new GuardConfigData(GuardType.APPROVAL_REQUIRED, Map.of("min_approvals", 3), 1))),
+                    admin.getId());
+            em.flush();
+            em.clear();
+
+            // then
+            Workflow reloaded = workflowRepository.findById(workflow.getId()).orElseThrow();
+            WorkflowTransition transition = reloaded.getTransitions().getFirst();
+
+            assertThat(transition.getGuardConfigs()).hasSize(1);
+            assertThat(transition.getGuardConfigs().getFirst().getGuardType()).isEqualTo(GuardType.APPROVAL_REQUIRED);
+            assertThat(transition.getGuardConfigs().getFirst().getExecutionOrder())
+                    .isEqualTo(1);
+        }
     }
 }
