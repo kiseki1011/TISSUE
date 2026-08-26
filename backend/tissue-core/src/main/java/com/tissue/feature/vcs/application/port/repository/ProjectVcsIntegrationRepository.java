@@ -23,8 +23,8 @@ public interface ProjectVcsIntegrationRepository extends Repository<ProjectVcsIn
      * query would otherwise read as a named parameter.
      */
     @Query(
-            value =
-                    "SELECT id, webhook_secret FROM project_vcs_integration WHERE webhook_secret NOT LIKE :encryptedPattern",
+            value = "SELECT id, webhook_secret FROM project_vcs_integration WHERE webhook_secret "
+                    + "NOT LIKE :encryptedPattern",
             nativeQuery = true)
     List<Object[]> findRowsWithPlaintextSecret(@Param("encryptedPattern") String encryptedPattern);
 
