@@ -21,7 +21,6 @@ func sampleActivity() domain.IssueActivityPage {
 	}}
 }
 
-// activityReady opens the detail, toggles the Activity view on, and lands a page of activity.
 func activityReady(t *testing.T, w, h int, page domain.IssueActivityPage) Model {
 	t.Helper()
 	m := loaded(t, w, h, domain.IssuePage{Issues: issues(1), TotalElements: 1})
@@ -33,7 +32,6 @@ func activityReady(t *testing.T, w, h int, page domain.IssueActivityPage) Model 
 	return m
 }
 
-// v toggles the Activity view and starts a lazy load the first time it is shown.
 func TestActivityToggleAndLoad(t *testing.T) {
 	m := loaded(t, 170, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("enter"))
@@ -55,7 +53,7 @@ func TestActivityToggleAndLoad(t *testing.T) {
 	}
 }
 
-// A wide terminal gives Activity its own third column: both Details and Activity render.
+// A wide terminal gives Activity its own third column.
 func TestActivityThreeColumn(t *testing.T) {
 	m := activityReady(t, 170, 40, sampleActivity())
 	if !m.threeCol() {
@@ -85,8 +83,7 @@ func TestActivitySwap(t *testing.T) {
 	}
 }
 
-// In three-column mode Details is wider than the slimmer Activity rail (3:2), and the three columns
-// plus their gaps exactly fill the inner width (no overflow).
+// Details is wider than the Activity rail (3:2), and columns plus gaps exactly fill the inner width.
 func TestActivityColumnRatio(t *testing.T) {
 	m := activityReady(t, 200, 40, sampleActivity())
 	if !m.threeCol() {
@@ -113,8 +110,6 @@ func TestActivityNarrowModal(t *testing.T) {
 	}
 }
 
-// The timeline renders a dotted event label, the muted time-and-actor line (actor omitted for the
-// system event), the content-updated marker, and a field diff.
 func TestActivityContentRendering(t *testing.T) {
 	body := plain(activityReady(t, 170, 40, sampleActivity()).View())
 	for _, want := range []string{"●", "Updated", "Created", "Alice", "Content updated", "Priority: P2 → P0", "2026-01-02", "earlier activity not shown"} {
@@ -127,7 +122,7 @@ func TestActivityContentRendering(t *testing.T) {
 	}
 }
 
-// A long detail line wraps to the column width and keeps the timeline connector, never overflowing.
+// A long line wraps and keeps the timeline connector, never overflowing the column.
 func TestActivityWraps(t *testing.T) {
 	long := strings.Repeat("verylongword ", 30)
 	page := domain.IssueActivityPage{Items: []domain.IssueActivity{
@@ -149,7 +144,7 @@ func TestActivityWraps(t *testing.T) {
 	}
 }
 
-// The scroll keys drive the Activity offset while it is showing, leaving the Details scroll untouched.
+// Scroll keys drive the Activity offset while it shows, leaving the Details scroll untouched.
 func TestActivityScrollRouting(t *testing.T) {
 	var items []domain.IssueActivity
 	for i := 0; i < 30; i++ {
@@ -168,8 +163,7 @@ func TestActivityScrollRouting(t *testing.T) {
 	}
 }
 
-// Growing the terminal shrinks the activity max, so a resize must re-clamp activityScroll - else the
-// first scroll key after the resize is a dead press pinned at the old bottom.
+// A resize must re-clamp activityScroll, else the first scroll key after it is a dead press.
 func TestActivityScrollReclampOnResize(t *testing.T) {
 	var items []domain.IssueActivity
 	for i := 0; i < 30; i++ {
@@ -183,8 +177,7 @@ func TestActivityScrollReclampOnResize(t *testing.T) {
 	}
 }
 
-// activityDetails follows the deprecated client's rules: content -> "Content updated", both -> diff,
-// only-after -> value, only-before -> cleared, neither -> dropped, then non-skipped data.
+// activityDetails follows the deprecated client's rules for each change shape.
 func TestActivityDetails(t *testing.T) {
 	a := domain.IssueActivity{
 		Changes: []domain.ActivityChange{
@@ -224,7 +217,7 @@ func TestActivityLabel(t *testing.T) {
 		"ISSUE_WORKFLOW_TRANSITIONED": "Workflow transitioned",
 		"SPRINT_STARTED":              "Sprint started",
 		"":                            "Activity",
-		"ISSUE_":                      "Activity", // reduces to empty; must not panic
+		"ISSUE_":                      "Activity", // reduces to empty, must not panic
 	}
 	for in, want := range cases {
 		if got := activityLabel(in); got != want {
@@ -233,8 +226,6 @@ func TestActivityLabel(t *testing.T) {
 	}
 }
 
-// A customFields.{id} change key resolves to the loaded field's label, capitalized; an unknown id falls
-// back to a generic label.
 func TestChangeLabelCustomField(t *testing.T) {
 	names := map[string]string{"42": "severity"}
 	if got := changeLabel("customFields.42", names); got != "Severity" {

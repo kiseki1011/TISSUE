@@ -19,15 +19,14 @@ func runCmd(m Model, cmd tea.Cmd) Model {
 	return m
 }
 
-// The create form's Due field opens the calendar on enter, and confirming a day sets the due date
-// (never typed). The calendar floats over the form.
+// Due is set from the calendar, never typed.
 func TestCreateDueOpensCalendarAndConfirms(t *testing.T) {
 	m := createReady(t)
 	m, _ = m.Update(press("n"))
 	m.createUI, _ = m.createUI.focusOn(nfDue)
 
 	m, cmd := m.Update(press("enter"))
-	m = runCmd(m, cmd) // openDueCreate -> the model opens the calendar
+	m = runCmd(m, cmd)
 	if !m.dating || m.dateTarget != dateDueCreate {
 		t.Fatalf("Due enter should open the create calendar, dating=%v target=%v", m.dating, m.dateTarget)
 	}
@@ -44,7 +43,6 @@ func TestCreateDueOpensCalendarAndConfirms(t *testing.T) {
 	}
 }
 
-// Delete clears an optional Due field (set=false), so the created issue has no due date.
 func TestCreateDueClear(t *testing.T) {
 	m := createReady(t)
 	m, _ = m.Update(press("n"))
@@ -53,7 +51,7 @@ func TestCreateDueClear(t *testing.T) {
 
 	m, cmd := m.Update(press("enter"))
 	m = runCmd(m, cmd)
-	m, _ = m.Update(press("delete")) // clear
+	m, _ = m.Update(press("delete"))
 	if m.dating {
 		t.Error("clearing should close the calendar")
 	}
@@ -62,8 +60,6 @@ func TestCreateDueClear(t *testing.T) {
 	}
 }
 
-// The edit form's Due field opens the calendar prefilled from the issue, and navigating + confirming
-// updates the due date.
 func TestEditDueOpensPrefilledAndMoves(t *testing.T) {
 	m := editReady(t, sampleDetail()) // due 2026-08-15
 	m, _ = m.Update(press("e"))
@@ -97,8 +93,6 @@ func createWithDateFields(t *testing.T) Model {
 	return m
 }
 
-// A DATE custom field opens a date-only calendar; a TIMESTAMP one opens a timed calendar. Confirming a
-// DATE field records a serializable value.
 func TestCustomDateFieldsOpenCalendar(t *testing.T) {
 	m := createWithDateFields(t)
 	if len(m.createUI.customFields) != 2 {

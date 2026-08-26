@@ -8,10 +8,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// openChildCreateForm opens the New issue form preset to create a child of the issue in the Details
-// panel: the type cycle is restricted to the one hierarchy level below this issue, and the parent is
-// locked to it. It mirrors openCreateForm's readiness guards (the detail and the type catalog must have
-// loaded) and refuses when this issue can have no children (a bottom-level MICROTASK, or no child types).
+// openChildCreateForm opens the New issue form preset as a child: types restricted to the level below
+// this issue, parent locked to it. It refuses a bottom-level issue, or one still loading.
 func (m Model) openChildCreateForm() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -32,13 +30,12 @@ func (m Model) openChildCreateForm() (Model, tea.Cmd) {
 
 	m.creating = true
 	m.createScroll = 0
-	m.parentGen++ // a fresh form session: drop any parent-candidate load still in flight from a prior one
+	m.parentGen++ // drop any parent-candidate load still in flight from a prior session
 	label := d.Key
 	if d.Title != "" {
 		label = d.Key + "  " + flattenLine(d.Title)
 	}
 	m.createUI = newChildCreateForm(m.deps, childTypes, d.Key, label)
-	// load the first restricted type's custom fields (from cache when available)
 	m2, cmd := m.requestCustomFields(int64(childTypes[0].ID))
 	return m2, tea.Batch(m2.createUI.Init(), cmd)
 }

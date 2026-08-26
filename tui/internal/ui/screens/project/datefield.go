@@ -21,11 +21,10 @@ const (
 	dateSprintEditDue                   // the sprint edit form's Due field
 )
 
-// datePickerW is the calendar modal's content width (a touch wider than the natural grid for margin).
+// datePickerW is the calendar's content width, a touch wider than the grid for margin.
 const datePickerW = 24
 
-// The create/edit forms emit these to ask the model to open the calendar picker over them; the model
-// owns the overlay, mirroring the parent-picker flow.
+// The forms emit these to ask the model to open the calendar. The model owns the overlay.
 type openDueCreateMsg struct{}
 type openDueEditMsg struct{}
 type openCustomDateMsg struct{ index int }
@@ -74,8 +73,7 @@ func (m Model) openCustomDatePickerEdit(i int) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// openCustomDatePicker opens the calendar over the create form to set a DATE (date-only) or TIMESTAMP
-// (with time) custom field. A required field offers no Clear.
+// openCustomDatePicker opens a date-only (DATE) or timed (TIMESTAMP) calendar. A required field offers no Clear.
 func (m Model) openCustomDatePicker(i int) (Model, tea.Cmd) {
 	if i < 0 || i >= len(m.createUI.customFields) {
 		return m, nil
@@ -92,9 +90,6 @@ func (m Model) openCustomDatePicker(i int) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateDatePicker drives the open calendar: esc cancels, enter confirms the selection, delete clears an
-// optional field, a click picks a day (a date-only day click also confirms) or nudges the month/time,
-// and any other key navigates the grid or steps the time.
 func (m Model) updateDatePicker(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
@@ -141,8 +136,7 @@ func (m Model) updateDatePicker(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// dateHelpKeys are the footer hints while the calendar is open: grid/month navigation, the time stepper
-// (timed fields only), select, an optional clear, and cancel.
+// dateHelpKeys are the footer hints shown while the calendar is open.
 func (m Model) dateHelpKeys() []key.Binding {
 	binds := []key.Binding{
 		key.NewBinding(key.WithKeys("left", "right", "up", "down"), key.WithHelp("←/→/↑/↓", "day")),
@@ -158,8 +152,7 @@ func (m Model) dateHelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// confirmDate closes the picker and writes the pick back into the field it was opened for (set=false
-// clears an optional field).
+// confirmDate writes the pick back into the field it was opened for (set=false clears).
 func (m Model) confirmDate(v time.Time, set bool) (Model, tea.Cmd) {
 	m.dating = false
 	switch m.dateTarget {

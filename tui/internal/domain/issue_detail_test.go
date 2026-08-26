@@ -55,8 +55,7 @@ func TestToIssueDetailMapsCommonAndRelations(t *testing.T) {
 	if tr := d.Transitions[0]; tr.ID != 10 || tr.Label != "Resolve" || !tr.CanExecute || tr.TargetLabel != "Done" || tr.TargetCategory != "COMPLETED" {
 		t.Errorf("executable transition wrong: %+v", tr)
 	}
-	// every guard the server reported is carried, not just the first; a violation with no message is
-	// dropped rather than rendered as a blank condition
+	// every guard is carried, not just the first. a message-less violation is dropped, not blank
 	if tr := d.Transitions[1]; tr.CanExecute ||
 		len(tr.BlockedReasons) != 2 || tr.BlockedReasons[0] != "needs approval" || tr.BlockedReasons[1] != "assignee required" {
 		t.Errorf("blocked transition wrong: %+v", tr)
@@ -92,7 +91,6 @@ func TestToIssueDetailMapsCommonAndRelations(t *testing.T) {
 	if d.Parent == nil || d.Parent.Key != "ENG-1" || d.Parent.TypeName != "Epic" || d.Parent.TypeColor != "INDIGO" || d.Parent.StateCategory != "ACTIVE" {
 		t.Errorf("parent ref wrong: %+v", d.Parent)
 	}
-	// the keyless child is dropped, so 2 remain
 	if len(d.Children) != 2 {
 		t.Fatalf("expected 2 children (keyless dropped), got %d: %+v", len(d.Children), d.Children)
 	}

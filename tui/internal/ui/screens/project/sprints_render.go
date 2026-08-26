@@ -27,7 +27,7 @@ const (
 
 	// sprintCurrentMark is the leading dot on the current (ACTIVE) sprint's row - a BMP glyph so it keeps a
 	// stable width in both nerd and plain terminals (unlike the Run tab glyph's emoji fallback).
-	sprintCurrentMark = "●" // ●
+	sprintCurrentMark = "●"
 )
 
 func sprintRowZone(i int) string { return "project.sprint.row." + strconv.Itoa(i) }
@@ -43,7 +43,7 @@ func (m Model) sprintsView() string {
 		form, _, _ := components.ScrollBox(m.sprintEditUI.View(), m.height, m.sprintEditScroll, t.Primary, t.Border)
 		over := m.floatOver(base, form)
 		if m.dating {
-			return m.floatOver(over, m.datePick.View(m.deps.Styles)) // the edit-due calendar floats over the form
+			return m.floatOver(over, m.datePick.View(m.deps.Styles))
 		}
 		return over
 	case m.sprintConfirming:
@@ -171,7 +171,6 @@ func (m Model) sprintListBody(w, avail int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// sprintTitleWidth gives the Title column all the space left after the fixed columns and their gaps.
 func (m Model) sprintTitleWidth(w int) int {
 	return max(6, w-colSprintMark-colSprintStatus-colSprintKey-colSprintDue-4) // 4 single-column gaps
 }
@@ -336,9 +335,8 @@ func (m Model) sprintGoalBlock(goal string, w int) string {
 	return lipgloss.NewStyle().Width(w).Render(sanitizeBlock(goal))
 }
 
-// sprintIssuesBody renders the issues belonging to the selected sprint (bottom-right panel): a skeleton
-// note while they load, an error note on failure, or the compact issue rows (with a "… N more" note
-// when the sprint holds more than the loaded page).
+// sprintIssuesBody renders the issues belonging to the selected sprint (bottom-right panel), with a
+// "… N more" note when the sprint holds more than the single loaded page.
 func (m Model) sprintIssuesBody(w int) string {
 	s := m.deps.Styles
 	if m.selSprintID == 0 {
@@ -366,8 +364,8 @@ func (m Model) sprintIssuesBody(w int) string {
 	return s.Muted.Render("Loading issues…")
 }
 
-// sprintIssueRow is one issue in the sprint's issue panel: "Pri Key Title State", read-only (no cursor
-// banding - this panel is not a focusable list yet), coloured per column.
+// sprintIssueRow is one issue in the sprint's issue panel: read-only, with no cursor banding - this panel
+// is not a focusable list yet.
 func (m Model) sprintIssueRow(it domain.IssueSummary, w int) string {
 	t := m.deps.Styles.Theme
 	pri := lipgloss.NewStyle().Foreground(priorityColor(t, it.Priority)).Render(pad(orDash(it.Priority), 3))
@@ -378,7 +376,6 @@ func (m Model) sprintIssueRow(it domain.IssueSummary, w int) string {
 	return pri + " " + key + " " + title + " " + state
 }
 
-// sprintStatusLabel is the display form of a sprint status enum (PLANNING/ACTIVE/COMPLETED/CANCELLED).
 func sprintStatusLabel(status string) string {
 	switch status {
 	case "PLANNING":
@@ -393,8 +390,6 @@ func sprintStatusLabel(status string) string {
 	return orDash(status)
 }
 
-// sprintStatusColor colours a sprint status: active primary, completed green, cancelled red, planning
-// muted - so the list and detail read the lifecycle at a glance.
 func sprintStatusColor(t theme.Theme, status string) color.Color {
 	switch status {
 	case "ACTIVE":

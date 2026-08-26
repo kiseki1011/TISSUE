@@ -14,13 +14,11 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// The state categories and priorities the filter exposes, in display order. Sprints are deferred, so
-// the sprint axes the backend supports are intentionally left out here.
+// The axes the filter exposes, in display order. The backend's sprint axes are deliberately left out.
 var (
 	filterStates     = []string{"INITIAL", "ACTIVE", "COMPLETED", "ABORTED"}
 	filterPriorities = []string{"P0", "P1", "P2", "P3", "P4"}
-	// the review states a reviewer can be in. The backend only honours these alongside a named reviewer,
-	// which is why they live under the "I am a reviewer" row rather than as a section of their own.
+	// the backend only honours these alongside a named reviewer, hence the nesting under that row
 	filterReviewStatuses = []string{"PENDING", "APPROVED", "CHANGES_REQUESTED"}
 )
 
@@ -46,8 +44,7 @@ type filterItem struct {
 	id    int64  // catalog id for a type row
 }
 
-// filterForm is the project issue filter modal. It edits the search axes the backend supports as a
-// flat list of checkboxes plus Apply/Cancel, mirroring the home dashboard's filter.
+// filterForm is the issue filter modal: a flat list of checkboxes plus Apply/Cancel.
 type filterForm struct {
 	deps deps.Deps
 
@@ -89,8 +86,6 @@ func newFilterForm(d deps.Deps, f domain.IssueFilter, types []domain.IssueTypeSu
 	}
 }
 
-// buildFilterItems lays out the focusable rows: the fixed state and priority checkboxes, one checkbox
-// per issue type, then the assignee checkbox and the two buttons.
 func buildFilterItems(types []domain.IssueTypeSummary) []filterItem {
 	items := make([]filterItem, 0, len(filterStates)+len(filterPriorities)+len(types)+3)
 	for _, s := range filterStates {
@@ -115,9 +110,7 @@ func buildFilterItems(types []domain.IssueTypeSummary) []filterItem {
 	)
 }
 
-// withTypes fills in the type rows from a freshly loaded catalog, preserving the in-progress
-// selection and clamping focus, so a modal opened before the prefetch returned updates in place
-// instead of staying stuck on "Loading…".
+// withTypes fills the type rows from a late catalog load, so a modal opened first does not stay on "Loading…".
 func (f filterForm) withTypes(types []domain.IssueTypeSummary, loaded bool) filterForm {
 	f.typesLoaded = loaded
 	f.items = buildFilterItems(types)
@@ -191,8 +184,7 @@ func (f filterForm) moveFocus(delta int) filterForm {
 	return f
 }
 
-// activate toggles a checkbox row or fires a button. The selection maps are shared by reference, so
-// a toggle persists across the value-receiver copy the caller stores back.
+// activate toggles a row or fires a button. The maps are shared by reference, so a toggle survives the value copy.
 func (f filterForm) activate(i int) (filterForm, tea.Cmd) {
 	if i < 0 || i >= len(f.items) {
 		return f, nil
@@ -209,8 +201,7 @@ func (f filterForm) activate(i int) (filterForm, tea.Cmd) {
 	case kindReviewer:
 		f.reviewerMe = !f.reviewerMe
 		if !f.reviewerMe {
-			// the statuses only narrow a reviewer axis; leaving them checked with no reviewer would show a
-			// filter the server silently ignores
+			// with no reviewer the server silently ignores these, so do not leave them checked
 			clear(f.reviewSel)
 		}
 	case kindReviewStatus:
@@ -242,8 +233,7 @@ func (f filterForm) apply() tea.Cmd {
 	return func() tea.Msg { return msg }
 }
 
-// selectedInOrder returns the checked values in the canonical display order, so an applied filter is
-// deterministic regardless of the order rows were toggled.
+// selectedInOrder keeps the canonical display order, so an applied filter is toggle-order independent.
 func selectedInOrder(all []string, sel map[string]bool) []string {
 	var out []string
 	for _, v := range all {
@@ -395,8 +385,7 @@ type filterAppliedMsg struct {
 	reviewerSts []string
 }
 
-// reviewStatusLabel is the filter row's wording for a review state, matching how the detail panel labels
-// the same value on a reviewer.
+// reviewStatusLabel matches how the detail panel labels a reviewer's state.
 func reviewStatusLabel(status string) string {
 	switch status {
 	case "APPROVED":

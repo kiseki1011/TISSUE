@@ -10,7 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// Agents are owner-scoped (the authenticated caller owns them). Tokens hang off an agent.
+// AgentService manages the agents owned by the authenticated caller.
 type AgentService struct {
 	api *client.ClientWithResponses
 }
@@ -35,10 +35,8 @@ func (s *AgentService) ListAgents(ctx context.Context) ([]Agent, error) {
 	return out, nil
 }
 
-// CreateAgent creates an agent and returns it. name must be letters/spaces only. agentType, modelID,
-// and description are optional (empty type / 0 model / empty description are omitted, so the server
-// defaults the type to GENERAL). A 409 (duplicate name) or 403 (owner must be human) surfaces as an
-// *APIError.
+// CreateAgent creates an agent. name must be letters/spaces only.
+// Zero-valued optional args are omitted so the server applies its default (agentType GENERAL).
 func (s *AgentService) CreateAgent(ctx context.Context, name, agentType string, modelID int64, description string) (Agent, error) {
 	body := client.CreateAgentRequest{Name: name}
 	if agentType != "" {
@@ -61,8 +59,8 @@ func (s *AgentService) CreateAgent(ctx context.Context, name, agentType string, 
 	return toAgent(resp.JSON201), nil
 }
 
-// UpdateAgent patches an agent's type, model, and description. A 0 modelID clears the model and an
-// empty description clears it (both sent as an explicit null).
+// UpdateAgent patches type, model, and description.
+// A 0 modelID or empty description clears the field, sent as an explicit null.
 func (s *AgentService) UpdateAgent(ctx context.Context, agentID int64, agentType string, modelID int64, description string) error {
 	body := client.UpdateAgentRequest{AgentType: nullable.NewNullableWithValue(agentType)}
 	if modelID != 0 {
@@ -138,8 +136,7 @@ func (s *AgentService) ListTokens(ctx context.Context, agentID int64) ([]Token, 
 	return out, nil
 }
 
-// IssueToken issues a new token for an agent and returns its raw secret exactly once. ttlDays <= 0
-// means no expiry. scope must be ScopeReadOnly or ScopeReadWrite.
+// IssueToken returns the raw secret exactly once. ttlDays <= 0 means no expiry.
 func (s *AgentService) IssueToken(ctx context.Context, agentID int64, name, scope string, ttlDays int) (IssuedToken, error) {
 	body := client.CreatePatRequest{Name: name, Scope: client.CreatePatRequestScope(scope)}
 	if ttlDays > 0 {
@@ -211,7 +208,6 @@ func toToken(t *client.PatResponse) Token {
 	}
 }
 
-// Agent/token ids are int64 (member ids).
 func derefInt64to64(p *int64) int64 {
 	if p == nil {
 		return 0

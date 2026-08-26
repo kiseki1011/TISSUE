@@ -17,7 +17,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
-// guardTypes in the order the picker cycles them. APPROVAL_REQUIRED is the only one with a parameter (min_approvals).
+// Picker order. APPROVAL_REQUIRED is the only type with a parameter (min_approvals).
 var guardTypes = []string{
 	"ASSIGNEE_REQUIRED",
 	"BLOCKING_ISSUE_RESOLVE_REQUIRED",
@@ -44,9 +44,8 @@ func guardTypeLabel(t string) string {
 	return t
 }
 
-// guardRow is one editable guard. params is the guard's full parameter map, cloned from the
-// backend so edits do not mutate the cached graph. For APPROVAL_REQUIRED, min_approvals is
-// edited inside it while any other params (block_on_change_request, …) are preserved.
+// guardRow is one editable guard. params is cloned from the backend so edits do not mutate the
+// cached graph, and params other than min_approvals are preserved.
 type guardRow struct {
 	gtype  string
 	params map[string]any
@@ -89,9 +88,8 @@ func cloneParams(m map[string]any) map[string]any {
 	return out
 }
 
-// guardsForm is the guard-list editor for one transition. It edits a whole list and writes it
-// back in a single PUT (the endpoint replaces all guards). A transition may hold each guard
-// type at most once, so the type picker skips types already used by another row.
+// guardsForm edits one transition's whole guard list, written back in a single PUT (the endpoint
+// replaces all guards). A type may appear once, so the picker skips types used by another row.
 type guardsForm struct {
 	deps    deps.Deps
 	wfID    int
@@ -119,7 +117,6 @@ func newGuardsForm(d deps.Deps, wfID, transID int, transName string, guards []do
 
 func (f guardsForm) Init() tea.Cmd { return nil }
 
-// focus zone helpers: the list is [rows…, Add, Save, Cancel].
 func (f guardsForm) addIdx() int    { return len(f.rows) }
 func (f guardsForm) saveIdx() int   { return len(f.rows) + 1 }
 func (f guardsForm) cancelIdx() int { return len(f.rows) + 2 }
@@ -210,8 +207,7 @@ func (f guardsForm) pickKey(msg tea.KeyPressMsg) guardsForm {
 	return f
 }
 
-// availableOptions are the guard types not used by another row (except is that row's index,
-// so its own type stays selectable when changing it, or -1 when adding a new guard).
+// availableOptions are the guard types unused by other rows. except = that row's index, -1 when adding.
 func (f guardsForm) availableOptions(except int) []pickerOption {
 	used := f.usedTypes(except)
 	var opts []pickerOption
@@ -263,8 +259,7 @@ func (f guardsForm) applyPick() guardsForm {
 	return f
 }
 
-// cloneRows returns f with its own copy of the rows slice (and the focused row's params), so
-// mutations never reach through to another Model's cached copy.
+// cloneRows copies the rows slice and its params so edits never reach another Model's cache.
 func (f guardsForm) cloneRows() guardsForm {
 	rows := make([]guardRow, len(f.rows))
 	copy(rows, f.rows)
@@ -305,7 +300,7 @@ func (f guardsForm) submit() (guardsForm, tea.Cmd) {
 		g := domain.GuardInput{Type: r.gtype, Order: i + 1}
 		if r.gtype == guardApproval {
 			g.Params = map[string]any{"min_approvals": r.minApprovals()}
-			for k, v := range r.params { // preserve any advanced approval params we don't edit
+			for k, v := range r.params { // preserve advanced approval params we don't edit
 				g.Params[k] = v
 			}
 			g.Params["min_approvals"] = r.minApprovals()
@@ -510,7 +505,7 @@ func guardsErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not save guards. Try again."
 }

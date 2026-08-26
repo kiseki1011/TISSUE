@@ -21,7 +21,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// the create form's focusable controls, in tab order.
+// focusable controls, in tab order.
 const (
 	nfType = iota
 	nfParent
@@ -34,17 +34,14 @@ const (
 	nfCancel
 )
 
-// createForm is the "New issue" modal for the core fields: type, title, summary, content, priority and
-// due date. Parent, custom fields, assignee and story point are later slices.
-// nfCustomBase is the focus-id base for the dynamic custom-field rows; custom field i is nfCustomBase+i,
-// kept well above the static field ids so the two ranges never collide.
+// nfCustomBase is the focus-id base for dynamic custom-field rows, kept above the static ids so the
+// two ranges never collide.
 const nfCustomBase = 100
 
 func isCustomFocus(id int) bool { return id >= nfCustomBase }
 func customIndex(id int) int    { return id - nfCustomBase }
 
-// focusIsArea reports whether the focused control is a multi-line TEXT custom field, whose enter/up/down
-// are editing keys rather than form navigation (mirroring the Content field).
+// focusIsArea reports whether focus is a multi-line TEXT field, where enter/up/down edit instead of navigating.
 func (f createForm) focusIsArea() bool {
 	if !isCustomFocus(f.focus) {
 		return false
@@ -64,15 +61,14 @@ type createForm struct {
 	title      textinput.Model
 	summary    textinput.Model
 	content    textarea.Model
-	dueAt      time.Time // the chosen due date (zero = none), set from the calendar picker
+	dueAt      time.Time // zero = none, set from the calendar picker
 	dueSet     bool
 	priorityIx int
 
 	parentKey   string // chosen parent issue key, "" = none
-	parentLabel string // the chosen parent's picker label, for display
-	// lockedParent fixes the Parent field (a child-create started from an issue's Children section): the
-	// type cycle is pre-restricted to the child level, the parent is preset and never cleared on a type
-	// cycle, and the Parent field is neither focusable nor a picker (it just shows the fixed parent).
+	parentLabel string // picker label, for display
+	// lockedParent fixes the Parent field for a child-create: the type cycle is pre-restricted to the child
+	// level, the parent survives type cycles, and the field is neither focusable nor a picker.
 	lockedParent bool
 
 	focus     int
@@ -87,7 +83,6 @@ func (f createForm) setDue(v time.Time, set bool) createForm {
 	return f
 }
 
-// selectedType is the currently cycled issue type, if any are loaded.
 func (f createForm) selectedType() (domain.IssueTypeSummary, bool) {
 	if len(f.types) == 0 {
 		return domain.IssueTypeSummary{}, false
@@ -103,7 +98,7 @@ func (f createForm) selectedHierarchy() string {
 	return ""
 }
 
-// withParent records the picked parent (an empty key clears it) and drops any prior parent error.
+// withParent records the picked parent (an empty key clears it) and drops the parent error.
 func (f createForm) withParent(key, label string) createForm {
 	f.parentKey, f.parentErr = key, ""
 	if key == "" {
@@ -137,14 +132,13 @@ func newCreateForm(d deps.Deps, types []domain.IssueTypeSummary) createForm {
 		deps: d, types: types,
 		title: title, summary: summary, content: content,
 		priorityIx: max(0, indexOf(filterPriorities, "P2")), // default P2, the backend's middle priority
-		focus:      nfTitle, hover: -1,                      // start in Title for immediate typing; Type has a default
+		focus:      nfTitle, hover: -1,                      // start in Title for immediate typing (Type has a default)
 	}
 	f.title.Focus()
 	return f
 }
 
-// newChildCreateForm is the create form preset to add a child of an existing issue: types is pre-limited
-// to the one hierarchy level below the parent, and the parent is locked (fixed, non-editable) to it.
+// newChildCreateForm presets the form to add a child: types limited to one level below, parent locked.
 func newChildCreateForm(d deps.Deps, types []domain.IssueTypeSummary, parentKey, parentLabel string) createForm {
 	f := newCreateForm(d, types)
 	f.parentKey, f.parentLabel, f.lockedParent = parentKey, parentLabel, true
@@ -155,7 +149,7 @@ func (f createForm) Init() tea.Cmd { return textinput.Blink }
 
 func (f createForm) fields() []int {
 	ids := []int{nfType}
-	if !f.lockedParent { // a locked parent is fixed, so it is not a tab stop or a click target
+	if !f.lockedParent { // a locked parent is not a tab stop or a click target
 		ids = append(ids, nfParent)
 	}
 	ids = append(ids, nfTitle, nfSummary, nfContent, nfPriority, nfDue)
@@ -165,8 +159,7 @@ func (f createForm) fields() []int {
 	return append(ids, nfCreate, nfCancel)
 }
 
-// withCustomFields swaps in a new set of custom-field inputs (a type's fields resolved), pulling focus
-// back to a stable field if it was sitting on a now-removed custom row.
+// withCustomFields swaps in a type's resolved inputs, pulling focus off a now-removed custom row.
 func (f createForm) withCustomFields(inputs []customFieldInput) createForm {
 	f.customFields = inputs
 	f.customLoading = false
@@ -176,8 +169,7 @@ func (f createForm) withCustomFields(inputs []customFieldInput) createForm {
 	return f
 }
 
-// startCustomLoad clears the current fields and marks a fetch in flight, so submit waits until the new
-// type's fields (and their required-field validation) are known.
+// startCustomLoad marks a fetch in flight so submit waits for the new type's required-field checks.
 func (f createForm) startCustomLoad() createForm {
 	f.customFields = nil
 	f.customLoading = true
@@ -218,9 +210,7 @@ func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 			return f.moveFocus(1)
 		}
 	}
-	// a focused custom field owns its own typing / cycling / toggling. A DATE/TIMESTAMP field opens the
-	// calendar on enter (no typing); a multi-line TEXT area takes enter (and up/down) as editing keys,
-	// like Content; a single-line field advances on enter.
+	// a focused custom field owns its own keys (DATE opens the calendar, a TEXT area keeps enter for editing).
 	if isCustomFocus(f.focus) {
 		i := customIndex(f.focus)
 		if i < 0 || i >= len(f.customFields) {
@@ -231,7 +221,7 @@ func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 			if msg.String() == "enter" {
 				return f, openCustomDate(i)
 			}
-			return f, nil // a date field has no typing; other keys are inert
+			return f, nil // a date field has no typing
 		}
 		if msg.String() == "enter" && !c.isArea() {
 			return f.moveFocus(1)
@@ -265,7 +255,7 @@ func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 		case nfParent:
 			return f, openParentPickerCmd // the model opens the picker (or explains why none applies)
 		case nfDue:
-			return f, openDueCreate // the model opens the calendar over the form
+			return f, openDueCreate
 		case nfContent:
 			return f.typeIntoFocused(msg) // a newline in the body
 		default:
@@ -275,15 +265,12 @@ func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 	return f.typeIntoFocused(msg)
 }
 
-// cycleTypeReload cycles the issue type, clears the old type's custom fields, and asks the model to load
-// the new type's fields.
 func (f createForm) cycleTypeReload(delta int) (createForm, tea.Cmd) {
 	f = f.cycleType(delta)
 	f = f.startCustomLoad()
 	return f, f.requestFieldsCmd()
 }
 
-// requestFieldsCmd asks the model to load the selected type's custom fields.
 func (f createForm) requestFieldsCmd() tea.Cmd {
 	if t, ok := f.selectedType(); ok {
 		return requestTypeFields(int64(t.ID))
@@ -291,9 +278,8 @@ func (f createForm) requestFieldsCmd() tea.Cmd {
 	return nil
 }
 
-// cycleType advances the issue type and clears any picked parent, since a different type changes which
-// hierarchy level (and whether any) a parent must come from. A locked parent (child-create) keeps its
-// fixed parent: the type cycle is pre-restricted to a single level, so every choice shares that parent.
+// cycleType clears any picked parent, since a different type changes which hierarchy level a parent must
+// come from. A locked parent keeps its own, because the cycle is pre-restricted to one level.
 func (f createForm) cycleType(delta int) createForm {
 	if len(f.types) == 0 {
 		return f
@@ -362,8 +348,7 @@ func (f createForm) updateInputs(msg tea.Msg) (createForm, tea.Cmd) {
 
 func (f createForm) submit() (createForm, tea.Cmd) {
 	if f.customLoading {
-		// the selected type's fields (and their required-field checks) are still loading; wait rather
-		// than submit without them and get a confusing server-side rejection
+		// wait for the type's required-field checks rather than eat a confusing server-side rejection
 		return f, toast.Show(toast.Info, "Loading this type's fields…")
 	}
 	f.titleErr, f.parentErr = "", ""
@@ -380,7 +365,6 @@ func (f createForm) submit() (createForm, tea.Cmd) {
 	if f.dueSet {
 		due = f.dueAt
 	}
-	// validate and collect the custom fields, stopping on the first invalid one
 	for i := range f.customFields {
 		f.customFields[i].err = ""
 	}
@@ -422,14 +406,13 @@ func (f createForm) onClick(msg tea.MouseClickMsg) (createForm, tea.Cmd) {
 		if i < 0 || i >= len(f.customFields) {
 			return f, nil
 		}
-		// a click on a checklist option or a cycle arrow acts on that control; only a click elsewhere in
-		// the box falls through to the field's own behaviour
+		// a click on a checklist option or a cycle arrow acts on that control, not the field as a whole
 		if c, consumed := f.customFields[i].clickAt(msg, createZone(id)); consumed {
 			f.customFields[i] = c
 			return f, nil
 		}
 		if f.customFields[i].isDate() {
-			return f, openCustomDate(i) // clicking a DATE/TIMESTAMP field opens the calendar
+			return f, openCustomDate(i)
 		}
 		return f, nil
 	}
@@ -438,7 +421,7 @@ func (f createForm) onClick(msg tea.MouseClickMsg) (createForm, tea.Cmd) {
 		return f.focusOn(id)
 	case nfDue:
 		f, _ = f.focusOn(nfDue)
-		return f, openDueCreate // clicking Due opens the calendar
+		return f, openDueCreate
 	case nfParent:
 		f, _ = f.focusOn(nfParent)
 		return f, openParentPickerCmd
@@ -464,8 +447,7 @@ func (f createForm) View() string {
 	return components.TitledBoxCentered("New issue", body, f.deps.Styles.Theme.Primary)
 }
 
-// formRow is one rendered labelled field row plus its focus id, so body() and FocusRow() agree on the
-// order and heights (including the dynamic custom fields).
+// formRow pairs a rendered field row with its focus id, so body() and FocusRow() agree on order and height.
 type formRow struct {
 	id   int
 	view string
@@ -500,8 +482,8 @@ func (f createForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, views...)
 }
 
-// FocusRow reports the focused control's row (in the bordered View's coordinates) and height, so a
-// windowed modal scrolls to keep it visible. +2 = top border + the padding row above the body.
+// FocusRow reports the focused control's row and height in View coordinates, for scroll-into-view.
+// chromeTop 2 = top border + the padding row above the body.
 func (f createForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	row := chromeTop
@@ -536,9 +518,8 @@ func (f createForm) typeContent() string {
 	return fixField(body, 1)
 }
 
-// parentContent renders the Parent field: a hint that reflects the selected type's hierarchy (top-level
-// types can have none; SUBTASK/MICROTASK require one), or the picked parent's label. A locked parent
-// (child-create) shows the fixed parent plainly, since the field cannot be changed here.
+// parentContent shows the picked parent, or a hint reflecting the type's hierarchy (top-level types take
+// none, SUBTASK/MICROTASK require one). A locked parent renders plainly, since it cannot change here.
 func (f createForm) parentContent() string {
 	t := f.deps.Styles.Theme
 	if f.lockedParent {
@@ -570,8 +551,7 @@ func (f createForm) parentContent() string {
 	return fixField(lipgloss.NewStyle().Foreground(col).Render(hint), 1)
 }
 
-// dueContent renders the Due field body: the chosen date, or a "Select…" hint. Accent when focused,
-// matching the picker-backed Parent field. The field is set from the calendar, never typed.
+// dueContent shows the chosen date or a "Select…" hint. Due is set from the calendar, never typed.
 func (f createForm) dueContent() string {
 	t := f.deps.Styles.Theme
 	col := t.Muted
@@ -712,8 +692,8 @@ func submitCreateIssue(v createValues) tea.Cmd {
 	return func() tea.Msg { return createSubmittedMsg{v: v} }
 }
 
-// IssueCreatedMsg carries a create result back to the screen. It is exported so the app shell can route
-// it even if the user has left the drill-in, mirroring the other issue-action results.
+// IssueCreatedMsg carries a create result. Exported so the app shell can route it after the user has left
+// the drill-in.
 type IssueCreatedMsg struct {
 	key     string
 	err     bool
@@ -730,23 +710,19 @@ func createIssue(d deps.Deps, projectKey string, v createValues) tea.Cmd {
 	}
 }
 
-// openCreateForm opens the New issue modal. It needs the issue-type catalog (prefetched in Init) to
-// populate the type cycle, so it refuses until that has loaded.
+// openCreateForm refuses until the issue-type catalog (prefetched in Init) has loaded.
 func (m Model) openCreateForm() (Model, tea.Cmd) {
 	if len(m.types) == 0 {
 		return m, toast.Show(toast.Info, "Loading issue types…")
 	}
 	m.creating = true
 	m.createScroll = 0
-	m.parentGen++ // a fresh form session: drop any parent-candidate load still in flight from a prior one
+	m.parentGen++ // drop any parent-candidate load still in flight from a prior session
 	m.createUI = newCreateForm(m.deps, m.types)
-	// load the default type's custom fields (from cache when available)
 	m2, cmd := m.requestCustomFields(int64(m.types[0].ID))
 	return m2, tea.Batch(m2.createUI.Init(), cmd)
 }
 
-// updateCreate drives the open create modal: submit/cancel close it, a wheel scrolls a modal too tall
-// for the terminal, and anything else is forwarded to the form (then the window follows the focus).
 func (m Model) updateCreate(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case createCancelledMsg:
@@ -775,8 +751,7 @@ func (m Model) createScrollMax() int {
 	return max(0, lipgloss.Height(m.createUI.View())-m.height)
 }
 
-// followCreateFocus scrolls the windowed create modal so the focused control stays visible, mirroring
-// followEditFocus. It is a no-op when the modal already fits the terminal.
+// followCreateFocus scrolls the windowed modal to keep the focused control visible.
 func (m Model) followCreateFocus() Model {
 	row, height, ok := m.createUI.FocusRow()
 	if !ok {
@@ -798,8 +773,7 @@ func (m Model) followCreateFocus() Model {
 	return m
 }
 
-// submitCreate closes the form and fires the create. Unlike edit/transition it is not optimistic - the
-// list row needs the server-assigned key and derived fields, so it reloads on success.
+// submitCreate is not optimistic, unlike edit/transition: the row needs the server-assigned key.
 func (m Model) submitCreate(v createValues) (Model, tea.Cmd) {
 	m.creating = false
 	return m, createIssue(m.deps, m.projectKey, v)

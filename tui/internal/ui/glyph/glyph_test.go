@@ -23,7 +23,6 @@ func TestNewResolvesByMode(t *testing.T) {
 	nerd := New(Nerd)
 	uni := New(Unicode)
 
-	// Check differs between the two modes.
 	if nerd.Check == "" || uni.Check == "" {
 		t.Fatal("Check must be set in both modes")
 	}
@@ -37,8 +36,7 @@ func TestNewResolvesByMode(t *testing.T) {
 	}
 }
 
-// The Priority glyph resolves to the nerd symbol in nerd mode and to empty in fallback mode, so callers
-// supply their own text via Or (the issue list uses "Pri", Details uses "").
+// Fallback mode leaves Priority empty so callers supply their own text through Or.
 func TestPriorityGlyphResolvesByMode(t *testing.T) {
 	nerd := New(Nerd)
 	uni := New(Unicode)
@@ -50,7 +48,6 @@ func TestPriorityGlyphResolvesByMode(t *testing.T) {
 		t.Errorf("Priority must be empty in fallback mode so Or uses the override, got %q", uni.Priority)
 	}
 
-	// nerd mode returns the glyph and ignores any override; fallback mode returns the override.
 	if got := nerd.Or(nerd.Priority, "Pri"); got != nerd.Priority {
 		t.Errorf("nerd Or should keep the glyph, got %q", got)
 	}

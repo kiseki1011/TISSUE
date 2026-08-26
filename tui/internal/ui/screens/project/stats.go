@@ -58,7 +58,6 @@ func (m Model) onStatsLoaded(msg statsLoadedMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onStatsKey scrolls the read-only overview when it overflows a short terminal.
 func (m Model) onStatsKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "up", "k":

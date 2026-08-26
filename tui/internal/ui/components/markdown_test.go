@@ -7,7 +7,7 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// A rendered block never exceeds the requested width, so it drops into a fixed-width box without re-wrapping.
+// A rendered block never exceeds the requested width, so it drops into a fixed-width box unwrapped.
 func TestMarkdownWidthBound(t *testing.T) {
 	md := "# A heading\n\n" + strings.Repeat("some words that keep going and wrap around eventually ", 20) +
 		"\n\n- a bullet item that is also quite long and should wrap within the width budget too"
@@ -21,7 +21,7 @@ func TestMarkdownWidthBound(t *testing.T) {
 	}
 }
 
-// The same input renders identically (the memo cache must not corrupt or vary the result).
+// The memo cache must not vary the result.
 func TestMarkdownStable(t *testing.T) {
 	md := "## Title\n\nbody **text** with `code`"
 	first := Markdown(md, 60, true)
@@ -35,7 +35,7 @@ func TestMarkdownStable(t *testing.T) {
 	}
 }
 
-// Empty markdown renders to an empty block (the caller shows its own placeholder).
+// Empty markdown renders empty — the caller shows its own placeholder.
 func TestMarkdownEmpty(t *testing.T) {
 	if got := Markdown("", 40, true); strings.TrimSpace(got) != "" {
 		t.Errorf("empty markdown should render empty, got %q", got)

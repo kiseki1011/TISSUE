@@ -1,4 +1,4 @@
-// Wraps the generated API client and turns its DTOs into values the UI can use directly.
+// Package domain wraps the generated API client and turns its DTOs into UI-ready values.
 package domain
 
 import "strings"
@@ -33,8 +33,7 @@ type OIDC struct {
 	ClientID     string
 }
 
-// DeviceAuth starts the OIDC device flow. The user enters `UserCode` at `VerificationURI` while the
-// client polls until they authorize.
+// DeviceAuth starts the OIDC device flow. The user enters UserCode at VerificationURI while the client polls.
 type DeviceAuth struct {
 	DeviceCode              string
 	UserCode                string

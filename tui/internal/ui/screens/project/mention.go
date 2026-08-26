@@ -20,9 +20,8 @@ const (
 	mentionSendCap = 50 // the server accepts at most this many mentioned usernames
 )
 
-// mentionState is the @-mention autocomplete popup attached to whichever composer holds keyboard focus.
-// It is recomputed after every edit: active only while the cursor sits inside an "@token" that matches
-// at least one project member.
+// mentionState is the @-mention autocomplete popup for the focused composer. Recomputed after every edit:
+// active only while the caret sits in an "@token" matching at least one member.
 type mentionState struct {
 	active  bool
 	query   string                 // the text typed after '@' (may be empty right after '@')
@@ -31,15 +30,13 @@ type mentionState struct {
 	hover   int                    // the mouse-hovered row, -1 when none
 }
 
-// commentMentionZoneID is a candidate row's bubblezone id, namespaced under the modal so it never
-// collides with the reply/composer zones.
+// commentMentionZoneID namespaces a row's zone id under the modal so it cannot collide.
 func commentMentionZoneID(i int) string {
 	return "project.comment.modal.mention." + strconv.Itoa(i)
 }
 
-// mentionQuery inspects the focused composer and, if the cursor sits inside an "@token", returns the
-// token's start column (the '@'), its line and cursor columns, and the query typed after '@'. The '@'
-// counts only at the start of a word (line start or after whitespace), so "email@host" never triggers.
+// mentionQuery returns the '@' column, the caret's line/column and the query typed after '@'. The '@'
+// counts only at a word start (line start or after whitespace), so "email@host" never triggers.
 func mentionQuery(ta textarea.Model) (start, row, col int, query string, ok bool) {
 	row = ta.Line()
 	col = ta.Column()
@@ -69,9 +66,8 @@ func mentionQuery(ta textarea.Model) (start, row, col int, query string, ok bool
 	return 0, row, col, "", false
 }
 
-// matchMembers ranks the project members against the typed query: username-prefix first, then
-// display-name-prefix, then any substring. An empty query offers everyone. Members without a username
-// are skipped (they cannot be mentioned). The result is capped to the dropdown height.
+// matchMembers ranks by username-prefix, then display-name-prefix, then substring. An empty query offers
+// everyone, a member without a username cannot be mentioned, and the result is capped to the dropdown.
 func matchMembers(query string, members []domain.ProjectMember) []domain.ProjectMember {
 	q := strings.ToLower(strings.TrimSpace(query))
 	type scored struct {
@@ -116,16 +112,13 @@ func matchMembers(query string, members []domain.ProjectMember) []domain.Project
 	return res
 }
 
-// isUsernameRune is the character class a manually-typed @token may span. It errs wide (includes . _ -)
-// so a token is read whole; trailing punctuation is stripped before matching.
+// isUsernameRune errs wide (includes . _ -) so a token is read whole. Trailing punctuation is stripped later.
 func isUsernameRune(r rune) bool {
 	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' || r == '.' || r == '-'
 }
 
-// collectMentions extracts the usernames actually mentioned in the submitted body, matched against the
-// known members (case-insensitive) so only real, sendable handles are transmitted - the popup inserts
-// clean space-terminated tokens, and a hand-typed handle is matched too. The canonical username is
-// returned, de-duplicated in first-seen order and capped to the server limit.
+// collectMentions returns the canonical usernames mentioned in the body, matched case-insensitively
+// against known members so only sendable handles are sent. De-duplicated, capped to the server limit.
 func collectMentions(content string, members []domain.ProjectMember) []string {
 	if len(members) == 0 {
 		return nil
@@ -155,8 +148,7 @@ func collectMentions(content string, members []domain.ProjectMember) []string {
 		if raw == "" {
 			continue
 		}
-		// match the whole token first (a username may legitimately end in . _ -), then fall back to a
-		// trailing-punctuation-trimmed form for a hand-typed token like "@bob."
+		// whole token first (a username may end in . _ -), then a punctuation-trimmed fallback for "@bob."
 		lc := strings.ToLower(raw)
 		canon, ok := byName[lc]
 		if !ok {
@@ -174,10 +166,8 @@ func collectMentions(content string, members []domain.ProjectMember) []string {
 	return out
 }
 
-// insertMention replaces the "@token" at the cursor with "@username " (space-terminated so the token
-// reads as complete and the popup closes). It rebuilds the value in two halves and repositions the
-// cursor by construction: setting the tail, then inserting the head at the start leaves the cursor
-// exactly at the head/tail seam - right after the inserted mention - regardless of soft-wrapping.
+// insertMention replaces the "@token" at the caret with "@username " (space-terminated so the popup
+// closes). Setting the tail then inserting the head leaves the caret at the seam, whatever the wrapping.
 func insertMention(ta textarea.Model, username string) textarea.Model {
 	start, row, col, _, ok := mentionQuery(ta)
 	if !ok {
@@ -189,9 +179,8 @@ func insertMention(ta textarea.Model, username string) textarea.Model {
 		return ta
 	}
 	after := line[col:]
-	// terminate the mention with a space so the token reads as complete. If the cursor already sits on a
-	// space, fold that space into the head (the caret lands after it) rather than adding a second one: this
-	// both avoids a doubled space and moves the caret past the token so the popup does not immediately reopen.
+	// if the caret already sits on a space, fold it into the head instead of adding a second one: no doubled
+	// space, and the caret lands past the token so the popup does not reopen
 	replacement := "@" + username
 	if len(after) > 0 && unicode.IsSpace(after[0]) {
 		replacement += string(after[0])
@@ -209,11 +198,8 @@ func insertMention(ta textarea.Model, username string) textarea.Model {
 	return ta
 }
 
-// refreshMention recomputes the popup from the focused composer's current text and cursor. It is called
-// after every forwarded input: the popup opens, filters, and closes as the user types. allowOpen gates
-// OPENING - true only after a real text edit - so a cursor-only move or a cursor blink can close a stale
-// popup (caret left the token) but can never re-open one the user dismissed with esc. Focus off the
-// textarea, no active "@token", or no matches all clear it.
+// refreshMention recomputes the popup after every forwarded input. allowOpen gates OPENING (true only
+// after a real edit), so a cursor move or a blink cannot reopen a popup the user dismissed with esc.
 func (m Model) refreshMention(allowOpen bool) Model {
 	f := m.commentUI
 	if f.focus.part != partText {
@@ -232,8 +218,7 @@ func (m Model) refreshMention(allowOpen bool) Model {
 		return m
 	}
 	if !f.mention.active && !allowOpen {
-		// the caret is inside a token but this was not an edit (a cursor move or a blink tick): keep the
-		// popup closed, so an esc-dismissed popup stays dismissed until the user actually edits again.
+		// inside a token but not an edit (cursor move or blink tick): stay closed so an esc dismissal sticks
 		f.mention = mentionState{hover: -1}
 		m.commentUI = f
 		return m
@@ -253,9 +238,8 @@ func (m Model) refreshMention(allowOpen bool) Model {
 	return m
 }
 
-// mentionKey handles the popup's own keys while it is open: up/down (and ctrl+p/n) move the selection,
-// enter/tab accept, esc dismisses (leaving the modal open). Any other key is left unhandled so it edits
-// the composer normally (and re-filters the popup). handled reports whether the key was consumed.
+// mentionKey handles the popup's keys: up/down (ctrl+p/n) move, enter/tab accept, esc dismisses. Any
+// other key is left unhandled so it edits the composer and re-filters.
 func (m Model) mentionKey(msg tea.KeyPressMsg) (Model, tea.Cmd, bool) {
 	n := len(m.commentUI.mention.matches)
 	if n == 0 {
@@ -278,7 +262,6 @@ func (m Model) mentionKey(msg tea.KeyPressMsg) (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// mentionAccept inserts the selected candidate into the focused composer and closes the popup.
 func (m Model) mentionAccept() (Model, tea.Cmd) {
 	f := m.commentUI
 	if !f.mention.active || len(f.mention.matches) == 0 {
@@ -294,13 +277,11 @@ func (m Model) mentionAccept() (Model, tea.Cmd) {
 	}
 	f.mention = mentionState{hover: -1}
 	m.commentUI = f
-	// the caret now sits after "@username ", so refresh finds no active token; pass allowOpen=false so it
-	// stays closed even for the mid-line case where the caret lands just before a reused space
+	// allowOpen=false keeps it closed in the mid-line case where the caret lands just before a reused space
 	m = m.refreshMention(false)
 	return m.followCommentFocus(), nil
 }
 
-// mentionHitRow returns the candidate row under the mouse, if any.
 func (m Model) mentionHitRow(msg tea.MouseMsg) (int, bool) {
 	if !m.commentUI.mention.active {
 		return 0, false
@@ -313,9 +294,8 @@ func (m Model) mentionHitRow(msg tea.MouseMsg) (int, bool) {
 	return 0, false
 }
 
-// mentionPopupLines renders the autocomplete dropdown as borderless, zone-marked rows sized to the
-// composer width, so it appends flush under the focused textarea and each row stays clickable (the mark
-// wraps a fixed-width cell, never routed through width-measuring that would strip it).
+// mentionPopupLines renders the dropdown as borderless zone-marked rows at composer width. The mark wraps
+// a fixed-width cell, never routed through width-measuring, which would strip it.
 func (m Model) mentionPopupLines() []string {
 	f := m.commentUI
 	if !f.mention.active || len(f.mention.matches) == 0 {

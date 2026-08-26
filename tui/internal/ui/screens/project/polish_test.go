@@ -35,9 +35,8 @@ func lineWith(t *testing.T, body, sub string) string {
 	return ""
 }
 
-// The relationship sections (children, reviewers, relations) all right-anchor their status in the
-// shared colStatus column, so every status label starts at the same x (w-colStatus). The parent is now
-// a fixed meta row (like Assignee), so it is not part of this alignment.
+// Children/reviewers/relations right-anchor their status in the shared colStatus column, so every label
+// starts at w-colStatus. The parent is a fixed meta row, so it is excluded.
 func TestDetailStatusColumnsAligned(t *testing.T) {
 	const w = 90
 	d := domain.IssueDetail{
@@ -54,7 +53,6 @@ func TestDetailStatusColumnsAligned(t *testing.T) {
 	}
 	body := detailBodyWith(glyph.Unicode, w, d)
 
-	// each status label begins at the same display column: w-colStatus.
 	want := w - colStatus
 	for label, key := range map[string]string{"Done": "CHI-1", "Approved": "Rev ", "Aborted": "REL-1"} {
 		line := lineWith(t, body, key)
@@ -63,14 +61,12 @@ func TestDetailStatusColumnsAligned(t *testing.T) {
 			t.Errorf("status %q on the %q row starts at column %d, want %d:\n%q", label, key, col, want, line)
 		}
 	}
-	// the longest fixed review status is not truncated by the shared column.
 	if !strings.Contains(body, "Changes requested") {
 		t.Errorf("the review status column must fit %q:\n%s", "Changes requested", body)
 	}
 }
 
-// A TEXT custom field with a value renders its markdown and then a blank line, so it reads apart from
-// the field that follows it. An empty TEXT field stays inline as "-".
+// A TEXT field renders its markdown then a blank line, so it reads apart from the next field.
 func TestDetailTextFieldTrailingBlank(t *testing.T) {
 	d := domain.IssueDetail{
 		Key: "TIS-1", Title: "T",
@@ -100,8 +96,7 @@ func TestDetailTextFieldTrailingBlank(t *testing.T) {
 	}
 }
 
-// A reply is separated from the comment above it by a blank line and marked with a vertical gutter,
-// one bar per nesting level.
+// A reply is preceded by a blank line and gutter-marked, one bar per nesting level.
 func TestDetailReplyGutter(t *testing.T) {
 	d := domain.IssueDetail{
 		Key: "TIS-1", Title: "T", CommentCount: 1,
@@ -141,8 +136,7 @@ func TestDetailReplyGutter(t *testing.T) {
 	}
 }
 
-// Meta rows and custom-field labels lead with a glyph in nerd mode and with none on plain terminals
-// (an empty fallback), matching the home dashboard's Details.
+// Meta rows and custom-field labels lead with a glyph in nerd mode and nothing on plain terminals.
 func TestDetailGlyphs(t *testing.T) {
 	d := domain.IssueDetail{
 		Key: "TIS-1", Title: "T",
@@ -168,8 +162,7 @@ func TestDetailGlyphs(t *testing.T) {
 	}
 }
 
-// Comment bodies render through the markdown pipeline (like the Content section), so inline markdown
-// syntax is formatted away rather than shown raw.
+// Comment bodies go through the markdown pipeline, so inline syntax is formatted away, not shown raw.
 func TestCommentRendersMarkdown(t *testing.T) {
 	d := domain.IssueDetail{
 		Key: "TIS-1", Title: "T", CommentCount: 1,
@@ -186,7 +179,7 @@ func TestCommentRendersMarkdown(t *testing.T) {
 	}
 }
 
-// Every non-deleted comment carries a clickable Reply affordance; a deleted comment does not.
+// Every non-deleted comment carries a clickable Reply affordance. A deleted one does not.
 func TestCommentReplyLinkShown(t *testing.T) {
 	d := domain.IssueDetail{
 		Key: "TIS-1", Title: "T", CommentCount: 2,
@@ -204,8 +197,7 @@ func TestCommentReplyLinkShown(t *testing.T) {
 	}
 }
 
-// Clicking a Details comment's Reply link opens the comment modal with that comment's inline reply
-// composer already open and focused, and a submit runs the create.
+// Clicking Reply opens the comment modal with that comment's inline composer open and focused.
 func TestReplyClickOpensComposer(t *testing.T) {
 	m := loaded(t, 160, 60, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("enter"))
@@ -227,7 +219,7 @@ func TestReplyClickOpensComposer(t *testing.T) {
 		t.Errorf("the inline composer should name the parent author:\n%s", plain(view))
 	}
 
-	// submitting the reply runs the create; stay-open keeps the modal up (the reply lands via refetch).
+	// stay-open: submitting the reply keeps the modal up (the reply lands via refetch)
 	m, cmd := m.Update(commentSubmittedMsg{content: "sure", parentID: 42})
 	if !m.commenting {
 		t.Error("stay-open: submitting the reply keeps the modal open")
@@ -237,9 +229,8 @@ func TestReplyClickOpensComposer(t *testing.T) {
 	}
 }
 
-// A comment whose author name is very long (untrusted server text) must not widen the modal past the
-// terminal - both the thread header and the inline composer's "Reply to {author}" title clamp it, or
-// the float overlay would spill and corrupt the frame.
+// A very long author name (untrusted server text) must not widen the modal past the terminal, or the
+// float overlay spills and corrupts the frame.
 func TestReplyLongAuthorFitsFrame(t *testing.T) {
 	m := loaded(t, 100, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("enter"))
@@ -257,9 +248,8 @@ func TestReplyLongAuthorFitsFrame(t *testing.T) {
 	}
 }
 
-// A comment whose BODY has a long unbreakable token (markdown does not clamp those to the wrap width)
-// must not widen the modal's read-only thread pane past the terminal - the folded thread keeps the
-// floated frame intact. Regression for the review's MEDIUM finding.
+// An unbreakable token in a comment body (markdown does not clamp those to the wrap width) must not
+// widen the read-only thread pane past the terminal.
 func TestCommentLongBodyFitsFrame(t *testing.T) {
 	m := loaded(t, 100, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("enter"))

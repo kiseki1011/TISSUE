@@ -56,8 +56,7 @@ func TestCommentEditableForAManager(t *testing.T) {
 	}
 }
 
-// Without a profile there is no way to tell whose comment it is, so nothing is offered rather than
-// offering everything and letting the server refuse.
+// Without a profile there is no way to tell whose comment it is, so nothing is offered.
 func TestCommentNotEditableBeforeTheProfileLands(t *testing.T) {
 	m := commentModel(t, "", roster, twoComments())
 	if m.commentEditable(m.details[m.viewKey].Comments[0]) {
@@ -247,8 +246,7 @@ func TestCommentDeleteRefusedOnSomeoneElses(t *testing.T) {
 	}
 }
 
-// The thread pages on from the detail BFF's embedded first page, so the next index falls out of how many
-// roots are already loaded.
+// The thread pages on from the BFF's embedded first page, so the next index follows the loaded roots.
 func TestLoadMoreRequestsTheNextPage(t *testing.T) {
 	full := make([]domain.IssueComment, domain.CommentPageSize)
 	for i := range full {

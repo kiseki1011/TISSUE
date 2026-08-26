@@ -10,8 +10,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// CatalogService reads and edits the instance-wide catalogs (issue types, workflows, teams, and
-// positions). Reads are available to any authenticated member. Edits are admin-only.
+// CatalogService reads and edits the instance-wide catalogs.
+// Reads are open to any authenticated member. Edits are admin-only.
 type CatalogService struct {
 	api *client.ClientWithResponses
 }
@@ -47,8 +47,7 @@ type IssueField struct {
 	Options     []FieldOption // for SELECT_OPTION / CHECKLIST
 }
 
-// FieldOption is one selectable option on a SELECT_OPTION / CHECKLIST field. The id is needed to
-// rename or delete it through the per-option endpoints.
+// FieldOption is one option on a SELECT_OPTION / CHECKLIST field. Its id drives the per-option endpoints.
 type FieldOption struct {
 	ID   int
 	Name string
@@ -153,11 +152,9 @@ type WorkflowDetail struct {
 	Color          string
 	SystemProvided bool
 	InitialStateID int
-	// Version is the optimistic-lock value that a whole-graph replace must echo back, so a
-	// concurrent edit is rejected instead of silently lost.
+	// Version is the optimistic-lock value a whole-graph replace must echo back.
 	Version int
-	// VCS automation: the transition auto-fired when a linked PR is opened/merged, by id.
-	// 0 means unset.
+	// Transitions auto-fired when a linked PR is opened/merged. 0 means unset.
 	VcsPrOpenedTransitionID int
 	VcsPrMergedTransitionID int
 	States                  []WorkflowState
@@ -230,7 +227,7 @@ func (s *CatalogService) GetWorkflow(ctx context.Context, id int) (WorkflowDetai
 	return out, nil
 }
 
-// Category and wiring are not editable here — those go through the whole-graph replace.
+// UpdateWorkflowState cannot change a state's category or wiring. Those go through the whole-graph replace.
 func (s *CatalogService) UpdateWorkflowState(ctx context.Context, workflowID, stateID int, name, color, description string) error {
 	body := client.UpdateWorkflowStateJSONRequestBody{
 		Name:        nullable.NewNullableWithValue(name),
@@ -244,8 +241,7 @@ func (s *CatalogService) UpdateWorkflowState(ctx context.Context, workflowID, st
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// UpdateWorkflowVcsSettings maps the PR-opened/merged VCS events to transitions (whole-record
-// replace). A zero id clears that mapping.
+// UpdateWorkflowVcsSettings replaces the whole PR-opened/merged transition mapping. A zero id clears it.
 func (s *CatalogService) UpdateWorkflowVcsSettings(ctx context.Context, workflowID, openedTransitionID, mergedTransitionID int) error {
 	var body client.UpdateWorkflowVcsSettingsJSONRequestBody
 	if openedTransitionID != 0 {
@@ -263,7 +259,7 @@ func (s *CatalogService) UpdateWorkflowVcsSettings(ctx context.Context, workflow
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// Source and target are not editable here — rewiring goes through the whole-graph replace.
+// UpdateWorkflowTransition cannot rewire a transition. That goes through the whole-graph replace.
 func (s *CatalogService) UpdateWorkflowTransition(ctx context.Context, workflowID, transitionID int, name, description string) error {
 	body := client.UpdateWorkflowTransitionJSONRequestBody{
 		Name:        nullable.NewNullableWithValue(name),
@@ -282,8 +278,7 @@ type GuardInput struct {
 	Params map[string]any
 }
 
-// ConfigureTransitionGuards replaces the entire guard list on a transition. The backend
-// requires at least one guard, so callers must not pass an empty list.
+// ConfigureTransitionGuards replaces the whole guard list. The backend rejects an empty list.
 func (s *CatalogService) ConfigureTransitionGuards(ctx context.Context, workflowID, transitionID int, guards []GuardInput) error {
 	body := client.ConfigureTransitionGuardsJSONRequestBody{Guards: make([]client.GuardConfigData, len(guards))}
 	for i, g := range guards {
@@ -304,16 +299,14 @@ func (s *CatalogService) ConfigureTransitionGuards(ctx context.Context, workflow
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// GraphRef identifies a node in a whole-graph replace: an existing state by its ID, or a new
-// state by the client-assigned TempKey. Exactly one is set.
+// GraphRef points at an existing state by ID or a new one by TempKey. Exactly one is set.
 type GraphRef struct {
 	ID      int
 	TempKey string
 }
 
-// GraphStateInput is one state in a whole-graph replace. Existing states carry ID and only their
-// Category can change (name/color/description are preserved server-side). New states carry a
-// TempKey plus Name and Color.
+// GraphStateInput is one state in a whole-graph replace. Existing states carry ID and can change
+// only Category. New states carry TempKey plus Name and Color.
 type GraphStateInput struct {
 	ID          int
 	TempKey     string
@@ -323,8 +316,8 @@ type GraphStateInput struct {
 	Category    string
 }
 
-// GraphTransitionInput is one transition in a whole-graph replace. Existing transitions carry ID
-// and may be rewired (name/description preserved). New ones carry a TempKey plus Name.
+// GraphTransitionInput is one transition in a whole-graph replace. Existing ones carry ID and may
+// be rewired. New ones carry TempKey plus Name.
 type GraphTransitionInput struct {
 	ID          int
 	TempKey     string
@@ -334,10 +327,8 @@ type GraphTransitionInput struct {
 	Target      GraphRef
 }
 
-// ReplaceWorkflowGraph replaces a workflow's entire state/transition topology in one operation.
-// version is the optimistic-lock value read alongside the graph. A mismatch means another editor
-// changed it first. States and transitions omitted from the lists are deleted. The backend
-// rejects the delete of a state that still holds active issues unless a migration is supplied.
+// ReplaceWorkflowGraph swaps a workflow's whole topology. Omitted states and transitions are deleted.
+// version is the optimistic lock. Deleting a state that still holds active issues needs a migration.
 func (s *CatalogService) ReplaceWorkflowGraph(
 	ctx context.Context, workflowID, version int, states []GraphStateInput, transitions []GraphTransitionInput,
 ) error {
@@ -400,7 +391,7 @@ func graphRef(r GraphRef) client.Ref {
 	return client.Ref{TempKey: &tk}
 }
 
-// The field's type is fixed at creation, and its options are managed through separate endpoints.
+// UpdateIssueField cannot change a field's type, which is fixed at creation. Options have their own endpoints.
 func (s *CatalogService) UpdateIssueField(ctx context.Context, fieldID int, name, description string, required bool) error {
 	body := client.UpdateIssueFieldJSONRequestBody{
 		Name:        nullable.NewNullableWithValue(name),
@@ -414,9 +405,8 @@ func (s *CatalogService) UpdateIssueField(ctx context.Context, fieldID int, name
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// CreateIssueField adds a custom field to an issue type. position is the field's display order
-// (the caller appends with max(existing)+1, since the backend does not auto-append). initialOptions
-// seed a SELECT_OPTION / CHECKLIST field and are ignored for other types.
+// CreateIssueField adds a custom field. The backend does not auto-append, so the caller passes
+// position as max(existing)+1. initialOptions apply only to SELECT_OPTION / CHECKLIST.
 func (s *CatalogService) CreateIssueField(
 	ctx context.Context, typeID int, name, description, fieldType string, required bool, position int, initialOptions []string,
 ) error {
@@ -440,7 +430,7 @@ func (s *CatalogService) CreateIssueField(
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// The backend rejects the delete with 409 if any issue currently holds a value for it.
+// DeleteIssueField is rejected with 409 if any issue still holds a value for the field.
 func (s *CatalogService) DeleteIssueField(ctx context.Context, fieldID int) error {
 	resp, err := s.api.DeleteIssueFieldWithResponse(ctx, int64(fieldID))
 	if err != nil {
@@ -449,9 +439,8 @@ func (s *CatalogService) DeleteIssueField(ctx context.Context, fieldID int) erro
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// ReorderIssueFields sets the display order of an issue type's fields to the given id sequence
-// (positions become the list index). The caller must pass the complete id list. Ids omitted keep
-// their old position and unknown ids are ignored.
+// ReorderIssueFields sets field order from the given id sequence (position = list index).
+// Pass the complete id list. Omitted ids keep their old position and unknown ids are ignored.
 func (s *CatalogService) ReorderIssueFields(ctx context.Context, typeID int, orderedIDs []int) error {
 	ids := make([]int64, len(orderedIDs))
 	for i, id := range orderedIDs {
@@ -483,7 +472,7 @@ func (s *CatalogService) RenameFieldOption(ctx context.Context, fieldID, optionI
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// The backend rejects it with 409 if the option is in use by an issue.
+// DeleteFieldOption is rejected with 409 if an issue still uses the option.
 func (s *CatalogService) DeleteFieldOption(ctx context.Context, fieldID, optionID int) error {
 	resp, err := s.api.DeleteIssueFieldOptionWithResponse(ctx, int64(fieldID), int64(optionID))
 	if err != nil {
@@ -492,9 +481,8 @@ func (s *CatalogService) DeleteFieldOption(ctx context.Context, fieldID, optionI
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// CreateIssueType creates a global issue type and returns its new id. hierarchy is one of EPIC,
-// STANDARD, SUBTASK, MICROTASK. workflowID must reference an existing workflow. The icon is optional
-// server-side (it defaults there) and is not surfaced in the TUI, so it is omitted from the request.
+// CreateIssueType creates a global issue type. hierarchy is EPIC, STANDARD, SUBTASK, or MICROTASK.
+// The icon is left out of the request. The TUI never surfaces it and the server defaults it.
 func (s *CatalogService) CreateIssueType(ctx context.Context, name, description, color, hierarchy string, workflowID int) (int, error) {
 	body := client.CreateIssueTypeJSONRequestBody{
 		Name:           name,
@@ -518,7 +506,7 @@ func (s *CatalogService) CreateIssueType(ctx context.Context, name, description,
 	return 0, nil
 }
 
-// Its hierarchy and workflow are fixed at creation and cannot be changed here.
+// UpdateIssueType cannot change hierarchy or workflow. Both are fixed at creation.
 func (s *CatalogService) UpdateIssueType(ctx context.Context, id int, name, color, description string) error {
 	body := client.UpdateIssueTypeJSONRequestBody{
 		Name:        nullable.NewNullableWithValue(name),
@@ -532,7 +520,7 @@ func (s *CatalogService) UpdateIssueType(ctx context.Context, id int, name, colo
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// This affects every project, so the backend rejects the delete with 409 if any issue still uses the type.
+// DeleteIssueType affects every project. The backend rejects it with 409 if any issue uses the type.
 func (s *CatalogService) DeleteIssueType(ctx context.Context, id int) error {
 	resp, err := s.api.DeleteIssueTypeWithResponse(ctx, int64(id))
 	if err != nil {
@@ -541,8 +529,7 @@ func (s *CatalogService) DeleteIssueType(ctx context.Context, id int) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// WorkflowStateCreate is one brand-new state in a workflow creation payload. Every state is new,
-// so each carries a client-assigned TempKey that transitions reference.
+// WorkflowStateCreate is a brand-new state. Its client-assigned TempKey is what transitions reference.
 type WorkflowStateCreate struct {
 	TempKey     string
 	Name        string
@@ -558,9 +545,8 @@ type WorkflowTransitionCreate struct {
 	TargetTempKey string
 }
 
-// CreateWorkflow creates a workflow with its whole starting graph in one call and returns the new
-// workflow's id. The backend requires exactly one INITIAL state, at least one COMPLETED state, and
-// at least one transition, with every state reachable from the initial one.
+// CreateWorkflow creates a workflow and its whole starting graph in one call.
+// The backend requires one INITIAL state, a COMPLETED state, and every state reachable from initial.
 func (s *CatalogService) CreateWorkflow(
 	ctx context.Context, name, color, description string, states []WorkflowStateCreate, transitions []WorkflowTransitionCreate,
 ) (int, error) {
@@ -609,9 +595,8 @@ func (s *CatalogService) CreateWorkflow(
 	return 0, nil
 }
 
-// UpdateWorkflow edits the workflow's own metadata (name, description, and optionally color). An
-// empty color is left out of the PATCH so the workflow keeps its current color unchanged — the
-// color is no longer edited from the TUI.
+// UpdateWorkflow edits the workflow's own metadata. An empty color is left out of the PATCH so the
+// workflow keeps its current color. The TUI no longer edits it.
 func (s *CatalogService) UpdateWorkflow(ctx context.Context, workflowID int, name, color, description string) error {
 	body := client.UpdateWorkflowJSONRequestBody{
 		Name:        nullable.NewNullableWithValue(name),
@@ -627,7 +612,7 @@ func (s *CatalogService) UpdateWorkflow(ctx context.Context, workflowID int, nam
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// The backend rejects the delete with 409 if any issue type still references it.
+// DeleteWorkflow is rejected with 409 if any issue type still references it.
 func (s *CatalogService) DeleteWorkflow(ctx context.Context, id int) error {
 	resp, err := s.api.DeleteWorkflowWithResponse(ctx, int64(id))
 	if err != nil {
@@ -718,8 +703,8 @@ func (s *CatalogService) ListPositions(ctx context.Context) ([]PositionSummary, 
 	return out, nil
 }
 
-// SetMyPosition sets the caller's own position (self-service, no admin required). A nil positionID
-// clears it. Teams have no self-service equivalent — team assignment is admin-only.
+// SetMyPosition is self-service, no admin required. A nil positionID clears it.
+// Teams have no equivalent. Team assignment is admin-only.
 func (s *CatalogService) SetMyPosition(ctx context.Context, positionID *int) error {
 	body := client.UpdateMemberPositionRequest{}
 	if positionID != nil {

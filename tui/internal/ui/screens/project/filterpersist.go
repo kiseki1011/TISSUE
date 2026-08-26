@@ -8,9 +8,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// initialFilter is the filter a freshly opened project starts with: the user's last-applied filter for
-// that project when one is saved (the transient search keyword is not stored), else the default
-// open-issues view.
+// initialFilter is the project's saved filter (the search keyword is not stored), else open issues.
 func initialFilter(d deps.Deps, key string) domain.IssueFilter {
 	if d.Config != nil {
 		if fs, ok := d.Config.ProjectFilter(d.Server, key); ok {
@@ -48,8 +46,7 @@ func filterState(f domain.IssueFilter) config.FilterState {
 	}
 }
 
-// rememberFilter persists the project's current filter (minus the transient keyword) so re-opening the
-// project - including after a restart - restores it. Best-effort, matching the app's other config saves.
+// rememberFilter persists the filter (minus the keyword) so re-opening the project restores it. Best-effort.
 func (m Model) rememberFilter() {
 	if m.deps.Config == nil {
 		return

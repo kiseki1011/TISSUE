@@ -7,9 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// IssueRef is a lightweight reference to a hierarchy-related issue (a parent or a child). The backend
-// identifies these by key + type + state only (there is no title on the identifier), so that is all it
-// carries; the Type colour lets the UI paint a chip like the list rows.
+// IssueRef mirrors the backend identifier, which carries no title. Only key, type, and state.
 type IssueRef struct {
 	Key           string
 	TypeName      string
@@ -18,8 +16,7 @@ type IssueRef struct {
 	StateCategory string // INITIAL | ACTIVE | COMPLETED | ABORTED
 }
 
-// AssignParent sets (or changes) the issue's parent to parentKey. The backend validates the hierarchy
-// (a parent must be exactly one level above the child) and rejects an ineligible pairing.
+// AssignParent sets the issue's parent. The backend requires the parent be exactly one level above.
 func (s *IssueService) AssignParent(ctx context.Context, issueKey, parentKey string) error {
 	resp, err := s.api.AssignIssueParentWithResponse(ctx, issueKey, client.AssignParentIssueRequest{ParentIssueKey: parentKey})
 	if err != nil {
@@ -28,7 +25,6 @@ func (s *IssueService) AssignParent(ctx context.Context, issueKey, parentKey str
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// RemoveParent detaches the issue from its current parent.
 func (s *IssueService) RemoveParent(ctx context.Context, issueKey string) error {
 	resp, err := s.api.RemoveIssueParentWithResponse(ctx, issueKey)
 	if err != nil {

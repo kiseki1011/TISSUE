@@ -24,7 +24,6 @@ func assignReady(t *testing.T) Model {
 	return m
 }
 
-// 'a' opens the assignee picker with Unassigned plus every member, cursor on the current assignee.
 func TestAssignPickerOpens(t *testing.T) {
 	m := assignReady(t)
 	m, cmd := m.Update(press("a"))
@@ -42,7 +41,6 @@ func TestAssignPickerOpens(t *testing.T) {
 	}
 }
 
-// Before the member list loads, 'a' reports it is loading rather than opening an empty picker.
 func TestAssignPickerNotLoaded(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(press("enter"))
@@ -56,8 +54,7 @@ func TestAssignPickerNotLoaded(t *testing.T) {
 	}
 }
 
-// Pressing 'a' before the detail loads must not open the picker (it would preselect Unassigned and let
-// an accidental Enter silently unassign an assigned issue). Regression: no detail-loaded guard.
+// Regression: without a detail-loaded guard the picker preselects Unassigned and a stray Enter unassigns.
 func TestAssignPickerWaitsForDetail(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(membersLoadedMsg{members: []domain.ProjectMember{{MemberID: 1, DisplayName: "Hong"}}})
@@ -71,8 +68,6 @@ func TestAssignPickerWaitsForDetail(t *testing.T) {
 	}
 }
 
-// The assignee picker is searchable: typing narrows it to matching members, and selecting the top
-// match assigns that member.
 func TestAssignPickerSearchFilters(t *testing.T) {
 	m := loaded(t, 120, 30, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(membersLoadedMsg{members: []domain.ProjectMember{
@@ -112,7 +107,7 @@ func TestAssignExecutes(t *testing.T) {
 func TestUnassignExecutes(t *testing.T) {
 	m := assignReady(t)
 	m, _ = m.Update(press("a"))
-	// cursor starts on member 2 (index 2); go up twice to the Unassigned row (index 0)
+	// cursor starts on member 2 (index 2), so go up twice to the Unassigned row (index 0)
 	m, _ = m.Update(press("up"))
 	m, _ = m.Update(press("up"))
 	sel, _ := m.picker.Selected()
@@ -139,7 +134,6 @@ func TestAssignDoneRefetches(t *testing.T) {
 	}
 }
 
-// Choosing an assignee updates the cached detail (and its row) at once, before the server confirms.
 func TestAssignIsOptimistic(t *testing.T) {
 	m := assignReady(t) // ENG-1 assigned to Kim (id 2)
 	m, _ = m.Update(press("a"))
@@ -153,8 +147,7 @@ func TestAssignIsOptimistic(t *testing.T) {
 	}
 }
 
-// A failed assign evicts the optimistic value so a fabricated assignee is never left on screen if the
-// reconciling refetch also fails; the refetch (skeleton, then truth) restores the real state.
+// A failed assign evicts the optimistic value so a fabricated assignee is never left on screen.
 func TestAssignErrorEvictsOptimistic(t *testing.T) {
 	m := assignReady(t) // ENG-1 assigned to Kim (id 2)
 	m, _ = m.Update(press("a"))
@@ -175,8 +168,7 @@ func TestAssignErrorEvictsOptimistic(t *testing.T) {
 	}
 }
 
-// An optimistic assign bumps the load generation so a still-in-flight earlier refetch cannot land and
-// clobber the optimistic assignee.
+// An optimistic assign bumps the load generation so an in-flight refetch cannot clobber it.
 func TestOptimisticBumpsGenGuard(t *testing.T) {
 	m := assignReady(t)
 	oldGen := m.detailGen[m.viewKey]
@@ -186,7 +178,6 @@ func TestOptimisticBumpsGenGuard(t *testing.T) {
 	if m.detailGen[m.viewKey] == oldGen {
 		t.Fatal("an optimistic assign should bump the detail generation")
 	}
-	// a refetch tagged with the old generation must be dropped, not applied
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: oldGen, detail: domain.IssueDetail{Key: m.viewKey, AssigneeName: "STALE"}})
 	if got := m.details[m.viewKey].AssigneeName; got != "Hong" {
 		t.Errorf("a stale (old-gen) refetch must not clobber the optimistic assignee, got %q", got)

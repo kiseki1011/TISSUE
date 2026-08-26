@@ -32,8 +32,8 @@ const (
 	ctCancel
 )
 
-// createTypeForm is the "New Issue Type" modal. Hierarchy and workflow are fixed at creation
-// (not editable afterward). The icon is not collected — the backend defaults it, unused in the TUI.
+// createTypeForm is the "New Issue Type" modal. Hierarchy and workflow are fixed at creation.
+// The icon is not collected: the backend defaults it and the TUI ignores it.
 type createTypeForm struct {
 	deps deps.Deps
 
@@ -316,9 +316,8 @@ func (f createTypeForm) View() string {
 	return components.TitledBoxCentered("New Issue Type", body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
-// scrolls to keep it visible. +2 = top border + the padding row above the body. ok=false while a
-// picker (colour grid or hierarchy/workflow dropdown) replaces the form.
+// FocusRow reports the focused row and height so a windowed modal can scroll it into view.
+// chromeTop 2 = top border + the padding row. ok=false while a picker replaces the form.
 func (f createTypeForm) FocusRow() (int, int, bool) {
 	if f.picking || f.pickOpen {
 		return 0, 0, false
@@ -344,9 +343,9 @@ func (f createTypeForm) FocusRow() (int, int, bool) {
 		line := nameH + colorH + hierH + wfH + descH
 		switch {
 		case f.submitting:
-			line++ // the saving spinner (a single line)
+			line++ // the saving spinner row
 		case f.status != "":
-			// this form width-constrains its error, so a long message wraps to >1 line — measure it
+			// the error is width-constrained here, so a long message wraps — measure it
 			line += lipgloss.Height(f.deps.Styles.Error.Width(editFieldW).Padding(0, 1).Render(f.status))
 		}
 		line++ // the blank row before the buttons

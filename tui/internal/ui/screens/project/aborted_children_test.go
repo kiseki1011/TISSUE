@@ -9,7 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// Aborted children sink below the active ones (so the active work reads first) and render struck-through.
+// Aborted children sink below the active ones so the active work reads first.
 func TestAbortedChildrenSinkAndMuted(t *testing.T) {
 	det := sampleDetail()
 	det.Children = []domain.IssueRef{
@@ -30,8 +30,7 @@ func TestAbortedChildrenSinkAndMuted(t *testing.T) {
 		t.Errorf("an aborted child should sink below the active ones, got aborted@%d before active@%d", iAborted, iActive)
 	}
 
-	// the aborted key is muted + struck through: build the same style and match its opening SGR (lipgloss
-	// combines strikethrough and foreground into one escape, so the reference must set both)
+	// lipgloss combines strikethrough and foreground into one escape, so the reference must set both
 	ref := lipgloss.NewStyle().Foreground(m.deps.Styles.Theme.Muted).Strikethrough(true).Render("x")
 	code := ref[:strings.IndexByte(ref, 'x')] // the opening escape, before the content
 	if !strings.Contains(raw, code) {

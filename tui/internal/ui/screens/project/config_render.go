@@ -14,8 +14,7 @@ import (
 
 const zoneConfigDetail = "project.config.detail"
 
-// configView is the Config tab: a single centered panel of the project's settings. An open edit form or
-// the archive confirmation floats over a dimmed copy, mirroring issuesView.
+// configView is the Config tab: a centered settings panel, with any form floating over a dimmed copy.
 func (m Model) configView() string {
 	base := m.configTab()
 	t := m.deps.Styles.Theme
@@ -29,7 +28,6 @@ func (m Model) configView() string {
 	return base
 }
 
-// configWidth uses the full inner width so the settings panel fills the tab horizontally.
 func (m Model) configWidth() int { return m.innerWidth() }
 
 func (m Model) configTab() string {
@@ -47,17 +45,14 @@ func (m Model) configScrollMax() int {
 	return max(0, lines-max(1, m.height-2-detailPadBottom))
 }
 
-// configColumnGap separates the two settings columns; configMinColumnW is the width below which a column
-// stops being readable and the two are stacked instead.
+// configMinColumnW is the width below which a column stops being readable and the two stack.
 const (
 	configColumnGap  = 4
 	configMinColumnW = 44
 )
 
-// configBody lays the project's settings out in two columns: what the project *is* on the left, and how it
-// connects to a repository on the right. The two are read for different reasons - the left when checking
-// the project, the right when an integration misbehaves - so keeping them side by side means neither is
-// buried under the other. A terminal too narrow to split stacks them instead.
+// configBody puts what the project is on the left and how it connects to a repository on the right:
+// they are read for different reasons. A terminal too narrow to split stacks them.
 func (m Model) configBody(w int) string {
 	s := m.deps.Styles
 	switch {
@@ -82,7 +77,7 @@ func (m Model) configBody(w int) string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, strings.Repeat(" ", configColumnGap), right)
 }
 
-// configGeneralRows is the left column: what the project is - its identity fields and description.
+// configGeneralRows is the left column: identity fields and description.
 func (m Model) configGeneralRows(w int) []string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -130,8 +125,7 @@ func (m Model) configGeneralRows(w int) []string {
 	return rows
 }
 
-// configVcsRows is the right column: how the project connects to a repository, then what that repository
-// has actually sent.
+// configVcsRows is the right column: the repository connection, then what it has sent.
 func (m Model) configVcsRows(w int) []string {
 	rows := m.githubSection(w)
 	if !m.githubLoaded || !m.github.Connected {
@@ -140,9 +134,8 @@ func (m Model) configVcsRows(w int) []string {
 	return append(rows, m.deliveriesSection(w)...)
 }
 
-// deliveriesSection lists recent inbound webhooks. It exists to answer "the push happened, so why is
-// nothing linked?", which is why a delivery that was deliberately ignored shows its reason as prominently
-// as a successful one shows its result. Absent for a non-manager, who may not read the log.
+// deliveriesSection answers "the push happened, so why is nothing linked?", which is why an ignored
+// delivery shows its reason as prominently as a successful one shows its result.
 func (m Model) deliveriesSection(w int) []string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -165,7 +158,6 @@ func (m Model) deliveriesSection(w int) []string {
 	return out
 }
 
-// deliveryHeadline is a delivery's first line: when it arrived, its event type, and a coloured outcome.
 func deliveryHeadline(s theme.Styles, d domain.WebhookDelivery, w int) string {
 	t := s.Theme
 	label, color := deliveryOutcome(t, d)
@@ -174,9 +166,8 @@ func deliveryHeadline(s theme.Styles, d domain.WebhookDelivery, w int) string {
 	return when + " " + event + "  " + lipgloss.NewStyle().Foreground(color).Render(label)
 }
 
-// deliveryOutcome maps a delivery status to how it should read. A deliberate skip is deliberately not an
-// error colour: ignoring an event Tissue does not act on is normal, and colouring it red would bury the
-// failures that do need attention.
+// deliveryOutcome maps a delivery status to how it reads. A deliberate skip is not an error colour:
+// ignoring an event Tissue does not act on is normal, and red would bury the real failures.
 func deliveryOutcome(t theme.Theme, d domain.WebhookDelivery) (string, color.Color) {
 	switch d.Status {
 	case "PROCESSED":
@@ -192,9 +183,7 @@ func deliveryOutcome(t theme.Theme, d domain.WebhookDelivery) (string, color.Col
 	}
 }
 
-// copyHint is the line under a copyable value: the key that copies it, plus a confirmation once it has
-// been copied. The key stays visible afterwards so the value can be copied again - a hint replaced by its
-// own confirmation would take the affordance away with it.
+// copyHint keeps the copy key visible after copying, so the value can be copied again.
 func copyHint(s theme.Styles, key, label string, copied bool) string {
 	hint := s.Muted.Render(key + ": " + label)
 	if copied {
@@ -203,10 +192,8 @@ func copyHint(s theme.Styles, key, label string, copied bool) string {
 	return hint
 }
 
-// githubSection renders the project's GitHub webhook integration: its connection and sync status, the
-// webhook URL to register in GitHub, a just-generated secret (shown once), a copy key beside each, and
-// the g/s/x action hints. When
-// the status could not load it reads unavailable rather than hiding the section silently.
+// githubSection renders the project's GitHub webhook integration. A status that could not load reads
+// as unavailable rather than hiding the section silently.
 func (m Model) githubSection(w int) []string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -234,8 +221,7 @@ func (m Model) githubSection(w int) []string {
 	out = append(out, statusRow(status), "",
 		lipgloss.NewStyle().Foreground(t.Muted).Render("Webhook URL"),
 		lipgloss.NewStyle().Foreground(t.Text).Width(w).Render(orDash(m.github.WebhookURL)))
-	// each copy hint sits under the value it copies rather than on the action line below: registering the
-	// integration in GitHub means pasting both, and a hint beside its value says which key takes which
+	// each hint sits under the value it copies, so it is clear which key takes which
 	if m.github.WebhookURL != "" {
 		out = append(out, copyHint(s, "u", "copy URL", m.githubURLCopied))
 	}

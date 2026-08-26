@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// createReady loads a project with one issue and a populated issue-type catalog, leaving focus on the
-// list, so the New issue form can open.
+// createReady loads a project with an issue-type catalog so the New issue form can open.
 func createReady(t *testing.T) Model {
 	t.Helper()
 	m := loaded(t, 170, 44, domain.IssuePage{
@@ -21,7 +20,6 @@ func createReady(t *testing.T) Model {
 	return m
 }
 
-// n opens the New issue form from the list; the form refuses until the type catalog has loaded.
 func TestCreateOpensFromKey(t *testing.T) {
 	m := createReady(t)
 	m, _ = m.Update(press("n"))
@@ -44,7 +42,6 @@ func TestCreateRequiresTypes(t *testing.T) {
 	}
 }
 
-// Clicking the +New button opens the form too.
 func TestNewButtonOpensCreate(t *testing.T) {
 	m := createReady(t)
 	click := clickZone(t, m, zoneNew)
@@ -54,7 +51,7 @@ func TestNewButtonOpensCreate(t *testing.T) {
 	}
 }
 
-// The form emits the entered values on submit, defaulting priority to P2 and carrying the selected type.
+// Priority defaults to P2.
 func TestCreateFormSubmitEmitsValues(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}})
 	f.title.SetValue("New thing")
@@ -72,7 +69,6 @@ func TestCreateFormSubmitEmitsValues(t *testing.T) {
 	}
 }
 
-// An empty title blocks submit and shows an error instead of emitting a create.
 func TestCreateFormEmptyTitleBlocks(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}})
 	f, _ = f.focusOn(nfCreate)
@@ -87,7 +83,6 @@ func TestCreateFormEmptyTitleBlocks(t *testing.T) {
 	}
 }
 
-// The left/right keys cycle the issue type.
 func TestCreateFormCyclesType(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}, {ID: 6, Name: "Bug"}})
 	f, _ = f.focusOn(nfType)
@@ -97,7 +92,6 @@ func TestCreateFormCyclesType(t *testing.T) {
 	}
 }
 
-// Submitting closes the form and fires the create command.
 func TestCreateSubmitClosesAndFires(t *testing.T) {
 	m := createReady(t)
 	m, _ = m.Update(press("n"))
@@ -111,7 +105,6 @@ func TestCreateSubmitClosesAndFires(t *testing.T) {
 	}
 }
 
-// A successful create reloads the list from the top; a failure leaves it untouched.
 func TestIssueCreatedReloadsList(t *testing.T) {
 	m := createReady(t)
 	gen := m.reqGen

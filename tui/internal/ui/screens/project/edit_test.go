@@ -28,7 +28,6 @@ func sampleDetail() domain.IssueDetail {
 	}
 }
 
-// 'e' opens the edit form prefilled from the loaded detail.
 func TestEditOpensPrefilled(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, cmd := m.Update(press("e"))
@@ -53,10 +52,9 @@ func TestEditOpensPrefilled(t *testing.T) {
 	}
 }
 
-// Pressing 'e' before the detail loads reports it is loading rather than opening an empty form.
 func TestEditWaitsForDetail(t *testing.T) {
 	m := loaded(t, 120, 44, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
-	m, _ = m.Update(press("enter")) // opens the modal but the detail is still loading (skeleton)
+	m, _ = m.Update(press("enter")) // the detail is still loading
 	m, cmd := m.Update(press("e"))
 	if m.editing {
 		t.Error("the edit form must not open before the detail loads")
@@ -66,7 +64,6 @@ func TestEditWaitsForDetail(t *testing.T) {
 	}
 }
 
-// Saving with nothing changed sends no request and reports "No changes".
 func TestEditNoChanges(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, _ = m.Update(press("e"))
@@ -83,7 +80,6 @@ func TestEditNoChanges(t *testing.T) {
 	}
 }
 
-// Saving a change updates the cached detail (and its list row) at once, before the server confirms.
 func TestEditIsOptimistic(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	oldGen := m.detailGen[m.viewKey]
@@ -150,7 +146,6 @@ func TestEditDoneError(t *testing.T) {
 	}
 }
 
-// esc from the edit form returns to the detail modal without closing it.
 func TestEditCancel(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, _ = m.Update(press("e"))
@@ -188,7 +183,6 @@ func TestDiffEditClearsDue(t *testing.T) {
 	}
 }
 
-// Priority cycles with left/right when the priority row is focused.
 func TestEditPriorityCycles(t *testing.T) {
 	f := newEditForm(testDeps(), domain.IssueDetail{Priority: "P2"}, false)
 	f, _ = f.focusOn(efPriority)
@@ -203,7 +197,6 @@ func TestEditPriorityCycles(t *testing.T) {
 	}
 }
 
-// Submitting an empty title keeps the form open with an error rather than sending the edit.
 func TestEditTitleRequired(t *testing.T) {
 	f := newEditForm(testDeps(), domain.IssueDetail{Title: "X", Priority: "P2"}, false)
 	f.title.SetValue("")
@@ -213,8 +206,7 @@ func TestEditTitleRequired(t *testing.T) {
 	}
 }
 
-// An issue with no due date opens with the Due field unset (not formatDate's "-"), and the edit still
-// submits. Regression for the HIGH finding, carried across the picker migration.
+// Regression: a due-less issue opened with formatDate's "-" in the Due field.
 func TestEditNoDuePrefillEmpty(t *testing.T) {
 	m := editReady(t, domain.IssueDetail{Title: "X", Priority: "P2"}) // no due date
 	m, _ = m.Update(press("e"))
@@ -227,8 +219,7 @@ func TestEditNoDuePrefillEmpty(t *testing.T) {
 	}
 }
 
-// The save diffs against the snapshot the form opened with, so a background refetch that changed an
-// untouched field mid-edit is not reverted. Regression for the MEDIUM finding.
+// Regression: the save must diff against the open-time snapshot, not a mid-edit refetch.
 func TestEditDiffAgainstOpenSnapshot(t *testing.T) {
 	m := editReady(t, sampleDetail()) // priority P2
 	m, _ = m.Update(press("e"))       // editBase = the P2 snapshot
@@ -238,7 +229,7 @@ func TestEditDiffAgainstOpenSnapshot(t *testing.T) {
 		Key: m.viewKey, Title: "Fix login", Summary: "short", Content: "# body", Priority: "P0",
 		DueAt: sampleDetail().DueAt,
 	}})
-	// the user changed only the title; the form still holds the open-time priority (P2)
+	// only the title changed, the form still holds the open-time P2
 	m, _ = m.Update(editSubmittedMsg{v: editValues{
 		title: "Renamed", priority: "P2", dueAt: sampleDetail().DueAt,
 	}})
@@ -250,8 +241,7 @@ func TestEditDiffAgainstOpenSnapshot(t *testing.T) {
 	}
 }
 
-// Opening and saving an unchanged issue whose stored title has surrounding whitespace is not an
-// edit (the save trims, and the diff compares trimmed). Regression for the LOW trim finding.
+// Regression: a stored title with surrounding whitespace read as an edit (the diff compares trimmed).
 func TestEditTrimNoSpuriousDiff(t *testing.T) {
 	orig := domain.IssueDetail{Title: " Fix ", Content: "# body", Priority: "P2"}
 	edit := diffEdit(orig, editValues{title: "Fix", priority: "P2"})
@@ -260,8 +250,7 @@ func TestEditTrimNoSpuriousDiff(t *testing.T) {
 	}
 }
 
-// The Due field is set from the calendar, not typed: setDue records a pick, and clearing it (set=false)
-// drops the due date so the save clears it.
+// Due is set from the calendar, not typed. set=false clears it.
 func TestEditDueSetAndClear(t *testing.T) {
 	f := newEditForm(testDeps(), domain.IssueDetail{Title: "X", Priority: "P2"}, false)
 	f = f.setDue(time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC), true)

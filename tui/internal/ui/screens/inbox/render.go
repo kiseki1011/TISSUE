@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	rowHeight = 1 // each notification is one line
+	rowHeight = 1
 	hInset    = 2 // left/right padding, so the feed lines up with the other tabs
 	colGap    = 1 // the blank column between the list and detail panes
 
@@ -78,8 +78,7 @@ func (m Model) layout() layoutKind {
 func (m Model) stackWidth() int   { return clamp(m.width-2*hInset, 24, 84) }
 func (m Model) stackDetailH() int { return clamp(m.height*45/100, 8, m.height-6) }
 
-// panelWidths splits the usable width 1:1 between the list and the detail pane (the detail takes the
-// odd cell), so the two panes stay balanced.
+// panelWidths splits the usable width 1:1, the detail pane taking the odd cell.
 func (m Model) panelWidths() (int, int) {
 	usable := m.width - 2*hInset - colGap
 	left := usable / 2
@@ -226,8 +225,7 @@ func fmtWhen(n domain.Notification) string {
 	return n.CreatedAt.Local().Format("2006-01-02 15:04") + " (" + components.HumanizeSince(n.CreatedAt) + " ago)"
 }
 
-// hoverBand is the subtle background band a mouse-hovered row gets, dimmer than the selection. On the
-// ANSI theme (no real background to dim) it tints the text instead. Mirrors the agents tab.
+// hoverBand bands a mouse-hovered row. The ANSI theme has no background to dim, so it tints text.
 func (m Model) hoverBand() lipgloss.Style {
 	t := m.deps.Styles.Theme
 	if _, noBg := t.Background.(lipgloss.NoColor); noBg {
@@ -258,8 +256,8 @@ func listTop(cursor, visible, n int) int {
 	return top
 }
 
-// fit clips s to exactly w cells on a single line. lipgloss Width() word-WRAPS an over-long string
-// into extra rows, which would break the one-line-per-notification layout, so FitLine truncates first.
+// fit clips s to exactly w cells. lipgloss Width() word-wraps an over-long string into extra rows,
+// breaking the one-line-per-notification layout.
 func fit(s string, w int) string {
 	return components.FitLine(s, w)
 }

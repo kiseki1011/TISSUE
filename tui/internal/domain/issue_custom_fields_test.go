@@ -16,8 +16,7 @@ func cf(label, ftype string, value interface{}, opts ...client.FieldOptionDetail
 	return c
 }
 
-// Scalar types map to the display Text: strings pass through, INTEGER stringifies (JSON numbers arrive
-// as float64), DECIMAL/DATE are already display-ready strings from the backend.
+// JSON numbers arrive as float64, so INTEGER must stringify.
 func TestCustomFieldScalars(t *testing.T) {
 	cases := []struct {
 		ftype string

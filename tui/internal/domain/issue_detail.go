@@ -10,9 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// IssueDetail is the read model behind the issue detail modal, mapped from the detail BFF's Common
-// block plus a couple of relationship counts. Comments, relations, custom fields, and the available
-// transitions ride along in the same BFF response but are mapped in later slices.
+// IssueDetail is the read model behind the issue detail modal, from the single detail BFF response.
 type IssueDetail struct {
 	Key              string
 	Title            string
@@ -26,12 +24,12 @@ type IssueDetail struct {
 	AssigneeID       int64  // 0 when unassigned
 	AssigneeName     string
 	AuthorName       string
-	Parent           *IssueRef     // the parent issue (key/type/state), nil when the issue has no parent
-	Children         []IssueRef    // child issues (key/type/state), from the detail BFF
-	Reviewers        []Reviewer    // reviewers with their review status, from the detail BFF
-	CustomFields     []CustomField // the issue type's custom fields with their values, from the detail BFF
+	Parent           *IssueRef // nil when the issue has no parent
+	Children         []IssueRef
+	Reviewers        []Reviewer
+	CustomFields     []CustomField
 	StoryPoint       int
-	CanUseStoryPoint bool // the issue type permits a story point (some types disallow it); gates the edit field
+	CanUseStoryPoint bool // the issue type permits a story point, gates the edit field
 	Progress         int  // count-based progress percentage
 	CreatedAt        time.Time
 	LastUpdatedAt    time.Time
@@ -40,19 +38,18 @@ type IssueDetail struct {
 	ResolvedAt       time.Time
 	Transitions      []IssueTransition
 
-	Comments        []IssueComment // the first page of comments, from the detail BFF
+	Comments        []IssueComment // only the first page
 	CommentCount    int            // total comments across all pages
-	CommentsHasMore bool           // more comment pages exist beyond the ones carried here
+	CommentsHasMore bool
 
-	Relations []IssueRelationGroup // linked issues grouped by relation kind, from the detail BFF
+	Relations []IssueRelationGroup // linked issues grouped by relation kind
 
-	Branches     []IssueBranch      // VCS branches linked to the issue (from push webhooks), read-only
-	PullRequests []IssuePullRequest // pull requests linked to the issue (from PR webhooks), read-only
+	Branches     []IssueBranch      // linked by push webhooks, read-only
+	PullRequests []IssuePullRequest // linked by PR webhooks, read-only
 }
 
-// IssueBranch is a VCS branch linked to the issue, surfaced read-only on the detail. The URLs are
-// ready-to-open links (from the server), so the UI can deep-link to the repository. Commit fields are
-// empty until a push has been seen.
+// IssueBranch is a VCS branch linked to the issue, read-only. The URLs arrive ready to open.
+// Commit fields are empty until a push has been seen.
 type IssueBranch struct {
 	RepoURL          string
 	BranchName       string
@@ -64,8 +61,7 @@ type IssueBranch struct {
 	PushedAt         time.Time
 }
 
-// IssuePullRequest is a pull request linked to the issue, surfaced read-only on the detail. Held as
-// current state rather than history, so State is what the PR is now - not the last event seen.
+// IssuePullRequest holds the PR's current state, not its event history.
 type IssuePullRequest struct {
 	Number      int
 	Title       string
@@ -75,17 +71,14 @@ type IssuePullRequest struct {
 	LastEventAt time.Time
 }
 
-// IssueTransition is one workflow move available from the issue's current state. A blocked transition
-// (CanExecute false) carries the guard reasons so the UI can explain why it cannot run.
+// IssueTransition is one workflow move. A blocked one (CanExecute false) carries the guard reasons.
 type IssueTransition struct {
 	ID             int64
 	Label          string
 	TargetLabel    string
 	TargetCategory string // INITIAL | ACTIVE | COMPLETED | ABORTED
 	CanExecute     bool
-	// BlockedReasons is every guard the issue currently fails for this move, in the order the server
-	// evaluated them. The server collects them all rather than stopping at the first, so the picker can
-	// list the full set of conditions instead of sending the user round one at a time.
+	// BlockedReasons is every guard the issue fails, in server evaluation order, not just the first.
 	BlockedReasons []string
 }
 
@@ -215,7 +208,6 @@ func toIssueDetail(v *client.IssueDetailView) IssueDetail {
 	return d
 }
 
-// PerformTransition executes a workflow transition on an issue, moving it to the transition's target state.
 func (s *IssueService) PerformTransition(ctx context.Context, issueKey string, transitionID int64) error {
 	resp, err := s.api.PerformIssueTransitionWithResponse(ctx, issueKey,
 		client.PerformTransitionRequest{TransitionId: transitionID})
@@ -225,8 +217,8 @@ func (s *IssueService) PerformTransition(ctx context.Context, issueKey string, t
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// IssueEdit is a partial edit of an issue's common fields. Each pointer is nil when the field was not
-// changed, so only touched fields are sent (a PATCH). ClearDue set (with a nil DueAt) clears the due date.
+// IssueEdit is a partial edit of an issue's common fields. A nil pointer means untouched, so only
+// changed fields are sent. ClearDue (with a nil DueAt) clears the due date.
 type IssueEdit struct {
 	Title    *string
 	Summary  *string
@@ -234,11 +226,9 @@ type IssueEdit struct {
 	Priority *string
 	DueAt    *time.Time
 	ClearDue bool
-	// StoryPoint is set via a separate endpoint (not the common-fields PATCH): nil leaves it unchanged, a
-	// non-nil value sets it (0 unsets it, sent explicitly since the wire field is a pointer to 0).
+	// StoryPoint rides its own endpoint. nil leaves it unchanged, 0 unsets it and is sent explicitly.
 	StoryPoint *int
-	// CustomFields likewise rides its own endpoint, keyed by field id: only changed fields appear, and a
-	// nil value clears one. Empty (or nil) means no custom field changed.
+	// CustomFields also rides its own endpoint, keyed by field id. A nil value clears one.
 	CustomFields map[string]interface{}
 }
 
@@ -247,8 +237,7 @@ func (e IssueEdit) Empty() bool {
 	return !e.HasCommonFields() && e.StoryPoint == nil && len(e.CustomFields) == 0
 }
 
-// HasCommonFields reports whether any field handled by the common-fields PATCH changed (story point is
-// excluded — it has its own endpoint), so the caller can skip that request when only the point changed.
+// HasCommonFields excludes the story point, which has its own endpoint.
 func (e IssueEdit) HasCommonFields() bool {
 	return e.Title != nil || e.Summary != nil || e.Content != nil || e.Priority != nil ||
 		e.DueAt != nil || e.ClearDue
@@ -263,8 +252,7 @@ func (s *IssueService) UpdateIssueCommonFields(ctx context.Context, issueKey str
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// UpdateIssueStoryPoint sets an issue's story point via its dedicated endpoint. A value of 0 unsets it;
-// the wire field is a pointer so 0 is sent explicitly rather than omitted.
+// UpdateIssueStoryPoint uses a dedicated endpoint. 0 unsets it and is sent explicitly, not omitted.
 func (s *IssueService) UpdateIssueStoryPoint(ctx context.Context, issueKey string, storyPoint int) error {
 	sp := int32(storyPoint)
 	resp, err := s.api.UpdateIssueStoryPointWithResponse(ctx, issueKey, client.UpdateStoryPointRequest{StoryPoint: &sp})
@@ -274,9 +262,8 @@ func (s *IssueService) UpdateIssueStoryPoint(ctx context.Context, issueKey strin
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// UpdateIssueCustomFields patches an issue's custom field values. The server merges the map into the
-// existing values, so only the fields that changed need to be sent; a nil value clears one (which the
-// server rejects for a required field).
+// UpdateIssueCustomFields sends only changed fields. The server merges them into the existing values.
+// A nil value clears a field, which the server rejects when it is required.
 func (s *IssueService) UpdateIssueCustomFields(
 	ctx context.Context, issueKey string, values map[string]interface{},
 ) error {
@@ -288,8 +275,7 @@ func (s *IssueService) UpdateIssueCustomFields(
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// toUpdateCommonBody maps an edit to the PATCH body: a field is left unspecified (omitted) unless the
-// edit touched it, and a cleared due date is sent as an explicit null.
+// toUpdateCommonBody omits untouched fields and sends a cleared due date as an explicit null.
 func toUpdateCommonBody(e IssueEdit) client.UpdateCommonFieldsRequest {
 	var body client.UpdateCommonFieldsRequest
 	if e.Title != nil {
@@ -313,7 +299,6 @@ func toUpdateCommonBody(e IssueEdit) client.UpdateCommonFieldsRequest {
 	return body
 }
 
-// AssignIssue sets an issue's assignee to the given member.
 func (s *IssueService) AssignIssue(ctx context.Context, issueKey string, memberID int64) error {
 	resp, err := s.api.AssignIssueWithResponse(ctx, issueKey, memberID)
 	if err != nil {
@@ -322,8 +307,7 @@ func (s *IssueService) AssignIssue(ctx context.Context, issueKey string, memberI
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// DeleteIssue soft-deletes an issue into the project's trash, from where it can be restored. The TUI
-// has no trash screen yet, so from here the delete looks final even though the server keeps the row.
+// DeleteIssue soft-deletes into the project's trash. The TUI has no trash screen, so it looks final.
 func (s *IssueService) DeleteIssue(ctx context.Context, issueKey string) error {
 	resp, err := s.api.DeleteIssueWithResponse(ctx, issueKey)
 	if err != nil {
@@ -332,7 +316,6 @@ func (s *IssueService) DeleteIssue(ctx context.Context, issueKey string) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// UnassignIssue clears an issue's assignee.
 func (s *IssueService) UnassignIssue(ctx context.Context, issueKey string) error {
 	resp, err := s.api.UnassignIssueWithResponse(ctx, issueKey)
 	if err != nil {

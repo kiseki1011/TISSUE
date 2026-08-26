@@ -14,30 +14,26 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// PickerOption is one selectable row of a ListPicker: Value is applied on select, Label is shown, and
-// Lead is optional pre-rendered decoration before the label, such as a color swatch. Color, when set,
-// overrides the label's foreground (e.g. a destructive "Unassigned" shown in the error color).
+// PickerOption is one selectable row: Value is applied on select, Label is shown, Lead is optional
+// decoration before it. Color overrides the label's foreground (a destructive option in the error color).
 type PickerOption struct {
 	Value string
 	Label string
 	Lead  string
 	Color color.Color
-	// Notes are caveats printed under the label in the theme's warning color - what stands between the
-	// user and this option (the guards a blocked workflow transition fails). They are part of the row:
-	// a click anywhere in the block still selects the option, and long notes wrap rather than truncate.
+	// Notes are caveats printed under the label (the guards a blocked transition fails). They belong to
+	// the row: a click on a note still selects the option, and long notes wrap rather than truncate.
 	Notes []string
 }
 
-// ListPicker is a single-select dropdown, the list counterpart to ColorPicker (used inside a modal
-// to choose one value instead of cycling with ←/→). Cursor is exported so a host's click handler
-// can set it directly after a HitOption. When searchable, a "> " filter line sits above the rows and
-// narrows them by a case-insensitive substring match.
+// ListPicker is a single-select dropdown, the list counterpart to ColorPicker. Cursor is exported for a
+// host's click handler. When searchable, a "> " line narrows the rows by case-insensitive substring.
 type ListPicker struct {
 	title      string
 	all        []PickerOption // the full option set (searchable filters this into options)
 	options    []PickerOption // the currently shown (filtered) options
 	Cursor     int
-	maxRows    int // a budget of body lines; without notes that is one option per line, as before
+	maxRows    int // a budget of body lines, one option per line when there are no notes
 	width      int
 	searchable bool
 	search     textinput.Model
@@ -50,8 +46,7 @@ func NewListPicker(title string, opts []PickerOption, current string, maxRows, w
 	return p
 }
 
-// NewSearchableListPicker is a ListPicker with a "> " filter line, for a long option set (project
-// members). Typing narrows the list; arrows navigate the matches.
+// NewSearchableListPicker adds a "> " filter line, for a long option set such as project members.
 func NewSearchableListPicker(title string, opts []PickerOption, current string, maxRows, width int) ListPicker {
 	ti := textinput.New()
 	ti.Prompt = "> "
@@ -63,8 +58,7 @@ func NewSearchableListPicker(title string, opts []PickerOption, current string, 
 	return p
 }
 
-// NewMultiListPicker is a searchable multi-select: space toggles the row under the cursor (tracked in a
-// checked set), enter confirms the whole selection via Selections(). preChecked seeds the initial set.
+// NewMultiListPicker is a searchable multi-select: space toggles a row, enter confirms Selections().
 func NewMultiListPicker(title string, opts []PickerOption, preChecked []string, maxRows, width int) ListPicker {
 	ti := textinput.New()
 	ti.Prompt = "> "
@@ -79,11 +73,9 @@ func NewMultiListPicker(title string, opts []PickerOption, preChecked []string, 
 	return p
 }
 
-// Multi reports whether this is a multi-select picker (space toggles rows, enter confirms Selections).
 func (p ListPicker) Multi() bool { return p.checked != nil }
 
-// Toggle flips the checked state of the option under the cursor. It copies the checked set so the
-// value-receiver returns an independent picker (Elm semantics); a no-op on a single-select picker.
+// Toggle flips the option under the cursor, copying the checked set so the returned picker is its own.
 func (p ListPicker) Toggle() ListPicker {
 	o, ok := p.Selected()
 	if p.checked == nil || !ok {
@@ -98,9 +90,8 @@ func (p ListPicker) Toggle() ListPicker {
 	return p
 }
 
-// Selections are the checked option values, the in-option ones first in the picker's defined order; nil
-// on a single-select picker. A checked value with no matching option (e.g. pre-checked but absent from
-// the option set) is still returned, so a multi-select never silently drops a selection it cannot render.
+// Selections are the checked values, in-option ones first in the picker's order. A checked value with no
+// matching option is still returned, so a multi-select never drops a selection it cannot render.
 func (p ListPicker) Selections() []string {
 	if p.checked == nil {
 		return nil
@@ -139,8 +130,7 @@ func (p ListPicker) Move(delta int) ListPicker {
 	return p
 }
 
-// Filter feeds a key to the search box and re-narrows the options. The cursor returns to the top
-// match. A no-op on a non-searchable picker.
+// Filter feeds a key to the search box and re-narrows the options, cursor back to the top match.
 func (p ListPicker) Filter(msg tea.KeyPressMsg) ListPicker {
 	if !p.searchable {
 		return p
@@ -184,11 +174,9 @@ func (p ListPicker) top() int {
 }
 
 const (
-	// noteIndent is the columns a note is inset by, lining it up under the label rather than the cursor
-	// marker, so the notes read as belonging to the row above them.
+	// noteIndent lines a note up under the label rather than under the cursor marker.
 	noteIndent = 4
-	// maxNoteRows caps one option's notes so a single pathological message cannot fill the box. The
-	// window budget bounds the options it shows, but the option under the cursor is always drawn whole.
+	// maxNoteRows caps one option's notes so a pathological message cannot fill the box.
 	maxNoteRows = 8
 )
 
@@ -205,17 +193,15 @@ func (p ListPicker) HitOption(msg tea.MouseMsg) int {
 	return -1
 }
 
-// noteRows are an option's notes wrapped to the box width, one entry per line that will be drawn. It is
-// the single source of an option's height, so what View renders and what the scroll maths budgeted for
-// can never drift apart.
+// noteRows wraps an option's notes, one entry per drawn line. It is the single source of an option's
+// height, so View and the window budget cannot drift apart.
 func (p ListPicker) noteRows(o PickerOption) []string {
 	if len(o.Notes) == 0 {
 		return nil
 	}
 	var out []string
 	for _, note := range o.Notes {
-		// a note is server text, so flatten it before wrapping rather than letting a stray newline
-		// smuggle in a row nobody counted
+		// server text: flatten before wrapping, or a stray newline smuggles in an uncounted row
 		for _, line := range wrapNote(components.Flatten(note), max(1, p.width-noteIndent)) {
 			if len(out) == maxNoteRows {
 				out[len(out)-1] += "…"
@@ -227,8 +213,7 @@ func (p ListPicker) noteRows(o PickerOption) []string {
 	return out
 }
 
-// wrapNote breaks a note onto lines no wider than w. The trailing pad lipgloss adds is stripped so the
-// caller can color the text without painting a warning-colored bar across the empty right side.
+// wrapNote breaks a note to w, stripping lipgloss's trailing pad so the color paints no bar to the right.
 func wrapNote(s string, w int) []string {
 	lines := strings.Split(lipgloss.NewStyle().Width(w).Render(s), "\n")
 	for i, line := range lines {
@@ -237,8 +222,7 @@ func wrapNote(s string, w int) []string {
 	return lines
 }
 
-// hasNotes reports whether any shown option carries notes, which is what decides between the plain
-// one-line-per-option layout and the taller one.
+// hasNotes decides between the plain one-line-per-option layout and the taller one.
 func (p ListPicker) hasNotes() bool {
 	for _, o := range p.options {
 		if len(o.Notes) > 0 {
@@ -248,9 +232,8 @@ func (p ListPicker) hasNotes() bool {
 	return false
 }
 
-// noteRowsFor is an option's note rows bounded by the line budget. window() always draws the option
-// under the cursor whole, so without this one heavily-annotated option could push the box past the
-// height its host floated it into - exactly what the budget exists to prevent.
+// noteRowsFor bounds an option's notes by the line budget. window() draws the cursor's option whole, so
+// without this one heavily-annotated option would push the box past the height its host allowed.
 func (p ListPicker) noteRowsFor(i int) []string {
 	rows := p.noteRows(p.options[i])
 	limit := max(0, p.maxRows-1)
@@ -266,10 +249,8 @@ func (p ListPicker) noteRowsFor(i int) []string {
 
 func (p ListPicker) optionHeight(i int) int { return 1 + len(p.noteRowsFor(i)) }
 
-// window is the run of options View draws and HitOption tests, as (top, count). Without notes an option
-// is one line and this is the old min(maxRows, n) window unchanged. With notes it grows outward from the
-// cursor until the next option would not fit the line budget, so the highlighted row stays on screen and
-// the box stays inside the frame it is floated over.
+// window is the run of options View draws and HitOption tests, as (top, count). Without notes it is a
+// plain min(maxRows, n). With notes it grows outward from the cursor until the line budget is spent.
 func (p ListPicker) window() (int, int) {
 	n := len(p.options)
 	if n == 0 {

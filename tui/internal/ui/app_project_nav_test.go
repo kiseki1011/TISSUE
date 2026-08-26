@@ -25,8 +25,7 @@ func projectNavApp(t *testing.T) App {
 	return a
 }
 
-// Options and help open from the project drill-in (it wears chrome), even though it is not a top-level
-// tab - the tab-switch digits stay reserved for the project's own 1-4 sub-tabs.
+// Options and help open from the drill-in, but the tab digits stay reserved for its own 1-4 sub-tabs.
 func TestProjectScreenOpensOptionsAndHelp(t *testing.T) {
 	a := projectNavApp(t)
 	if !a.optionsNavActive() {
@@ -43,8 +42,7 @@ func TestProjectScreenOpensOptionsAndHelp(t *testing.T) {
 	if app.modal == nil {
 		t.Fatal("? did not open the help modal on the project screen")
 	}
-	// The drill-in names its help after the project ("{project} · Help"), not the bare "Help · Help" the
-	// default title produced before the screen implemented describer.
+	// the drill-in names its help after the project, not the "Help · Help" default
 	view := stripCSI(app.modal.View())
 	if !strings.Contains(view, "Engineering") {
 		t.Errorf("project help modal title is not the project name:\n%s", view)
@@ -54,8 +52,7 @@ func TestProjectScreenOpensOptionsAndHelp(t *testing.T) {
 	}
 }
 
-// The project drill-in's footer top line carries its sub-tab switch + reload and the options/help hints,
-// but not the app's own 1/2/3 tab switch (whose digits belong to the project's sub-tabs here).
+// The drill-in's footer top line carries its own nav, but not the app's 1/2/3 (its digits are taken).
 func TestProjectScreenGlobalFooter(t *testing.T) {
 	a := projectNavApp(t)
 	descs := map[string]bool{}

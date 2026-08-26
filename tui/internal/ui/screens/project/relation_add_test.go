@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
-// relationReady loads a detail on the viewed issue, with an existing "Blocks" link to ENG-9, so the add
-// flow has both a source and an already-linked issue to exclude.
+// relationReady seeds a detail with an existing "Blocks" link to ENG-9, for the exclusion cases.
 func relationReady(t *testing.T) Model {
 	t.Helper()
 	m := editReady(t, domain.IssueDetail{
@@ -22,7 +21,6 @@ func relationReady(t *testing.T) Model {
 	return m
 }
 
-// L opens the relation type picker with the four forward types.
 func TestRelationTypePickerOpens(t *testing.T) {
 	m := relationReady(t)
 	m, _ = m.Update(press("L"))
@@ -37,7 +35,6 @@ func TestRelationTypePickerOpens(t *testing.T) {
 	}
 }
 
-// Choosing a type records it and kicks off the target-candidate load (a fresh generation + a command).
 func TestRelationTypeSelectionLoadsCandidates(t *testing.T) {
 	m := relationReady(t)
 	m, _ = m.Update(press("L"))
@@ -57,8 +54,7 @@ func TestRelationTypeSelectionLoadsCandidates(t *testing.T) {
 	}
 }
 
-// The target picker excludes the viewed issue itself and any already-linked issue, so an obvious 400 is
-// avoided.
+// Excluding self and already-linked issues avoids an obvious 400.
 func TestRelationCandidatesExcludeSelfAndLinked(t *testing.T) {
 	m := relationReady(t)
 	m.relPendingType = domain.RelationBlocks
@@ -85,7 +81,6 @@ func TestRelationCandidatesExcludeSelfAndLinked(t *testing.T) {
 	}
 }
 
-// A stale candidate load (an earlier generation) is dropped, so a superseded request cannot pop a picker.
 func TestRelationCandidatesStaleDropped(t *testing.T) {
 	m := relationReady(t)
 	m.relGen = 7
@@ -95,7 +90,6 @@ func TestRelationCandidatesStaleDropped(t *testing.T) {
 	}
 }
 
-// Picking a target closes the picker and fires the add; a successful result refetches the detail.
 func TestRelationTargetAddsAndRefetches(t *testing.T) {
 	m := relationReady(t)
 	m.relPendingType = domain.RelationBlocks
@@ -110,15 +104,13 @@ func TestRelationTargetAddsAndRefetches(t *testing.T) {
 		t.Fatal("selecting a target should fire the add command")
 	}
 
-	// the add result refetches the source detail
 	m2, cmd2 := m.Update(relationDoneMsg{key: "ENG-1", err: false})
 	if !m2.detailsPending["ENG-1"] || cmd2 == nil {
 		t.Error("a successful relation add should refetch the source detail")
 	}
 }
 
-// A failed relation add surfaces the server's specific reason (duplicate / cycle / self-link) through
-// errmsg, and a transport error reads as connectivity - the command resolves errText this way.
+// The add command resolves errText via errmsg: the server's reason, or connectivity for a transport error.
 func TestRelationAddErrorText(t *testing.T) {
 	dup := &domain.APIError{Status: 400, Detail: "A relation already exists between these two issues"}
 	if got := errmsg.Message(dup, "Could not add the relation."); !strings.Contains(got, "already exists") {
@@ -129,9 +121,7 @@ func TestRelationAddErrorText(t *testing.T) {
 	}
 }
 
-// The relation always lands on the issue the flow started from, even if the list cursor repoints m.viewKey
-// while the target candidates are loading (adversarial review HIGH: silent wrong-source add). The stale
-// candidate load is also dropped once the source no longer matches.
+// Guards a silent wrong-source add when the cursor repoints m.viewKey mid-load.
 func TestRelationHonorsSourceAcrossCursorMove(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: []domain.IssueSummary{
 		{Key: "ENG-1", Title: "A", StateCategory: "ACTIVE"},
@@ -139,12 +129,11 @@ func TestRelationHonorsSourceAcrossCursorMove(t *testing.T) {
 	}, TotalElements: 2})
 	m.details["ENG-1"] = domain.IssueDetail{Key: "ENG-1", Title: "A"}
 	m.details["ENG-2"] = domain.IssueDetail{Key: "ENG-2", Title: "B"}
-	// stay on the list focus (cursor 0 -> viewKey ENG-1) so a later "down" moves the cursor rather than
-	// scrolling the focused Details panel
+	// stay on the list focus so a later "down" moves the cursor instead of scrolling Details
 
 	m, _ = m.Update(press("L")) // relation type picker on ENG-1
 	source := m.viewKey         // ENG-1
-	m, cmd := m.pickSelect()    // choose "Relates to"; fires the candidate load carrying source
+	m, cmd := m.pickSelect()    // choose "Relates to", firing the candidate load
 	if m.relSource != source || cmd == nil {
 		t.Fatalf("selecting a type should capture the source: relSource=%q", m.relSource)
 	}

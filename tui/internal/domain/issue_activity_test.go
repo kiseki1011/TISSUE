@@ -6,7 +6,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// The cursor page maps into activity entries: metadata, actor, and per-field changes sorted by field.
 func TestToActivityPage(t *testing.T) {
 	page := &client.CursorPageActivityLogResponse{
 		HasNext: ptr(true),

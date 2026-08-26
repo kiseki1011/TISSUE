@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// NotificationService is the caller's personal notification inbox. Notifications are member-scoped
-// (not per project), cursor-paginated, and newest first.
+// NotificationService is the caller's inbox. Notifications are member-scoped, not per project.
 type NotificationService struct {
 	api *client.ClientWithResponses
 }
@@ -17,10 +16,8 @@ func NewNotificationService(api *client.ClientWithResponses) *NotificationServic
 	return &NotificationService{api: api}
 }
 
-// List returns one cursor page of the caller's notifications. An empty cursor fetches the first
-// (newest) page; unreadOnly limits the page to unread items; mentionsOnly limits it to @mention
-// notifications (server-side type filter), so infinite scroll stays correct rather than paging over a
-// client-filtered view.
+// List returns one cursor page. An empty cursor fetches the newest page.
+// unreadOnly and mentionsOnly filter server-side, so infinite scroll stays correct.
 func (s *NotificationService) List(ctx context.Context, unreadOnly, mentionsOnly bool, cursor string, limit int) (NotificationPage, error) {
 	params := &client.ListNotificationsParams{}
 	if unreadOnly {
@@ -46,8 +43,7 @@ func (s *NotificationService) List(ctx context.Context, unreadOnly, mentionsOnly
 	return toNotificationPage(resp.JSON200), nil
 }
 
-// HasUnread reports whether the caller has any unread notification, driving the Inbox tab's unread
-// badge. The endpoint returns only a boolean (no count), so the badge is a dot, not a number.
+// HasUnread drives the Inbox badge. The endpoint returns a boolean, no count, so the badge is a dot.
 func (s *NotificationService) HasUnread(ctx context.Context) (bool, error) {
 	resp, err := s.api.CheckNotificationUnreadStatusWithResponse(ctx)
 	if err != nil {
@@ -68,7 +64,6 @@ func (s *NotificationService) MarkRead(ctx context.Context, id int64) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// MarkAllRead marks every one of the caller's notifications read.
 func (s *NotificationService) MarkAllRead(ctx context.Context) error {
 	resp, err := s.api.ReadAllNotificationsWithResponse(ctx)
 	if err != nil {
@@ -77,8 +72,7 @@ func (s *NotificationService) MarkAllRead(ctx context.Context) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// GetPreferences returns the caller's per-type delivery preferences (one row per type × channel,
-// defaulting to enabled).
+// GetPreferences returns the caller's delivery preferences, one row per type × channel.
 func (s *NotificationService) GetPreferences(ctx context.Context) ([]NotificationPref, error) {
 	resp, err := s.api.GetNotificationPreferencesWithResponse(ctx)
 	if err != nil {
@@ -94,7 +88,6 @@ func (s *NotificationService) GetPreferences(ctx context.Context) ([]Notificatio
 	return out, nil
 }
 
-// UpdatePreference sets whether a notification type is delivered over a channel.
 func (s *NotificationService) UpdatePreference(ctx context.Context, notifType, channel string, enabled bool) error {
 	body := client.UpdateNotificationPreferenceRequest{
 		Type:    client.UpdateNotificationPreferenceRequestType(notifType),

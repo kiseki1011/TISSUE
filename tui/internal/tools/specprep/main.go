@@ -1,7 +1,5 @@
-// Command specprep rewrites the backend OpenAPI spec into a form oapi-codegen can consume.
-// It repairs the JsonNullable<T> wrapper schemas, which springdoc emits with only a {present}
-// field, dropping the value. Each JsonNullable<T> reference is replaced inline with the underlying
-// type marked nullable, so codegen (with nullable-type) produces a proper tri-state field.
+// Command specprep rewrites the backend OpenAPI spec for oapi-codegen: springdoc emits
+// JsonNullable<T> as a bare {present} wrapper, so each ref is inlined as its nullable value type.
 package main
 
 import (
@@ -12,9 +10,8 @@ import (
 	"strings"
 )
 
-// `jsonNullableUnderlying` maps each broken wrapper schema to the value schema it should have carried.
-// The enum ones fall back to a plain string. Their value type was dropped by springdoc and
-// no named enum schema survives to reference, so the backend validates the enum instead of the client.
+// jsonNullableUnderlying maps each broken wrapper schema to the value schema it should have carried.
+// Enums fall back to plain string - no named enum schema survives, so the backend validates them.
 var jsonNullableUnderlying = map[string]map[string]any{
 	"JsonNullableString":            {"type": "string"},
 	"JsonNullableBoolean":           {"type": "boolean"},
@@ -66,7 +63,7 @@ func run(in, out string) error {
 	return nil
 }
 
-// `replaceJsonNullableRefs` rewrites every `{"$ref": ".../JsonNullableX"}` node in place into its nullable value schema.
+// replaceJsonNullableRefs rewrites every JsonNullableX $ref node in place into its value schema.
 func replaceJsonNullableRefs(node any) {
 	switch n := node.(type) {
 	case map[string]any:

@@ -17,7 +17,7 @@ type Theme struct {
 	Text       color.Color
 	Muted      color.Color
 	Primary    color.Color
-	Secondary  color.Color // reserved for future use
+	Secondary  color.Color
 	Accent     color.Color
 	Success    color.Color
 	Warning    color.Color
@@ -55,8 +55,7 @@ func TokyoNight() Theme {
 		Muted:      hex("#565f89"),
 		Primary:    hex("#7aa2f7"),
 		Secondary:  hex("#7dcfff"),
-		// warm orange focus: the old lavender (#bb9af7) sat too close to the cool blue/cyan
-		// Primary/Secondary to read as "focused" — orange pops against the whole cool palette
+		// warm orange for focus: lavender (#bb9af7) sat too close to the cool Primary/Secondary
 		Accent:    hex("#ff9e64"),
 		Success:   hex("#9ece6a"),
 		Warning:   hex("#e0af68"),
@@ -102,9 +101,8 @@ func Gruvbox() Theme {
 	}
 }
 
-// ANSI maps every role to a base ANSI color (0 to 15) so the palette follows the
-// terminal's own configured theme. Background and Text stay unset (NoColor) to
-// keep the terminal's default surface and foreground.
+// ANSI maps every role to a base ANSI color (0-15) so the palette follows the terminal's own theme.
+// Background and Text stay NoColor to keep the terminal's default surface and foreground.
 func ANSI() Theme {
 	return Theme{
 		Name:       "ansi",
@@ -114,9 +112,7 @@ func ANSI() Theme {
 		Muted:      lipgloss.ANSIColor(8),
 		Primary:    lipgloss.ANSIColor(4),
 		Secondary:  lipgloss.ANSIColor(6),
-		// bright yellow (11) for focus: warm and the highest-contrast option against the cool
-		// blue/cyan Primary/Secondary in the 16-colour ANSI palette (no true orange exists there).
-		// The old magenta (5) sat too near Primary blue to stand out.
+		// bright yellow (11) for focus: no true orange in the 16-colour palette
 		Accent:    lipgloss.ANSIColor(11),
 		Success:   lipgloss.ANSIColor(2),
 		Warning:   lipgloss.ANSIColor(3),

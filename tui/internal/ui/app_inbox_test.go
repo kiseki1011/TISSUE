@@ -23,7 +23,6 @@ func inboxTestApp() App {
 	return a
 }
 
-// A matching-generation unread poll updates the badge and, for the periodic path, re-arms the timer.
 func TestInboxUnreadUpdatesBadgeAndRearms(t *testing.T) {
 	a := inboxTestApp()
 	m, cmd := a.Update(inboxUnreadMsg{has: true, ok: true, reArm: true, gen: 1})
@@ -35,7 +34,6 @@ func TestInboxUnreadUpdatesBadgeAndRearms(t *testing.T) {
 	}
 }
 
-// A one-shot refresh (after a read action) updates the badge but does not re-arm a second loop.
 func TestInboxUnreadOneShotNoRearm(t *testing.T) {
 	a := inboxTestApp()
 	a.inboxUnread = true
@@ -48,7 +46,6 @@ func TestInboxUnreadOneShotNoRearm(t *testing.T) {
 	}
 }
 
-// A poll from a superseded session is dropped and ends its loop.
 func TestInboxUnreadStaleGenDropped(t *testing.T) {
 	a := inboxTestApp()
 	a.inboxUnread = false
@@ -61,7 +58,6 @@ func TestInboxUnreadStaleGenDropped(t *testing.T) {
 	}
 }
 
-// A failed poll (ok=false) leaves the last known badge state but still re-arms so it retries.
 func TestInboxUnreadFailedKeepsStateRearms(t *testing.T) {
 	a := inboxTestApp()
 	a.inboxUnread = true
@@ -74,7 +70,6 @@ func TestInboxUnreadFailedKeepsStateRearms(t *testing.T) {
 	}
 }
 
-// A read change in the inbox triggers an authoritative badge re-check.
 func TestInboxReadChangedTriggersPoll(t *testing.T) {
 	a := inboxTestApp()
 	_, cmd := a.Update(inbox.ReadChangedMsg{})
@@ -83,7 +78,6 @@ func TestInboxReadChangedTriggersPoll(t *testing.T) {
 	}
 }
 
-// The repoll tick from a stale session stops the loop.
 func TestInboxRepollStaleGenStops(t *testing.T) {
 	a := inboxTestApp()
 	_, cmd := a.Update(inboxRepollMsg{gen: 0})
@@ -92,7 +86,6 @@ func TestInboxRepollStaleGenStops(t *testing.T) {
 	}
 }
 
-// The Inbox tab wears an unread dot only when there is unread mail.
 func TestTabBarUnreadDot(t *testing.T) {
 	zone.NewGlobal()
 	a := inboxTestApp()
@@ -106,8 +99,7 @@ func TestTabBarUnreadDot(t *testing.T) {
 	}
 }
 
-// The 4th tab digit switches to the Inbox. Driven from the Schema tab, whose zero-value model does not
-// capture input (the zero home model defaults to a focused search field, which would swallow the digit).
+// Driven from Schema: the zero home model focuses its search field, which would swallow the digit.
 func TestFourthTabDigitSwitchesToInbox(t *testing.T) {
 	zone.NewGlobal()
 	a := inboxTestApp()
@@ -118,8 +110,6 @@ func TestFourthTabDigitSwitchesToInbox(t *testing.T) {
 	}
 }
 
-// Drilling into a project from the Inbox remembers the Inbox as the origin, so closing the drill-in
-// (esc) returns to the Inbox rather than the Projects dashboard.
 func TestDrillFromInboxReturnsToInbox(t *testing.T) {
 	zone.NewGlobal()
 	a := inboxTestApp()

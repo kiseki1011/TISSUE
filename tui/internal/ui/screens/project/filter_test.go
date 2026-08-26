@@ -10,7 +10,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// Applying carries the toggled axes, keeping the default open states, in canonical order.
 func TestFilterFormApplyCarriesToggledAxes(t *testing.T) {
 	zone.NewGlobal()
 	f := newFilterForm(testDeps(), domain.OpenIssuesFilter(), nil, true)
@@ -35,7 +34,6 @@ func TestFilterFormApplyCarriesToggledAxes(t *testing.T) {
 	}
 }
 
-// The form seeds its checkboxes from the current filter, so reopening shows the active selection.
 func TestFilterFormSeedsFromCurrentFilter(t *testing.T) {
 	zone.NewGlobal()
 	f := newFilterForm(testDeps(), domain.IssueFilter{
@@ -67,7 +65,6 @@ func TestFilterFormCancel(t *testing.T) {
 	}
 }
 
-// Until the catalog loads the Type section shows a loading note rather than an empty gap.
 func TestFilterFormTypeLoadingState(t *testing.T) {
 	zone.NewGlobal()
 	loadingBody := plain(newFilterForm(testDeps(), domain.OpenIssuesFilter(), nil, false).View())
@@ -81,7 +78,6 @@ func TestFilterFormTypeLoadingState(t *testing.T) {
 	}
 }
 
-// tab twice reaches the filter button, and enter opens the modal (which captures input).
 func TestFilterOpensViaKeyboard(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{})
 	m, _ = m.Update(press("tab")) // list -> search
@@ -98,7 +94,6 @@ func TestFilterOpensViaKeyboard(t *testing.T) {
 	}
 }
 
-// Applying commits every axis, preserves the search keyword, supersedes in-flight loads, and reloads.
 func TestFilterApplyUpdatesFilterAndReloads(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{})
 	m.filter.Keyword = "bug"
@@ -146,7 +141,6 @@ func TestFilterCancelKeepsFilter(t *testing.T) {
 	}
 }
 
-// The filter button reads inactive on the default open view and active once an axis is set.
 func TestFilterButtonActiveState(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{})
 	if m.filterActive() {
@@ -158,20 +152,18 @@ func TestFilterButtonActiveState(t *testing.T) {
 	}
 }
 
-// A click that lands off the search and filter zones (a tab, a row, empty space) returns focus to the
-// list, so keyboard nav and esc-to-back keep working. Regression: onClick reset only the search focus.
+// Regression: onClick reset only the search focus, so a click off the controls stranded focus.
 func TestClickOffControlsClearsFilterFocus(t *testing.T) {
 	m := loaded(t, 120, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	m.focus = focusFilter
-	// (0,0) is the top-left padding cell - outside the search box, the filter button, and every row
+	// (0,0) is padding, outside every zone
 	m, _ = m.Update(tea.MouseClickMsg{X: 0, Y: 0, Button: tea.MouseLeft})
 	if m.focus != focusList {
 		t.Errorf("a click off the controls should return focus to the list, got %v", m.focus)
 	}
 }
 
-// A catalog load that lands while the modal is already open fills in the Type rows in place, keeping
-// any toggles the user has already made. Regression: the open modal kept its empty snapshot.
+// Regression: a catalog load landing mid-modal left the modal on its empty snapshot.
 func TestLateIssueTypesFillOpenModal(t *testing.T) {
 	m := loaded(t, 120, 30, domain.IssuePage{})
 	m, _ = m.openFilter() // opened before the prefetch returns (typesLoaded == false)
@@ -201,7 +193,6 @@ func TestWithTypesPreservesSelection(t *testing.T) {
 	}
 }
 
-// Keyboard navigation drops a stale mouse-hover index, so only the focused row is highlighted.
 func TestFilterFormKeyboardClearsHover(t *testing.T) {
 	zone.NewGlobal()
 	f := newFilterForm(testDeps(), domain.OpenIssuesFilter(), nil, true)

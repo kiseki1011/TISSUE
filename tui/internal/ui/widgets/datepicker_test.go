@@ -32,7 +32,6 @@ func TestDatePickerDayNav(t *testing.T) {
 	}
 }
 
-// Crossing a month boundary by day rolls the shown month (Aug 31 + 1 day -> Sep 1).
 func TestDatePickerDayCrossesMonth(t *testing.T) {
 	aug31 := time.Date(2026, 8, 31, 0, 0, 0, 0, time.UTC)
 	got := NewDatePicker("Due", aug31, false, true, 24).Update(keyCode(tea.KeyRight)).Value()
@@ -41,7 +40,7 @@ func TestDatePickerDayCrossesMonth(t *testing.T) {
 	}
 }
 
-// A month step clamps the day to the target month's length rather than silently skipping.
+// A month step clamps the day rather than skipping into the month after.
 func TestDatePickerMonthClamp(t *testing.T) {
 	jan31 := time.Date(2026, 1, 31, 0, 0, 0, 0, time.UTC)
 	got := NewDatePicker("Due", jan31, false, true, 24).MoveMonth(1).Value()
@@ -64,7 +63,7 @@ func TestDatePickerMonthNavKeys(t *testing.T) {
 	}
 }
 
-// tab moves focus into the time steppers; up/down adjust the focused segment.
+// tab moves focus into the time steppers. up/down adjust the focused segment.
 func TestDatePickerTimeStepper(t *testing.T) {
 	init := time.Date(2026, 8, 15, 14, 30, 0, 0, time.Local)
 	p := NewDatePicker("When", init, true, false, 24)
@@ -88,8 +87,7 @@ func TestDatePickerHourWraps(t *testing.T) {
 	}
 }
 
-// Value is always UTC-stored (gap-free arithmetic): a date-only picker is UTC midnight; a timed picker
-// carries the picked wall-clock in its UTC components.
+// Value is always UTC: midnight when date-only, the picked wall-clock when timed.
 func TestDatePickerValueZones(t *testing.T) {
 	dateOnly := NewDatePicker("Due", aug15, false, true, 24).Value()
 	if dateOnly.Location() != time.UTC || dateOnly.Hour() != 0 || dateOnly.Minute() != 0 {
@@ -110,7 +108,6 @@ func TestDatePickerDefaultsToToday(t *testing.T) {
 	}
 }
 
-// The view shows the month, weekday header, day numbers, and the OK/Clear affordances.
 func TestDatePickerViewRendersMonth(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -122,7 +119,6 @@ func TestDatePickerViewRendersMonth(t *testing.T) {
 	}
 }
 
-// A timed picker shows the HH:MM row; a non-clearable one omits Clear.
 func TestDatePickerViewTimeAndNoClear(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -135,7 +131,6 @@ func TestDatePickerViewTimeAndNoClear(t *testing.T) {
 	}
 }
 
-// A click on a day cell resolves to that date; a click on the next-month arrow reports +1.
 func TestDatePickerClicks(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())

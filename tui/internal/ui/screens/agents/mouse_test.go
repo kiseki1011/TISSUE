@@ -10,8 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// With the mouse off the click-only affordances (the + New buttons and the Edit pen) are hidden; the
-// keyboard-navigable list and detail stay.
+// Mouse off hides the click-only affordances (+ New, the Edit pen) but keeps the list and detail.
 func TestMouseOffHidesButtons(t *testing.T) {
 	build := func(mouse bool) Model {
 		zone.NewGlobal()

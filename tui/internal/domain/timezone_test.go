@@ -12,8 +12,8 @@ import (
 // fixedOffset matches the "+09:00" fallback form.
 var fixedOffset = regexp.MustCompile(`^[+-]\d{2}:\d{2}$`)
 
-// serverParseable mirrors what the backend's ZoneId.of accepts: an IANA id or an explicit offset.
-// Anything else makes the server fall back to UTC, silently undoing the whole point of sending it.
+// serverParseable mirrors the backend's ZoneId.of: an IANA id or an explicit offset. Anything else
+// silently drops the server back to UTC.
 func serverParseable(t *testing.T, id string) {
 	t.Helper()
 	if id == "" || id == "Local" {
@@ -27,7 +27,6 @@ func serverParseable(t *testing.T, id string) {
 	}
 }
 
-// An explicitly set TZ is the most trustworthy source, so it wins.
 func TestResolveLocalZonePrefersTZ(t *testing.T) {
 	t.Setenv("TZ", "America/New_York")
 	if got := resolveLocalZoneID(); got != "America/New_York" {
@@ -35,8 +34,7 @@ func TestResolveLocalZonePrefersTZ(t *testing.T) {
 	}
 }
 
-// A stale or misspelled TZ must not be forwarded: the server would not recognize it and would quietly
-// bucket on UTC, which looks exactly like the bug this parameter exists to fix.
+// A forwarded bad TZ would leave the server bucketing on UTC, the exact bug this parameter fixes.
 func TestResolveLocalZoneIgnoresUnloadableTZ(t *testing.T) {
 	t.Setenv("TZ", "Not/AZone")
 	got := resolveLocalZoneID()
@@ -46,14 +44,12 @@ func TestResolveLocalZoneIgnoresUnloadableTZ(t *testing.T) {
 	serverParseable(t, got)
 }
 
-// With no TZ at all - the common case, where Go reports the zone only as "Local" - resolution must still
-// produce something usable rather than giving up.
+// No TZ is the common case: Go reports only "Local", so resolution must still produce something usable.
 func TestResolveLocalZoneWithoutTZ(t *testing.T) {
 	t.Setenv("TZ", "")
 	serverParseable(t, resolveLocalZoneID())
 }
 
-// The public entry point memoises, so repeated calls stay consistent (and cheap).
 func TestLocalZoneIDIsStable(t *testing.T) {
 	first := LocalZoneID()
 	serverParseable(t, first)
@@ -62,8 +58,7 @@ func TestLocalZoneIDIsStable(t *testing.T) {
 	}
 }
 
-// The seam between "we resolved a zone" and "the server received one" is generated code, so check the
-// built request actually carries the parameter rather than dropping it.
+// The request builders are generated code, so check the zone actually reaches the query string.
 func TestStatsRequestsCarryTheZone(t *testing.T) {
 	zone := LocalZoneID()
 	days := int32(126)

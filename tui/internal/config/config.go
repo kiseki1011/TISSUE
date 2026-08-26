@@ -19,10 +19,7 @@ type Config struct {
 	// Theme is the color palette name (see theme.Names)
 	Theme string `json:"theme"`
 
-	// Icons selects the glyph set (see glyph.ParseMode)
-	// - "auto"
-	// - "nerd"
-	// - "unicode"
+	// Icons selects the glyph set: "auto", "nerd", or "unicode" (see glyph.ParseMode).
 	Icons string `json:"icons"`
 
 	// Mouse toggles mouse capture (click + hover). "" or "on" enables it, "off" disables it.
@@ -31,20 +28,19 @@ type Config struct {
 	// Pinned maps a server URL to its pinned project keys, in pin order.
 	Pinned map[string][]string `json:"pinned,omitempty"`
 
-	// LastProject maps a server URL to the project open when the app last closed, deep-linked back into
-	// on the next silent session restore. An absent (or cleared) entry means the dashboard.
+	// LastProject maps a server URL to the project open when the app last closed. An absent entry
+	// means the dashboard.
 	LastProject map[string]string `json:"last_project,omitempty"`
 
-	// ProjectFilters maps a server URL to its per-project saved issue filters, restored when the project
-	// is re-opened (including after a restart).
+	// ProjectFilters maps a server URL to its per-project saved issue filters, restored on re-open.
 	ProjectFilters map[string]map[string]FilterState `json:"project_filters,omitempty"`
 
 	path string
 }
 
-// FilterState is a project's persisted issue filter - the structured filter-modal axes. The transient
-// search keyword is deliberately not stored. An entry's presence is the "user set a filter" signal, so
-// a stored all-empty state (show everything) is distinct from no entry (the default open-issues view).
+// FilterState is a project's persisted issue filter. The transient search keyword is deliberately not
+// stored. An entry's presence is the "user set a filter" signal, so an all-empty state (show
+// everything) differs from no entry (the default open-issues view).
 type FilterState struct {
 	StateCategories   []string `json:"stateCategories,omitempty"`
 	Priorities        []string `json:"priorities,omitempty"`
@@ -96,7 +92,6 @@ func (c *Config) SetServer(server string) error {
 	return c.Save()
 }
 
-// PinnedProjects returns the pinned project keys for a server, in pin order.
 func (c *Config) PinnedProjects(server string) []string {
 	return c.Pinned[server]
 }
@@ -128,14 +123,13 @@ func (c *Config) TogglePin(server, key string) error {
 	return c.Save()
 }
 
-// LastProjectFor returns the saved project key for a server, or "" when none is remembered.
+// LastProjectFor returns the saved project key, or "" when none is remembered.
 func (c *Config) LastProjectFor(server string) string {
 	return c.LastProject[server]
 }
 
-// SetLastProject remembers the last-open project for a server (an empty key forgets it) and persists
-// the change. An already-current value is a no-op, so re-opening the same project or clearing an
-// already-clear pointer never touches the disk.
+// SetLastProject remembers the last-open project (an empty key forgets it). Re-setting the current
+// value skips the disk write.
 func (c *Config) SetLastProject(server, key string) error {
 	if key == "" {
 		if _, ok := c.LastProject[server]; !ok {
@@ -154,7 +148,6 @@ func (c *Config) SetLastProject(server, key string) error {
 	return c.Save()
 }
 
-// ProjectFilter returns a project's saved filter and whether one is stored for it on this server.
 func (c *Config) ProjectFilter(server, key string) (FilterState, bool) {
 	m, ok := c.ProjectFilters[server]
 	if !ok {
@@ -164,8 +157,8 @@ func (c *Config) ProjectFilter(server, key string) (FilterState, bool) {
 	return f, ok
 }
 
-// SetProjectFilter stores a project's filter for this server and persists it. Applying a filter is a
-// deliberate, infrequent action, so it writes unconditionally rather than diffing the slice fields.
+// SetProjectFilter stores a project's filter. It writes unconditionally: filtering is rare enough that
+// diffing the slice fields is not worth it.
 func (c *Config) SetProjectFilter(server, key string, f FilterState) error {
 	if c.ProjectFilters == nil {
 		c.ProjectFilters = map[string]map[string]FilterState{}

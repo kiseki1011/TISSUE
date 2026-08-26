@@ -7,7 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// A leaky/implementation-flavored code is replaced by its canonical, self-contained line, ignoring base.
+// A leaky code is replaced by its canonical line, ignoring base.
 func TestMessageMapsLeakyCode(t *testing.T) {
 	err := &domain.APIError{Status: 404, Code: "PROJECT_MEMBER_NOT_FOUND", Detail: "Project member not found"}
 	got := Message(err, "Could not create the issue.")
@@ -16,7 +16,7 @@ func TestMessageMapsLeakyCode(t *testing.T) {
 	}
 }
 
-// An unmapped code with a good server detail falls back to "<base> <detail>" - action context + reason.
+// An unmapped code with a server detail reads "<base> <detail>".
 func TestMessagePrefixesServerDetail(t *testing.T) {
 	err := &domain.APIError{Status: 409, Code: "ISSUE_ALREADY_ASSIGNED", Detail: "The issue is already assigned to another member"}
 	got := Message(err, "Could not change the assignee.")
@@ -34,7 +34,7 @@ func TestMessageTransportIsConnectivity(t *testing.T) {
 	}
 }
 
-// With no code and no detail (e.g. an empty error body), Message falls back to the base line.
+// No code and no detail (an empty error body) falls back to base.
 func TestMessageFallsBackToBase(t *testing.T) {
 	err := &domain.APIError{Status: 500}
 	if got := Message(err, "Could not save the issue."); got != "Could not save the issue." {
@@ -42,7 +42,7 @@ func TestMessageFallsBackToBase(t *testing.T) {
 	}
 }
 
-// Override exposes only the top tier (connectivity + mapped code) for callers that keep their own copy.
+// Override exposes only the top tier for callers that keep their own copy.
 func TestOverrideParts(t *testing.T) {
 	if m, ok := OverrideParts(0, "ANYTHING"); !ok || m != connectivity {
 		t.Errorf("status 0 should override to connectivity, got %q ok=%v", m, ok)

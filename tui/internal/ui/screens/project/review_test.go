@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// reviewReady loads TIS-1 with the caller's own review state set to myStatus ("" = not a reviewer) and
-// the given reviewer roster, with the Details panel open on it.
+// reviewReady loads TIS-1 with myStatus as the caller's own review state ("" = not a reviewer).
 func reviewReady(t *testing.T, myStatus string, reviewers ...domain.Reviewer) Model {
 	t.Helper()
 	m := loaded(t, 120, 40, domain.IssuePage{
@@ -39,8 +38,7 @@ func TestReviewOpensForAReviewer(t *testing.T) {
 	}
 }
 
-// Someone with no part in the review has nothing to do in the modal, so it is refused rather than opened
-// empty.
+// Someone with no part in the review has nothing to do, so the modal is refused, not opened empty.
 func TestReviewRefusedWhenUninvolved(t *testing.T) {
 	m := reviewReady(t, "", domain.Reviewer{MemberID: 2, Name: "Kim", Status: "PENDING"})
 	m, _ = m.Update(press("V"))
@@ -50,8 +48,7 @@ func TestReviewRefusedWhenUninvolved(t *testing.T) {
 	}
 }
 
-// A non-reviewer may still ask reviewers who already responded to look again, so the modal opens with
-// only that half.
+// A non-reviewer may still ask responded reviewers to look again, so the modal opens with that half.
 func TestReviewOpensForRerequestAlone(t *testing.T) {
 	m := reviewReady(t, "",
 		domain.Reviewer{MemberID: 2, Name: "Kim", Status: "APPROVED"},
@@ -143,8 +140,7 @@ func TestReviewSubmitDropsBlankFeedback(t *testing.T) {
 	}
 }
 
-// A failure keeps the modal up with the reason beside the controls that produced it, so the user can fix
-// and retry instead of losing what they typed to a toast that scrolls away.
+// A failure keeps the modal up with the reason, so the user can retry instead of losing what they typed.
 func TestReviewFailureKeepsTheModalOpen(t *testing.T) {
 	m := reviewReady(t, "PENDING")
 	m, _ = m.Update(press("V"))
@@ -172,8 +168,7 @@ func TestReviewSuccessClosesTheModal(t *testing.T) {
 	}
 }
 
-// The verdict reads back on the comment itself, so the thread shows who decided what without expanding
-// the reviewer roster.
+// The verdict reads back on the comment, so the thread shows who decided what without the roster.
 func TestReviewCommentShowsItsVerdict(t *testing.T) {
 	m := reviewReady(t, "PENDING")
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -227,10 +222,7 @@ func TestReviewSpaceCommitsTheFocusedVerdict(t *testing.T) {
 	}
 }
 
-// A review status narrows the reviewer axis and is dropped server-side without one, so checking a status
-// turns the reviewer row on rather than leaving a filter that quietly does nothing.
-// filterOpen returns a model with the filter modal open. The filter key only fires from the list focus,
-// so the Details panel reviewReady leaves focused is stepped out of first.
+// filterOpen: f only fires from the list focus, so step out of the Details panel reviewReady leaves open.
 func filterOpen(t *testing.T) Model {
 	t.Helper()
 	m := reviewReady(t, "PENDING")
@@ -242,6 +234,7 @@ func filterOpen(t *testing.T) Model {
 	return m
 }
 
+// A review status is dropped server-side without a reviewer axis, so checking one turns that row on.
 func TestFilterReviewStatusImpliesTheReviewer(t *testing.T) {
 	m := filterOpen(t)
 
@@ -292,8 +285,8 @@ func TestFilterAppliesTheReviewAxes(t *testing.T) {
 	}
 }
 
-// The feedback box is labelled "Feedback" under a "Your verdict" heading, so the placeholder only has to
-// say the field may be left empty. Exact equality: the old sentence began with "Optional" too.
+// The labels already say what this is, so the placeholder is bare. Exact equality: the old copy also
+// began with "Optional".
 func TestReviewFeedbackPlaceholderIsBare(t *testing.T) {
 	m := reviewReady(t, "PENDING")
 	m, _ = m.Update(press("V"))

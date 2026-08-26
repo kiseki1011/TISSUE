@@ -30,8 +30,7 @@ func helpApp() App {
 	return a
 }
 
-// ? opens the app-level help modal, and it carries the active screen's title, an about blurb, and
-// both the global and screen key sections drawn from the live bindings.
+// ? opens the help modal, carrying the screen's title and both key sections from the live bindings.
 func TestQuestionMarkOpensHelp(t *testing.T) {
 	a := helpApp()
 	m, _ := a.Update(keyPress("?"))
@@ -61,7 +60,7 @@ func TestHelpEscCloses(t *testing.T) {
 	}
 }
 
-// A left click outside the modal box dismisses it; a click inside leaves it open.
+// A left click outside the modal box dismisses it. A click inside leaves it open.
 func TestHelpClickOutsideCloses(t *testing.T) {
 	a := helpApp()
 	m, _ := a.Update(keyPress("?"))
@@ -93,8 +92,6 @@ func TestModalSuppressesTabSwitch(t *testing.T) {
 	}
 }
 
-// Content taller than the terminal scrolls: the viewport reports scrollable and a down key advances
-// the offset.
 func TestHelpModalScrolls(t *testing.T) {
 	keys := make([]key.Binding, 0, 30)
 	for i := 0; i < 30; i++ {
@@ -112,8 +109,7 @@ func TestHelpModalScrolls(t *testing.T) {
 	}
 }
 
-// The Agents tab titles its help "Agents · Help" - it satisfies describer like Projects and Schema, so it
-// no longer falls back to the "Help · Help" default.
+// The Agents tab satisfies describer, so its help no longer falls back to the "Help · Help" default.
 func TestAgentsHelpTitle(t *testing.T) {
 	zone.NewGlobal()
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://localhost:8080"}

@@ -64,9 +64,8 @@ func (m Model) openTransitionPicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// updatePicker drives whichever picker is open: esc cancels, arrows move, enter selects, and a click
-// selects the row it lands on. A searchable picker sends every other key to its filter; a plain one
-// also takes vim-style j/k/q. The selection is routed by pickKind.
+// updatePicker drives whichever picker is open, routing the selection by pickKind. A searchable picker
+// sends every unhandled key to its filter, so vim-style j/k/q only work on a plain one.
 func (m Model) updatePicker(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
@@ -84,13 +83,13 @@ func (m Model) updatePicker(msg tea.Msg) (Model, tea.Cmd) {
 			return m.pickSelect()
 		case "space":
 			if m.picker.Multi() {
-				m.picker = m.picker.Toggle() // multi-select: space ticks the row under the cursor
+				m.picker = m.picker.Toggle()
 				return m, nil
 			}
 			// single-select: fall through so a searchable picker types the space into its filter
 		}
 		if m.picker.Searchable() {
-			m.picker = m.picker.Filter(msg) // any other key edits the filter
+			m.picker = m.picker.Filter(msg)
 			return m, nil
 		}
 		switch msg.String() {
@@ -117,7 +116,6 @@ func (m Model) updatePicker(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// pickSelect applies the highlighted option according to which picker is open.
 func (m Model) pickSelect() (Model, tea.Cmd) {
 	switch m.pickKind {
 	case pickAssignee:
@@ -165,7 +163,6 @@ func blockedNotes(tr domain.IssueTransition) []string {
 	return tr.BlockedReasons
 }
 
-// selectTransition runs the highlighted transition, or explains why a blocked one cannot run.
 func (m Model) selectTransition() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {

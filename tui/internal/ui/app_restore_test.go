@@ -17,8 +17,7 @@ import (
 
 const restoreServer = "http://localhost:8080"
 
-// newRestoreApp builds an app whose config lives in a throwaway dir, so the last-project pointer can be
-// persisted and reloaded without touching the user's real config file.
+// newRestoreApp puts the config in a throwaway dir so tests never touch the user's real config file.
 func newRestoreApp(t *testing.T) (App, *config.Config) {
 	t.Helper()
 	tmp := t.TempDir()
@@ -47,7 +46,6 @@ func reloadConfig(t *testing.T) *config.Config {
 	return cfg
 }
 
-// A silent session restore with a saved project deep-links straight into it, skipping the dashboard.
 func TestRestoreDeepLinksLastProject(t *testing.T) {
 	a, cfg := newRestoreApp(t)
 	if err := cfg.SetLastProject(restoreServer, "ENG"); err != nil {
@@ -59,7 +57,6 @@ func TestRestoreDeepLinksLastProject(t *testing.T) {
 	}
 }
 
-// A silent restore with nothing saved lands on the dashboard.
 func TestRestoreNoSavedProjectStaysHome(t *testing.T) {
 	a, _ := newRestoreApp(t)
 	m, _ := a.Update(nav.GoToHomeMsg{Info: domain.SystemInfo{}, Restore: true})
@@ -68,8 +65,7 @@ func TestRestoreNoSavedProjectStaysHome(t *testing.T) {
 	}
 }
 
-// A fresh login lands on the dashboard and forgets any saved pointer, so the next user on the same
-// server does not inherit the previous one's last project.
+// A fresh login forgets the pointer so the next user on the same server does not inherit it.
 func TestFreshLoginLandsHomeAndForgets(t *testing.T) {
 	a, cfg := newRestoreApp(t)
 	if err := cfg.SetLastProject(restoreServer, "ENG"); err != nil {
@@ -84,11 +80,7 @@ func TestFreshLoginLandsHomeAndForgets(t *testing.T) {
 	}
 }
 
-// When a silent restore deep-links past the dashboard into a project, home's background projects-list
-// load still lands: the app routes ProjectsLoadedMsg to home even though the project screen is active.
-// Otherwise home stays stuck on "Projects (loading)" after the user escapes back.
-// A project settings edit fires RefreshDashboardMsg; the app routes it to the dashboard, which silently
-// reloads so the change shows on the list when the user returns.
+// A project settings edit fires RefreshDashboardMsg, and the dashboard silently reloads.
 func TestRefreshDashboardMsgReloadsHome(t *testing.T) {
 	a, _ := newRestoreApp(t)
 	a.width, a.height = 170, 44
@@ -104,6 +96,8 @@ func TestRefreshDashboardMsgReloadsHome(t *testing.T) {
 	}
 }
 
+// A deep-link restore skips the dashboard, so home's background list load lands while the project
+// screen is active. Without routing it back, home stays stuck on "Projects (loading)".
 func TestRestoreRoutesHomeProjectsLoadWhileDeepLinked(t *testing.T) {
 	a, cfg := newRestoreApp(t)
 	a.width, a.height = 170, 44 // large enough that home renders its list rather than "too small"
@@ -118,7 +112,6 @@ func TestRestoreRoutesHomeProjectsLoadWhileDeepLinked(t *testing.T) {
 	// home's Init() load resolves while the project screen is active - it must still reach home
 	m, _ = m.(App).Update(home.ProjectsLoadedMsg{})
 
-	// escape back to the dashboard, which sizes home and renders it
 	m, _ = m.(App).Update(nav.CloseProjectMsg{})
 	if m.(App).screen != screenHome {
 		t.Fatalf("esc should return to the dashboard")
@@ -132,7 +125,6 @@ func TestRestoreRoutesHomeProjectsLoadWhileDeepLinked(t *testing.T) {
 	}
 }
 
-// Drilling into a project remembers it, and returning to the dashboard forgets it.
 func TestOpenAndCloseProjectPointer(t *testing.T) {
 	a, _ := newRestoreApp(t)
 	a.screen = screenHome

@@ -14,11 +14,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// openAssigneePicker builds a picker of the project's active members plus an Unassigned option, with
-// the cursor on the issue's current assignee.
 func (m Model) openAssigneePicker() (Model, tea.Cmd) {
-	// the detail must be loaded so the cursor can start on the real assignee; opening on the skeleton
-	// would preselect Unassigned and let an accidental Enter silently unassign an assigned issue
+	// without a loaded detail the picker preselects Unassigned, so a stray Enter unassigns
 	d, ok := m.details[m.viewKey]
 	if !ok {
 		return m, toast.Show(toast.Info, "Still loading this issue…")
@@ -30,7 +27,7 @@ func (m Model) openAssigneePicker() (Model, tea.Cmd) {
 		return m, toast.Show(toast.Info, "No members to assign.")
 	}
 
-	// Unassigned is shown in the error color so it reads as clearing the assignee, not as a normal member
+	// error color so Unassigned reads as clearing the assignee, not as a member
 	opts := []widgets.PickerOption{{Value: "", Label: "Unassigned", Color: m.deps.Styles.Theme.Error}}
 	w := pickerMinW
 	for _, mem := range m.members {
@@ -51,16 +48,13 @@ func (m Model) openAssigneePicker() (Model, tea.Cmd) {
 
 	m.picking = true
 	m.pickKind = pickAssignee
-	// searchable + a taller window, since a project can have many members
 	m.picker = widgets.NewSearchableListPicker("Assign to", opts, current, assigneeRows, w)
 	return m, nil
 }
 
-// assigneeRows is the visible row budget of the assignee picker, taller than the transition picker
-// because a project can have many members (the filter narrows them, the window scrolls the rest).
+// assigneeRows is taller than the transition picker's window: a project can have many members.
 const assigneeRows = 10
 
-// selectAssignee assigns the highlighted member, or clears the assignee for the Unassigned row.
 func (m Model) selectAssignee() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -68,20 +62,19 @@ func (m Model) selectAssignee() (Model, tea.Cmd) {
 	}
 	m.picking = false
 	if opt.Value == "" {
-		m.applyAssignee(m.viewKey, 0, "") // optimistic: show Unassigned at once
+		m.applyAssignee(m.viewKey, 0, "")
 		return m, unassignIssue(m.deps, m.viewKey)
 	}
 	id, err := strconv.ParseInt(opt.Value, 10, 64)
 	if err != nil {
 		return m, nil
 	}
-	m.applyAssignee(m.viewKey, id, opt.Label) // optimistic: show the new assignee at once
+	m.applyAssignee(m.viewKey, id, opt.Label)
 	return m, assignIssue(m.deps, m.viewKey, id, opt.Label)
 }
 
-// applyAssignee optimistically sets the cached detail's assignee (and its list row) so the modal
-// updates smoothly before the server confirms; a background refetch reconciles it. It bumps the load
-// generation so an earlier in-flight refetch cannot land and clobber this optimistic write.
+// applyAssignee optimistically sets the cached detail's assignee and its list row. Bumping the load
+// generation stops an earlier in-flight refetch from clobbering it.
 func (m *Model) applyAssignee(key string, id int64, name string) {
 	d, ok := m.details[key]
 	if !ok {
@@ -94,8 +87,7 @@ func (m *Model) applyAssignee(key string, id int64, name string) {
 	m.patchRow(key, d)
 }
 
-// AssignDoneMsg is exported so the app shell can route this background result back to the project
-// screen even when the user has left the drill-in before it landed (so the toast still shows).
+// AssignDoneMsg is exported so the app shell can route it after the user leaves the drill-in.
 type AssignDoneMsg struct {
 	key      string
 	assignee string // display name, or "" when unassigned

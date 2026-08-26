@@ -20,7 +20,6 @@ func detailWithComments() domain.IssueDetail {
 	return d
 }
 
-// The detail modal renders the comment thread: count, author, content, a reply, and a deleted tombstone.
 func TestCommentThreadRenders(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m.detailScroll = m.detailScrollMax() // scroll to the comments at the bottom
@@ -32,9 +31,8 @@ func TestCommentThreadRenders(t *testing.T) {
 	}
 }
 
-// Only root comments show a Reply link; replies (which thread only under a root) do not, and a deleted
-// comment shows none. detailWithComments has one root with a reply plus a deleted root, so exactly one
-// "Reply" affordance renders.
+// Only root comments show a Reply link. The fixture has one root with a reply plus a deleted root, so
+// exactly one Reply affordance renders.
 func TestReplyLinkOnlyOnRootComments(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m.detailScroll = m.detailScrollMax()
@@ -47,8 +45,7 @@ func TestReplyLinkOnlyOnRootComments(t *testing.T) {
 	}
 }
 
-// A control character in an untrusted comment author name is flattened, not emitted into the frame
-// (a stray CR would otherwise reset the cursor to column 0 and overwrite the modal border).
+// A stray CR in an untrusted author name would reset the cursor to column 0 and overwrite the border.
 func TestCommentAuthorSanitized(t *testing.T) {
 	d := sampleDetail()
 	d.CommentCount = 1
@@ -71,7 +68,7 @@ func TestCommentsEmptyPlaceholder(t *testing.T) {
 	}
 }
 
-// 'c' opens the composer, and it works even before the detail body has loaded (a comment needs only the key).
+// 'c' works before the detail body has loaded: a comment needs only the key.
 func TestCommentComposerOpensDuringSkeleton(t *testing.T) {
 	m := loaded(t, 120, 44, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(press("enter")) // modal open, detail still loading
@@ -87,7 +84,6 @@ func TestCommentComposerOpensDuringSkeleton(t *testing.T) {
 	}
 }
 
-// The comment modal shows the existing thread (with reply buttons) and the persistent bottom composer.
 func TestCommentModalShowsThreadAndComposers(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -103,17 +99,15 @@ func TestCommentModalShowsThreadAndComposers(t *testing.T) {
 	}
 }
 
-// A root comment's Reply button is keyboard-focusable; Enter on it opens an inline reply composer under
-// that comment, and submitting threads the reply under it. A deleted comment carries no Reply button.
 func TestCommentModalInlineReply(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
-	// the focus ring offers one reply button (comment 1; comment 3 is deleted) plus the root composer
+	// one reply button (comment 3 is deleted) plus the root composer
 	if got := len(m.commentFocusRing()); got != 4 { // {1,reply} + root {text,submit,cancel}
 		t.Fatalf("expected 1 reply button + the root composer's 3 controls, got %d focus targets", got)
 	}
 	m, _ = m.focusComment(commentFocus{1, partReply})
-	m, _ = m.Update(press("enter")) // open the inline composer under comment 1
+	m, _ = m.Update(press("enter"))
 	if m.commentUI.replyingTo != 1 {
 		t.Fatalf("enter on the reply button should open the inline composer, replyingTo=%d", m.commentUI.replyingTo)
 	}
@@ -133,8 +127,7 @@ func TestCommentModalInlineReply(t *testing.T) {
 	}
 }
 
-// The modal's per-comment Reply button is mouse-clickable: its bubblezone survives the width-fold and
-// the floated overlay, and clicking it opens that comment's inline composer.
+// The Reply button's bubblezone must survive the width-fold and the floated overlay.
 func TestCommentModalReplyButtonClickable(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -147,19 +140,18 @@ func TestCommentModalReplyButtonClickable(t *testing.T) {
 	}
 }
 
-// A comment mapped to ID 0 (the server omitted its commentId) must not open a phantom inline composer.
-// Without the c.ID != 0 guard, replyingTo's 0 sentinel matches it and renders the uninitialized reply
-// textarea, whose View() panics. Regression for the review's HIGH finding.
+// Regression: without the c.ID != 0 guard, replyingTo's 0 sentinel matches an ID==0 comment (server
+// omitted commentId) and renders the uninitialized textarea, whose View() panics.
 func TestCommentModalToleratesZeroIDComment(t *testing.T) {
 	d := sampleDetail()
 	d.CommentCount = 1
 	d.Comments = []domain.IssueComment{{ID: 0, AuthorName: "ghost", Content: "no id"}}
 	m := editReady(t, d)
-	m, _ = m.Update(press("c")) // opening renders the modal; must not panic on the ID==0 comment
+	m, _ = m.Update(press("c")) // opening renders the modal, which must not panic on the ID==0 comment
 	if !m.commenting {
 		t.Fatal("c should open the modal")
 	}
-	if view, _, _ := m.commentModalView(); plain(view) == "" { // force a full render; must not panic
+	if view, _, _ := m.commentModalView(); plain(view) == "" { // force a full render, which must not panic
 		t.Fatal("the modal should render")
 	}
 	if m.commentUI.replyingTo != 0 {
@@ -167,9 +159,8 @@ func TestCommentModalToleratesZeroIDComment(t *testing.T) {
 	}
 }
 
-// The inline composer renders only for a live (non-deleted, real-id) reply target, matching the focus
-// ring — so a reply target tombstoned by a live refetch drops its composer instead of stranding a
-// visible-but-unreachable one. Regression for the review's dead-click finding.
+// Regression (dead click): a reply target tombstoned by a refetch must drop its composer instead of
+// stranding a visible-but-unreachable one.
 func TestCommentModalInlineComposerGatedToLiveTarget(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -191,7 +182,7 @@ func TestCommentModalInlineComposerGatedToLiveTarget(t *testing.T) {
 	}
 }
 
-// esc on an open inline composer closes just that composer (back to its Reply button), not the modal.
+// esc on an open inline composer closes just that composer, not the modal.
 func TestCommentModalEscClosesInlineReplyFirst(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -208,8 +199,7 @@ func TestCommentModalEscClosesInlineReplyFirst(t *testing.T) {
 	}
 }
 
-// Submitting a comment runs the create and, stay-open, keeps the modal up with the in-flight submit
-// marked so its result can clear the right composer.
+// stay-open: the in-flight submit is marked so its result clears the right composer.
 func TestCommentSubmitCreates(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -225,8 +215,7 @@ func TestCommentSubmitCreates(t *testing.T) {
 	}
 }
 
-// stay-open: a successful root comment clears the bottom composer, resets the in-flight marker, keeps
-// the modal open, and refetches so the new comment lands in the live thread.
+// stay-open: a successful root comment clears the composer and refetches.
 func TestCommentStayOpenClearsRootOnSuccess(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -250,8 +239,7 @@ func TestCommentStayOpenClearsRootOnSuccess(t *testing.T) {
 	}
 }
 
-// stay-open: a successful reply closes its inline composer, focuses the parent's Reply button, and
-// refetches - the modal stays open.
+// stay-open: a successful reply closes its inline composer and focuses the parent's Reply button.
 func TestCommentStayOpenReplyClosesInlineOnSuccess(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -275,8 +263,7 @@ func TestCommentStayOpenReplyClosesInlineOnSuccess(t *testing.T) {
 	}
 }
 
-// stay-open: if the user opens an inline reply while a root submit is in flight, the root success clears
-// the (posted) root composer but must NOT yank focus out of the inline reply they are mid-typing.
+// A root success must not yank focus out of an inline reply opened mid-send.
 func TestCommentStayOpenRootSuccessKeepsInlineReplyFocus(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -299,7 +286,7 @@ func TestCommentStayOpenRootSuccessKeepsInlineReplyFocus(t *testing.T) {
 	}
 }
 
-// stay-open: a failed comment keeps the modal open AND preserves the typed text for a retry.
+// stay-open: a failed comment preserves the typed text for a retry.
 func TestCommentStayOpenErrorKeepsText(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -320,8 +307,7 @@ func TestCommentStayOpenErrorKeepsText(t *testing.T) {
 	}
 }
 
-// submitComposer marks the submit in flight SYNCHRONOUSLY (not only when commentSubmittedMsg lands), so
-// a rapid second Enter before the first result cannot double-post.
+// submitComposer marks in flight synchronously, so a rapid second Enter cannot double-post.
 func TestCommentDoubleSubmitGuarded(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, _ = m.Update(press("c"))
@@ -369,7 +355,7 @@ func TestCommentDoneRefetches(t *testing.T) {
 	}
 }
 
-// A failed comment does not evict the detail (a comment is additive - there is nothing to roll back).
+// A comment is additive, so a failure has nothing to roll back.
 func TestCommentDoneError(t *testing.T) {
 	m := editReady(t, detailWithComments())
 	m, cmd := m.Update(CommentDoneMsg{key: m.viewKey, err: true})

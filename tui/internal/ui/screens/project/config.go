@@ -16,8 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// loadProjectConfig kicks off the project-settings fetch the first time the Config tab is opened (and to
-// retry after a failed load). Mirrors the sprint-list lazy load.
+// loadProjectConfig fetches the project settings on first open of the Config tab, and on retry.
 func (m Model) loadProjectConfig() (Model, tea.Cmd) {
 	m.configRequested = true
 	m.configLoading = true
@@ -33,7 +32,7 @@ func (m Model) onConfigLoaded(msg configLoadedMsg) (Model, tea.Cmd) {
 	m.configLoading = false
 	if msg.err {
 		if m.configLoaded {
-			// a silent post-action refresh failed but the settings we were showing are still good: keep them
+			// the refresh failed but the settings on screen are still good
 			return m, toast.Show(toast.Error, "Couldn't refresh the project settings.")
 		}
 		m.configErr = true
@@ -48,13 +47,11 @@ func (m Model) onConfigLoaded(msg configLoadedMsg) (Model, tea.Cmd) {
 	// fresh data hides any one-time secret from a prior reveal
 	m.githubSecret, m.githubSecretCopied, m.githubURLCopied = domain.GithubSecret{}, false, false
 	m.title = msg.project.Title // keep the drill-in header/breadcrumb in step with an edited title
-	// a reload can shrink the body (e.g. a shortened/cleared description), so re-clamp the scroll offset -
-	// else a stale offset eats the first scroll key as a dead press (mirrors the sprint/member handlers)
+	// a reload can shrink the body, so re-clamp: a stale offset eats the first scroll key
 	m.configDetailScroll = clampScroll(m.configDetailScroll, m.configScrollMax())
 	return m, nil
 }
 
-// onConfigKey drives the Config tab: edit the settings or toggle the archive state.
 func (m Model) onConfigKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "e":
@@ -86,14 +83,12 @@ func (m Model) onConfigWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// openConfigEditForm opens the settings edit modal, prefilled from the loaded project.
 func (m Model) openConfigEditForm() (Model, tea.Cmd) {
 	if !m.configLoaded {
 		return m, toast.Show(toast.Info, "Still loading the project settings…")
 	}
 	if m.project.Archived {
-		// an archived project is read-only (the server rejects title/description edits), so editing is
-		// gated behind restoring it first
+		// an archived project is read-only: the server rejects edits, so restore first
 		return m, toast.Show(toast.Info, "Restore the project first to edit its settings.")
 	}
 	m.configEditing = true
@@ -103,8 +98,6 @@ func (m Model) openConfigEditForm() (Model, tea.Cmd) {
 	return m, m.configEditUI.Init()
 }
 
-// updateConfigEdit drives the open settings modal: submit/cancel close it, a wheel scrolls a modal too
-// tall for the terminal, and anything else forwards to the form.
 func (m Model) updateConfigEdit(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case configEditCancelledMsg:
@@ -133,8 +126,7 @@ func (m Model) configEditScrollMax() int {
 	return max(0, lipgloss.Height(m.configEditUI.View())-m.height)
 }
 
-// followConfigEditFocus scrolls the windowed edit modal so the focused control stays visible, mirroring
-// the sprint edit form. A no-op when the modal already fits the terminal.
+// followConfigEditFocus scrolls the windowed edit modal so the focused control stays visible.
 func (m Model) followConfigEditFocus() Model {
 	row, height, ok := m.configEditUI.FocusRow()
 	if !ok {
@@ -166,8 +158,7 @@ func (m Model) submitConfigEdit(v configEditValues) (Model, tea.Cmd) {
 	return m, updateProjectCmd(m.deps, m.projectKey, edit)
 }
 
-// diffConfigEdit builds the PATCH: a field is included only when it differs from the loaded project. A
-// description cleared to empty is sent as an explicit clear.
+// diffConfigEdit includes only changed fields. A cleared description is sent as an explicit clear.
 func diffConfigEdit(orig domain.Project, v configEditValues) domain.ProjectEdit {
 	var out domain.ProjectEdit
 	if v.title != strings.TrimSpace(orig.Title) {
@@ -186,8 +177,7 @@ func diffConfigEdit(orig domain.Project, v configEditValues) domain.ProjectEdit 
 	return out
 }
 
-// toggleArchive archives an active project (behind a confirmation, since it makes the project and every
-// item in it read-only) or restores an archived one directly (a safe, reversible action).
+// Archiving is confirmed (it makes everything read-only). Restoring is direct and reversible.
 func (m Model) toggleArchive() (Model, tea.Cmd) {
 	if !m.configLoaded {
 		return m, toast.Show(toast.Info, "Still loading the project settings…")
@@ -201,8 +191,7 @@ func (m Model) toggleArchive() (Model, tea.Cmd) {
 	return m, m.configConfirmUI.Init()
 }
 
-// updateConfigConfirm drives the open confirmation: accept fires the archive, or the GitHub disconnect
-// when that is the pending action; cancel closes it.
+// One confirmation serves both archive and GitHub disconnect. githubConfirming says which accept fires.
 func (m Model) updateConfigConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
@@ -222,8 +211,7 @@ func (m Model) updateConfigConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// regenerateGithubSecret (re)issues the project's GitHub webhook secret, lazily creating the integration
-// if needed. The secret comes back once, revealed in the GitHub section until the tab is reopened.
+// The secret comes back once, revealed until the tab is reopened. The integration is created lazily.
 func (m Model) regenerateGithubSecret() (Model, tea.Cmd) {
 	if !m.configLoaded {
 		return m, toast.Show(toast.Info, "Still loading the project settings…")
@@ -231,7 +219,6 @@ func (m Model) regenerateGithubSecret() (Model, tea.Cmd) {
 	return m, regenerateGithubSecretCmd(m.deps, m.projectKey)
 }
 
-// disconnectGithub confirms, then removes the project's GitHub integration.
 func (m Model) disconnectGithub() (Model, tea.Cmd) {
 	if !m.configLoaded {
 		return m, toast.Show(toast.Info, "Still loading the project settings…")
@@ -246,8 +233,7 @@ func (m Model) disconnectGithub() (Model, tea.Cmd) {
 	return m, m.configConfirmUI.Init()
 }
 
-// toggleGithubSync pauses or resumes acting on inbound webhooks. Unlike disconnecting, this keeps the
-// secret valid, so resuming does not mean re-registering the webhook on GitHub.
+// Unlike disconnecting, pausing keeps the secret valid, so resuming needs no re-registration on GitHub.
 func (m Model) toggleGithubSync() (Model, tea.Cmd) {
 	if !m.configLoaded {
 		return m, toast.Show(toast.Info, "Still loading the project settings…")
@@ -258,9 +244,8 @@ func (m Model) toggleGithubSync() (Model, tea.Cmd) {
 	return m, setGithubSyncCmd(m.deps, m.projectKey, !m.github.SyncEnabled)
 }
 
-// copyGithubSecret puts the one-time webhook secret on the system clipboard. It is only bound while a
-// secret is on screen: the value is unrecoverable once the reveal is gone, so a copy key that silently did
-// nothing after a reload would be worse than no key at all.
+// copyGithubSecret is bound only while a secret is on screen: the value is unrecoverable once the
+// reveal is gone, so a copy key that silently did nothing would be worse than no key.
 func (m Model) copyGithubSecret() (Model, tea.Cmd) {
 	secret := m.githubSecret.Secret
 	if secret == "" {
@@ -270,9 +255,7 @@ func (m Model) copyGithubSecret() (Model, tea.Cmd) {
 	return m, tea.Batch(tea.SetClipboard(secret), toast.Show(toast.Success, "Webhook secret copied."))
 }
 
-// copyGithubURL puts the webhook endpoint on the system clipboard. Registering the integration in GitHub
-// means pasting this and the secret into the same form, so the URL stays copyable for as long as the
-// integration exists - unlike the secret, it can be read back at any time.
+// Unlike the secret, the webhook URL can be read back at any time, so its copy key always works.
 func (m Model) copyGithubURL() (Model, tea.Cmd) {
 	url := m.github.WebhookURL
 	if url == "" {
@@ -282,8 +265,7 @@ func (m Model) copyGithubURL() (Model, tea.Cmd) {
 	return m, tea.Batch(tea.SetClipboard(url), toast.Show(toast.Success, "Webhook URL copied."))
 }
 
-// onGithubSync applies the server's new integration status. It deliberately does not reload the config,
-// which would wipe a secret still revealed on screen from a rotation in the same visit.
+// onGithubSync does not reload the config: that would wipe a secret still revealed on screen.
 func (m Model) onGithubSync(msg githubSyncMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, githubErrorText(msg.status, msg.code, msg.reason))
@@ -299,9 +281,8 @@ func (m Model) onGithubSecret(msg githubSecretMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, githubErrorText(msg.status, msg.code, msg.reason))
 	}
-	// keep the reveal on screen (the secret is shown once) and reflect that the integration is now connected,
-	// without a reload that would wipe the secret. A first-time connect is active; rotating the secret of an
-	// existing integration must not silently flip its real sync state, so preserve it in that case.
+	// no reload here: it would wipe the once-shown secret. A first-time connect is active, but rotating an
+	// existing integration's secret must not flip its real sync state.
 	sync := true
 	if m.github.Connected {
 		sync = m.github.SyncEnabled
@@ -317,7 +298,7 @@ func (m Model) onGithubAction(msg githubActionMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, githubErrorText(msg.status, msg.code, msg.reason))
 	}
-	// the integration changed: reload the config so the GitHub section reflects the new status
+	// the integration changed, so reload the GitHub section
 	m.configRequested = true
 	m.configReqGen++
 	return m, tea.Batch(
@@ -376,8 +357,6 @@ func removeGithubCmd(d deps.Deps, projectKey string) tea.Cmd {
 	}
 }
 
-// githubErrorText maps a failed GitHub action to a friendly toast: a mapped leaky code or connectivity
-// message first, then a role hint, then the server's own reason, then a generic fallback.
 func githubErrorText(status int, code, reason string) string {
 	if m, ok := errmsg.OverrideParts(status, code); ok {
 		return m
@@ -404,15 +383,14 @@ type configLoadedMsg struct {
 	deliveriesOK bool // manager-only, so a plain member's 403 simply hides the log
 }
 
-// configDeliveryCount is how many recent deliveries the Config tab keeps. Enough to cover the pushes
-// behind "why didn't my branch attach?", short enough to read without paging.
+// configDeliveryCount covers the pushes behind "why didn't my branch attach?" without paging.
 const configDeliveryCount = 10
 
 func loadConfig(d deps.Deps, projectKey string, gen int) tea.Cmd {
 	return func() tea.Msg {
 		p, err := d.Projects.GetProjectDetail(context.Background(), projectKey)
 		msg := configLoadedMsg{key: projectKey, gen: gen, project: p, err: err != nil}
-		// the GitHub integration status loads alongside the settings; its failure never blanks the tab
+		// a GitHub status failure never blanks the tab
 		if gh, e := d.Projects.GetGithubIntegration(context.Background(), projectKey); e == nil {
 			msg.github, msg.githubOK = gh, true
 		}
@@ -426,8 +404,6 @@ func loadConfig(d deps.Deps, projectKey string, gen int) tea.Cmd {
 	}
 }
 
-// configActionDoneMsg is the result of an edit/archive/unarchive command. On success the settings are
-// reloaded so the panel reflects the change; on failure the status maps to a helpful toast.
 type configActionDoneMsg struct {
 	action string // "edit" | "archive" | "unarchive"
 	err    bool

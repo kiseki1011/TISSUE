@@ -9,7 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// The Details panel lists reviewers with a coloured status label.
 func TestDetailReviewers(t *testing.T) {
 	m := openDetailOn(t, 160, 60, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -28,7 +27,6 @@ func TestDetailReviewers(t *testing.T) {
 	}
 }
 
-// Parent now renders as its own section placed ABOVE Children (not as an inline meta row under Author).
 func TestParentIsSectionAboveChildren(t *testing.T) {
 	m := openDetailOn(t, 160, 60, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -47,7 +45,7 @@ func TestParentIsSectionAboveChildren(t *testing.T) {
 	}
 }
 
-// Reviewer rows (including a long name + the longest status) must not overflow the narrow modal.
+// A long name plus the longest status must not overflow the narrow modal.
 func TestDetailReviewersFitNarrow(t *testing.T) {
 	m := openDetailOn(t, 100, 30, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{

@@ -9,7 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// A single-select picker reports no multi state and a nil Selections; Toggle is a no-op.
 func TestListPickerSingleSelectHasNoMulti(t *testing.T) {
 	p := NewListPicker("Pick", listOpts, "1", 8, 20)
 	if p.Multi() {
@@ -23,7 +22,6 @@ func TestListPickerSingleSelectHasNoMulti(t *testing.T) {
 	}
 }
 
-// A multi picker seeds its checked set from preChecked and returns them in option order.
 func TestMultiListPickerSeedsAndOrders(t *testing.T) {
 	p := NewMultiListPicker("Reviewers", listOpts, []string{"3", "1"}, 8, 24)
 	if !p.Multi() {
@@ -35,7 +33,7 @@ func TestMultiListPickerSeedsAndOrders(t *testing.T) {
 	}
 }
 
-// Toggle flips the option under the cursor without mutating the original picker (Elm copy semantics).
+// Toggle must not mutate the original picker (Elm copy semantics).
 func TestMultiListPickerToggleCopies(t *testing.T) {
 	p := NewMultiListPicker("Reviewers", listOpts, nil, 8, 24) // cursor 0 = Alpha (value "1")
 	toggled := p.Toggle()
@@ -50,8 +48,7 @@ func TestMultiListPickerToggleCopies(t *testing.T) {
 	}
 }
 
-// A checked value with no matching option (pre-checked but absent from the option set) is still returned
-// by Selections, so a multi-select never silently drops it - in-option values come first, in order.
+// A pre-checked value absent from the option set must survive Selections, after the in-option ones.
 func TestMultiListPickerCarriesUnlistedChecked(t *testing.T) {
 	p := NewMultiListPicker("Reviewers", listOpts, []string{"2", "9"}, 8, 24) // "9" is not in listOpts
 	got := p.Selections()
@@ -67,7 +64,6 @@ func TestMultiListPickerCarriesUnlistedChecked(t *testing.T) {
 	}
 }
 
-// The multi view renders a checkbox per row, ticked for checked options.
 func TestMultiListPickerViewShowsCheckboxes(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())

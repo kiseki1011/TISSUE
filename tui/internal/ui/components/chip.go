@@ -7,15 +7,11 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// fg is per-chip, not one constant, because terminals render 4/5 dark and 6/7 light,
-// and white-on-cyan measures under 3:1 on most palettes.
+// fg is per-chip because terminals render 4/5 dark and 6/7 light — white-on-cyan is under 3:1.
 type hierarchyChip struct{ bg, fg lipgloss.ANSIColor }
 
-// Uses ANSI indexes so the chips follow the terminal's own palette rather than the
-// active theme.
-//
-// None of these is index 8: the ANSI theme uses 8 for Selection, Surface, Muted and
-// Border, so a chip painted with it would vanish into a selected row.
+// ANSI indexes so the chips follow the terminal's own palette, not the active theme. None is index
+// 8 — the ANSI theme uses it for Selection, so that chip would vanish into a selected row.
 var hierarchyChips = map[string]hierarchyChip{
 	"EPIC":      {bg: 5, fg: 15},
 	"STANDARD":  {bg: 4, fg: 15},
@@ -34,7 +30,7 @@ func chipFor(hierarchy string) hierarchyChip {
 
 func HierarchyColor(hierarchy string) color.Color { return chipFor(hierarchy).bg }
 
-// An empty hierarchy renders nothing, so callers can drop it into a layout unconditionally.
+// HierarchyChip renders nothing for an empty hierarchy, so callers can place it unconditionally.
 func HierarchyChip(hierarchy string) string {
 	if hierarchy == "" {
 		return ""

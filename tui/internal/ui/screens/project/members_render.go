@@ -24,9 +24,8 @@ const (
 
 func memberRowZone(i int) string { return "project.member.row." + strconv.Itoa(i) }
 
-// membersView is the Members tab: the roster on the left and, for the cursor's member, a Details panel
-// on the right listing their open assigned and reviewer issues. An open management action (the add or
-// role picker, or the kick confirmation) floats over a dimmed copy, mirroring issuesView.
+// membersView is the Members tab: roster left, Details for the cursor's member right. An open picker or
+// confirmation floats over a dimmed copy, mirroring issuesView.
 func (m Model) membersView() string {
 	base := m.membersTab()
 	switch {
@@ -51,8 +50,7 @@ func (m Model) membersTab() string {
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, content)
 }
 
-// memberColWidths splits the inner width into the roster and the Details panel (1:1) with a one-cell
-// gap, mirroring the Issues/Sprints tabs.
+// memberColWidths splits the inner width 1:1 with a one-cell gap, mirroring the Issues/Sprints tabs.
 func (m Model) memberColWidths() (list, right int) {
 	inner := m.innerWidth()
 	list = max(24, inner/2)
@@ -60,8 +58,7 @@ func (m Model) memberColWidths() (list, right int) {
 	return
 }
 
-// memberRightGeom is the width and height of the Details panel, shared by the renderer and the scroll
-// bound so the panel window and its scrollbar agree.
+// memberRightGeom is the Details panel geometry, shared so the panel window and its scrollbar agree.
 func (m Model) memberRightGeom() (w, h int) {
 	if m.narrow() {
 		return m.innerWidth(), m.height - m.height/2
@@ -119,8 +116,7 @@ func (m Model) memberHeaderRow(nameW int) string {
 	return head.Render(strings.Join([]string{pad("Name", nameW), pad("Role", colMemberRole)}, " "))
 }
 
-// memberTypeGlyph is the roster's human/agent indicator: a person or robot glyph, empty when glyphs are
-// off (the Details panel still spells out the type in words).
+// memberTypeGlyph is the human/agent indicator, empty when glyphs are off (Details spells the type out).
 func (m Model) memberTypeGlyph(isAgent bool) string {
 	g := m.deps.Glyphs
 	if isAgent {
@@ -164,8 +160,6 @@ func (m Model) memberDetailTitle() string {
 	return "Details"
 }
 
-// memberDetailBody renders the selected member's identity followed by their open assigned and reviewer
-// issues as two labelled sections, all in one scrollable panel.
 func (m Model) memberDetailBody(w int) string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -214,9 +208,7 @@ func (m Model) memberDetailBody(w int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// memberStatsSection renders the selected member's contribution stats (resolved/open counts, resolved
-// story points, completion rate, average resolve time). A member absent from the batch (no assigned
-// issues) reads as zeros; the average resolve time is "—" when they have resolved nothing.
+// memberStatsSection reads as zeros for a member absent from the stats batch (no assigned issues).
 func (m Model) memberStatsSection(memberID int64, w int) []string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -233,9 +225,7 @@ func (m Model) memberStatsSection(memberID int64, w int) []string {
 		return lipgloss.NewStyle().Foreground(t.Muted).Width(labelW).Render(label) +
 			lipgloss.NewStyle().Foreground(t.Text).Render(value)
 	}
-	// Completion reads as a proportional bar (matching the Stats tab and sprint report) rather than a bare
-	// percentage, so the eye catches "how far along" without parsing a number. The bar is driven from the
-	// rate directly (count/1000) so it always agrees with the percentage printed beside it.
+	// the bar is driven from the rate directly (count/1000), so it always agrees with the printed percentage
 	completion := func(rate float64) string {
 		barW := max(8, min(20, w-labelW-8))
 		pct := int(rate*100 + 0.5)
@@ -258,12 +248,11 @@ func avgResolveLabel(seconds *int64) string {
 	return components.HumanizeDuration(time.Duration(*seconds) * time.Second)
 }
 
-// shadeRunes are the four increasing-intensity blocks of the contribution heatmap; a day with no
-// resolutions renders as a muted dot instead, so the grid reads as GitHub-style "grass".
+// shadeRunes are the four intensity blocks of the heatmap. A day with no resolutions is a muted dot.
 var shadeRunes = []rune("░▒▓█")
 
-// memberContribSection renders the selected member's issue-resolution heatmap ("잔디") over the recent
-// window. It shares the member-work load, so it mirrors that load's failure/loading states as one unit.
+// memberContribSection renders the resolution heatmap ("잔디"). It shares the member-work load, so it
+// mirrors that load's loading/failure states.
 func (m Model) memberContribSection(memberID int64, w int) []string {
 	s := m.deps.Styles
 	out := []string{sectionRule(s, "Contributions", w), ""}
@@ -277,11 +266,8 @@ func (m Model) memberContribSection(memberID int64, w int) []string {
 	return append(out, m.contribHeatmap(work.contrib, w)...)
 }
 
-// contribHeatmap lays the daily resolution counts into a 7-row (Sun..Sat) by N-week grid, each cell shaded
-// by that day's share of the busiest day, with a summary above and a legend below. Columns align to weeks
-// (the grid starts on the Sunday on/before the first day) and are separated by a blank column, which keeps
-// a run of busy days from reading as one solid bar; when the grid is wider than the panel the most recent
-// weeks are kept.
+// contribHeatmap lays the daily counts into a 7-row (Sun..Sat) by N-week grid, shaded by each day's share
+// of the busiest. A blank column separates weeks so a busy run is not one solid bar. Oldest weeks drop first.
 func (m Model) contribHeatmap(c domain.Contributions, w int) []string {
 	s := m.deps.Styles
 	t := s.Theme
@@ -308,8 +294,7 @@ func (m Model) contribHeatmap(c domain.Contributions, w int) []string {
 	}
 	for _, d := range c.Days {
 		col := int(d.Date.Sub(origin).Hours()/24) / 7
-		// the normal (sorted, dense) series keeps col within [startCol, totalCols); guard both ends anyway so
-		// a malformed response (unsorted days putting a date before origin or past last) can never panic
+		// guard both ends: a malformed response (unsorted days) would otherwise index outside the grid
 		if col < startCol || col-startCol >= cols {
 			continue
 		}
@@ -344,8 +329,7 @@ func (m Model) contribHeatmap(c domain.Contributions, w int) []string {
 	return lines
 }
 
-// contribLevel maps a day's resolution count to a 0..4 intensity against the window's busiest day: 0 is no
-// activity, 4 the peak. Any non-zero count is at least level 1 so a single resolution still shows.
+// contribLevel maps a count to 0..4 against the busiest day. Any non-zero count is at least 1 so it shows.
 func contribLevel(count, peak int) int {
 	if count <= 0 {
 		return 0
@@ -360,9 +344,7 @@ func contribLevel(count, peak int) int {
 	return lvl
 }
 
-// memberIssueSection renders one section (Assigned or Reviewing) of the selected member's open issues:
-// a section rule with a count, then the compact issue rows (reusing the sprint issue row), a skeleton
-// while loading, an error note on failure, or a "none" placeholder.
+// memberIssueSection renders one Assigned/Reviewing section, reusing the Sprints tab's issue row.
 func (m Model) memberIssueSection(memberID int64, title string, assigned bool, w int) []string {
 	s := m.deps.Styles
 	work, cached := m.memberWork[memberID]
@@ -405,7 +387,7 @@ func memberRoleLabel(role string) string {
 	return orDash(role)
 }
 
-// memberRoleColor tints managers with the primary accent so the roster reads the hierarchy at a glance.
+// memberRoleColor tints managers with Primary so the roster reads the hierarchy at a glance.
 func memberRoleColor(t theme.Theme, role string) color.Color {
 	if role == "MANAGER" {
 		return t.Primary

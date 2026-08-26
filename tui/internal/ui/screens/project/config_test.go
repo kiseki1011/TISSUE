@@ -10,8 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// configTabModel is a loaded model sitting on the Config tab with the given project settings already
-// loaded, for exercising the tab without a network load.
+// configTabModel sits on the Config tab with settings already loaded, so no network load is needed.
 func configTabModel(t *testing.T, p domain.Project) Model {
 	t.Helper()
 	m := loaded(t, 160, 40, domain.IssuePage{})
@@ -23,8 +22,7 @@ func configTabModel(t *testing.T, p domain.Project) Model {
 	return m
 }
 
-// Opening the Config tab (key 5) for the first time kicks off the settings load; reopening it once
-// loaded does not refetch.
+// Opening Config (key 5) loads the settings once. Reopening does not refetch.
 func TestConfigLazyLoad(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{})
 	m, cmd := m.Update(press("5"))
@@ -41,7 +39,6 @@ func TestConfigLazyLoad(t *testing.T) {
 	}
 }
 
-// The Config view renders the loaded settings: key, visibility, status, and the description.
 func TestConfigRendersSettings(t *testing.T) {
 	m := configTabModel(t, domain.Project{
 		Key: "PROJ", Title: "My Project", Description: "A thing", Visibility: "PRIVATE", Archived: false,
@@ -54,7 +51,6 @@ func TestConfigRendersSettings(t *testing.T) {
 	}
 }
 
-// An archived project reads as archived (and read-only) and shows None for an empty description.
 func TestConfigRendersArchivedAndEmptyDescription(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Visibility: "PUBLIC", Archived: true})
 	out := plain(m.View())
@@ -66,7 +62,7 @@ func TestConfigRendersArchivedAndEmptyDescription(t *testing.T) {
 	}
 }
 
-// Editing is gated on an archived (read-only) project: pressing e does not open the form, it explains why.
+// An archived project is read-only, so e explains rather than opening the form.
 func TestConfigArchivedBlocksEdit(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Archived: true})
 	m, cmd := m.Update(press("e"))
@@ -78,7 +74,7 @@ func TestConfigArchivedBlocksEdit(t *testing.T) {
 	}
 }
 
-// Restoring is offered (not blocked) on an archived project: pressing a fires the unarchive directly.
+// Restoring is offered on an archived project: a fires the unarchive directly.
 func TestConfigArchivedAllowsRestore(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Archived: true})
 	m, cmd := m.Update(press("a"))
@@ -87,7 +83,6 @@ func TestConfigArchivedAllowsRestore(t *testing.T) {
 	}
 }
 
-// Editing the settings and saving a changed field fires the update; the modal closes.
 func TestConfigEditSubmit(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Old", Visibility: "PUBLIC"})
 	m, _ = m.Update(press("e"))
@@ -103,7 +98,6 @@ func TestConfigEditSubmit(t *testing.T) {
 	}
 }
 
-// The edit form renders its multi-line description (a textarea) and the visibility toggle.
 func TestConfigEditFormRenders(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Description: "line one\nline two", Visibility: "PRIVATE"})
 	m, _ = m.Update(press("e"))
@@ -118,7 +112,6 @@ func TestConfigEditFormRenders(t *testing.T) {
 	}
 }
 
-// Archiving an active project asks for confirmation; accepting fires the archive, cancelling closes it.
 func TestConfigArchiveConfirmFlow(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Archived: false})
 	m, _ = m.Update(press("a"))
@@ -138,7 +131,7 @@ func TestConfigArchiveConfirmFlow(t *testing.T) {
 	}
 }
 
-// Restoring an archived project is a direct, unconfirmed action (it is reversible and safe).
+// Restoring is reversible and safe, so it is not confirmed.
 func TestConfigUnarchiveDirect(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P", Archived: true})
 	m, cmd := m.Update(press("a"))
@@ -161,8 +154,7 @@ func TestConfigActionDoneReloads(t *testing.T) {
 	}
 }
 
-// A failed post-action refresh keeps the settings already on screen rather than wiping them with an
-// error alongside the action's success toast.
+// A failed post-action refresh keeps the settings on screen rather than wiping them.
 func TestConfigReloadFailureKeepsSettings(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Kept"})
 	m, cmd := m.Update(configLoadedMsg{key: m.projectKey, gen: m.configReqGen, err: true})
@@ -177,8 +169,7 @@ func TestConfigReloadFailureKeepsSettings(t *testing.T) {
 	}
 }
 
-// A reload re-clamps the settings-panel scroll, so a body that shrank (e.g. a cleared description) does
-// not leave a stale offset that eats the first scroll key.
+// A reload re-clamps the scroll, else a shrunken body leaves an offset that eats the first scroll key.
 func TestConfigReloadClampsScroll(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "P"})
 	m.configDetailScroll = 20 // beyond any real offset for this short body
@@ -213,14 +204,11 @@ func TestDiffConfigEdit(t *testing.T) {
 	}
 }
 
-// The visibility toggle flips between the two values, and the edit form rejects an out-of-range title.
 func TestConfigEditFormBehaviour(t *testing.T) {
 	f := newConfigEditForm(testDeps(), domain.Project{Title: "Ok", Visibility: "PUBLIC"})
 	if f.toggleVisibility().visibility != "PRIVATE" {
 		t.Error("toggling from PUBLIC should give PRIVATE")
 	}
-	// a too-short title fails validation: the form flags the error and refocuses Title (rather than
-	// emitting a submit)
 	f.title.SetValue("a")
 	f, _ = f.submit()
 	if f.titleErr == "" {
@@ -258,7 +246,7 @@ func TestConfigActionErrorText(t *testing.T) {
 	}
 }
 
-// The Config footer offers edit and the archive/restore toggle labelled for the current state.
+// The archive/restore key is labelled for the current state.
 func TestConfigHelpKeys(t *testing.T) {
 	active := configTabModel(t, domain.Project{Key: "PROJ", Archived: false})
 	if got := helpDesc(active, "a"); got != "archive" {
@@ -289,7 +277,7 @@ func TestConfigLoadingView(t *testing.T) {
 	}
 }
 
-// configTabModelAt is configTabModel at a chosen terminal size, for exercising the responsive layout.
+// configTabModelAt is configTabModel at a chosen terminal size.
 func configTabModelAt(t *testing.T, w, h int, p domain.Project) Model {
 	t.Helper()
 	m := loaded(t, w, h, domain.IssuePage{})
@@ -301,7 +289,7 @@ func configTabModelAt(t *testing.T, w, h int, p domain.Project) Model {
 	return m
 }
 
-// On a wide terminal the project fields and the GitHub section sit side by side, so a line carries both.
+// Wide: the project fields and the GitHub section share a line.
 func TestConfigTwoColumnLayout(t *testing.T) {
 	m := configTabModelAt(t, 160, 40, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -312,7 +300,7 @@ func TestConfigTwoColumnLayout(t *testing.T) {
 	}
 }
 
-// Too narrow to split, the columns stack: the same two labels then land on different lines.
+// Too narrow to split, the columns stack onto different lines.
 func TestConfigStacksWhenNarrow(t *testing.T) {
 	m := configTabModelAt(t, 80, 40, domain.Project{Key: "PROJ", Title: "Proj"}) // the narrowest terminal the screen renders at
 	m.githubLoaded = true
@@ -329,7 +317,6 @@ func TestConfigStacksWhenNarrow(t *testing.T) {
 	}
 }
 
-// lineWithBoth returns the first line containing both needles, or "" when none does.
 func lineWithBoth(body, a, b string) string {
 	for _, ln := range strings.Split(body, "\n") {
 		if strings.Contains(ln, a) && strings.Contains(ln, b) {
@@ -348,8 +335,7 @@ func connectedConfigModel(t *testing.T) Model {
 	return m
 }
 
-// Each delivery shows when it arrived, its event type, an outcome, and the reason - the reason being the
-// point, since a skipped delivery is where "my push did nothing" gets explained.
+// The reason is the point: a skipped delivery is where "my push did nothing" gets explained.
 func TestConfigDeliveriesRender(t *testing.T) {
 	m := connectedConfigModel(t)
 	m.deliveriesLoaded = true
@@ -368,8 +354,7 @@ func TestConfigDeliveriesRender(t *testing.T) {
 	}
 }
 
-// A failing delivery says it is still being retried and how many attempts it has cost; one past its budget
-// reads as given up, so the two are not confused.
+// A retrying delivery must not read the same as one that gave up.
 func TestConfigDeliveriesRetryAndDead(t *testing.T) {
 	m := connectedConfigModel(t)
 	m.deliveriesLoaded = true
@@ -385,8 +370,7 @@ func TestConfigDeliveriesRetryAndDead(t *testing.T) {
 	}
 }
 
-// A member who may not read the log is told so, rather than being shown an empty list that would read as
-// "nothing ever arrived".
+// An unreadable log must say so: an empty list would read as "nothing ever arrived".
 func TestConfigDeliveriesUnreadable(t *testing.T) {
 	m := connectedConfigModel(t)
 	m.deliveriesLoaded = false
@@ -409,7 +393,7 @@ func TestConfigDeliveriesEmpty(t *testing.T) {
 	}
 }
 
-// With nothing connected there is no log to speak of, so the section stays away entirely.
+// Nothing connected means no log, so the section stays away.
 func TestConfigDeliveriesHiddenWhenNotConnected(t *testing.T) {
 	m := configTabModelAt(t, 160, 40, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -419,7 +403,7 @@ func TestConfigDeliveriesHiddenWhenNotConnected(t *testing.T) {
 	}
 }
 
-// The Config tab shows a GitHub section: when not connected it invites generating a secret.
+// Not connected: the section invites generating a secret.
 func TestConfigGithubNotConnected(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -432,7 +416,6 @@ func TestConfigGithubNotConnected(t *testing.T) {
 	}
 }
 
-// When connected the section shows the status, sync state and the webhook URL to register in GitHub.
 func TestConfigGithubConnected(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -445,7 +428,6 @@ func TestConfigGithubConnected(t *testing.T) {
 	}
 }
 
-// A generated secret is revealed once (with the connection now shown as connected) and surfaces a toast.
 func TestConfigGithubSecretReveal(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -467,8 +449,7 @@ func TestConfigGithubSecretReveal(t *testing.T) {
 	}
 }
 
-// The hint names the action the key will perform, so a paused integration offers to resume rather than
-// repeating the state already shown above it.
+// The hint names the action the key performs, not the state already shown above it.
 func TestConfigGithubSyncHintFollowsState(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -487,7 +468,6 @@ func TestConfigGithubSyncHintFollowsState(t *testing.T) {
 	}
 }
 
-// Pressing s fires the toggle; the request flips whatever the current state is.
 func TestConfigGithubSyncToggleKey(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -511,8 +491,7 @@ func TestConfigGithubSyncToggleNotConnected(t *testing.T) {
 	}
 }
 
-// The server's new status is applied without reloading, so a secret revealed earlier in the same visit
-// stays on screen.
+// The status is applied without reloading, so a secret revealed earlier stays on screen.
 func TestConfigGithubSyncKeepsRevealedSecret(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -549,7 +528,6 @@ func TestConfigGithubSyncFailureKeepsState(t *testing.T) {
 	}
 }
 
-// Pressing g on the Config tab fires the (re)generate command.
 func TestConfigGithubRegenerateKey(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -559,8 +537,7 @@ func TestConfigGithubRegenerateKey(t *testing.T) {
 	}
 }
 
-// Disconnect is confirmed first, then fires the remove; the confirm is flagged as a GitHub action so it
-// does not archive the project by mistake.
+// The confirm is flagged as a GitHub action so accepting does not archive the project by mistake.
 func TestConfigGithubDisconnectConfirmed(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -578,7 +555,7 @@ func TestConfigGithubDisconnectConfirmed(t *testing.T) {
 	}
 }
 
-// Pressing x when GitHub is not connected does nothing destructive (no confirmation opens).
+// x with nothing connected must not open a confirmation.
 func TestConfigGithubDisconnectNotConnected(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -589,8 +566,7 @@ func TestConfigGithubDisconnectNotConnected(t *testing.T) {
 	}
 }
 
-// A revealed one-time secret is hidden once the Config tab is left and reopened, even when the reopen does
-// not refetch (the settings were already loaded) — the secret must not linger on screen for the session.
+// Reopening Config drops the secret even when it does not refetch: it must not linger for the session.
 func TestConfigGithubSecretClearedOnReopen(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -619,8 +595,7 @@ func TestConfigGithubRotatePreservesPausedSync(t *testing.T) {
 	}
 }
 
-// While a one-time secret is on screen the reveal advertises the copy key; pressing it copies the value
-// and the hint turns into a confirmation.
+// A revealed secret advertises its copy key, and copying confirms without hiding the key.
 func TestConfigGithubSecretCopy(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -645,8 +620,7 @@ func TestConfigGithubSecretCopy(t *testing.T) {
 	}
 }
 
-// The webhook URL and the secret are pasted into the same GitHub form, so each carries its own copy key.
-// The URL's works for as long as the integration exists, not only during a reveal.
+// The URL's copy key works for as long as the integration exists, not only during a reveal.
 func TestConfigGithubURLCopy(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -684,8 +658,7 @@ func TestConfigURLCopyKeyNeedsIntegration(t *testing.T) {
 	}
 }
 
-// The copy key is only meaningful while a secret is revealed, so it is neither advertised nor acted on
-// otherwise - a key that silently did nothing would read as a failed copy.
+// A copy key that silently did nothing would read as a failed copy, so it appears only while revealed.
 func TestConfigCopyKeyOnlyWhileRevealed(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true
@@ -707,8 +680,7 @@ func TestConfigCopyKeyOnlyWhileRevealed(t *testing.T) {
 	}
 }
 
-// Leaving and re-entering the tab drops the reveal, so the copied confirmation must not outlive it and
-// suggest a value that is no longer on screen is still to hand.
+// The copied confirmation must not outlive the reveal.
 func TestConfigCopiedResetsWithReveal(t *testing.T) {
 	m := configTabModel(t, domain.Project{Key: "PROJ", Title: "Proj"})
 	m.githubLoaded = true

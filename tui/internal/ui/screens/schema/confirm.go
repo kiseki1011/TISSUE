@@ -5,8 +5,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// The delete-confirm dialog is a shared widget. These aliases keep this package's Model field, its
-// message type-switches, and its constructor call unqualified. See widgets/confirm.go.
+// Aliases keep call sites unqualified. The dialog lives in widgets/confirm.go.
 
 type confirmForm = widgets.ConfirmForm
 

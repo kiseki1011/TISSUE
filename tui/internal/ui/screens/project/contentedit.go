@@ -16,8 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// the content editor's focusable controls, in tab order. The preview toggle sits between the body and the
-// Save/Cancel buttons; while previewing the body is read-only so the textarea drops out of the ring.
+// the content editor's focusable controls, in tab order.
 const (
 	ceContent = iota
 	cePreview
@@ -25,13 +24,11 @@ const (
 	ceCancel
 )
 
-// contentForm is the standalone "Edit content" modal, split out of the metadata edit form so the issue
-// body has room to breathe and a markdown preview. Preview swaps the editable textarea for the rendered
-// markdown; toggling back returns to editing with the text intact.
+// contentForm is the standalone "Edit content" modal, split out so the body has room and a preview.
 type contentForm struct {
 	deps    deps.Deps
 	content textarea.Model
-	preview bool // the body shows the rendered markdown instead of the editable textarea
+	preview bool // body shows rendered markdown instead of the textarea
 	focus   int
 	hover   int
 }
@@ -50,7 +47,7 @@ func newContentForm(d deps.Deps, content string) contentForm {
 
 func (f contentForm) Init() tea.Cmd { return textarea.Blink }
 
-// fields is the tab ring. While previewing the body is read-only, so the textarea is not a tab stop.
+// While previewing the body is read-only, so the textarea is not a tab stop.
 func (f contentForm) fields() []int {
 	if f.preview {
 		return []int{cePreview, ceSave, ceCancel}
@@ -104,9 +101,7 @@ func (f contentForm) onKey(msg tea.KeyPressMsg) (contentForm, tea.Cmd) {
 	return f.typeIntoContent(msg)
 }
 
-// togglePreview flips between the editable textarea and the rendered markdown. Turning preview on moves
-// focus off the (now read-only) body to the toggle; turning it off returns focus to the textarea so the
-// user can keep typing.
+// Preview moves focus off the read-only body to the toggle. Leaving it refocuses the textarea.
 func (f contentForm) togglePreview() (contentForm, tea.Cmd) {
 	f.preview = !f.preview
 	if f.preview {
@@ -191,9 +186,8 @@ func (f contentForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// previewField renders the current body as markdown inside a "Preview" box, matching the Content field's
-// width, or a muted placeholder when empty. The text is sanitized so a stray control char cannot corrupt
-// the frame (the same guard the Details content block uses).
+// previewField renders the body as markdown at the Content field's width. It is sanitized so a stray
+// control char cannot corrupt the frame.
 func (f contentForm) previewField() string {
 	t := f.deps.Styles.Theme
 	md := f.content.Value()
@@ -207,8 +201,7 @@ func (f contentForm) previewField() string {
 	return components.TitledBoxWeighted("Preview", body, t.Primary, false)
 }
 
-// FocusRow reports the focused control's row and height so a windowed modal scrolls to keep it visible.
-// chromeTop = top border + the padding row above the body.
+// FocusRow reports the focused control's row/height (chromeTop = top border + the padding row).
 func (f contentForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	bodyView := f.previewField()
@@ -246,7 +239,6 @@ func (f contentForm) fieldBorderColor(id int, errMsg string) color.Color {
 	}
 }
 
-// previewButton is the left-aligned toggle: "Preview" while editing, "Edit" while previewing.
 func (f contentForm) previewButton() string {
 	label := "Preview"
 	if f.preview {
@@ -313,8 +305,7 @@ func submitContentEdit(content string) tea.Cmd {
 	return func() tea.Msg { return contentSubmittedMsg{content: content} }
 }
 
-// openContentEditor opens the standalone content editor over the Details panel, prefilled from the loaded
-// detail. Like the metadata edit form it refuses while the detail is still loading.
+// openContentEditor refuses while the detail is still loading, like the metadata edit form.
 func (m Model) openContentEditor() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -327,8 +318,6 @@ func (m Model) openContentEditor() (Model, tea.Cmd) {
 	return m, m.contentUI.Init()
 }
 
-// updateContentEditor drives the open content editor: submit/cancel close it, a wheel scrolls a modal too
-// tall for the terminal, and anything else is forwarded (then the window follows the focused control).
 func (m Model) updateContentEditor(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case contentCancelledMsg:
@@ -378,8 +367,7 @@ func (m Model) followContentFocus() Model {
 	return m
 }
 
-// submitContent applies the edited body via the common-fields PATCH (reusing the edit flow's optimistic
-// apply + reconcile), or reports no change when the body is untouched.
+// submitContent reuses the edit flow's optimistic apply + reconcile via the common-fields PATCH.
 func (m Model) submitContent(newContent string) (Model, tea.Cmd) {
 	m.editingContent = false
 	if _, ok := m.details[m.viewKey]; !ok {
@@ -389,6 +377,6 @@ func (m Model) submitContent(newContent string) (Model, tea.Cmd) {
 		return m, toast.Show(toast.Info, "No changes.")
 	}
 	edit := domain.IssueEdit{Content: &newContent}
-	m.applyEdit(m.viewKey, edit) // optimistic; the EditDoneMsg refetch reconciles
+	m.applyEdit(m.viewKey, edit) // optimistic: the EditDoneMsg refetch reconciles
 	return m, editIssue(m.deps, m.viewKey, edit)
 }

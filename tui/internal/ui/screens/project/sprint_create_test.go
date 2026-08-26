@@ -21,8 +21,7 @@ func TestSprintCreateOpensOnAnEmptyTab(t *testing.T) {
 	}
 }
 
-// The create call takes only a title and goal - a new sprint's due date is chosen when it is started -
-// so offering Due here would collect a value that is silently dropped.
+// Create takes only title and goal. A due date is chosen at start, so a Due field here would be dropped.
 func TestSprintCreateFormHasNoDueField(t *testing.T) {
 	m := sprintsTabModel(t, nil)
 	m, _ = m.Update(press("n"))
@@ -139,8 +138,7 @@ func TestSprintDeleteGating(t *testing.T) {
 	}
 }
 
-// A deleted sprint is gone from the reloaded list, so restoring the cursor to it must fall back to a
-// valid row rather than leaving the selection dangling.
+// A deleted sprint is gone from the reloaded list, so the restored cursor must fall back to a valid row.
 func TestSprintDeletedLeavesAValidSelection(t *testing.T) {
 	m := sprintsTabModel(t, sprintList(3))
 	m, _ = m.Update(sprintActionDoneMsg{action: "delete", id: 3})
@@ -157,7 +155,7 @@ func TestSprintDeletedLeavesAValidSelection(t *testing.T) {
 	}
 }
 
-// n is offered even with nothing selected; d only where the server would accept it.
+// n is offered even with nothing selected. d only where the server would accept it.
 func TestSprintFooterAdvertisesCreateAndDelete(t *testing.T) {
 	empty := sprintsTabModel(t, nil)
 	if !hasKey(empty.HelpKeys(), "n") {

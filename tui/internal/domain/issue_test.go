@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// toIssueSummary maps the projection nil-safely, stringifies the enum pointers, and sets Assigned
-// from the presence of an assignee id.
+// toIssueSummary must be nil-safe, and Assigned comes from the presence of an assignee id.
 func TestToIssueSummaryMapping(t *testing.T) {
 	pri := client.IssueSummaryPriority("P1")
 	cat := client.IssueSummaryCurrentStateCategory("ACTIVE")
@@ -33,7 +32,7 @@ func TestToIssueSummaryMapping(t *testing.T) {
 		t.Errorf("lastActivity not mapped: got %v want %v", got.LastActivity, lastAct)
 	}
 
-	// no assignee => Assigned false; a nil lastActivity => zero; all-nil must not panic
+	// no assignee, a nil lastActivity, and an all-nil summary must not panic
 	un := toIssueSummary(&client.IssueSummary{IssueKey: ptr("TIS-8")})
 	if un.Assigned {
 		t.Error("issue with no assignee id should be Assigned=false")
@@ -46,7 +45,6 @@ func TestToIssueSummaryMapping(t *testing.T) {
 	}
 }
 
-// toIssuePage carries pagination metadata and maps the content slice.
 func TestToIssuePageMapping(t *testing.T) {
 	content := []client.IssueSummary{{IssueKey: ptr("A-1")}, {IssueKey: ptr("A-2")}}
 	got := toIssuePage(&client.PageResponseIssueSummary{

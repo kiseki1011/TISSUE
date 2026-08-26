@@ -2,9 +2,8 @@ package domain
 
 import "time"
 
-// SprintSummary is one row in a project's sprint list (the listProjectSprints projection). The status
-// is one of PLANNING | ACTIVE | COMPLETED | CANCELLED; the timestamps are zero until the lifecycle
-// reaches them (started/due are set when a sprint starts, completed when it finishes).
+// SprintSummary is one row in a project's sprint list. Status is PLANNING | ACTIVE | COMPLETED | CANCELLED.
+// Started and due are set when a sprint starts, completed when it finishes, zero until then.
 type SprintSummary struct {
 	ID          int64
 	Key         string
@@ -26,8 +25,8 @@ type SprintPage struct {
 	TotalPages    int
 }
 
-// SprintEdit is the set of sprint fields the edit form can change (a PATCH). A nil pointer leaves the
-// field untouched; ClearDue sets the due date to null (distinct from leaving it as is).
+// SprintEdit is a PATCH of the fields the edit form can change. A nil pointer leaves the field untouched.
+// ClearDue nulls the due date, which is distinct from leaving it as is.
 type SprintEdit struct {
 	Title    *string
 	Goal     *string

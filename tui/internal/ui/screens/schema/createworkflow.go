@@ -24,18 +24,14 @@ import (
 
 const cwFieldW = 48
 
-// cwStructW is the width of the Structure rule and the draft graph. A metadata field box wraps its
-// cwFieldW-wide content in a border plus a one-cell inset on each side (cwFieldW+4 cells), so the
-// rule and graph use that same outer width to line up with the field boxes above them rather than
-// sitting inset and reading as left-shifted.
+// cwStructW matches a metadata field box's outer width (border + one-cell inset per side) so the
+// Structure rule and draft graph line up with the boxes above.
 const cwStructW = cwFieldW + 4
 
-// cwDefaultColor is sent as the workflow's own color: the picker was removed (the backend is
-// dropping the field), so every new workflow carries this until then.
+// cwDefaultColor stands in for the removed color picker — the backend is dropping the field.
 const cwDefaultColor = "INDIGO"
 
-// createWorkflowItemKind identifies each focus stop in the create-workflow modal: the metadata
-// fields, then each draft state and transition, then the command affordances.
+// createWorkflowItemKind identifies one focus stop in the create-workflow modal.
 type createWorkflowItemKind int
 
 const (
@@ -54,11 +50,8 @@ type cwItem struct {
 	idx  int
 }
 
-// createWorkflowForm is the "New Workflow" modal: it collects the workflow metadata (name,
-// description) and builds the whole starting graph on one surface, then creates it in a single
-// POST. The graph is edited exactly like the in-place flow editor — states and transitions are
-// added via the node/edge sub-forms and recategorized/rewired inline — but every node is new
-// (temp keys).
+// createWorkflowForm is the "New Workflow" modal: metadata plus the whole starting graph, created
+// in a single POST. Edited like the in-place flow editor, but every node is new (temp keys).
 type createWorkflowForm struct {
 	deps deps.Deps
 
@@ -86,9 +79,7 @@ type createWorkflowForm struct {
 	editingEdge int
 }
 
-// newCreateWorkflowForm seeds the modal with the two states every workflow needs — an INITIAL
-// "To Do" and a COMPLETED "Done" — and no transitions, leaving the author to add any middle states
-// and wire the graph themselves.
+// newCreateWorkflowForm seeds the two states every workflow needs: INITIAL "To Do", COMPLETED "Done".
 func newCreateWorkflowForm(d deps.Deps) createWorkflowForm {
 	n := textinput.New()
 	n.Prompt = ""
@@ -115,8 +106,7 @@ func newCreateWorkflowForm(d deps.Deps) createWorkflowForm {
 
 func (f createWorkflowForm) Init() tea.Cmd { return textinput.Blink }
 
-// items is the flat focus order: the two metadata fields, then every state, then every transition,
-// then the command affordances (contiguous at the tail).
+// items is the flat focus order, with the command affordances contiguous at the tail.
 func (f createWorkflowForm) items() []cwItem {
 	items := []cwItem{{cwName, 0}, {cwDesc, 0}}
 	for i := range f.states {
@@ -150,10 +140,8 @@ func (f createWorkflowForm) addTransFocus() int { return f.indexOfKind(cwAddTran
 func (f createWorkflowForm) saveFocus() int     { return f.indexOfKind(cwSave) }
 func (f createWorkflowForm) cancelFocus() int   { return f.indexOfKind(cwCancel) }
 
-// navOrder returns items() indices in the order the selection walks with the arrow keys and tab:
-// the metadata fields, then the graph elements sorted by their draft-diagram row (top to bottom),
-// then the command affordances. This mirrors the in-place flow editor so navigation reads down the
-// graph the way it is drawn, instead of jumping around in raw draft order.
+// navOrder sorts graph elements by drawn row so navigation reads down the diagram rather than in raw
+// draft order. Metadata first, commands last, mirroring the in-place flow editor.
 func (f createWorkflowForm) navOrder() []int {
 	items := f.items()
 	_, rows, _ := renderWorkflowGraph(f.draftDetail(), f.deps.Styles, navRefWidth, wfElem{}, wfElem{}, false)
@@ -183,8 +171,7 @@ func (f createWorkflowForm) navOrder() []int {
 	return append(order, cmds...)
 }
 
-// selElem maps the focused item to the draft diagram element it highlights, mirroring the flow
-// editor's synthetic ids (draft-order index + 1). Non-graph stops report ok=false.
+// selElem maps the focused item to a diagram element via the flow editor's synthetic ids (index+1).
 func (f createWorkflowForm) selElem() (wfElem, bool) {
 	switch it := f.cur(); it.kind {
 	case cwState:
@@ -376,8 +363,7 @@ func (f createWorkflowForm) openAddTrans(src string) createWorkflowForm {
 	return f
 }
 
-// move walks the visual nav order (metadata, then the graph top-to-bottom, then the commands) so
-// arrows and tab read down the diagram exactly as the flow editor does.
+// move walks navOrder, so arrows and tab read down the diagram as the flow editor does.
 func (f createWorkflowForm) move(delta int) (createWorkflowForm, tea.Cmd) {
 	order := f.navOrder()
 	if len(order) == 0 {
@@ -462,8 +448,7 @@ func (f createWorkflowForm) indexOfTrans(i int) int {
 	return f.focus
 }
 
-// enforceInitial keeps exactly one INITIAL state: if state i is now INITIAL, every other INITIAL
-// falls back to ACTIVE.
+// enforceInitial keeps exactly one INITIAL: every other one falls back to ACTIVE.
 func (f createWorkflowForm) enforceInitial(i int) createWorkflowForm {
 	if i < 0 || i >= len(f.states) || f.states[i].category != "INITIAL" {
 		return f
@@ -520,8 +505,8 @@ func (f createWorkflowForm) validate() string {
 	if len(f.states) == 0 {
 		return "Add at least one state."
 	}
-	// state and transition names share the workflow's 2–32 character bound. Check them here so a bad
-	// name is caught with an accurate message instead of the backend's generic graph rejection.
+	// state/transition names share the workflow's 2–32 bound. Check here so a bad name gets an
+	// accurate message instead of the backend's generic graph rejection.
 	for _, st := range f.states {
 		if n := utf8.RuneCountInString(strings.TrimSpace(st.name)); n < 2 || n > 32 {
 			return "State names must be 2–32 characters."
@@ -592,10 +577,8 @@ func (f createWorkflowForm) View() string {
 	return components.TitledBoxCentered("New Workflow", body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused item's row (View coordinates) and height, so a windowed modal scrolls
-// to keep it visible. The row offsets are measured off the same pieces body() assembles, so they
-// cannot drift out of sync. +2 chrome = top border + the padding row above the body. ok=false while a
-// node/edge sub-form is open.
+// FocusRow reports the focused item's row and height so a windowed modal can scroll it into view.
+// chromeTop 2 = top border + the padding row. ok=false while a sub-form is open.
 func (f createWorkflowForm) FocusRow() (int, int, bool) {
 	if f.nodeOpen || f.edgeOpen {
 		return 0, 0, false
@@ -624,8 +607,7 @@ func (f createWorkflowForm) FocusRow() (int, int, bool) {
 		beforeGraph := lipgloss.Height(lipgloss.JoinVertical(lipgloss.Left, pre...))
 		if sel, ok := f.selElem(); ok {
 			_, grows, ghits := renderWorkflowGraph(f.draftDetail(), s, cwStructW, sel, wfElem{}, false)
-			// prefer the element's bounding rect: it covers a state's whole box AND a routed
-			// transition's wrapped multi-row label, so the window reveals every line, not just the top
+			// the bounding rect covers a state's whole box and a wrapped transition label, not just the top row
 			if rect, ok := ghits[sel]; ok {
 				return chromeTop + beforeGraph + rect.r0, rect.r1 - rect.r0 + 1, true
 			}
@@ -663,9 +645,7 @@ func (f createWorkflowForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// statusLines is the create-status region between the key hints and the draft graph. It always
-// occupies at least one line so the graph keeps a stable position and a failure message never abuts
-// it: a spinner while creating, the wrapped error after a failure, otherwise a single blank line.
+// statusLines always occupies at least one line so the graph below keeps a stable position.
 func (f createWorkflowForm) statusLines() []string {
 	s := f.deps.Styles
 	switch {
@@ -677,7 +657,7 @@ func (f createWorkflowForm) statusLines() []string {
 	return []string{""}
 }
 
-// actionBar draws the add handles and Save/Cancel on one line, matching the in-place flow editor.
+// actionBar mirrors the in-place flow editor's one-line command row.
 func (f createWorkflowForm) actionBar() string {
 	t := f.deps.Styles.Theme
 	return f.affordance("cw.addstate", "+ State", f.cur().kind == cwAddState, t.Secondary) +
@@ -825,7 +805,7 @@ func createWorkflowErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's own explanation
 	}
 	return "Could not create the workflow. Try again."
 }

@@ -32,8 +32,7 @@ const (
 
 type projectFocus int
 
-// focusList is the zero value so a fresh model opens on the list. Tab cycles list -> search -> filter
-// -> detail.
+// focusList is the zero value so a fresh model opens on the list.
 const (
 	focusList projectFocus = iota
 	focusSearch
@@ -61,7 +60,7 @@ const (
 	pickParent       // choosing a parent issue in the create form
 	pickReviewers    // multi-select of the issue's reviewers
 	pickParentEdit   // changing an existing issue's parent from the Details panel
-	pickRelationType // step 1 of adding a relation: choosing the relation type
+	pickRelationType // step 1 of adding a relation
 	pickRelationTarget
 	pickRelationRemove    // choosing which of the viewed issue's relations to unlink
 	pickSprintRemoveIssue // choosing which of a sprint's issues to remove from it (Sprints tab)
@@ -85,7 +84,7 @@ type Model struct {
 	deps       deps.Deps
 	width      int
 	height     int
-	viewer     string // the caller's username, for spotting their own comments; "" until the profile lands
+	viewer     string // the caller's username, for spotting their own comments. "" until the profile lands
 	projectKey string
 	title      string
 	tab        projectTab
@@ -113,7 +112,7 @@ type Model struct {
 	pickerTransitions []domain.IssueTransition // the picker's transitions, for canExecute/reason lookup
 	reviewerBase      []domain.Reviewer        // the issue's reviewers when the reviewers picker opened, to diff the confirm against
 	relPendingType    domain.RelationType      // the relation type chosen in step 1, applied when the target is picked in step 2
-	relSource         string                   // the issue the add-relation flow started from, so it lands there even if the cursor moves mid-load
+	relSource         string                   // the issue the add-relation flow started from, so a cursor move cannot redirect it
 	relGen            int                      // bumped per relation-target candidate load, so a superseded/stale result is dropped
 
 	dating       bool // a calendar picker is open over the create/edit form (setting a due date or a DATE/TIMESTAMP field)
@@ -124,7 +123,7 @@ type Model struct {
 	editing    bool // the edit form is open over the detail modal
 	editUI     editForm
 	editScroll int                // window offset for an edit form taller than the terminal
-	editBase   domain.IssueDetail // the detail the form was built from, so the save diffs against the open-time snapshot (not a cache a background refetch may have changed mid-edit)
+	editBase   domain.IssueDetail // the detail the form was built from, so the save diffs against the open-time snapshot
 
 	commentDeleting bool // a delete confirmation floats over the comment modal
 	commentDeleteUI widgets.ConfirmForm
@@ -146,7 +145,7 @@ type Model struct {
 	creating      bool // the new-issue form is open
 	createUI      createForm
 	createScroll  int // window offset for a create form taller than the terminal
-	parentGen     int // bumped when the create form opens or its parent picker is (re)requested, so a late/stale parent-candidate load is dropped
+	parentGen     int // bumped per parent-candidate request, so a late/stale load is dropped
 	parentEditGen int // bumped per Details parent-edit picker request, so a superseded candidate load is dropped
 
 	typeFields    map[int64][]domain.IssueField // custom-field definitions cached per issue type (for the create form)
@@ -185,15 +184,13 @@ type Model struct {
 	prefetchSeq     int    // bumped when the selection changes so only the last cursor stop's debounce prefetches
 	hover           string // zone id of the row/button under the cursor, "" when none
 
-	// realtime (SSE): a new-issue event schedules one debounced silent list reload; other events patch the
-	// affected issue in place. rtRestore{Key,Gen} preserve the selected issue across that reload.
+	// realtime (SSE): rtRestore{Key,Gen} preserve the selection across a debounced silent reload.
 	rtReloadSeq       int
 	rtRestoreKey      string
 	rtRestoreGen      int
 	rtSprintReloadSeq int // debounce sequence for the silent sprint-list reload on a lifecycle SSE event
 
-	// Sprints tab: the sprint list (left) plus, for the cursor's sprint, its detail (top right) and the
-	// issues that belong to it (bottom right). Loaded lazily the first time the tab is opened.
+	// Sprints tab: the sprint list plus, for the cursor's sprint, its detail and issues. Lazy-loaded.
 	sprints            []domain.SprintSummary
 	sprintCursor       int
 	sprintPage         domain.SprintPage
@@ -201,12 +198,11 @@ type Model struct {
 	sprintsLoading     bool
 	sprintsErr         bool
 	sprintReqGen       int   // bumped per sprint-list reload so a superseded load's late result is ignored
-	selSprintID        int64 // the sprint shown on the right (the cursor's sprint); 0 when none
+	selSprintID        int64 // the sprint shown on the right (the cursor's sprint). 0 when none
 	sprintDetailScroll int   // first visible line of the sprint detail panel (top right)
 	sprintIssueScroll  int   // first visible line of the sprint issues panel (bottom right)
 
-	// issues belonging to a sprint, cached by sprint id (SWR): re-selecting a sprint shows the cached
-	// rows at once while a background refetch runs.
+	// issues belonging to a sprint, cached by sprint id (SWR): cached rows show while a refetch runs.
 	sprintIssues        map[int64]domain.IssuePage
 	sprintIssuesPending map[int64]bool
 	sprintIssuesFailed  map[int64]bool
@@ -217,9 +213,7 @@ type Model struct {
 	sprintReportFailed  map[int64]bool
 	sprintReportGen     map[int64]int
 
-	// sprint actions (start / complete / edit). The start and edit-due date pickers reuse m.dating +
-	// m.datePick via the dateSprintStart / dateSprintEditDue targets. sprintActionID pins the sprint an
-	// open action modal is acting on; sprintRestoreID re-points the cursor after the post-action reload.
+	// sprintActionID pins an open action modal's target. sprintRestoreID re-points the cursor after reload.
 	sprintConfirming  bool // a yes/no sprint action confirmation (complete or cancel) is open
 	sprintConfirmUI   widgets.ConfirmForm
 	sprintConfirmKind string // which action the confirmation guards: "complete" | "cancel" | "delete" | "migrate"
@@ -227,21 +221,15 @@ type Model struct {
 	sprintCreating    bool // the sprint modal is adding a sprint rather than editing the selected one
 	sprintEditUI      sprintEditForm
 	sprintEditScroll  int
-	sprintEditBase    domain.SprintSummary // the sprint the edit form was built from, to diff the save against (not a live summary a background reload may change)
+	sprintEditBase    domain.SprintSummary // the sprint the edit form was built from, to diff the save against
 	sprintActionID    int64
 	sprintRestoreID   int64
 
-	// the project's current (ACTIVE) sprint, prefetched so the issue tab's "add to sprint" action knows
-	// the target without loading the whole sprint list; nil when there is none. Refreshed by the sprint
-	// list; currentSprintGen orders those refreshes so a late Init prefetch cannot clobber a fresher value.
+	// the current (ACTIVE) sprint, prefetched for "add to sprint". currentSprintGen drops a late prefetch.
 	currentSprint    *domain.SprintSummary
 	currentSprintGen int
 
-	// migrate (Sprints tab, "m"): moves the current sprint's incomplete issues onward to the next
-	// PLANNING sprint (all of them - the server carries over every unresolved issue). The source/target
-	// are resolved when the action opens (not the selected row), then the source's incomplete issues are
-	// fetched to show in a yes/no confirmation (reusing sprintConfirming with kind "migrate"); migrateGen
-	// drops a superseded candidate load.
+	// migrate ("m") acts on the current sprint and the next PLANNING one, not the highlighted row.
 	migrateSourceID   int64
 	migrateTargetID   int64
 	migrateSourceName string
@@ -250,12 +238,7 @@ type Model struct {
 	migrateGen        int
 	migrateLoading    bool
 
-	// Members tab: the roster reuses m.members (loaded for the assignee picker); memberCursor selects a
-	// member and selMemberID points the right panel at them. Each member's open (INITIAL/ACTIVE) assigned
-	// and reviewer issues are fetched together and cached SWR by member id, mirroring the sprint caches.
-	// membersRequested is the in-flight guard: New starts it true because Init always prefetches the
-	// roster, so opening the tab mid-prefetch cannot dispatch a duplicate load (whose late failure would
-	// otherwise clobber the good roster into the error state).
+	// Members tab: the roster reuses m.members. membersRequested starts true (Init prefetches).
 	membersRequested   bool
 	membersErr         bool
 	memberCursor       int
@@ -266,30 +249,23 @@ type Model struct {
 	memberWorkFailed   map[int64]bool
 	memberWorkGen      map[int64]int
 
-	// per-member contribution stats, loaded once as a batch the first time the Members tab is opened and
-	// keyed by member id; a member absent from the map (no assigned issues) renders as zeros.
+	// per-member contribution stats, one batch load keyed by member id. An absent member renders as zeros.
 	memberStats          map[int64]domain.MemberStats
 	memberStatsRequested bool
 	memberStatsLoaded    bool
 	memberStatsErr       bool
 	memberStatsGen       int
 
-	// member management actions (Members tab): add (a), change role (r), remove/kick (d). The add flow
-	// loads candidates asynchronously (memberCandidateGen drops a superseded/stale result, and the
-	// loading guard prevents a double-fetch) then opens a multi-select picker. memberActionID pins the
-	// member a role/kick action targets so a background roster reload cannot redirect it; memberActionName
-	// carries that member's name into the confirmation message.
+	// member actions: add (a), role (r), kick (d). memberActionID pins the target against a roster reload.
 	memberCandidateGen     int
 	memberCandidateLoading bool
 	memberActionID         int64
 	memberActionName       string
-	memberRestoreID        int64 // re-select this member (by id) after a post-action roster reload, so a reorder cannot drift the highlight
+	memberRestoreID        int64 // re-select this member after a post-action reload, so a reorder cannot drift the highlight
 	memberConfirming       bool  // the kick confirmation is open
 	memberConfirmUI        widgets.ConfirmForm
 
-	// Config tab: the project's editable settings (title/description/visibility/archived), loaded lazily
-	// the first time the tab is opened and refreshed after an edit/archive action. The edit form and the
-	// archive confirmation float over the settings panel.
+	// Config tab: the project's editable settings, lazy-loaded on first open and refreshed after an edit.
 	project            domain.Project
 	configRequested    bool
 	configLoading      bool
@@ -306,25 +282,20 @@ type Model struct {
 	githubConfirming   bool                     // the open confirm is a GitHub disconnect (not an archive)
 	github             domain.GithubIntegration // GitHub webhook integration status, loaded with the config
 	githubLoaded       bool
-	githubSecret       domain.GithubSecret      // a just-revealed webhook secret (shown once); Secret=="" means none
+	githubSecret       domain.GithubSecret      // a just-revealed webhook secret (shown once). Secret=="" means none
 	githubSecretCopied bool                     // that secret has been copied, so the reveal can say so
 	githubURLCopied    bool                     // the webhook URL has been copied, likewise
 	deliveries         []domain.WebhookDelivery // recent inbound webhooks and how each was handled
 	deliveriesLoaded   bool                     // false when unreadable (not a manager) or not connected
 
-	// Stats tab: the project's issue-statistics snapshot (counts by state/priority/hierarchy plus the
-	// headline totals), loaded lazily the first time the tab is opened and silently refreshed on re-entry
-	// so the counts reflect issues added or resolved since it was last viewed. A read-only panel: no forms
-	// float over it. statsLoading is the sole in-flight guard (there is no first-open-only gate; every open
-	// refreshes), statsLoaded distinguishes the first-load skeleton from a background refresh.
+	// Stats tab: refreshed on every open. statsLoaded separates the first-load skeleton from a refresh.
 	stats        domain.ProjectStats
 	statsLoading bool
 	statsLoaded  bool
 	statsErr     bool
 	statsReqGen  int // bumped per stats fetch so a superseded/stale load's late result is dropped
 	statsScroll  int // first visible line of the overview when it overflows a short terminal
-	// advanced stats loaded alongside the simple snapshot; each has an OK flag so a single failing section
-	// (they are separate member-only endpoints) just hides itself rather than blanking the whole panel.
+	// advanced stats: a per-section OK flag (separate endpoints), so one failure hides only that section.
 	aging    domain.AgingStats
 	agingOK  bool
 	cycle    domain.CycleTimeStats
@@ -334,18 +305,13 @@ type Model struct {
 	velocity domain.Velocity
 	velocOK  bool
 
-	// initial focus requested by the entry (e.g. drilling in from an Inbox notification): pendingIssue
-	// opens that issue's read-only peek on the first layout; pendingSprintID lands on the Sprints tab.
-	// Both are consumed once (cleared on apply) so a later resize does not re-trigger. navSprintID hands
-	// the target sprint to the sprint-list load so it selects it (and loads its issues) on landing.
+	// one-shot entry focus from the Inbox. Consumed on apply, so a resize cannot re-trigger it.
 	pendingIssue    string
 	pendingSprintID int64
 	navSprintID     int64
 }
 
-// WithInitialFocus records a focus target to apply once the screen first lays out: issueKey opens that
-// issue's read-only peek; sprintID (when issueKey is empty) lands on the Sprints tab with that sprint
-// selected. Used by the Inbox to drill from a notification straight to its issue or sprint.
+// WithInitialFocus records a first-layout focus: peek issueKey, else land on sprintID's tab.
 func (m Model) WithInitialFocus(issueKey string, sprintID int64) Model {
 	m.pendingIssue = issueKey
 	if issueKey == "" {
@@ -354,9 +320,7 @@ func (m Model) WithInitialFocus(issueKey string, sprintID int64) Model {
 	return m
 }
 
-// applyPendingFocus consumes a one-shot entry focus (from WithInitialFocus) on the first layout: it
-// opens the requested issue's read-only peek, or lands on the Sprints tab with the requested sprint
-// selected. It clears the pending fields so a later resize cannot re-trigger it.
+// applyPendingFocus consumes the one-shot entry focus, clearing it so a resize cannot re-trigger.
 func (m Model) applyPendingFocus() (Model, tea.Cmd) {
 	if key := m.pendingIssue; key != "" {
 		m.pendingIssue, m.pendingSprintID = "", 0
@@ -370,9 +334,7 @@ func (m Model) applyPendingFocus() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// WithViewer records who is looking, so the screen can tell the caller's own comments from everyone
-// else's. The profile arrives after login (and after a silent restore has already built this screen), so
-// it is set separately rather than passed to New.
+// WithViewer records the caller's username. The profile arrives after New, so it is set separately.
 func (m Model) WithViewer(username string) Model {
 	m.viewer = username
 	return m
@@ -384,7 +346,7 @@ func New(d deps.Deps, projectKey, title string) Model {
 	search.Placeholder = ""
 	return Model{
 		deps: d, projectKey: projectKey, title: title, loading: true,
-		membersRequested: true,                                         // Init prefetches the roster; guard against a duplicate load before it lands
+		membersRequested: true,                                         // Init prefetches the roster, so guard against a duplicate load
 		filter:           initialFilter(d, projectKey), search: search, // restore the last-applied filter for this project
 		details:             map[string]domain.IssueDetail{},
 		detailsPending:      map[string]bool{},
@@ -421,7 +383,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
-	// turning the mouse off can strand focus on the now-hidden filter button; snap it back to the list.
+	// turning the mouse off can strand focus on the now-hidden filter button, so snap back to the list.
 	if !m.focusAvailable(m.focus) {
 		m.focus = focusList
 		m.search.Blur()
@@ -441,8 +403,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.search.SetWidth(m.searchInputWidth())
-		// the panels reflow to the new size, so keep both scroll offsets within the new bounds - else a
-		// grown viewport (smaller max) leaves a stale offset that eats the first scroll key as a dead press
+		// the panels reflow, so re-clamp - a stale offset eats the first scroll key as a dead press
 		m.detailScroll = clampScroll(m.detailScroll, m.detailScrollMax())
 		m.activityScroll = clampScroll(m.activityScroll, m.activityScrollMax())
 		if m.peeking {
@@ -470,7 +431,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, loadIssues(m.deps, m.projectKey, m.filter, m.reqGen, 0, false)
 
 	case prefetchDebounceMsg:
-		// only the last cursor stop's timer prefetches; a scroll that kept moving is handled by its own tick
+		// only the last cursor stop's timer prefetches
 		if msg.seq != m.prefetchSeq {
 			return m, nil
 		}
@@ -482,8 +443,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.loading, m.loadingMore = false, false
 		if msg.err {
-			// a fresh-load failure replaces the body. An append (load-more) failure keeps the pages
-			// already loaded and leaves page.HasNext set, so scrolling down retries.
+			// an append failure keeps the loaded pages and leaves page.HasNext set, so scrolling retries.
 			if !msg.append {
 				m.loadErr = true
 			}
@@ -498,10 +458,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.issues = msg.page.Issues
 			m.morePagesLoaded = false
 			m.cursor = 0
-			// a realtime silent reload preserves the selected issue: restore the cursor to the CURRENT
-			// selection (m.viewKey reflects any navigation the user did during the in-flight window - syncSelection
-			// runs after this) if it is still in the page. rtRestoreKey/Gen only flag that this landing is that
-			// silent reload, so a filter/search that replaced the list still lands on cursor 0.
+			// a silent realtime reload restores the CURRENT selection, including mid-flight navigation.
 			if m.rtRestoreKey != "" && msg.gen == m.rtRestoreGen {
 				if idx := m.indexOfIssue(m.viewKey); idx >= 0 {
 					m.cursor = idx
@@ -512,12 +469,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.cursor >= len(m.issues) {
 			m.cursor = max(0, len(m.issues)-1)
 		}
-		m, sel := m.syncSelection() // point the Details panel at the selected issue and load it
+		m, sel := m.syncSelection()
 		if msg.append {
-			// load-more grew the list below a resting cursor, and syncSelection no-ops because the
-			// selection is unchanged - so the freshly appended rows now within span would never be
-			// warmed until the next cursor move. Warm them here directly: a page arrival is already a
-			// settled event (no debounce needed) and the cache/pending maps dedupe any overlap.
+			// syncSelection no-ops on an unchanged selection, so warm the appended rows here.
 			m, pf := m.prefetchNeighbors()
 			return m, tea.Batch(sel, pf)
 		}
@@ -546,13 +500,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.detailsFailed[msg.key] = false
 		m.details[msg.key] = msg.detail
-		m.patchRow(msg.key, msg.detail) // keep the list row in step with the freshly loaded detail
+		m.patchRow(msg.key, msg.detail)
 		if msg.key == m.viewKey {
-			// a refetch may return shorter content, so keep the scroll offset within the new bounds; else
-			// the next scroll key would jump the old overflow in one press instead of moving by one line
+			// a refetch may return shorter content, so re-clamp - else the next scroll key jumps in one press
 			m.detailScroll = clampScroll(m.detailScroll, m.detailScrollMax())
 			if m.commenting {
-				// stay-open: a posted comment just landed and grew the thread; keep the focused composer visible
+				// a posted comment just landed and grew the thread, so keep the focused composer visible
 				m = m.followCommentFocus()
 			}
 		}
@@ -575,9 +528,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case TransitionDoneMsg:
-		// success: the optimistic state already shows, so refetch in the background (no evict, no skeleton
-		// flash). failure: the optimistic state was wrong, so evict it and refetch - the modal shows the
-		// skeleton then the true state (or the "Failed to load" banner), never fabricated data.
+		// keep the optimistic state on success, evict it on failure - never leave fabricated data on screen.
 		if msg.err {
 			delete(m.details, msg.key)
 			return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Error, msg.errText))
@@ -589,10 +540,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.membersLoaded = true
 		if msg.err {
 			if len(m.members) > 0 {
-				// a silent post-action refresh failed but the roster we were showing is still good: keep it
-				// (a wiped roster plus the action's success toast would contradict each other) and just note
-				// the hiccup, mirroring the sprint list's post-action refresh handling
-				m.memberRestoreID = 0 // this reload will not consume it; drop it so a later reload cannot misfire
+				// the refresh failed but the roster on screen is still good: a wipe would contradict the success toast
+				m.memberRestoreID = 0 // dropped here, so a later reload cannot misfire on it
 				return m, toast.Show(toast.Error, "Couldn't refresh members.")
 			}
 			m.membersErr = true // no roster to fall back on: surface the failure (reopening the tab retries)
@@ -600,10 +549,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.membersErr = false
 		m.members = msg.members
-		m.pruneMemberWork() // drop cached work for members no longer in the roster (e.g. one just kicked)
-		// keep the highlight on the same member across a post-action reload (the roster query is unordered,
-		// so a reorder must not drift the selection); a kicked member is gone, so this falls through to the
-		// cursor clamp and re-selection below
+		m.pruneMemberWork()
+		// keep the highlight on the same member across a post-action reload (the roster is unordered)
 		if id := m.memberRestoreID; id != 0 {
 			m.memberRestoreID = 0
 			for i := range m.members {
@@ -617,7 +564,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.memberCursor = max(0, len(m.members)-1) // a kick may have shrunk the roster past the cursor
 		}
 		if m.tab == tabMembers {
-			return m.syncMemberSelection() // re-points at the cursor's member (loading their work if it changed)
+			return m.syncMemberSelection()
 		}
 		return m, nil
 
@@ -662,8 +609,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case AssignDoneMsg:
-		// same as transitions: keep the optimistic assignee on success (background refetch reconciles),
-		// evict on failure so the wrong assignee is not left on screen if the refetch also fails.
+		// same as transitions: keep the optimistic assignee on success, evict it on failure.
 		if msg.err {
 			delete(m.details, msg.key)
 			return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Error, msg.errText))
@@ -681,8 +627,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onCommentPageLoaded(msg)
 
 	case ReviewDoneMsg:
-		// keep the modal open on failure so the reason stays in place beside the controls that produced it;
-		// refetch either way, since a partial effect (verdict written, comment not) must not be guessed at
+		// keep the modal open on failure. refetch either way: a partial effect must not be guessed at.
 		if msg.err {
 			m.reviewUI.sending = false
 			m.reviewUI.status = msg.errText
@@ -692,8 +637,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Success, msg.text))
 
 	case ReviewerDoneMsg:
-		// refetch either way: on success to show the new roster, on failure because a partial diff may
-		// have applied before the erroring call, so the cached roster can no longer be trusted.
+		// refetch either way: a partial diff may have applied before the erroring call.
 		if msg.err {
 			return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Error, msg.errText))
 		}
@@ -703,16 +647,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onParentEditCandidates(msg)
 
 	case ParentEditDoneMsg:
-		// refetch either way: on success to fill the new parent's type/state, on failure to revert the
-		// optimistic write the reload could not otherwise undo.
+		// refetch either way: on failure it reverts the optimistic write.
 		if msg.err {
 			return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Error, msg.errText))
 		}
 		return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Success, "Parent updated."))
 
 	case EditDoneMsg:
-		// same as transitions/assigns: keep the optimistic edit on success (background refetch
-		// reconciles), evict on failure so wrong values are not left on screen if the refetch also fails.
+		// same as transitions/assigns: keep the optimistic edit on success, evict it on failure.
 		if msg.err {
 			delete(m.details, msg.key)
 			return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Error, msg.errText))
@@ -720,9 +662,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Success, "Issue updated."))
 
 	case CommentDoneMsg:
-		// a comment is additive, so there is nothing to roll back on failure. On success refetch the
-		// detail (its BFF carries the comment thread) so the new comment appears; the cached detail stays
-		// on screen meanwhile, so there is no skeleton flash.
+		// a comment is additive, so nothing to roll back. the refetch pulls the thread from the detail BFF.
 		if m.commenting {
 			return m.onCommentDoneWhileOpen(msg) // stay-open: clear the posted composer, keep the modal up
 		}
@@ -732,13 +672,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Success, "Comment added."))
 
 	case IssueDeletedMsg:
-		// the delete dialog owns the in-flight/error state; route the result there so a failure shows in
-		// place and a success closes the modal and drops the row (works even after the user left the drill-in)
+		// the delete dialog owns the in-flight/error state, so route the result there
 		return m.updateDelete(msg)
 
 	case IssueCreatedMsg:
-		// the form already closed on submit. On success reload the list from the top so the new issue
-		// appears (when it matches the active filter); on failure just surface the error.
+		// the form already closed on submit. reload from the top so the new issue appears if it matches.
 		if msg.err {
 			return m, toast.Show(toast.Error, msg.errText)
 		}
@@ -750,14 +688,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		)
 
 	case createParentPickMsg:
-		// the create form's Parent field asked to open the parent picker
 		return m.openParentPicker()
 	case openDueCreateMsg:
 		return m.openDuePicker(dateDueCreate)
 	case openDueEditMsg:
 		return m.openDuePicker(dateDueEdit)
 	case openParentEditFromFormMsg:
-		return m.openParentEditPicker() // the edit form's Parent field asked to open the parent picker
+		return m.openParentEditPicker()
 	case openCustomDateMsg:
 		return m.openCustomDatePicker(msg.index)
 	case openCustomDateEditMsg:
@@ -767,8 +704,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case relationCandidatesLoadedMsg:
 		return m.onRelationCandidates(msg)
 	case relationDoneMsg:
-		// nothing is applied optimistically, so there is nothing to roll back; on success refetch the detail
-		// (its BFF carries the relations) so the change appears, and surface a rejection as a toast.
+		// nothing optimistic to roll back. the refetch pulls the new relations from the detail BFF.
 		if msg.err {
 			return m, toast.Show(toast.Error, msg.errText)
 		}
@@ -778,17 +714,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		return m, tea.Batch(m.startDetailLoad(msg.key), toast.Show(toast.Success, text))
 	case createTypeFieldsMsg:
-		// the create form's type changed (or it opened): load that type's custom fields
 		return m.requestCustomFields(msg.typeID)
 	case typeFieldsLoadedMsg:
 		return m.onTypeFieldsLoaded(msg)
 	case RealtimeIssueEventMsg:
-		// a live SSE issue event for this project: patch in place (background, regardless of open modals)
 		return m.onRealtimeIssueEvent(msg)
 	case realtimeReloadMsg:
 		return m.onRealtimeReload(msg)
 	case RealtimeSprintEventMsg:
-		// a live SSE sprint event for this project: refresh the sprint list/caches in place (background)
 		return m.onRealtimeSprintEvent(msg)
 	case realtimeSprintReloadMsg:
 		return m.onRealtimeSprintReload(msg)
@@ -807,8 +740,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case sprintMigrateDoneMsg:
 		return m.onSprintMigrateDone(msg)
 	case currentSprintLoadedMsg:
-		// a superseded load (the sprint list, which owns currentSprint once loaded, has since refreshed it)
-		// or a best-effort prefetch failure: keep whatever the authoritative source last set
+		// superseded or failed: keep whatever the sprint list (the authority once loaded) last set
 		if msg.gen != m.currentSprintGen || msg.err {
 			return m, nil
 		}
@@ -816,8 +748,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// an open action form/picker owns the keyboard until it closes. The calendar and the parent picker
-	// float over the create/edit form, so they take input ahead of updateCreate/updateEdit.
+	// an open form/picker owns the keyboard. the calendar and pickers float over it, so they come first.
 	if m.peeking {
 		return m.updatePeek(msg)
 	}
@@ -876,8 +807,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onWheel scrolls the detail when the wheel is over the side panel (or whenever the read-only modal is
-// open on a narrow terminal), and moves the list cursor otherwise.
+// onWheel scrolls the panel under the pointer (or the narrow read-only modal), else moves the cursor.
 func (m Model) onWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	if m.tab == tabSprints {
 		return m.onSprintWheel(msg)
@@ -891,8 +821,7 @@ func (m Model) onWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	if m.tab == tabStats {
 		return m.onStatsWheel(msg)
 	}
-	// each side panel scrolls independently by its own zone; the narrow read-only modal (no side zone)
-	// routes the wheel to whichever view it is currently showing.
+	// the narrow read-only modal has no side zone, so it routes the wheel to the view it is showing.
 	if zone.Get(zoneActivity).InBounds(msg) {
 		m.activityScroll = wheelClamp(m.activityScroll, msg.Button, m.activityScrollMax())
 		return m, nil
@@ -918,8 +847,6 @@ func (m Model) onWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateFilter drives the open filter modal: applying commits the axes and reloads, cancelling drops
-// it, a wheel scrolls the modal when it overflows, and anything else is forwarded to the form.
 func (m Model) updateFilter(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case filterAppliedMsg:
@@ -931,7 +858,7 @@ func (m Model) updateFilter(msg tea.Msg) (Model, tea.Cmd) {
 		m.filter.ReviewerMe = msg.reviewerMe
 		m.filter.ReviewerStatuses = msg.reviewerSts
 		// the search keyword lives in the search box and is left untouched, so the two axes combine
-		m.rememberFilter() // persist the applied filter so re-opening the project restores it
+		m.rememberFilter()
 		m.loading, m.loadErr, m.loadingMore = true, false, false
 		m.reqGen++
 		return m, loadIssues(m.deps, m.projectKey, m.filter, m.reqGen, 0, false)
@@ -975,8 +902,7 @@ func (m Model) selectedIssue() (domain.IssueSummary, bool) {
 	return m.issues[m.cursor], true
 }
 
-// patchRow updates the list row for key from a freshly loaded detail, so a state or assignee change
-// made in the modal shows in the list without a full reload.
+// patchRow updates the list row from a fresh detail, so a modal edit shows without a reload.
 func (m *Model) patchRow(key string, d domain.IssueDetail) {
 	for i := range m.issues {
 		if m.issues[i].Key == key {
@@ -984,12 +910,10 @@ func (m *Model) patchRow(key string, d domain.IssueDetail) {
 			break
 		}
 	}
-	m.patchSprintIssueRows(key, d) // keep the Sprints tab's cached issue lists in step too
+	m.patchSprintIssueRows(key, d)
 }
 
-// patchSprintIssueRows mirrors a detail change into every cached sprint issue list, so a transition or
-// assignment made on the Issues tab shows in the Sprints tab's bottom panel without a refetch (that
-// panel is a separate SWR cache keyed by sprint id, so patchRow alone would leave it stale).
+// patchSprintIssueRows mirrors a detail change into the sprint caches, which patchRow leaves stale.
 func (m *Model) patchSprintIssueRows(key string, d domain.IssueDetail) {
 	for id := range m.sprintIssues {
 		pg := m.sprintIssues[id] // pg.Issues shares its backing array with the map's copy, so element writes persist
@@ -1002,8 +926,7 @@ func (m *Model) patchSprintIssueRows(key string, d domain.IssueDetail) {
 	}
 }
 
-// applyDetailToSummary copies the display fields a detail can change onto a list-row summary. The
-// sprint field is intentionally left alone: IssueDetail carries no sprint, so patchRowSprintID owns it.
+// applyDetailToSummary leaves Sprint alone: IssueDetail carries none, so patchRowSprintID owns it.
 func applyDetailToSummary(it *domain.IssueSummary, d domain.IssueDetail) {
 	it.Title = d.Title
 	it.StateLabel = d.StateLabel
@@ -1013,12 +936,9 @@ func applyDetailToSummary(it *domain.IssueSummary, d domain.IssueDetail) {
 	it.Assigned = d.AssigneeName != ""
 }
 
-// syncSelection points the Details panel at the cursor's issue, loading it (SWR: cached shows at once,
-// otherwise a deduped fetch) and resetting the panel scroll. A no-op when the selection is unchanged.
+// syncSelection points the Details panel at the cursor's issue (SWR load). No-op if unchanged.
 func (m Model) syncSelection() (Model, tea.Cmd) {
-	// while an action form/picker is open, keep viewKey pinned to the issue being acted upon, so a
-	// background list reload (e.g. a search debounce that lands mid-edit) cannot repoint the target and
-	// make a save/comment/transition land on a different issue
+	// keep viewKey pinned under a form/picker, so a reload cannot land the save on a different issue
 	if m.editing || m.editingContent || m.commenting || m.deleting || m.picking || m.reviewing {
 		return m, nil
 	}
@@ -1037,15 +957,14 @@ func (m Model) syncSelection() (Model, tea.Cmd) {
 	if _, cached := m.details[it.Key]; !cached && !m.detailsPending[it.Key] {
 		cmds = append(cmds, m.startDetailLoad(it.Key))
 	}
-	if c := m.maybeLoadActivity(); c != nil { // load the activity too when its view is showing
+	if c := m.maybeLoadActivity(); c != nil {
 		cmds = append(cmds, c)
 	}
-	cmds = append(cmds, m.armNeighborPrefetch()) // warm the rows around the cursor once it settles
+	cmds = append(cmds, m.armNeighborPrefetch())
 	return m, tea.Batch(cmds...)
 }
 
-// startDetailLoad bumps the load generation for key and returns the fetch command, so a superseded
-// in-flight load for the same issue is ignored when it lands (mirrors the issue list's reqGen).
+// startDetailLoad bumps the key's generation, so a superseded in-flight load is ignored when it lands.
 func (m *Model) startDetailLoad(key string) tea.Cmd {
 	m.detailGen[key]++
 	m.detailsPending[key] = true
@@ -1053,19 +972,15 @@ func (m *Model) startDetailLoad(key string) tea.Cmd {
 	return loadDetail(m.deps, key, m.detailGen[key])
 }
 
-// armNeighborPrefetch bumps the prefetch generation and returns a debounced tick carrying it, so a fast
-// scroll through many rows warms neighbors only at the row it finally rests on (mirrors the search
-// debounce). Pointer receiver so the bump propagates through the value-receiver syncSelection.
+// armNeighborPrefetch debounces, so a fast scroll warms neighbors only where it rests.
+// Pointer receiver, so the bump propagates through the value-receiver syncSelection.
 func (m *Model) armNeighborPrefetch() tea.Cmd {
 	m.prefetchSeq++
 	seq := m.prefetchSeq
 	return tea.Tick(prefetchDebounce, func(time.Time) tea.Msg { return prefetchDebounceMsg{seq: seq} })
 }
 
-// prefetchNeighbors warms the detail cache for the rows within prefetchSpan of the cursor, so scrolling
-// onto one shows its detail without the skeleton flash. Cache-warm only: it fires the same deduped load
-// a selection would, but never repoints viewKey, and IssueDetailLoadedMsg only touches the view when its
-// key matches viewKey - so a landing prefetch is invisible until the cursor actually reaches that row.
+// prefetchNeighbors warms the detail cache around the cursor. It never repoints viewKey.
 func (m Model) prefetchNeighbors() (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	for d := 1; d <= prefetchSpan; d++ {
@@ -1086,10 +1001,7 @@ func (m Model) prefetchNeighbors() (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// onDetailKey drives the Details/Activity panel while it is focused: esc/tab return to the list, R
-// retries a failed load, and the scroll keys move the windowed body. The per-issue action keys
-// (e/t/a/r/c/d/v) are handled ahead of the focus dispatch in onKey, so they work here too without being
-// listed again.
+// onDetailKey drives the focused Details/Activity panel. The per-issue action keys run earlier, in onKey.
 func (m Model) onDetailKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc", "q", "backspace":
@@ -1118,8 +1030,7 @@ func (m Model) onDetailKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// scrollActiveBy scrolls the view the keyboard currently drives - the Activity view when it is toggled
-// on, else the Details view.
+// scrollActiveBy scrolls whichever view the keyboard drives: Activity when toggled on, else Details.
 func (m *Model) scrollActiveBy(delta int) {
 	if m.showActivity {
 		m.activityScroll = clampScroll(m.activityScroll+delta, m.activityScrollMax())
@@ -1136,8 +1047,7 @@ func (m *Model) setActiveScroll(v int) {
 	m.detailScroll = clampScroll(v, m.detailScrollMax())
 }
 
-// retryActiveLoad refetches whichever view the keyboard drives, so r retries a failed Activity load
-// when the Activity view is showing and a failed detail load otherwise.
+// retryActiveLoad refetches whichever view the keyboard drives (Activity when showing, else detail).
 func (m *Model) retryActiveLoad() tea.Cmd {
 	if m.showActivity {
 		if m.activitiesPending[m.viewKey] {
@@ -1155,7 +1065,6 @@ const detailWheelStep = 2
 
 func clampScroll(v, maxOff int) int { return min(max(v, 0), maxOff) }
 
-// wheelClamp steps a scroll offset up or down by the wheel step, clamped to [0, maxOff].
 func wheelClamp(cur int, btn tea.MouseButton, maxOff int) int {
 	switch btn {
 	case tea.MouseWheelUp:
@@ -1166,7 +1075,6 @@ func wheelClamp(cur int, btn tea.MouseButton, maxOff int) int {
 	return clampScroll(cur, maxOff)
 }
 
-// onHover records the row or button under the cursor so it can be highlighted.
 func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 	m.hover = ""
 	if zone.Get(zoneSearch).InBounds(msg) {
@@ -1191,22 +1099,19 @@ func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 			return m, nil
 		}
 	}
-	// checked before the issue-row loop (as in onClick): in narrow mode the read-only modal floats over
-	// the full-width list, whose row zones survive in the backdrop, so a reply link inside the modal
-	// would otherwise match the row behind it and never highlight.
+	// before the row loop: in narrow mode the backdrop list's row zones would swallow the reply link.
 	if id, _, ok := m.hitCommentReply(msg); ok {
 		m.hover = commentReplyZone(id)
 		return m, nil
 	}
-	// inline edit pens, checked before the row loop for the same narrow-modal-over-list reason as replies.
+	// inline edit pens, before the row loop for the same narrow-modal reason.
 	for _, z := range []string{zoneEditIssue, zoneEditState, zoneEditAssignee, zoneEditReviewers, zoneAddChild, zoneAddRelation, zoneEditContent} {
 		if zone.Get(z).InBounds(msg) {
 			m.hover = z
 			return m, nil
 		}
 	}
-	// linked-issue keys (parent/child/relation), also before the row loop: in narrow mode the detail modal
-	// floats over the list, whose row zones survive in the backdrop and would otherwise match instead.
+	// linked-issue keys, also before the row loop for the same narrow-modal reason.
 	if z, ok := m.hoverPeekZone(msg); ok {
 		m.hover = z
 		return m, nil
@@ -1239,10 +1144,7 @@ func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
-	// Per-issue actions act on the highlighted issue from the list or the Details panel, so the user need
-	// not tab into Details first. They fire only from those two issue-viewing focuses - not from the
-	// search box (letters must type into the query) nor the filter button (a control, whose help would
-	// otherwise advertise nothing while the keys silently acted).
+	// list and Details focus only - in the search box letters must type into the query.
 	if m.tab == tabIssues && (m.focus == focusList || m.focus == focusDetail) {
 		if nm, cmd, ok := m.issueAction(msg); ok {
 			return nm, cmd
@@ -1260,9 +1162,7 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	}
 }
 
-// issueAction handles the per-issue action keys shared across every non-search focus. ok is false when
-// msg is not an action key, so the caller falls through to the focus-specific handler. Each opener
-// guards on the selected issue (and its loaded detail), so acting from the list is safe.
+// issueAction returns ok=false for a key it does not own, so the caller falls through to its focus handler.
 func (m Model) issueAction(msg tea.KeyPressMsg) (Model, tea.Cmd, bool) {
 	switch msg.String() {
 	case "e":
@@ -1305,9 +1205,7 @@ func (m Model) issueAction(msg tea.KeyPressMsg) (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// toggleActivity flips the Activity view, loading it lazily. Wide: it adds/removes the Activity column
-// (or swaps it in for Details). Narrow: the Activity view is a read-only modal that only shows while
-// Details is focused, so turning it on from the list also focuses Details to open that modal.
+// toggleActivity loads lazily. Narrow: Activity is a modal, so turning it on focuses Details too.
 func (m Model) toggleActivity() (Model, tea.Cmd) {
 	m.showActivity = !m.showActivity
 	m.activityScroll = 0
@@ -1324,9 +1222,7 @@ func (m Model) onListKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	m.hover = "" // the keyboard is driving now, so drop any stale mouse-hover highlight
 	switch msg.String() {
 	case "backspace":
-		// backspace is the deliberate leave-to-home. esc is intentionally NOT bound here: from the list
-		// root it does nothing, so a reflex esc cannot escape the project (esc only steps back a level
-		// from the search box, filter button, or Details focus).
+		// esc is intentionally NOT bound here, so a reflex press cannot escape the project.
 		return m, back
 	case "1", "2", "3", "4", "5":
 		return m.switchTab(msg)
@@ -1359,7 +1255,7 @@ func (m Model) onListKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 		return m.openCreateForm()
 	case "enter":
 		if _, ok := m.selectedIssue(); ok {
-			return m.setFocus(focusDetail) // the panel already shows this issue; focus it to act/scroll
+			return m.setFocus(focusDetail) // the panel already shows this issue, so focus it to act/scroll
 		}
 		return m, nil
 	case "up", "k":
@@ -1380,8 +1276,6 @@ func (m Model) onListKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onFilterKey drives the search row's filter button while it is focused: enter/space opens the modal,
-// tab cycles focus, and a digit still switches tabs (dropping back to the list).
 func (m Model) onFilterKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "tab":
@@ -1410,13 +1304,11 @@ func (m Model) switchTab(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// selectTab activates a sub-tab, kicking off its lazy load the first time it is opened. Only the
-// Sprints tab loads on demand; the Issues tab was already loaded in Init.
+// selectTab activates a sub-tab, kicking off its lazy load on first open (Issues: Init loaded it).
 func (m Model) selectTab(t projectTab) (Model, tea.Cmd) {
 	m.tab = t
 	if t != tabIssues && m.focus != focusList {
-		// only the Issues tab has search/filter/detail focuses; keep the keyboard on the list elsewhere so
-		// a focus left over from Issues does not swallow the other tabs' keys
+		// only Issues has search/filter/detail focuses, so a leftover focus would swallow other tabs' keys
 		m.search.Blur()
 		m.focus = focusList
 	}
@@ -1434,8 +1326,7 @@ func (m Model) selectTab(t projectTab) (Model, tea.Cmd) {
 			cmds = append(cmds, loadMembers(m.deps, m.projectKey))
 			return m, tea.Batch(cmds...)
 		}
-		// reopening the tab retries a failed work load for the current member: in a single-member project
-		// the selection never changes, so syncMemberSelection alone can never recover it (mirrors Sprints)
+		// with a single member the selection never changes, so only reopening can retry a failed work load
 		if id := m.selMemberID; id != 0 {
 			if _, cached := m.memberWork[id]; !cached && m.memberWorkFailed[id] && !m.memberWorkPending[id] {
 				cmds = append(cmds, m.startMemberWorkLoad(id))
@@ -1447,8 +1338,7 @@ func (m Model) selectTab(t projectTab) (Model, tea.Cmd) {
 		return m, tea.Batch(cmds...)
 	}
 	if t == tabConfig {
-		// re-entering Config hides any one-time webhook secret from a prior reveal: the reload path clears it
-		// via onConfigLoaded, but the already-loaded no-reload path would otherwise leave it on screen
+		// hide a prior one-time webhook secret: the no-reload path would otherwise leave it on screen
 		m.githubSecret, m.githubSecretCopied, m.githubURLCopied = domain.GithubSecret{}, false, false
 		if !m.configRequested || (m.configErr && !m.configLoading) {
 			return m.loadProjectConfig()
@@ -1462,8 +1352,7 @@ func (m Model) selectTab(t projectTab) (Model, tea.Cmd) {
 		if !m.sprintsRequested {
 			return m.loadSprintList()
 		}
-		// reopening the tab also retries a failed issue load for the current sprint: in a single-sprint
-		// project the selection never changes, so syncSprintSelection alone can never recover it
+		// with a single sprint the selection never changes, so only reopening can retry a failed issue load
 		if id := m.selSprintID; id != 0 {
 			if _, cached := m.sprintIssues[id]; !cached && m.sprintIssuesFailed[id] && !m.sprintIssuesPending[id] {
 				return m, m.startSprintIssuesLoad(id)
@@ -1475,13 +1364,10 @@ func (m Model) selectTab(t projectTab) (Model, tea.Cmd) {
 
 func (m Model) focusSearch() (Model, tea.Cmd) { return m.setFocus(focusSearch) }
 
-// cycleFocus advances focus around the ring list -> search -> filter -> detail -> list. In narrow mode
-// focusDetail means "the read-only modal is open", which only enter/click should trigger, so the ring
-// skips it there (list -> search -> filter -> list); a single extra step always lands on a real cell.
+// cycleFocus rings list -> search -> filter -> detail. Narrow skips detail (enter/click opens it).
 func (m Model) cycleFocus(delta int) (Model, tea.Cmd) {
 	next := m.focus
-	// step in the requested direction, skipping any focus that is not a live Tab stop right now, so the
-	// ring never lands on an invisible control. focusList is always available, so the loop terminates.
+	// skip focuses that are not live Tab stops. focusList is always available, so the loop terminates.
 	for i := 0; i < int(focusCount); i++ {
 		next = (next + projectFocus(delta) + focusCount) % focusCount
 		if m.focusAvailable(next) {
@@ -1491,9 +1377,6 @@ func (m Model) cycleFocus(delta int) (Model, tea.Cmd) {
 	return m.setFocus(next)
 }
 
-// focusAvailable reports whether target is a live Tab stop. The filter button is a click affordance
-// hidden with the mouse off (the f key opens the filter instead), and in narrow mode Details is a modal
-// opened by enter/click rather than a Tab stop.
 func (m Model) focusAvailable(target projectFocus) bool {
 	switch target {
 	case focusFilter:
@@ -1505,9 +1388,7 @@ func (m Model) focusAvailable(target projectFocus) bool {
 }
 
 func (m Model) setFocus(target projectFocus) (Model, tea.Cmd) {
-	// In narrow mode the Details/Activity view is a modal shown only while Details is focused; leaving
-	// that focus closes it, so drop the Activity toggle too. Otherwise showActivity lingers invisibly
-	// true and the next v from the list toggles it back off with no visible effect (a dead first press).
+	// narrow: leaving Details closes the modal, so drop showActivity - else the next v is a dead press.
 	if m.narrow() && m.focus == focusDetail && target != focusDetail {
 		m.showActivity = false
 	}
@@ -1520,8 +1401,6 @@ func (m Model) setFocus(target projectFocus) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onSearchKey drives the search box while it is focused. esc/enter hand focus back to the list, tab
-// advances to the filter button; every other key edits the query and (re)arms the debounce timer.
 func (m Model) onSearchKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc", "enter":
@@ -1540,8 +1419,7 @@ func (m Model) onSearchKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmd, tea.Tick(searchDebounce, func(time.Time) tea.Msg { return searchDebounceMsg{seq: seq} }))
 }
 
-// When the cursor reaches the end of the loaded issues with more pages available, requests the next
-// page (appended).
+// moveCursor moves the cursor, appending the next page when it runs past the loaded issues.
 func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 	next := m.cursor + delta
 	if next < 0 {
@@ -1556,13 +1434,11 @@ func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 		}
 	}
 	m.cursor = next
-	m, sel := m.syncSelection() // the Details panel follows the cursor
+	m, sel := m.syncSelection()
 	return m, tea.Batch(loadMore, sel)
 }
 
-// hitBranchLink reports whether a click landed on a branch name, commit hash or pull request in the loaded
-// detail, and returns the command that opens its URL. Mouse-only and off during a peek, matching how the
-// links render.
+// hitBranchLink is mouse-only and off during a peek, matching how the links render.
 func (m Model) hitBranchLink(msg tea.MouseClickMsg) (tea.Cmd, bool) {
 	if !m.deps.Mouse || m.peeking || m.viewKey == "" {
 		return nil, false
@@ -1600,24 +1476,19 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	if zone.Get(zoneNew).InBounds(msg) {
 		return m.openCreateForm()
 	}
-	// a click on a comment's Reply affordance opens the comment modal pre-targeted at that comment.
-	// Checked before the panel zone, which spans the whole Details panel and would otherwise swallow
-	// the click as a focus.
+	// before the panel zone, which spans all of Details and would swallow this click as a focus.
 	if pid, _, ok := m.hitCommentReply(msg); ok {
 		return m.openCommentSection(pid)
 	}
-	// a click on a linked issue's key (parent/child/relation) opens its read-only peek. Checked before the
-	// panel zone, which spans the whole Details area and would otherwise swallow the click as a focus.
+	// linked-issue keys open a peek. Checked before the panel zone for the same swallow reason.
 	if key, ok := m.hitPeek(msg); ok {
 		return m.openPeek(key)
 	}
-	// a click on a branch name or commit hash opens that link in the browser. Checked before the panel
-	// zone, which spans the whole Details area and would otherwise swallow the click as a focus.
+	// branch and commit links open in the browser. Checked before the panel zone for the same reason.
 	if cmd, ok := m.hitBranchLink(msg); ok {
 		return m, cmd
 	}
-	// inline edit pens (mouse only), also checked before the panel zone. Each opens the same editor its
-	// keyboard shortcut does, and each opener guards on the loaded detail so a click is safe.
+	// inline edit pens (mouse only), also before the panel zone. Each opener guards on the loaded detail.
 	if zone.Get(zoneEditIssue).InBounds(msg) {
 		return m.openEditForm()
 	}
@@ -1643,8 +1514,7 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	if zone.Get(zoneDetail).InBounds(msg) || zone.Get(zoneActivity).InBounds(msg) {
 		return m.setFocus(focusDetail)
 	}
-	// any other click (a tab, the back affordance, a row) hands focus back to the list, so the keyboard
-	// never stays routed to the search box or filter button the target no longer shows
+	// any other click hands focus back to the list, so the keyboard is not left on a hidden control
 	if m.focus != focusList {
 		m.search.Blur()
 		m.focus = focusList
@@ -1679,7 +1549,7 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 		for i := range m.issues {
 			if zone.Get(issueRowZone(i)).InBounds(msg) {
 				m.cursor = i
-				m, sel := m.syncSelection() // the Details panel/modal follows the clicked row
+				m, sel := m.syncSelection()
 				if m.narrow() {
 					// no side panel to reveal, so a click opens the read-only detail modal on that issue
 					mf, foc := m.setFocus(focusDetail)
@@ -1692,9 +1562,7 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// hitCommentReply reports whether the mouse is over a rendered comment's Reply affordance, returning
-// that comment's id and author so a reply can be threaded under it. It walks the loaded comment tree;
-// a zone that is not currently rendered (scrolled out of view) simply never matches.
+// hitCommentReply: a zone scrolled out of view is not rendered, so it never matches.
 func (m Model) hitCommentReply(msg tea.MouseMsg) (int64, string, bool) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -1715,9 +1583,7 @@ func (m Model) hitCommentReply(msg tea.MouseMsg) (int64, string, bool) {
 	return walk(d.Comments)
 }
 
-// HelpTitle names the help modal after the project being drilled into, so it reads "{project} · Help"
-// like the top-level tabs do. Falls back to the project key, then a generic label, when the display
-// title was not carried in (e.g. the restore-into-project path).
+// HelpTitle names the help modal after the project, falling back to its key when no title came in.
 func (m Model) HelpTitle() string {
 	if m.title != "" {
 		return m.title
@@ -1815,12 +1681,10 @@ func (m Model) HelpKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "list")),
 		}
 	}
-	// 1-4 tab, r reload and backspace back live on the footer's top (global) line via GlobalKeys; the
-	// bottom line carries only the contextual list actions.
+	// tab, reload and back live on the footer's global line (GlobalKeys), so only contextual keys here.
 	var binds []key.Binding
 	if m.tab == tabIssues {
-		// enter (open Details) is omitted on purpose: it is the conventional "open the row" gesture and
-		// would only crowd the footer. The key still works; it is just not advertised here or in Help.
+		// enter (open Details) still works, it is just not advertised - it would only crowd the footer.
 		binds = append(binds,
 			key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 		)
@@ -1837,7 +1701,6 @@ func (m Model) HelpKeys() []key.Binding {
 			// new needs no selection, so it is offered even on an empty tab
 			key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new")),
 		)
-		// the applicable lifecycle actions depend on the selected sprint's status
 		if sp, ok := m.selectedSprint(); ok {
 			switch sp.Status {
 			case "PLANNING":
@@ -1858,8 +1721,7 @@ func (m Model) HelpKeys() []key.Binding {
 				}
 			}
 		}
-		// migrate acts on the current sprint (not the highlighted row), so it is offered whenever there is
-		// an active sprint and a later planning sprint to move its incomplete issues into
+		// migrate acts on the current sprint, not the highlighted row
 		if m.currentSprint != nil && findNextPlanningSprint(m.sprints) != nil {
 			binds = append(binds, key.NewBinding(key.WithKeys("m"), key.WithHelp("m", "migrate")))
 		}
@@ -1869,7 +1731,7 @@ func (m Model) HelpKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 			key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "add")),
 		)
-		// role and remove act on the highlighted member, so they are offered only when one is selected
+		// role and remove need a highlighted member
 		if _, ok := m.selectedMember(); ok {
 			binds = append(binds,
 				key.NewBinding(key.WithKeys("r"), key.WithHelp("r", "role")),
@@ -1889,8 +1751,7 @@ func (m Model) HelpKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
 			key.NewBinding(key.WithKeys("a"), key.WithHelp("a", archiveLabel)),
 		)
-		// the copy keys are offered only when they have something to copy: the URL for as long as the
-		// integration exists, the one-time secret only while its reveal is on screen
+		// offered only when there is something to copy (the secret only while its reveal is on screen)
 		if m.githubLoaded && m.github.WebhookURL != "" {
 			binds = append(binds, key.NewBinding(key.WithKeys("u"), key.WithHelp("u", "copy URL")))
 		}
@@ -1901,14 +1762,12 @@ func (m Model) HelpKeys() []key.Binding {
 	return binds
 }
 
-// GlobalKeys are the drill-in's navigation hints shown on the footer's top (global) line: its sub-tab
-// switch, the list reload, and the leave key - kept apart from the per-issue actions below.
+// GlobalKeys are the navigation hints on the footer's top line, kept apart from the per-issue actions.
 func (m Model) GlobalKeys() []key.Binding {
 	binds := []key.Binding{
 		key.NewBinding(key.WithKeys("1", "2", "3", "4", "5"), key.WithHelp("1-5", "tab")),
 	}
-	// reload and the leave key act only from the list focus (onListKey). The filter button focus - the
-	// other non-capturing focus where this row shows - ignores them, so do not advertise inert keys there.
+	// reload and back act only from the list focus, so do not advertise them as inert on the filter button.
 	if m.focus == focusList {
 		if m.tab == tabIssues {
 			binds = append(binds, key.NewBinding(key.WithKeys("R"), key.WithHelp("R", "reload")))
@@ -1918,8 +1777,7 @@ func (m Model) GlobalKeys() []key.Binding {
 	return binds
 }
 
-// issueActionBinds are the per-issue action key hints shared by the list and Details focus, since the
-// actions work from both.
+// issueActionBinds are the per-issue action hints shared by the list and Details focus.
 func (m Model) issueActionBinds() []key.Binding {
 	binds := []key.Binding{
 		key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
@@ -1934,8 +1792,7 @@ func (m Model) issueActionBinds() []key.Binding {
 		key.NewBinding(key.WithKeys("V"), key.WithHelp("V", "review")),
 		key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "add to sprint")),
 	}
-	// unlink is offered only when the viewed issue owns a relation it can actually drop: the inverse of a
-	// directional relation has to be removed from the other issue, so advertising it here would mislead
+	// unlink is offered only for relations this issue owns - an inverse must be dropped from the other one
 	if len(m.removableRelations()) > 0 {
 		binds = append(binds, key.NewBinding(key.WithKeys("U"), key.WithHelp("U", "unlink")))
 	}
@@ -1974,8 +1831,7 @@ func loadIssueTypes(d deps.Deps) tea.Cmd {
 	}
 }
 
-// IssueDetailLoadedMsg is exported so the app shell can route this background result back to the
-// project screen even when the user has left the drill-in before the fetch landed.
+// IssueDetailLoadedMsg is exported so the app shell can route a late result back after the user left.
 type IssueDetailLoadedMsg struct {
 	key    string
 	gen    int

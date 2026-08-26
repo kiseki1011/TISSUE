@@ -24,8 +24,7 @@ const (
 
 const ttl = 4 * time.Second
 
-// textWidth is fixed. The border adds one inset and one rule on each side, so every toast in the
-// stack lines up to the same width.
+// textWidth is fixed so every toast in the stack lines up to the same width.
 const textWidth = 32
 
 // maxVisible caps the stack so a burst of toasts cannot fill the screen. The oldest scroll off.
@@ -106,8 +105,7 @@ func (m Model) Reglyph(g glyph.Set) Model {
 	return m
 }
 
-// View stacks the toasts into a right-aligned block (newest at the bottom, nearest the corner),
-// or "" when empty.
+// View stacks the toasts right-aligned, newest at the bottom, or "" when empty.
 func (m Model) View() string {
 	if len(m.items) == 0 {
 		return ""

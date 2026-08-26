@@ -9,8 +9,7 @@ import (
 
 var hierarchies = []string{"EPIC", "STANDARD", "SUBTASK", "MICROTASK"}
 
-// The chip's whole point is a background color behind the label, which no rendering test
-// elsewhere can observe (they strip ANSI). Pin it here.
+// Other render tests strip ANSI, so the chip's background is only observable here.
 func TestHierarchyChipPaintsBackground(t *testing.T) {
 	for _, h := range hierarchies {
 		chip := HierarchyChip(h)
@@ -41,8 +40,7 @@ func TestHierarchyColorsAreDistinct(t *testing.T) {
 	}
 }
 
-// The ANSI theme paints Selection, Surface, Muted and Border all with color 8, so a chip
-// using it would disappear into a selected row.
+// The ANSI theme paints Selection with color 8, so a chip using it vanishes into a selected row.
 func TestHierarchyColorsAvoidANSIGray(t *testing.T) {
 	gray := lipgloss.NewStyle().Background(lipgloss.ANSIColor(8)).Render("x")
 	for _, h := range append(hierarchies, "SOMETHING_UNKNOWN") {
@@ -52,7 +50,7 @@ func TestHierarchyColorsAvoidANSIGray(t *testing.T) {
 	}
 }
 
-// Casing comes from whatever the API returns; an unknown value must still render.
+// Casing comes from whatever the API returns. An unknown value must still render.
 func TestHierarchyChipTolerantOfInput(t *testing.T) {
 	if HierarchyColor("epic") != HierarchyColor("EPIC") {
 		t.Error("lowercase hierarchy does not resolve to its uppercase color")

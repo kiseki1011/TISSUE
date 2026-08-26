@@ -18,9 +18,8 @@ func NewSprintService(api *client.ClientWithResponses) *SprintService {
 	return &SprintService{api: api}
 }
 
-// ListProjectSprints returns one page of a project's sprints (all statuses). page is 0-based. The
-// backend paginates via a Spring Pageable, so page/size go through the Pageable struct rather than
-// flat query params like the issue search does.
+// ListProjectSprints returns one 0-based page of all statuses. This endpoint paginates via a Spring
+// Pageable, not the flat query params the issue search uses.
 func (s *SprintService) ListProjectSprints(ctx context.Context, projectKey string, page, size int) (SprintPage, error) {
 	p, sz := int32(page), int32(size)
 	params := &client.ListProjectSprintsParams{Pageable: client.Pageable{Page: &p, Size: &sz}}
@@ -34,8 +33,7 @@ func (s *SprintService) ListProjectSprints(ctx context.Context, projectKey strin
 	return toSprintPage(resp.JSON200), nil
 }
 
-// StartSprint moves a PLANNING sprint to ACTIVE with the given due date (Instant). The server sets the
-// start timestamp to now, so only the due date is sent.
+// StartSprint moves a PLANNING sprint to ACTIVE. The server timestamps the start, so only due is sent.
 func (s *SprintService) StartSprint(ctx context.Context, id int64, dueAt time.Time) error {
 	resp, err := s.api.StartSprintWithResponse(ctx, id, client.StartSprintRequest{DueAt: dueAt})
 	if err != nil {
@@ -44,8 +42,7 @@ func (s *SprintService) StartSprint(ctx context.Context, id int64, dueAt time.Ti
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// CompleteSprint closes an ACTIVE sprint. The server rejects it when the sprint still holds incomplete
-// issues.
+// CompleteSprint closes an ACTIVE sprint. Rejected while the sprint still holds incomplete issues.
 func (s *SprintService) CompleteSprint(ctx context.Context, id int64) error {
 	resp, err := s.api.CompleteSprintWithResponse(ctx, id)
 	if err != nil {
@@ -63,8 +60,7 @@ func (s *SprintService) CancelSprint(ctx context.Context, id int64) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// AddSprintIssues adds issues (by key) to a sprint. Rejected when the sprint is closed or an issue
-// belongs to a different project.
+// AddSprintIssues adds issues by key. Rejected when the sprint is closed or an issue is cross-project.
 func (s *SprintService) AddSprintIssues(ctx context.Context, id int64, keys []string) error {
 	resp, err := s.api.AddSprintIssuesWithResponse(ctx, id, client.AddSprintIssuesRequest{IssueKeys: keys})
 	if err != nil {
@@ -82,9 +78,7 @@ func (s *SprintService) RemoveSprintIssues(ctx context.Context, id int64, keys [
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// MigrateSprintIssues carries the source sprint's incomplete issues over to the target sprint. The
-// server moves every incomplete issue in the source (there is no per-issue selection); both sprints must
-// be open. Rejected with 403 without the MANAGER role.
+// MigrateSprintIssues moves every incomplete issue, with no per-issue selection. Both sprints must be open.
 func (s *SprintService) MigrateSprintIssues(ctx context.Context, sourceID, targetID int64) error {
 	resp, err := s.api.MigrateSprintIssuesWithResponse(ctx, sourceID, client.MigrateIssuesRequest{NewSprintId: targetID})
 	if err != nil {
@@ -93,8 +87,7 @@ func (s *SprintService) MigrateSprintIssues(ctx context.Context, sourceID, targe
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// CreateSprint adds a sprint to the project in PLANNING, returning its id so the caller can point the
-// list at it. The sprint's due date is not set here: it is chosen when the sprint is started.
+// CreateSprint adds a PLANNING sprint and returns its id. The due date is chosen when the sprint starts.
 func (s *SprintService) CreateSprint(ctx context.Context, projectKey, title, goal string) (int64, error) {
 	body := client.CreateSprintRequest{Title: title}
 	if goal != "" {
@@ -110,8 +103,7 @@ func (s *SprintService) CreateSprint(ctx context.Context, projectKey, title, goa
 	return derefInt64to64(resp.JSON201.SprintId), nil
 }
 
-// DeleteSprint permanently removes a sprint. The server allows this only for a CANCELLED sprint, so a
-// sprint with live work cannot be erased.
+// DeleteSprint permanently removes a sprint. The server allows it only for a CANCELLED one.
 func (s *SprintService) DeleteSprint(ctx context.Context, id int64) error {
 	resp, err := s.api.DeleteSprintWithResponse(ctx, id)
 	if err != nil {
@@ -120,8 +112,7 @@ func (s *SprintService) DeleteSprint(ctx context.Context, id int64) error {
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// CurrentSprint returns the project's active sprint, or nil when there is none. Used by the issue tab's
-// "add to current sprint" action, which needs the active sprint's id without loading the whole list.
+// CurrentSprint returns the project's active sprint, or nil. Avoids loading the whole list for one id.
 func (s *SprintService) CurrentSprint(ctx context.Context, projectKey string) (*SprintSummary, error) {
 	page, size := int32(0), int32(1)
 	statuses := []client.ListProjectSprintsParamsStatuses{client.ListProjectSprintsParamsStatusesACTIVE}
@@ -141,8 +132,7 @@ func (s *SprintService) CurrentSprint(ctx context.Context, projectKey string) (*
 	return &sp, nil
 }
 
-// UpdateSprint PATCHes a sprint's title, goal, and/or due date. Only the set fields are sent; ClearDue
-// nulls the due date.
+// UpdateSprint PATCHes title, goal, and due. Only set fields are sent. ClearDue nulls the due date.
 func (s *SprintService) UpdateSprint(ctx context.Context, id int64, e SprintEdit) error {
 	var body client.UpdateSprintRequest
 	if e.Title != nil {

@@ -23,7 +23,6 @@ func (m Model) deleteForPane() (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// Deleting a global type affects every project, so the confirm copy spells that out.
 func (m Model) deleteSelectedType() (Model, tea.Cmd, bool) {
 	t, ok := m.selectedType()
 	if !ok {
@@ -89,7 +88,7 @@ func deleteCatalogErrorMessage(err error, noun string) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's own explanation
 	}
 	return "Could not delete the " + noun + ". Try again."
 }

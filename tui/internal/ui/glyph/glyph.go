@@ -1,5 +1,4 @@
-// Package glyph maps named symbols to a Nerd Font glyph or a plain Unicode
-// fallback so the UI stays readable on terminals without a Nerd Font.
+// Package glyph maps named symbols to a Nerd Font glyph or a plain Unicode fallback.
 package glyph
 
 import (
@@ -11,7 +10,7 @@ import (
 type Mode int
 
 const (
-	// Auto uses Nerd only when the environment advertises one (see detectNerd).
+	// Auto uses Nerd only when the environment advertises one.
 	Auto Mode = iota
 	Nerd
 	Unicode
@@ -180,11 +179,10 @@ type Set struct {
 	TransitionConnection string
 	Computer             string
 
-	nerd bool // whether nerd glyphs are in use — gates Or's fallback override
+	nerd bool // gates Or's fallback override
 }
 
-// variant pairs a Nerd Font glyph with its plain Unicode fallback, both stored as
-// ASCII escapes so an editor cannot mangle them.
+// variant pairs a Nerd glyph with its Unicode fallback, kept as escapes so editors cannot mangle them.
 type variant struct{ nerd, unicode string }
 
 var (
@@ -316,8 +314,7 @@ var (
 	mail = variant{"\uf42f", "\u2709"}
 	//   📬
 	mailRead = variant{"\ueb1b", "\U0001f4ec"}
-	// hardcoded U+21A9 leftwards-arrow-with-hook in both modes (like filter): the plain BMP hook-arrow
-	// reads the same everywhere, so the reply affordance stays visually consistent regardless of font
+	// U+21A9 in both modes: the plain BMP hook-arrow renders the same in every font
 	reply = variant{"\u21a9", "\u21a9"}
 	//   🎯
 	goal = variant{"\uf4de", "\U0001f3af"}
@@ -371,10 +368,9 @@ var (
 	accountSearch = variant{"\U000f0016", "\U0001f50d"}
 	// nf-fa-history, fallback clockwise arrow
 	lastUpdated = variant{"\uf1da", "\u21bb"}
-	// \udb82\udcbe  nf-md-priority (plane-15). Empty fallback: call sites pass their own text (list header "Pri",
-	// Details ""). Nerd terminals show the glyph; fallback mode uses the override.
+	// nf-md-priority (plane-15). Empty fallback so call sites pass their own text through Or.
 	priority = variant{"\U000f08be", ""}
-	// nf-fa-id-badge, fallback white diamond with small diamond
+	// nf-fa-id-badge, fallback ◈
 	accountBadge = variant{"\uf2c2", "\u25c8"}
 	// 󰍂  →
 	login = variant{"\U000f0342", "\u2192"}
@@ -382,7 +378,7 @@ var (
 	logout = variant{"\U000f0343", "\u2190"}
 	// 󰻾  🆔
 	identifier = variant{"\U000f0efe", "\U0001f194"}
-	// hardcoded filled down-triangle U+25BC (not a Nerd glyph): every nerd funnel/sliders glyph read off-centre in this IntelliJ font, so a plain BMP shape is used in both modes
+	// U+25BC in both modes: every nerd funnel/sliders glyph reads off-centre in the IntelliJ font
 	filter = variant{"\u25bc", "\u25bc"}
 	//   ▤
 	listFilter = variant{"\ueb83", "\u25a4"}
@@ -418,8 +414,7 @@ var (
 	checklist     = variant{"\ueab3", "\u2611"}
 	symbolBoolean = variant{"\uea8f", "\u25d1"}
 	symbolNumeric = variant{"\uea90", "\u0023"}
-	// nf-md-decimal (\U000f10a1). Plain fallback #, though the field-type picker
-	// overrides it to empty.
+	// nf-md-decimal. Fallback #, though the field-type picker overrides it to empty.
 	decimal = variant{"\U000f10a1", "\u0023"}
 	percent = variant{"\uf295", "\u0025"}
 	//   ✗
@@ -460,10 +455,8 @@ var (
 	computer = variant{"\uf108", "\u25a3"}
 )
 
-// Or resolves a glyph with an optional fallback override.
-// - nerd mode: it always returns the nerd glyph g and ignores any override.
-// - fallback mode: it returns the caller's override when one is supplied (an empty string counts)
-// and otherwise the fallback glyph g. The passed g must be the mode-resolved glyph.
+// Or applies an optional fallback override to the mode-resolved glyph g. Nerd mode always returns g.
+// Fallback mode returns the override when one is supplied (an empty string counts), else g.
 func (s Set) Or(g string, override ...string) string {
 	if s.nerd || len(override) == 0 {
 		return g
@@ -471,8 +464,7 @@ func (s Set) Or(g string, override ...string) string {
 	return override[0]
 }
 
-// FieldTypeGlyph returns the glyph for an IssueFieldType, empty on plain terminals so the bare label
-// shows. Shared by the schema field picker and the issue detail's custom fields so both agree.
+// FieldTypeGlyph returns the glyph for an IssueFieldType, empty on plain terminals so the label shows.
 func (s Set) FieldTypeGlyph(fieldType string) string {
 	switch fieldType {
 	case "TEXT":
@@ -650,8 +642,7 @@ func New(mode Mode) Set {
 	}
 }
 
-// detectNerd trusts only an explicit env signal.
-// Terminals do not report their font.
+// detectNerd trusts only an explicit env signal: terminals do not report their font.
 func detectNerd() bool {
 	for _, key := range []string{"TISSUE_NERD_FONT", "NERD_FONT"} {
 		switch strings.ToLower(strings.TrimSpace(os.Getenv(key))) {

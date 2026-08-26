@@ -19,8 +19,7 @@ const (
 	relPickerMaxW     = 72
 )
 
-// relationTypeOptions is the forward relation types a source issue can add, labelled with the display
-// verb the Details section uses (RELEVANT reads "Relates to").
+// relationTypeOptions are the forward types an issue can add (RELEVANT is labelled "Relates to").
 var relationTypeOptions = []widgets.PickerOption{
 	{Value: string(domain.RelationRelevant), Label: "Relates to"},
 	{Value: string(domain.RelationBlocks), Label: "Blocks"},
@@ -28,8 +27,7 @@ var relationTypeOptions = []widgets.PickerOption{
 	{Value: string(domain.RelationDuplicates), Label: "Duplicates"},
 }
 
-// openRelationPicker starts adding a relation from the viewed issue: first pick the relation type, then
-// (after the type is chosen) pick the target issue. Guards on the loaded detail so it acts on a real issue.
+// openRelationPicker starts the two-step add: the type here, the target once the candidates land.
 func (m Model) openRelationPicker() (Model, tea.Cmd) {
 	if _, ok := m.details[m.viewKey]; !ok {
 		return m, toast.Show(toast.Info, "Open the issue first.")
@@ -46,9 +44,7 @@ func (m Model) openRelationPicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// selectRelationType records the chosen type and the source issue, then loads the target-issue candidates
-// for the second step. The source key is captured now and carried through the load so the relation cannot
-// land on a different issue if the cursor moves (repointing m.viewKey) while the candidates are in flight.
+// selectRelationType captures the source key now, so a cursor move cannot land the relation elsewhere.
 func (m Model) selectRelationType() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -57,7 +53,7 @@ func (m Model) selectRelationType() (Model, tea.Cmd) {
 	m.relPendingType = domain.RelationType(opt.Value)
 	m.relSource = m.viewKey
 	m.picking = false
-	m.relGen++ // supersede any earlier in-flight candidate load so only this request opens the target picker
+	m.relGen++ // supersede an earlier candidate load so only this request opens the target picker
 	return m, tea.Batch(
 		toast.Show(toast.Info, "Loading issues…"),
 		loadRelationCandidates(m.deps, m.projectKey, m.relSource, m.relGen),
@@ -66,13 +62,12 @@ func (m Model) selectRelationType() (Model, tea.Cmd) {
 
 type relationCandidatesLoadedMsg struct {
 	gen        int
-	source     string // the issue the add was initiated from, so a result stale after the cursor moved is dropped
+	source     string // the issue the add started from, so a result stale after a cursor move is dropped
 	candidates []domain.IssueSummary
 	err        bool
 }
 
-// loadRelationCandidates searches the current project for issues to link (same-project only for now; the
-// backend also permits cross-project by key, deferred). Aborted issues are excluded.
+// loadRelationCandidates searches this project only, though the backend allows cross-project by key.
 func loadRelationCandidates(d deps.Deps, projectKey, source string, gen int) tea.Cmd {
 	return func() tea.Msg {
 		filter := domain.IssueFilter{StateCategories: []string{"INITIAL", "ACTIVE", "COMPLETED"}}
@@ -81,16 +76,13 @@ func loadRelationCandidates(d deps.Deps, projectKey, source string, gen int) tea
 	}
 }
 
-// onRelationCandidates opens the target picker, dropping the viewed issue itself and any already-linked
-// issues so a click cannot obviously 400 (self-link / duplicate). It abandons the result if it was
-// superseded, if the cursor moved to another issue, or if another modal action opened while it loaded -
-// so the picker never pops against the wrong issue or clobbers a flow the user has since started.
+// onRelationCandidates drops self and already-linked issues, so a pick cannot obviously 400.
 func (m Model) onRelationCandidates(msg relationCandidatesLoadedMsg) (Model, tea.Cmd) {
 	if msg.gen != m.relGen || msg.source != m.viewKey {
 		return m, nil // superseded, or the user moved to another issue while it loaded
 	}
 	if m.picking || m.editing || m.editingContent || m.commenting || m.deleting || m.dating || m.creating || m.filtering || m.peeking {
-		return m, nil // the user started another action in the load window; do not hijack it
+		return m, nil // the user started another action in the load window, so do not hijack it
 	}
 	if msg.err {
 		return m, toast.Show(toast.Error, "Could not load issues.")
@@ -130,7 +122,6 @@ func (m Model) onRelationCandidates(msg relationCandidatesLoadedMsg) (Model, tea
 	return m, nil
 }
 
-// relationTargetTitle is the target picker's title, naming the verb chosen in the first step.
 func relationTargetTitle(rel domain.RelationType) string {
 	for _, o := range relationTypeOptions {
 		if o.Value == string(rel) {
@@ -140,9 +131,7 @@ func relationTargetTitle(rel domain.RelationType) string {
 	return "Link issue"
 }
 
-// selectRelationTarget adds the chosen relation and closes the picker; the result refetches the detail.
-// The source is the key captured when the type was chosen (m.relSource), not the live m.viewKey, so the
-// relation always lands on the issue the user started from.
+// selectRelationTarget adds from m.relSource, not the live viewKey.
 func (m Model) selectRelationTarget() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -165,22 +154,18 @@ type relationDoneMsg struct {
 func addRelation(d deps.Deps, issueKey, targetProjectKey, targetKey string, rel domain.RelationType) tea.Cmd {
 	return func() tea.Msg {
 		err := d.Issues.AddRelation(context.Background(), issueKey, targetProjectKey, targetKey, rel)
-		// the backend returns a specific detail for a duplicate/cycle/self-link, which errmsg surfaces
+		// the backend gives a specific detail for a duplicate/cycle/self-link, which errmsg surfaces
 		return relationDoneMsg{key: issueKey, err: err != nil, errText: errmsg.Message(err, "Could not add the relation.")}
 	}
 }
 
-// relationRemoval is one unlinkable relation on the viewed issue: the display verb plus the issue at the
-// other end. The picker's value is the target key, which is all the remove call needs.
 type relationRemoval struct {
 	kind      string
 	targetKey string
 	title     string
 }
 
-// removableRelations are the viewed issue's relations that it can actually drop. The inverse of a
-// directional relation (Blocked by / Caused by / Duplicated by) lives on the other issue, so it is left
-// out: asking to remove it here would return RELATION_NOT_FOUND against a link the user can plainly see.
+// removableRelations skips inverse links (Blocked by, …): the server 404s unless asked on the owner.
 func (m Model) removableRelations() []relationRemoval {
 	d, ok := m.details[m.viewKey]
 	if !ok || m.peeking {
@@ -198,8 +183,7 @@ func (m Model) removableRelations() []relationRemoval {
 	return out
 }
 
-// inverseOnlyRelations reports whether the issue has relations but every one of them belongs to the other
-// side, so the "nothing to unlink" message can say where to go instead of implying there are none.
+// inverseOnlyRelations reports that every relation belongs to the other side.
 func (m Model) inverseOnlyRelations() bool {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -213,7 +197,6 @@ func (m Model) inverseOnlyRelations() bool {
 	return false
 }
 
-// openRelationRemovePicker opens a picker of the relations the viewed issue can unlink.
 func (m Model) openRelationRemovePicker() (Model, tea.Cmd) {
 	if _, ok := m.details[m.viewKey]; !ok {
 		return m, toast.Show(toast.Info, "Open the issue first.")
@@ -248,7 +231,6 @@ func (m Model) openRelationRemovePicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// selectRelationRemove unlinks the chosen relation; the result refetches the detail.
 func (m Model) selectRelationRemove() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -263,8 +245,7 @@ func (m Model) selectRelationRemove() (Model, tea.Cmd) {
 
 func removeRelation(d deps.Deps, issueKey, targetKey string) tea.Cmd {
 	return func() tea.Msg {
-		// the target may live in another project (a link added through the API), so its project is derived
-		// from its own key rather than assumed to be the one being browsed
+		// the target may live in another project, so derive its project from its own key
 		err := d.Issues.RemoveRelation(context.Background(), issueKey, domain.ProjectKeyOf(targetKey), targetKey)
 		return relationDoneMsg{key: issueKey, removed: true, err: err != nil, errText: errmsg.Message(err, "Could not remove the relation.")}
 	}

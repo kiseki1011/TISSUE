@@ -16,7 +16,6 @@ func detailWithRelations() domain.IssueDetail {
 	return d
 }
 
-// The detail modal renders a Relations section grouped by kind, with each linked issue's key and state.
 func TestRelationsRender(t *testing.T) {
 	m := editReady(t, detailWithRelations())
 	m.detailScroll = m.detailScrollMax()
@@ -28,8 +27,7 @@ func TestRelationsRender(t *testing.T) {
 	}
 }
 
-// An issue with no relations still shows the Relations section (with a "(0)" count) so its "+ Relation"
-// entry point is visible, matching Children/Reviewers.
+// An empty Relations section still shows, so its "+ Relation" entry point stays reachable.
 func TestRelationsAlwaysShown(t *testing.T) {
 	m := editReady(t, sampleDetail()) // no relations
 	m.detailScroll = m.detailScrollMax()
@@ -42,7 +40,6 @@ func TestRelationsAlwaysShown(t *testing.T) {
 	}
 }
 
-// A control character in an untrusted related-issue title is flattened, not emitted into the frame.
 func TestRelationTitleSanitized(t *testing.T) {
 	d := sampleDetail()
 	d.Relations = []domain.IssueRelationGroup{

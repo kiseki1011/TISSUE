@@ -16,7 +16,6 @@ func threeIssues(t *testing.T) Model {
 	}, TotalElements: 3})
 }
 
-// A new-issue event schedules one debounced reload (bumping the seq), not an immediate one.
 func TestRealtimeCreatedSchedulesReload(t *testing.T) {
 	m := threeIssues(t)
 	before := m.rtReloadSeq
@@ -26,8 +25,7 @@ func TestRealtimeCreatedSchedulesReload(t *testing.T) {
 	}
 }
 
-// The debounced reload refetches the first page silently (no loading flash) and restores the cursor to
-// the issue that was selected, even after it is reordered in the fresh page.
+// The silent reload (no loading flash) keeps the cursor on the selected issue even when it reorders.
 func TestRealtimeReloadPreservesSelection(t *testing.T) {
 	m := threeIssues(t)
 	m, _ = m.Update(press("down")) // cursor 1 -> viewKey ENG-2
@@ -64,8 +62,6 @@ func TestRealtimeReloadPreservesSelection(t *testing.T) {
 	}
 }
 
-// The reload is skipped whenever it would disrupt the user: a blocking modal, a focused detail panel, a
-// list paged past the first page, or a superseded debounce.
 func TestRealtimeReloadSkippedWhenBusy(t *testing.T) {
 	base := threeIssues(t)
 	base, _ = base.Update(RealtimeIssueEventMsg{Type: "ISSUE_CREATED"})
@@ -87,8 +83,6 @@ func TestRealtimeReloadSkippedWhenBusy(t *testing.T) {
 	}
 }
 
-// A delete event drops the row and evicts its detail/activity caches, then re-points the panel off the
-// gone issue.
 func TestRealtimeDeletedRemovesRowAndEvicts(t *testing.T) {
 	m := threeIssues(t)
 	m.details["ENG-2"] = domain.IssueDetail{Key: "ENG-2"}
@@ -111,7 +105,6 @@ func TestRealtimeDeletedRemovesRowAndEvicts(t *testing.T) {
 	}
 }
 
-// Deleting the issue currently being peeked closes the peek modal.
 func TestRealtimeDeletedClosesPeek(t *testing.T) {
 	m := threeIssues(t)
 	m.details["ENG-3"] = domain.IssueDetail{Key: "ENG-3"}
@@ -124,7 +117,6 @@ func TestRealtimeDeletedClosesPeek(t *testing.T) {
 	}
 }
 
-// A delete for an issue that is neither listed nor cached is a no-op.
 func TestRealtimeDeletedIgnoredWhenUnknown(t *testing.T) {
 	m := threeIssues(t)
 	before := len(m.issues)
@@ -134,8 +126,7 @@ func TestRealtimeDeletedIgnoredWhenUnknown(t *testing.T) {
 	}
 }
 
-// While a blocking modal is open, a delete still removes the row but keeps viewKey pinned so the open
-// interaction's target is not pulled out from under it.
+// Under a modal the row still goes, but viewKey stays pinned so the open interaction keeps its target.
 func TestRealtimeDeletedDuringModalKeepsViewKey(t *testing.T) {
 	m := threeIssues(t)
 	m.editing = true // an edit form is open on ENG-1 (viewKey)
@@ -150,8 +141,7 @@ func TestRealtimeDeletedDuringModalKeepsViewKey(t *testing.T) {
 	}
 }
 
-// A field/transition/etc. event SWR-refetches the affected issue when it is the one being viewed, or is
-// already cached - keeping the cached copy visible meanwhile.
+// An event refetches a viewed or cached issue, keeping the cached copy visible meanwhile.
 func TestRealtimeRefreshRefetchesRelevantIssue(t *testing.T) {
 	m := threeIssues(t)
 	// land the viewed issue's initial detail so its pending flag is clear
@@ -177,9 +167,7 @@ func TestRealtimeRefreshRefetchesRelevantIssue(t *testing.T) {
 	}
 }
 
-// VCS events reach the issue through the same generic path as any other change, so a push, a pull request
-// or a system-driven transition refreshes the detail - which is what keeps the Branches and Pull requests
-// sections live without a reload. This needs no per-type handling; the test guards that staying true.
+// VCS events must keep taking the generic refresh path - no per-type handling.
 func TestRealtimeRefreshHandlesVcsEvents(t *testing.T) {
 	for _, eventType := range []string{
 		"ISSUE_BRANCH_CONNECTED",
@@ -198,18 +186,16 @@ func TestRealtimeRefreshHandlesVcsEvents(t *testing.T) {
 	}
 }
 
-// An event for a listed-but-never-opened issue (not viewed, not cached) is ignored: refetching a detail
-// per foreign event would be wasteful, and its row refreshes on the next natural load.
+// A listed-but-never-opened issue is ignored: a detail fetch per foreign event would be wasteful.
 func TestRealtimeRefreshIgnoresUnrelated(t *testing.T) {
-	m := threeIssues(t) // viewKey ENG-1; ENG-2 is listed but not viewed/cached
+	m := threeIssues(t) // viewKey ENG-1. ENG-2 is listed but not viewed/cached
 	m, cmd := m.Update(RealtimeIssueEventMsg{Type: "ISSUE_ASSIGNED", IssueKey: "ENG-2"})
 	if m.detailsPending["ENG-2"] || cmd != nil {
 		t.Error("an event for a listed-but-unopened issue should be a no-op")
 	}
 }
 
-// The silent reload preserves the user's CURRENT selection, not the one they had when the reload was
-// dispatched - so navigation done during the in-flight window is not thrown away (review finding F1).
+// The reload keeps the CURRENT selection, so navigation during the in-flight window is not thrown away.
 func TestRealtimeReloadPreservesNavigationDuringWindow(t *testing.T) {
 	m := threeIssues(t)
 	m, _ = m.Update(RealtimeIssueEventMsg{Type: "ISSUE_CREATED"})
@@ -236,8 +222,7 @@ func TestRealtimeReloadPreservesNavigationDuringWindow(t *testing.T) {
 	}
 }
 
-// Deleting a row ABOVE the cursor shifts the rows up; the cursor must stay anchored on the viewed issue,
-// not slide onto its neighbor (review finding F2).
+// Deleting a row ABOVE the cursor must not slide the cursor onto the neighbor.
 func TestRealtimeDeleteAboveCursorKeepsSelection(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: []domain.IssueSummary{
 		{Key: "ENG-1", StateCategory: "ACTIVE"}, {Key: "ENG-2", StateCategory: "ACTIVE"},
@@ -259,8 +244,7 @@ func TestRealtimeDeleteAboveCursorKeepsSelection(t *testing.T) {
 	}
 }
 
-// When a delete empties the loaded page but more pages exist server-side, the list silently pulls the
-// next page instead of stranding empty (review finding F3).
+// A delete that empties the page must pull the next one instead of stranding empty.
 func TestRealtimeDeleteEmptyingListReloads(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-1", StateCategory: "ACTIVE"}}, TotalElements: 50, HasNext: true,
@@ -275,8 +259,7 @@ func TestRealtimeDeleteEmptyingListReloads(t *testing.T) {
 	}
 }
 
-// A delete of the viewed issue while a blocking modal is open drops the row but keeps its caches, so the
-// open modal keeps rendering and the panel does not collapse to a stuck skeleton (review finding F4).
+// Under a modal the caches survive the delete, so the panel does not collapse to a stuck skeleton.
 func TestRealtimeDeleteUnderModalKeepsCaches(t *testing.T) {
 	m := threeIssues(t)
 	m.details["ENG-1"] = domain.IssueDetail{Key: "ENG-1", Title: "A"}
@@ -295,8 +278,7 @@ func TestRealtimeDeleteUnderModalKeepsCaches(t *testing.T) {
 	}
 }
 
-// Deleting a cached-but-unlisted issue (e.g. a peeked link filtered out of the current page) evicts its
-// cache but must NOT decrement the list total it was never counted in (review finding F5).
+// A cache-only delete (never listed) must not decrement the list total.
 func TestRealtimeDeleteCacheOnlyKeepsTotal(t *testing.T) {
 	m := threeIssues(t)
 	m.details["ENG-99"] = domain.IssueDetail{Key: "ENG-99"} // cached via peek, not in the filtered list
@@ -312,7 +294,6 @@ func TestRealtimeDeleteCacheOnlyKeepsTotal(t *testing.T) {
 	}
 }
 
-// A sprint lifecycle event on a loaded list arms one debounced silent reload.
 func TestRealtimeSprintLifecycleSchedulesReload(t *testing.T) {
 	m := sprintsTabModel(t, []domain.SprintSummary{{ID: 1, Status: "ACTIVE"}})
 	m.sprintsRequested = true // the Sprints tab has been opened, so a list exists to refresh
@@ -322,10 +303,9 @@ func TestRealtimeSprintLifecycleSchedulesReload(t *testing.T) {
 	}
 }
 
-// With no sprint list ever loaded, a lifecycle event only refreshes the issue tab's current-sprint
-// pointer (a teammate may have started/completed the active sprint) - no list reload is scheduled.
+// With no sprint list loaded, a lifecycle event only refreshes the current-sprint pointer.
 func TestRealtimeSprintLifecycleNotLoaded(t *testing.T) {
-	m := loaded(t, 160, 40, domain.IssuePage{}) // issues tab; Sprints tab never opened
+	m := loaded(t, 160, 40, domain.IssuePage{}) // issues tab, Sprints tab never opened
 	before := m.currentSprintGen
 	m, cmd := m.Update(RealtimeSprintEventMsg{Type: "SPRINT_COMPLETED", SprintID: 3})
 	if m.currentSprintGen != before+1 || cmd == nil {
@@ -336,8 +316,7 @@ func TestRealtimeSprintLifecycleNotLoaded(t *testing.T) {
 	}
 }
 
-// The debounced sprint reload preserves the selected sprint, drops a superseded seq, still fires under an
-// open sprint modal (targets are pinned), and defers only to an in-flight load.
+// The debounced sprint reload preserves the selection and still fires under a modal (targets pinned).
 func TestRealtimeSprintReload(t *testing.T) {
 	m := sprintsTabModel(t, []domain.SprintSummary{{ID: 1, Status: "ACTIVE"}, {ID: 2, Status: "PLANNING"}})
 	m.sprintsRequested = true
@@ -349,18 +328,15 @@ func TestRealtimeSprintReload(t *testing.T) {
 	if cmd == nil || m2.sprintRestoreID != 2 {
 		t.Fatalf("the reload should preserve the selected sprint (restoreID=%d cmd=%v)", m2.sprintRestoreID, cmd != nil)
 	}
-	// a superseded (stale-seq) debounce is dropped
 	if _, cmd := m.onRealtimeSprintReload(realtimeSprintReloadMsg{seq: seq - 1}); cmd != nil {
 		t.Error("a stale-seq sprint reload should be dropped")
 	}
-	// still fires under an open sprint modal (a background list reload cannot redirect a pinned-target modal,
-	// and skipping would strand the list stale)
+	// still fires under a modal: targets are pinned
 	modal := m
 	modal.sprintConfirming = true
 	if _, cmd := modal.onRealtimeSprintReload(realtimeSprintReloadMsg{seq: seq}); cmd == nil {
 		t.Error("the reload should still fire under a sprint modal")
 	}
-	// deferred only while a list load is already in flight
 	loading := m
 	loading.sprintsLoading = true
 	if _, cmd := loading.onRealtimeSprintReload(realtimeSprintReloadMsg{seq: seq}); cmd != nil {
@@ -368,8 +344,7 @@ func TestRealtimeSprintReload(t *testing.T) {
 	}
 }
 
-// SPRINT_ISSUES_ADDED evicts the target sprint's cache (refetching the selected one) and repoints the
-// added issue's list row so the "already in sprint" guard stays correct.
+// SPRINT_ISSUES_ADDED evicts the sprint's cache and repoints the row for the "already in sprint" guard.
 func TestRealtimeSprintIssuesAdded(t *testing.T) {
 	m := sprintsTabModel(t, []domain.SprintSummary{{ID: 5, Status: "ACTIVE"}})
 	m.selSprintID = 5
@@ -387,8 +362,7 @@ func TestRealtimeSprintIssuesAdded(t *testing.T) {
 	}
 }
 
-// A migrate emits only SPRINT_ISSUES_ADDED for the target (never the source), so the handler evicts EVERY
-// cached sprint issue list - a foreign/source sprint the user isn't looking at cannot keep a stale panel.
+// A migrate names only the target, so every cached sprint list is evicted.
 func TestRealtimeSprintIssuesEvictsAllCaches(t *testing.T) {
 	m := sprintsTabModel(t, []domain.SprintSummary{{ID: 6, Status: "PLANNING"}, {ID: 5, Status: "ACTIVE"}})
 	m.selSprintID = 6
@@ -410,7 +384,6 @@ func TestRealtimeSprintIssuesEvictsAllCaches(t *testing.T) {
 	}
 }
 
-// SPRINT_ISSUES_REMOVED evicts the sprint's cache and clears the removed issue's row sprint.
 func TestRealtimeSprintIssuesRemoved(t *testing.T) {
 	m := sprintsTabModel(t, []domain.SprintSummary{{ID: 5, Status: "ACTIVE"}})
 	m.selSprintID = 5

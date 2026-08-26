@@ -14,10 +14,10 @@ import (
 
 var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
-// stripStyles drops the color escapes and the zone markers, leaving the text the user actually reads.
+// stripStyles drops the color escapes and zone markers, leaving the text the user reads.
 func stripStyles(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
-// An option with an explicit Color renders its label in that color (used for a destructive "Unassigned").
+// An explicit Color survives into the rendered label (a destructive "Unassigned").
 func TestListPickerOptionColor(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -37,7 +37,6 @@ var listOpts = []PickerOption{
 	{Value: "1", Label: "Alpha"}, {Value: "2", Label: "Beta"}, {Value: "3", Label: "Gamma"},
 }
 
-// The picker seeds its cursor at the option whose Value matches current and reports it as selected.
 func TestListPickerSeedsCurrent(t *testing.T) {
 	p := NewListPicker("Pick", listOpts, "2", 8, 20)
 	if p.Cursor != 1 {
@@ -48,7 +47,6 @@ func TestListPickerSeedsCurrent(t *testing.T) {
 	}
 }
 
-// Move wraps around both ends of the list.
 func TestListPickerMoveWraps(t *testing.T) {
 	p := NewListPicker("Pick", listOpts, "1", 8, 20) // cursor 0
 	if got := p.Move(-1).Cursor; got != 2 {
@@ -59,7 +57,6 @@ func TestListPickerMoveWraps(t *testing.T) {
 	}
 }
 
-// The View lists every option's label inside a titled box.
 func TestListPickerViewListsOptions(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -72,7 +69,6 @@ func TestListPickerViewListsOptions(t *testing.T) {
 	}
 }
 
-// Each option is a click zone; clicking one resolves to its index.
 func TestListPickerClickHitsOption(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -88,8 +84,7 @@ func TestListPickerClickHitsOption(t *testing.T) {
 
 func keyRune(r rune) tea.KeyPressMsg { return tea.KeyPressMsg{Code: r, Text: string(r)} }
 
-// A searchable picker narrows to a case-insensitive substring match, keeps the cursor on the top
-// match, and wraps navigation within the filtered set. A plain picker is not searchable.
+// Filtering is a case-insensitive substring match. Navigation wraps within the matches.
 func TestListPickerFilters(t *testing.T) {
 	opts := []PickerOption{
 		{Value: "1", Label: "Hong"}, {Value: "2", Label: "Kim Younghee"},
@@ -118,7 +113,7 @@ func TestListPickerFilters(t *testing.T) {
 	}
 }
 
-// Notes print under their option in the warning color, so a row's caveats read as belonging to it.
+// Notes print under their own option, in the warning color.
 func TestListPickerNotesRenderUnderTheOption(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -148,8 +143,7 @@ func TestListPickerNotesRenderUnderTheOption(t *testing.T) {
 	}
 }
 
-// A note longer than the box wraps onto more rows rather than being truncated: a guard message is a
-// sentence, and a clipped one is worse than useless.
+// A long note wraps instead of being clipped. A half-shown guard message is worse than useless.
 func TestListPickerNoteWrapsInsteadOfTruncating(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -171,8 +165,7 @@ func TestListPickerNoteWrapsInsteadOfTruncating(t *testing.T) {
 	}
 }
 
-// The notes are part of the row's click target: clicking a caveat picks the option it explains rather
-// than falling through to whatever is underneath.
+// A click on a caveat picks the option it explains, not whatever is underneath.
 func TestListPickerClickOnANoteHitsItsOption(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -202,8 +195,7 @@ func indexOfLine(lines []string, sub string) int {
 	return -1
 }
 
-// maxRows is a budget of lines, not of options: with notes in play the window stops growing before the
-// box outgrows the space its host floated it into.
+// maxRows is a budget of lines, not of options, so notes cannot outgrow the space the host allowed.
 func TestListPickerNotesRespectTheRowBudget(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -226,8 +218,7 @@ func TestListPickerNotesRespectTheRowBudget(t *testing.T) {
 	}
 }
 
-// Every other picker in the app has no notes, so it must window exactly as it did before: one line per
-// option, maxRows of them. This is the guard against the taller layout leaking into the plain path.
+// Guards the plain path: a note-free picker still windows one line per option, as it always did.
 func TestListPickerWithoutNotesIsOneLinePerOption(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -243,8 +234,7 @@ func TestListPickerWithoutNotesIsOneLinePerOption(t *testing.T) {
 	}
 }
 
-// One pathological note cannot fill the box: an option's notes are capped, and the cut is marked so the
-// reader knows there is more rather than believing they have seen it all.
+// Notes are capped, and the cut is marked so the reader knows there is more.
 func TestListPickerNotesAreCapped(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())
@@ -263,8 +253,7 @@ func TestListPickerNotesAreCapped(t *testing.T) {
 	}
 }
 
-// The option under the cursor is always drawn whole, so its notes are bounded by the budget too -
-// otherwise one heavily-annotated option would push the box past the height its host allowed for it.
+// The cursor's option is drawn whole, so its notes are bounded too or the box outgrows its host.
 func TestListPickerCursorOptionCannotExceedTheBudget(t *testing.T) {
 	zone.NewGlobal()
 	s := theme.New(theme.TokyoNight())

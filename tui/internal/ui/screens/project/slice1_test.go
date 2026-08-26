@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// The list header shows the Priority column as a compact glyph whose text fallback (unicode mode) is
-// "Pri", not the full word "Priority".
+// The Priority header falls back to the compact "Pri", not the full word.
 func TestListHeaderPriorityLabel(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	h := plain(m.headerRow(18))
@@ -19,8 +18,7 @@ func TestListHeaderPriorityLabel(t *testing.T) {
 	}
 }
 
-// The Type cell paints the name on a background colour chip (not a side swatch) when the backend gave
-// the type a colour, and falls back to plain text otherwise.
+// A coloured type paints a background chip (not a side swatch), plain text when it has no colour.
 func TestTypeCellChip(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{})
 	colored := m.typeCell("Bug", "INDIGO", 12) // hex colour -> truecolor background SGR
@@ -40,7 +38,6 @@ func TestTypeCellChip(t *testing.T) {
 	}
 }
 
-// progressBar fills the fraction of the width and leaves the rest as track cells, clamping out-of-range.
 func TestProgressBar(t *testing.T) {
 	th := testDeps().Styles.Theme
 	bar := plain(progressBar(50, 10, th.Primary, th.Muted))
@@ -58,7 +55,6 @@ func TestProgressBar(t *testing.T) {
 	}
 }
 
-// A loaded detail renders the progress as a bar plus the percentage.
 func TestDetailProgressBar(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -73,7 +69,6 @@ func TestDetailProgressBar(t *testing.T) {
 	}
 }
 
-// The Details Type row paints the type name on a background colour chip.
 func TestDetailTypeChip(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{})
 	chip := m.typeValue("Bug", "INDIGO")
@@ -95,8 +90,7 @@ func TestProgressBarCapped(t *testing.T) {
 	}
 }
 
-// The widened Priority column and the background Type chips must not overflow the list at any width,
-// from the narrow full-width floor through the tight side-by-side boundary.
+// The Priority column and the Type chips must not overflow the list at any width.
 func TestListRowsFitWidthWithPriorityColumn(t *testing.T) {
 	rows := make([]domain.IssueSummary, 5)
 	for i := range rows {
@@ -115,8 +109,7 @@ func TestListRowsFitWidthWithPriorityColumn(t *testing.T) {
 	}
 }
 
-// A long, coloured type in the narrow read-only detail modal must stay within the terminal width (the
-// chip is truncated ANSI-safely, not overflowed).
+// A long coloured type must be truncated ANSI-safely in the narrow modal, not overflowed.
 func TestNarrowModalTypeChipFits(t *testing.T) {
 	m := openDetailOn(t, 100, 30, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{

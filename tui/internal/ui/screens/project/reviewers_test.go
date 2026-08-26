@@ -7,7 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// reviewersReady loads a detail on ENG-1 whose sole reviewer is member 2, with three members loaded.
+// reviewersReady loads ENG-1 whose sole reviewer is member 2, with three members loaded.
 func reviewersReady(t *testing.T) Model {
 	t.Helper()
 	m := loaded(t, 120, 30, domain.IssuePage{
@@ -29,7 +29,6 @@ func sortedI64(v []int64) []int64 {
 	return v
 }
 
-// reviewerDiff computes the per-member add/remove to move from current to desired.
 func TestReviewerDiff(t *testing.T) {
 	add, remove := reviewerDiff(map[int64]bool{1: true, 3: true}, map[int64]bool{2: true, 3: true})
 	if got := sortedI64(add); len(got) != 1 || got[0] != 1 {
@@ -43,7 +42,6 @@ func TestReviewerDiff(t *testing.T) {
 	}
 }
 
-// r opens a multi-select reviewers picker with the current reviewers pre-checked.
 func TestReviewersPickerOpensPreChecked(t *testing.T) {
 	m := reviewersReady(t)
 	m, _ = m.Update(press("r"))
@@ -58,7 +56,6 @@ func TestReviewersPickerOpensPreChecked(t *testing.T) {
 	}
 }
 
-// Confirming an unchanged roster is a no-op; toggling a member produces an apply command.
 func TestReviewersConfirmDiff(t *testing.T) {
 	m := reviewersReady(t)
 	m, _ = m.Update(press("r"))
@@ -77,8 +74,7 @@ func TestReviewersConfirmDiff(t *testing.T) {
 	}
 }
 
-// A reviewer who is not in the active-member list (so has no picker row) must be preserved, not removed,
-// when the user opens the picker and confirms without a change.
+// A reviewer with no picker row (inactive member) must survive an unchanged confirm, not be removed.
 func TestReviewersInactivePreservedOnNoOp(t *testing.T) {
 	m := loaded(t, 120, 30, domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1,

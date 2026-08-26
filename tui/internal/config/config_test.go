@@ -2,7 +2,7 @@ package config
 
 import "testing"
 
-// loadTemp points config at a throwaway dir so the tests never touch the user's real config file.
+// loadTemp points config at a throwaway dir so tests never touch the real config file.
 func loadTemp(t *testing.T) *Config {
 	t.Helper()
 	tmp := t.TempDir()
@@ -15,7 +15,6 @@ func loadTemp(t *testing.T) *Config {
 	return cfg
 }
 
-// The last-open project round-trips to disk per server, and clearing it survives a reload.
 func TestLastProjectPersists(t *testing.T) {
 	cfg := loadTemp(t)
 	const server = "http://localhost:8080"
@@ -40,7 +39,6 @@ func TestLastProjectPersists(t *testing.T) {
 	}
 }
 
-// The pointer is scoped per server, so two servers keep independent last projects.
 func TestLastProjectPerServer(t *testing.T) {
 	cfg := loadTemp(t)
 	if err := cfg.SetLastProject("http://a", "ONE"); err != nil {
@@ -58,7 +56,6 @@ func TestLastProjectPerServer(t *testing.T) {
 	}
 }
 
-// Setting the already-current value (or clearing an already-clear pointer) must not rewrite the file.
 func TestLastProjectSkipsRedundantWrite(t *testing.T) {
 	cfg := loadTemp(t)
 	const server = "http://localhost:8080"
@@ -71,7 +68,6 @@ func TestLastProjectSkipsRedundantWrite(t *testing.T) {
 	if err := cfg.SetLastProject(server, "ENG"); err != nil {
 		t.Fatalf("set: %v", err)
 	}
-	// a no-op re-set must not fail nor change the stored value
 	if err := cfg.SetLastProject(server, "ENG"); err != nil {
 		t.Fatalf("re-set same: %v", err)
 	}
@@ -80,7 +76,6 @@ func TestLastProjectSkipsRedundantWrite(t *testing.T) {
 	}
 }
 
-// A project's filter round-trips to disk, scoped per server and per project.
 func TestProjectFilterPersists(t *testing.T) {
 	cfg := loadTemp(t)
 	if _, ok := cfg.ProjectFilter("http://a", "ENG"); ok {
@@ -109,7 +104,6 @@ func TestProjectFilterPersists(t *testing.T) {
 	}
 }
 
-// A stored all-empty filter (show everything) survives as a present entry, distinct from no entry.
 func TestProjectFilterEmptyIsDistinctFromAbsent(t *testing.T) {
 	cfg := loadTemp(t)
 	if err := cfg.SetProjectFilter("http://a", "ENG", FilterState{}); err != nil {
@@ -124,7 +118,6 @@ func TestProjectFilterEmptyIsDistinctFromAbsent(t *testing.T) {
 	}
 }
 
-// reload reads config.json back from the (test-scoped) config dir set up by loadTemp.
 func reload(t *testing.T) *Config {
 	t.Helper()
 	cfg, err := Load()

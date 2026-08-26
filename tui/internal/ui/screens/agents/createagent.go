@@ -33,8 +33,7 @@ const (
 	caCount
 )
 
-// agentNamePattern is the backend rule for agent names. Letters (many scripts) and spaces only,
-// no digits or punctuation.
+// agentNamePattern mirrors the backend rule: letters (many scripts) and spaces, no digits.
 var agentNamePattern = regexp.MustCompile(`^[A-Za-z\x{00C0}-\x{024F}\x{0370}-\x{03FF}\x{0400}-\x{04FF}\x{4E00}-\x{9FFF}\x{3040}-\x{30FF}\x{AC00}-\x{D7A3} ]+$`)
 
 type createAgentForm struct {
@@ -396,7 +395,7 @@ func createAgentError(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not create the agent. Try again."
 }

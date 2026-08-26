@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-// HumanizeSince renders a compact "time ago" for t: a single unit on a s/m/h/d/w/mon/yr ladder
-// (e.g. "45m", "3d", "11mon"). A zero time renders "-"; a future time clamps to "0s".
+// HumanizeSince renders a compact "time ago" (e.g. "45m", "3d"). Zero renders "-", future clamps to "0s".
 func HumanizeSince(t time.Time) string {
 	if t.IsZero() {
 		return "-"
@@ -14,8 +13,7 @@ func HumanizeSince(t time.Time) string {
 	return HumanizeDuration(time.Since(t))
 }
 
-// HumanizeDuration renders a compact single-unit duration on the same s/m/h/d/w/mon/yr ladder as
-// HumanizeSince (e.g. "45m", "3d", "11mon"). A negative duration clamps to "0s".
+// HumanizeDuration renders one unit off the s/m/h/d/w/mon/yr ladder. A negative duration clamps to "0s".
 func HumanizeDuration(d time.Duration) string {
 	if d < 0 {
 		d = 0

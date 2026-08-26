@@ -8,9 +8,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// CreateIssueInput is the core new-issue payload. Optional scalars are the zero value when unset (an
-// empty string / zero time), which CreateIssue omits from the request. Parent, custom fields, assignee
-// and story point are later slices.
+// CreateIssueInput is the new-issue payload. Zero-valued optional scalars are omitted, not sent.
+// Assignee and story point are not settable at creation yet, though the request supports both.
 type CreateIssueInput struct {
 	IssueTypeID int64
 	Title       string
@@ -20,13 +19,11 @@ type CreateIssueInput struct {
 	DueAt       time.Time // zero = no due date
 	ParentKey   string    // "" = no parent
 
-	// CustomFields maps a field-definition id (as a string) to its already type-serialized value (a
-	// number for INTEGER/PERCENTAGE/SELECT_OPTION, a string for the text/date/timestamp/decimal types, a
-	// bool for BOOLEAN, a map[string]bool for CHECKLIST). Only set fields are present.
+	// CustomFields maps a field-definition id (string) to its type-serialized value: number for
+	// INTEGER/PERCENTAGE/SELECT_OPTION, string for text/date/decimal, bool for BOOLEAN, map for CHECKLIST.
 	CustomFields map[string]interface{}
 }
 
-// toCreateBody maps the input to the request body, omitting optional scalars left at their zero value.
 func toCreateBody(in CreateIssueInput) client.CreateIssueRequest {
 	body := client.CreateIssueRequest{
 		IssueTypeId: in.IssueTypeID,
@@ -56,7 +53,6 @@ func toCreateBody(in CreateIssueInput) client.CreateIssueRequest {
 	return body
 }
 
-// CreateIssue creates an issue in the project and returns its new key.
 func (s *IssueService) CreateIssue(ctx context.Context, projectKey string, in CreateIssueInput) (string, error) {
 	resp, err := s.api.CreateIssueWithResponse(ctx, projectKey, toCreateBody(in))
 	if err != nil {

@@ -14,13 +14,11 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// reviewerRows is the visible row budget of the reviewers picker, like the assignee picker (a project
-// can have many members; the filter narrows them and the window scrolls the rest).
+// reviewerRows is the picker's visible row budget, like the assignee picker.
 const reviewerRows = 10
 
-// openReviewersPicker opens a multi-select of the project's active members, pre-checked with the issue's
-// current reviewers. Space toggles, enter confirms; the roster change is applied as a diff of per-member
-// add/remove calls (the backend has no bulk set).
+// openReviewersPicker multi-selects the project's active members, pre-checked with the current reviewers.
+// The confirm applies as per-member add/remove calls: the backend has no bulk set.
 func (m Model) openReviewersPicker() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -58,8 +56,7 @@ func (m Model) openReviewersPicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// confirmReviewers diffs the checked set against the issue's current reviewers and fires the add/remove
-// calls. A no-op change just closes the picker.
+// confirmReviewers diffs the checked set against the snapshot taken when the picker opened.
 func (m Model) confirmReviewers() (Model, tea.Cmd) {
 	desired := map[int64]bool{}
 	for _, v := range m.picker.Selections() {
@@ -75,12 +72,11 @@ func (m Model) confirmReviewers() (Model, tea.Cmd) {
 
 	m.picking = false
 	if len(add) == 0 && len(remove) == 0 {
-		return m, nil // nothing changed
+		return m, nil
 	}
 	return m, applyReviewers(m.deps, m.viewKey, add, remove)
 }
 
-// reviewerDiff is the per-member add/remove needed to move the roster from current to desired.
 func reviewerDiff(desired, current map[int64]bool) (add, remove []int64) {
 	for id := range desired {
 		if !current[id] {
@@ -95,16 +91,14 @@ func reviewerDiff(desired, current map[int64]bool) (add, remove []int64) {
 	return add, remove
 }
 
-// ReviewerDoneMsg is exported so the app shell routes this background result back to the project screen
-// even if the user left the drill-in before it landed (so the toast still shows).
+// ReviewerDoneMsg is exported so the app shell can route this result back after the user left the drill-in.
 type ReviewerDoneMsg struct {
 	key     string
 	err     bool
 	errText string // the resolved failure toast line (server reason / mapped code / fallback)
 }
 
-// applyReviewers runs the per-member add then remove calls in one command, stopping at the first error,
-// and reports a single result the screen reconciles with a detail refetch.
+// applyReviewers runs the add then remove calls, stopping at the first error, and reports one result.
 func applyReviewers(d deps.Deps, key string, add, remove []int64) tea.Cmd {
 	return func() tea.Msg {
 		for _, id := range add {

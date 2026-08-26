@@ -16,7 +16,6 @@ func plain(s string) string { return csi.ReplaceAllString(s, "") }
 
 func newModel() Model { return New(theme.TokyoNight(), glyph.New(glyph.Unicode)) }
 
-// A ShowMsg raises a toast, schedules its expiry, and renders the message text.
 func TestShowRaisesToast(t *testing.T) {
 	m := newModel()
 	m, cmd := m.Update(ShowMsg{Level: Success, Text: "Saved changes"})
@@ -31,7 +30,6 @@ func TestShowRaisesToast(t *testing.T) {
 	}
 }
 
-// An ExpireMsg retires only the toast whose id it names, leaving the rest of the stack alone.
 func TestExpireRemovesMatchingToast(t *testing.T) {
 	m := newModel()
 	m, _ = m.Update(ShowMsg{Level: Info, Text: "first"})  // id 1
@@ -46,7 +44,6 @@ func TestExpireRemovesMatchingToast(t *testing.T) {
 	}
 }
 
-// The stack is capped so a burst cannot fill the screen; the oldest toasts scroll off.
 func TestStackCapsAtMaxVisible(t *testing.T) {
 	m := newModel()
 	for i := 0; i < maxVisible+3; i++ {
@@ -60,7 +57,6 @@ func TestStackCapsAtMaxVisible(t *testing.T) {
 	}
 }
 
-// An empty stack renders nothing, so the shell can skip compositing entirely.
 func TestEmptyStackRendersNothing(t *testing.T) {
 	m := newModel()
 	if !m.Empty() {
@@ -71,7 +67,6 @@ func TestEmptyStackRendersNothing(t *testing.T) {
 	}
 }
 
-// Each severity renders its own label so the toast reads its level at a glance.
 func TestSeverityLabels(t *testing.T) {
 	cases := map[Level]string{Success: "Success", Warning: "Warning", Error: "Error", Info: "Info"}
 	for level, label := range cases {

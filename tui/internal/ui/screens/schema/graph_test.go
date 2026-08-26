@@ -73,8 +73,7 @@ func labels(states []domain.WorkflowState) []string {
 	return out
 }
 
-// The happy path must stay a contiguous top-to-bottom line, with terminals trailing at the
-// end, so the diagram reads straight down.
+// The happy path stays contiguous with terminals trailing, so the diagram reads straight down.
 func TestOrderStatesHappyPathContiguous(t *testing.T) {
 	got := orderStates(exampleWorkflow())
 	want := []string{"To Do", "In Progress", "In Review", "Done", "Cancelled"}
@@ -85,8 +84,7 @@ func TestOrderStatesHappyPathContiguous(t *testing.T) {
 	}
 }
 
-// No graph line may exceed the panel width, or it would wrap in the Details renderer and
-// shift every line below it.
+// A line wider than the panel wraps in the Details renderer and shifts every line below it.
 func TestGraphLinesFitWidth(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	const width = 64
@@ -101,8 +99,7 @@ func TestGraphLinesFitWidth(t *testing.T) {
 	}
 }
 
-// Several transitions fanning into the same later state (e.g. two ways to cancel, plus a new
-// route to a second aborted state) must not stack their name labels on the same row.
+// Transitions fanning into the same state must not stack their labels on one row.
 func TestGraphFanInLabelsDoNotOverlap(t *testing.T) {
 	d := domain.WorkflowDetail{
 		ID: 1, Name: "Review", InitialStateID: 1,
@@ -139,7 +136,7 @@ func TestGraphFanInLabelsDoNotOverlap(t *testing.T) {
 		}
 		cols[mid] = id
 	}
-	// a multi-word name wraps at spaces into readable horizontal words, all present in the output
+	// a multi-word name wraps at spaces, so every word still appears
 	plain := stripANSI(strings.Join(lines, "\n"))
 	for _, want := range []string{"Cancel", "Reject", "bin", "trash"} {
 		if !strings.Contains(plain, want) {
@@ -148,8 +145,7 @@ func TestGraphFanInLabelsDoNotOverlap(t *testing.T) {
 	}
 }
 
-// accentedRunes returns every rune that renders inside an accent-colored run, so a test can
-// tell whether the accent reaches the arrow glyphs and not just the label text.
+// accentedRunes returns the runes inside accent-colored runs, to check the accent reaches the arrows.
 func accentedRunes(lines []string, accentSGR string) string {
 	var out strings.Builder
 	for _, ln := range lines {
@@ -182,8 +178,7 @@ func accentedRunes(lines []string, accentSGR string) string {
 	return out.String()
 }
 
-// Selecting a transition paints its whole arrow path — the connector lines and the arrowhead —
-// in the accent color, not just its name, so it reads as one highlighted unit.
+// Selecting a transition accents its whole arrow path, not just its name.
 func TestGraphSelectedTransitionHighlightsArrow(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	accent := "38;2;255;158;100" // TokyoNight accent (#ff9e64)
@@ -195,8 +190,7 @@ func TestGraphSelectedTransitionHighlightsArrow(t *testing.T) {
 	}
 }
 
-// A selected state is outlined in the accent COLOUR only — never with heavy glyphs — and the whole
-// diagram stays light-weight whether or not anything is selected (selection reads from colour).
+// Selection reads from colour only: heavy glyphs would shift the whole diagram.
 func TestGraphSelectedStateIsAccentOutlined(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	const width = 66
@@ -206,7 +200,7 @@ func TestGraphSelectedStateIsAccentOutlined(t *testing.T) {
 		t.Fatalf("unselected diagram already has heavy glyphs:\n%s", plain)
 	}
 	sel, _, _ := renderWorkflowGraph(exampleWorkflow(), s, width, wfElem{elemState, 2}, wfElem{}, true)
-	// selection must never introduce heavy glyphs — it is colour-only now
+	// selection must never introduce heavy glyphs
 	if plain := stripANSI(strings.Join(sel, "\n")); strings.ContainsAny(plain, "┏┓┗┛┃━┠┨┰┸") {
 		t.Errorf("selecting a state introduced heavy glyphs (selection must be colour-only):\n%s", plain)
 	}
@@ -220,8 +214,7 @@ func TestGraphSelectedStateIsAccentOutlined(t *testing.T) {
 	}
 }
 
-// The diagram must show every state, the spine transitions with their guards, and every
-// routed transition (returns and jumps) as a labeled arrow — not a list.
+// Every state, guard, and routed transition must appear as a labeled arrow, not a list.
 func TestGraphShowsStatesAndArrows(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	plain := stripANSI(strings.Join(graphLines(exampleWorkflow(), s, 66), "\n"))
@@ -237,8 +230,7 @@ func TestGraphShowsStatesAndArrows(t *testing.T) {
 	}
 }
 
-// A transition with several guards lists each on its own row and the spine arrow grows to
-// fit them, so the whole diagram gets taller.
+// Each extra guard takes its own row, so the spine arrow and the diagram grow taller.
 func TestGraphListsMultipleGuards(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	oneGuard := graphLines(exampleWorkflow(), s, 66)
@@ -261,8 +253,7 @@ func TestGraphListsMultipleGuards(t *testing.T) {
 	}
 }
 
-// Selecting an element must report its row and paint it in the accent color, and only that
-// element — so the panel can scroll to it and the user sees what is selected.
+// A selected element reports its row (for scroll-into-view) and only it is painted accent.
 func TestGraphHighlightsSelectedElement(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	accent := "38;2;255;158;100" // TokyoNight accent (#ff9e64)
@@ -297,8 +288,7 @@ func TestGraphHighlightsSelectedElement(t *testing.T) {
 	}
 }
 
-// The diagram is centered in its width, not flush left: the top border row has roughly equal
-// blank margins on both sides.
+// The diagram is centered, not flush left: equal margins on the top border row.
 func TestGraphIsCentered(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	const width = 70
@@ -310,8 +300,7 @@ func TestGraphIsCentered(t *testing.T) {
 	}
 }
 
-// A colored state renders as a chip: its label sits on a background with a contrasting
-// foreground, not on the box border. The chip must actually carry a background SGR.
+// A colored state renders as a chip (a background behind the label), not a colored box border.
 func TestGraphStateRendersColorChip(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	out := strings.Join(graphLines(exampleWorkflow(), s, 64), "\n")
@@ -321,9 +310,8 @@ func TestGraphStateRendersColorChip(t *testing.T) {
 	}
 }
 
-// Vertical layout must be immune to CJK width: Hangul labels are display-width 2, so a line
-// that placed runes by index would overflow. Every line must fit the width, and a very long
-// Korean label must not panic the clipper.
+// Hangul labels are display-width 2, so a renderer placing runes by index overflows the width.
+// A very long Korean label must not panic the clipper either.
 func TestGraphFitsWidthWithCJK(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	const width = 64
@@ -341,8 +329,7 @@ func TestGraphFitsWidthWithCJK(t *testing.T) {
 	}
 }
 
-// Every Details row must be EXACTLY the panel width at every vertical scroll offset, even
-// with Hangul labels, so the right border and scrollbar never drift.
+// Rows must be exactly the panel width at every scroll offset, or the border and scrollbar drift.
 func TestWorkflowPanelRowsExactWidthCJK(t *testing.T) {
 	zone.NewGlobal()
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
@@ -364,9 +351,7 @@ func TestWorkflowPanelRowsExactWidthCJK(t *testing.T) {
 	}
 }
 
-// A selected workflow flows into the Details panel as ordinary vertical content: it reports
-// scrollable height, every content line is exactly the content width, and the full panel
-// never exceeds the terminal width.
+// The workflow flows into Details as ordinary vertical content that never exceeds the terminal width.
 func TestWorkflowDetailFlowsVertically(t *testing.T) {
 	zone.NewGlobal()
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
@@ -392,8 +377,7 @@ func TestWorkflowDetailFlowsVertically(t *testing.T) {
 	}
 }
 
-// The renderer must never panic and always produce output on degenerate graphs, at both a
-// narrow and a roomy width, and every line must still fit the width.
+// Degenerate graphs must never panic and must still produce width-fitting output.
 func TestGraphDegenerateInputs(t *testing.T) {
 	s := theme.New(theme.TokyoNight())
 	cases := map[string]domain.WorkflowDetail{

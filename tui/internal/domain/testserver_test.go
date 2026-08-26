@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// stubAPI wires a generated client to a stub server, returning the client plus pointers to the last
-// request and body it received, so a test can assert on the wire shape a service produces.
+// stubAPI returns a client plus pointers to the last request and body the stub server saw.
 func stubAPI(t *testing.T, handler http.HandlerFunc) (*client.ClientWithResponses, *http.Request, *[]byte) {
 	t.Helper()
 	var gotReq http.Request

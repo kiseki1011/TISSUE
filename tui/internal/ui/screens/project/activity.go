@@ -15,11 +15,9 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// activityPageSize is how many recent activity entries the view loads at once.
 const activityPageSize = 30
 
-// ActivitiesLoadedMsg carries a background activity fetch back to the screen. It is exported so the app
-// shell can route it even if the user has left the drill-in, mirroring IssueDetailLoadedMsg.
+// ActivitiesLoadedMsg is exported so the app shell can route it after the user leaves the drill-in.
 type ActivitiesLoadedMsg struct {
 	key  string
 	gen  int
@@ -34,8 +32,7 @@ func loadActivities(d deps.Deps, key string, gen int) tea.Cmd {
 	}
 }
 
-// startActivityLoad bumps the load generation for key and returns the fetch command, so a superseded
-// in-flight load for the same issue is ignored when it lands (mirrors startDetailLoad).
+// startActivityLoad bumps the load generation so a superseded in-flight load is ignored when it lands.
 func (m *Model) startActivityLoad(key string) tea.Cmd {
 	m.activityGen[key]++
 	m.activitiesPending[key] = true
@@ -43,8 +40,6 @@ func (m *Model) startActivityLoad(key string) tea.Cmd {
 	return loadActivities(m.deps, key, m.activityGen[key])
 }
 
-// maybeLoadActivity starts an activity fetch for the current issue when the Activity view is showing
-// and it is not already cached or in flight (SWR).
 func (m *Model) maybeLoadActivity() tea.Cmd {
 	if !m.showActivity || m.viewKey == "" {
 		return nil
@@ -58,7 +53,7 @@ func (m *Model) maybeLoadActivity() tea.Cmd {
 	return m.startActivityLoad(m.viewKey)
 }
 
-// activityHelp is the label for the v toggle in the help bar: it names the view the toggle switches to.
+// activityHelp names the view the v toggle switches to, not the one currently showing.
 func (m Model) activityHelp() string {
 	if m.showActivity {
 		return "details"
@@ -66,8 +61,6 @@ func (m Model) activityHelp() string {
 	return "activity"
 }
 
-// activityBody is the Activity view's content: a skeleton while loading, an error with a retry hint on
-// failure, or the rendered audit trail.
 func (m Model) activityBody(w int) string {
 	s := m.deps.Styles
 	if m.viewKey == "" {
@@ -82,17 +75,16 @@ func (m Model) activityBody(w int) string {
 	return activitySkeleton(s, w)
 }
 
-// activityContent renders the audit trail newest first, with a note when older entries are not shown.
 func (m Model) activityContent(p domain.IssueActivityPage, w int) string {
 	s := m.deps.Styles
 	if len(p.Items) == 0 {
 		return s.Muted.Render("No activity.")
 	}
-	names := m.activityFieldNames() // resolve customFields.{id} change keys to their labels
+	names := m.activityFieldNames()
 	var rows []string
 	for i, a := range p.Items {
 		if i > 0 {
-			rows = append(rows, "") // a blank line spaces the timeline nodes
+			rows = append(rows, "")
 		}
 		rows = append(rows, m.activityEntry(a, names, w)...)
 	}
@@ -102,8 +94,6 @@ func (m Model) activityContent(p domain.IssueActivityPage, w int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// activityEntry is one timeline node: a dotted event label, then a muted meta line (time · actor) and
-// the change/detail lines, each carried down a vertical connector. Long lines wrap to the column width.
 func (m Model) activityEntry(a domain.IssueActivity, fieldNames map[string]string, w int) []string {
 	t := m.deps.Styles.Theme
 	rows := m.timelineLines(true, activityLabel(a.Type), lipgloss.NewStyle().Foreground(t.Text), w)
@@ -116,8 +106,7 @@ func (m Model) activityEntry(a domain.IssueActivity, fieldNames map[string]strin
 	return rows
 }
 
-// activityFieldNames maps a loaded custom field's id to its label, so an activity's customFields.{id}
-// change key resolves to the field's name (matching the deprecated client).
+// activityFieldNames maps a custom field id to its label, for resolving customFields.{id} change keys.
 func (m Model) activityFieldNames() map[string]string {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -132,9 +121,8 @@ func (m Model) activityFieldNames() map[string]string {
 	return names
 }
 
-// timelineLines renders one logical line onto the timeline gutter and wraps it to the column width. The
-// first physical line leads with the accent dot (an event) or the connector; wrapped continuations keep
-// the connector so the vertical line stays unbroken. The content is flattened (untrusted server text).
+// timelineLines renders one line onto the timeline gutter. Continuations keep the connector so the
+// vertical line stays unbroken, and the untrusted server text is flattened first.
 func (m Model) timelineLines(event bool, text string, content lipgloss.Style, w int) []string {
 	t := m.deps.Styles.Theme
 	bar := lipgloss.NewStyle().Foreground(t.Muted).Render("│") + " "
@@ -156,8 +144,7 @@ func (m Model) timelineLines(event bool, text string, content lipgloss.Style, w 
 	return out
 }
 
-// activityMeta is the timeline's time-and-actor line: the relative time and, when it resolves, the
-// member who acted. An unknown or system actor is omitted, leaving just the time.
+// activityMeta is the timeline's time-and-actor line. An unknown or system actor is omitted.
 func (m Model) activityMeta(a domain.IssueActivity) string {
 	parts := []string{formatRelative(a.OccurredAt)}
 	if name := m.memberLabel(a.ActorID); name != "" {
@@ -166,8 +153,7 @@ func (m Model) activityMeta(a domain.IssueActivity) string {
 	return strings.Join(parts, " · ")
 }
 
-// memberLabel resolves an actor id to a loaded member's name, or "" when it is the system actor (0) or
-// not among the loaded members - matching the deprecated client, which simply omits an unknown actor.
+// memberLabel resolves an actor id to a member name, or "" for the system actor (0) or an unloaded one.
 func (m Model) memberLabel(id int64) string {
 	if id == 0 {
 		return ""
@@ -180,14 +166,12 @@ func (m Model) memberLabel(id int64) string {
 	return ""
 }
 
-// formatRelative renders an activity time with friendly wording for today and yesterday, matching the
-// deprecated client. Older times show the absolute date and time.
+// formatRelative words today and yesterday in friendly form. Older times show an absolute date/time.
 func formatRelative(t time.Time) string {
 	if t.IsZero() {
 		return "-"
 	}
-	// the server sends instants serialized as UTC; read them in the viewer's own zone before deciding
-	// which day they fall on, else a Seoul morning reads back as "yesterday at 23:30"
+	// server instants are UTC: read them local first, else a Seoul morning reads as "yesterday at 23:30"
 	t = t.Local()
 	now := time.Now()
 	hm := t.Format("15:04")
@@ -201,7 +185,6 @@ func formatRelative(t time.Time) string {
 	return t.Format("2006-01-02 15:04")
 }
 
-// activitySkeleton is the placeholder shown while the activity log loads.
 func activitySkeleton(s theme.Styles, w int) string {
 	bar := func(frac float64) string {
 		n := max(1, int(float64(w)*frac))
@@ -214,8 +197,7 @@ func activitySkeleton(s theme.Styles, w int) string {
 	)
 }
 
-// activityLabel turns an event type into plain words: drop the ISSUE_ prefix, unslash, sentence-case
-// (matching the deprecated client, so a new backend event still reads sensibly).
+// activityLabel turns an event type into plain words, so a type this client never heard of still reads.
 func activityLabel(eventType string) string {
 	s := strings.ReplaceAll(strings.TrimPrefix(strings.TrimSpace(eventType), "ISSUE_"), "_", " ")
 	if s == "" { // empty, or a bare "ISSUE_" that reduced to nothing
@@ -224,16 +206,15 @@ func activityLabel(eventType string) string {
 	return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
 }
 
-// activityDataSkip mirrors the deprecated client's set of redundant activity-data keys not worth showing.
+// activityDataSkip lists data keys the entry already shows.
 var activityDataSkip = map[string]bool{
 	"issueKey": true, "actorName": true, "actorEmail": true, "projectKey": true,
 	"oldState": true, "newState": true, "oldPoint": true, "newPoint": true,
 	"oldParent": true, "newParent": true,
 }
 
-// activityDetails is the list of detail lines under an event: the field changes then any extra data,
-// following the deprecated client's rules. A content change shows only "Content updated"; a change with
-// neither a before nor an after is dropped (not shown as an empty diff).
+// activityDetails builds an event's detail lines. Content shows only "Content updated". A change with
+// neither side is dropped, not shown as an empty diff.
 func activityDetails(a domain.IssueActivity, fieldNames map[string]string) []string {
 	var lines []string
 	for _, ch := range a.Changes {
@@ -260,23 +241,21 @@ func activityDetails(a domain.IssueActivity, fieldNames map[string]string) []str
 	return lines
 }
 
-// changeLabel labels an activity change key, resolving an old customFields.{id} key to the field's
-// label when it is loaded (matching the deprecated client), else a generic "Custom field {id}".
+// changeLabel resolves a customFields.{id} key to its label, else a generic "Custom field {id}".
 func changeLabel(field string, fieldNames map[string]string) string {
 	const prefix = "customFields."
 	if strings.HasPrefix(field, prefix) {
 		id := field[len(prefix):]
 		if name := fieldNames[id]; name != "" {
-			return strings.ToUpper(name[:1]) + name[1:] // capitalize the first letter, keep the rest
+			return strings.ToUpper(name[:1]) + name[1:]
 		}
 		return "Custom field " + id
 	}
 	return humanizeKey(field)
 }
 
-// humanizeKey turns a field/data key into a friendly label, matching the deprecated client: an
-// already-capitalized key passes through; otherwise a trailing Name/Key is dropped, camelCase is
-// spaced, and the result is sentence-cased ("assigneeName" -> "Assignee", "storyPoint" -> "Story point").
+// humanizeKey turns a field key into a label: "assigneeName" -> "Assignee", "storyPoint" -> "Story point".
+// An already-capitalized key passes through.
 func humanizeKey(key string) string {
 	if key == "" {
 		return key

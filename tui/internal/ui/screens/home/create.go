@@ -34,7 +34,7 @@ const (
 
 const (
 	createFieldW  = 40 // field input body width
-	descFieldRows = 4  // visible rows in description textarea
+	descFieldRows = 4
 )
 
 var projectKeyPattern = regexp.MustCompile(`^[A-Z]+[0-9]*$`)
@@ -48,7 +48,7 @@ type createForm struct {
 	desc    textarea.Model
 	spinner spinner.Model
 	focus   int
-	hover   int // field or button under the cursor for hover highlight, -1 when none
+	hover   int // field or button under the cursor, -1 when none
 
 	keyErr     string
 	titleErr   string
@@ -188,13 +188,13 @@ func (f createForm) sync() createForm {
 		h = 1
 	}
 	f.vp.SetHeight(h)
-	// SetContent clamps against the old height and SetHeight not at all, so re-clamp
-	// here or a stale offset strands the body below the fold when the viewport grows.
+	// SetContent clamps against the old height and SetHeight not at all, so re-clamp here
+	// or a stale offset strands the body below the fold.
 	f.vp.SetYOffset(f.vp.YOffset())
 	return f
 }
 
-// In the description textarea, up/down and enter belong to the textarea, so they fall through to typeIntoFocused.
+// In the description textarea up/down and enter belong to the textarea, so they fall through.
 func (f createForm) onKey(msg tea.KeyPressMsg) (createForm, tea.Cmd) {
 	if f.submitting {
 		return f, nil
@@ -322,7 +322,7 @@ func (f createForm) submit() (createForm, tea.Cmd) {
 }
 
 func (f createForm) View() string {
-	// asymmetric padding balances the modal: withScrollbar reserves a right gutter, so left padding is widened to 2 to match.
+	// withScrollbar reserves a right gutter, so the left padding is widened to 2 to keep the modal balanced.
 	body := lipgloss.NewStyle().Padding(1, 0, 1, 2).Render(f.withScrollbar(f.vp.View()))
 	return components.TitledBoxCentered("New Project", body, f.deps.Styles.Theme.Primary)
 }
@@ -343,7 +343,7 @@ func (f createForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// focusLine is the body line where the focused element starts, so the viewport can scroll it into view
+// focusLine is where the focused element starts, so the viewport can scroll it into view
 func (f createForm) focusLine() int {
 	keyH := lipgloss.Height(f.field(createKey, "Key", fixBody(f.key.View(), 1), f.keyErr))
 	titleH := lipgloss.Height(f.field(createTitle, "Title", fixBody(f.title.View(), 1), f.titleErr))
@@ -508,7 +508,7 @@ func createErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // the server explained the failure, prefer it over the generic line
 	}
 	return "Could not create the project. Try again."
 }

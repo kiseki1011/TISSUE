@@ -18,8 +18,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// the review modal's focusable controls, in tab order. Which ones exist depends on the caller's role:
-// the verdict controls only for a reviewer, re-request only when someone has already responded.
+// the review modal's focusable controls, in tab order. Which exist depends on the caller's role: verdict
+// for a reviewer, re-request only once someone has responded.
 const (
 	rvApprove = iota
 	rvReject
@@ -31,16 +31,14 @@ const (
 
 const reviewFeedbackH = 5
 
-// reviewForm is the "Review" modal, which serves both sides of the review conversation: a reviewer
-// submits a verdict with optional feedback, and anyone can ask reviewers who already responded to look
-// again. The two live in one modal because they are the same conversation seen from either end, and
-// splitting them would cost a second key for an action taken far less often.
+// reviewForm serves both sides of the review conversation: a reviewer submits a verdict, and anyone can
+// ask reviewers who already responded to look again. One modal, since splitting costs a second key.
 type reviewForm struct {
 	deps         deps.Deps
-	canReview    bool // the caller is a reviewer here, so a verdict may be submitted
+	canReview    bool // the caller is a reviewer, so a verdict may be submitted
 	rerequestIDs []int64
-	responded    []string // display names of reviewers who already responded, for the re-request line
-	approved     bool     // the selected verdict; false means "request changes"
+	responded    []string // display names, for the re-request line
+	approved     bool     // the selected verdict. false means "request changes"
 	feedback     textarea.Model
 	focus        int
 	hover        int
@@ -101,7 +99,7 @@ func (f reviewForm) Update(msg tea.Msg) (reviewForm, tea.Cmd) {
 
 func (f reviewForm) onKey(msg tea.KeyPressMsg) (reviewForm, tea.Cmd) {
 	if f.sending {
-		return f, nil // a submit is in flight; ignore input until it lands
+		return f, nil // a submit is in flight, so ignore input until it lands
 	}
 	switch msg.String() {
 	case "esc":
@@ -119,8 +117,7 @@ func (f reviewForm) onKey(msg tea.KeyPressMsg) (reviewForm, tea.Cmd) {
 			return f.moveFocus(1)
 		}
 	case "left", "right":
-		// the two verdict buttons read as one segmented control with only two sides, so either horizontal
-		// key flips to the other one
+		// the verdict buttons are one two-sided segmented control, so either horizontal key flips it
 		if f.focus == rvApprove || f.focus == rvReject {
 			return f.pickVerdict(f.focus == rvReject)
 		}
@@ -146,8 +143,7 @@ func (f reviewForm) onKey(msg tea.KeyPressMsg) (reviewForm, tea.Cmd) {
 	return f.typeIntoFeedback(msg)
 }
 
-// pickVerdict selects a verdict and moves focus onto the chosen button, so the selection and the cursor
-// never disagree about which one is active.
+// pickVerdict moves focus onto the chosen button, so selection and cursor never disagree.
 func (f reviewForm) pickVerdict(approved bool) (reviewForm, tea.Cmd) {
 	f.approved = approved
 	f.focus = rvReject
@@ -256,8 +252,7 @@ func (f reviewForm) rerequestLine() string {
 	return "Already reviewed: " + strings.Join(f.responded, ", ")
 }
 
-// verdictBar is the two-button segmented control. The selected side carries the status colour it will
-// write (approved green, changes-requested red), matching how the verdict reads back on the comment.
+// verdictBar's selected side carries the status colour it will write, matching how the verdict reads back.
 func (f reviewForm) verdictBar() string {
 	t := f.deps.Styles.Theme
 	return lipgloss.JoinHorizontal(lipgloss.Top,
@@ -331,7 +326,7 @@ func (f reviewForm) field(id int, label, content string) string {
 	return zone.Mark(reviewZone(id), components.TitledBoxWeighted(label, content, borderCol, f.focus == id))
 }
 
-// FocusRow reports the focused control's row and height so a windowed modal scrolls to keep it visible.
+// FocusRow reports the focused control's row and height, so a windowed modal scrolls to keep it visible.
 // chromeTop = top border + the padding row above the body.
 func (f reviewForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
@@ -396,8 +391,7 @@ func submitReview(approved bool, comment string) tea.Cmd {
 	return func() tea.Msg { return reviewSubmittedMsg{approved: approved, comment: comment} }
 }
 
-// ReviewDoneMsg is exported so the app shell routes this background result back to the project screen
-// even if the user left the drill-in before it landed (so the toast still shows).
+// ReviewDoneMsg is exported so the app shell can route this result back after the user left the drill-in.
 type ReviewDoneMsg struct {
 	key     string
 	err     bool
@@ -427,8 +421,7 @@ func requestReviewCmd(d deps.Deps, key string, memberIDs []int64) tea.Cmd {
 	}
 }
 
-// openReviewForm opens the review modal for the selected issue. It refuses when the caller has nothing
-// to do there - neither a verdict to give nor a reviewer to ask again - rather than opening an empty box.
+// openReviewForm refuses when the caller has neither a verdict to give nor a reviewer to ask again.
 func (m Model) openReviewForm() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -449,8 +442,7 @@ func (m Model) openReviewForm() (Model, tea.Cmd) {
 	return m, m.reviewUI.Init()
 }
 
-// respondedReviewers are the reviewers who already gave a verdict - the only ones a re-request can reset,
-// since resetting a PENDING reviewer would change nothing but still notify them.
+// respondedReviewers are the only ones a re-request can reset. Resetting a PENDING one just notifies them.
 func respondedReviewers(reviewers []domain.Reviewer) (ids []int64, names []string) {
 	for _, rv := range reviewers {
 		if rv.Status != "" && rv.Status != "PENDING" {
@@ -461,8 +453,7 @@ func respondedReviewers(reviewers []domain.Reviewer) (ids []int64, names []strin
 	return ids, names
 }
 
-// updateReview drives the open review modal: submit/re-request fire their calls and keep the modal up
-// until the result lands, so a failure reason can be shown in place instead of only as a toast.
+// updateReview keeps the modal up until the result lands, so a failure reason can show in place.
 func (m Model) updateReview(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case reviewCancelledMsg:

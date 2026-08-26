@@ -8,8 +8,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// Pressing n on the Issue Types pane opens the create-type modal, seeded with the workflow list,
-// the default STANDARD hierarchy, and the first workflow preselected.
 func TestTypeCreateOpensSeeded(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)
@@ -28,7 +26,6 @@ func TestTypeCreateOpensSeeded(t *testing.T) {
 	}
 }
 
-// The workflow dropdown selects a workflow by id, and the hierarchy dropdown selects a level.
 func TestTypeCreatePickers(t *testing.T) {
 	wfs := []domain.WorkflowSummary{{ID: 7, Name: "Alpha"}, {ID: 9, Name: "Beta"}}
 	f := newCreateTypeForm(optionsDeps(), wfs)
@@ -51,7 +48,6 @@ func TestTypeCreatePickers(t *testing.T) {
 	}
 }
 
-// Validation rejects a too-short name and a missing workflow before any network call.
 func TestTypeCreateValidation(t *testing.T) {
 	f := newCreateTypeForm(optionsDeps(), nil) // no workflows -> wfID stays 0
 	f.name.SetValue("x")
@@ -69,7 +65,6 @@ func TestTypeCreateValidation(t *testing.T) {
 	}
 }
 
-// A valid form submits a create command.
 func TestTypeCreateSubmits(t *testing.T) {
 	wfs := []domain.WorkflowSummary{{ID: 3, Name: "Flow"}}
 	f := newCreateTypeForm(optionsDeps(), wfs)
@@ -80,7 +75,6 @@ func TestTypeCreateSubmits(t *testing.T) {
 	}
 }
 
-// A successful create closes the modal and reloads the catalog.
 func TestTypeCreateSaveReloads(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)
@@ -94,7 +88,6 @@ func TestTypeCreateSaveReloads(t *testing.T) {
 	}
 }
 
-// A create failure keeps the modal open with the error shown.
 func TestTypeCreateFailureKeepsOpen(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)

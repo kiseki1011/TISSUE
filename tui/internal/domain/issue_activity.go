@@ -9,7 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// IssueActivity is one entry in an issue's audit trail: who did what, when, and which fields moved.
+// IssueActivity is one entry in an issue's audit trail.
 type IssueActivity struct {
 	ID         int64
 	Type       string // raw event enum, e.g. ISSUE_WORKFLOW_TRANSITIONED
@@ -19,21 +19,18 @@ type IssueActivity struct {
 	Data       []ActivityData // extra event metadata (key/value), sorted by key
 }
 
-// ActivityChange is one field's before/after value for an activity entry.
 type ActivityChange struct {
 	Field string
 	From  string
 	To    string
 }
 
-// ActivityData is one extra metadata pair carried by an activity event.
 type ActivityData struct {
 	Key   string
 	Value string
 }
 
-// IssueActivityPage is a page of activity entries. The log is cursor-paginated (no total), so HasNext
-// is all that is needed to hint that more history exists.
+// IssueActivityPage is cursor-paginated, so there is no total. Only HasNext hints at more history.
 type IssueActivityPage struct {
 	Items   []IssueActivity
 	HasNext bool
@@ -73,7 +70,7 @@ func toActivity(a client.ActivityLogResponse) IssueActivity {
 		for field, ch := range *a.Changes {
 			out.Changes = append(out.Changes, ActivityChange{Field: field, From: changeVal(ch.From), To: changeVal(ch.To)})
 		}
-		// the changes come from a map, so sort by field for a deterministic order
+		// changes come from a map, so sort by field for determinism
 		sort.Slice(out.Changes, func(i, j int) bool { return out.Changes[i].Field < out.Changes[j].Field })
 	}
 	if a.Data != nil {
@@ -85,8 +82,7 @@ func toActivity(a client.ActivityLogResponse) IssueActivity {
 	return out
 }
 
-// changeVal renders an activity change value (an untyped JSON scalar) as a string, mapping a missing
-// value to empty.
+// changeVal renders an untyped JSON scalar, mapping a missing value to empty.
 func changeVal(v interface{}) string {
 	if v == nil {
 		return ""

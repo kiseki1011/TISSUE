@@ -21,8 +21,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// the edit form's focusable controls, in tab order. Story point sits on the Priority row (a tab stop only
-// when the issue type permits a point). Content is edited in its own modal (E / the Content pen), not here.
+// focusable controls, in tab order. Content is edited in its own modal (E), not here.
 const (
 	efTitle = iota
 	efParent
@@ -36,32 +35,27 @@ const (
 const (
 	editFieldW   = 60
 	editContentH = 6
-	// Priority and Story point share one line. Each titled box spends 4 non-content cells (two borders +
-	// a one-cell inset on each side), so a full-width field's outer width is editFieldW+4. For the two
-	// halves plus their one-cell gap to match that, the content halves must sum to editFieldW-5:
+	// Priority and Story point share one line. Each titled box spends 4 non-content cells, so:
 	// (L+4) + 1gap + (R+4) == editFieldW+4  ⇒  L+R == editFieldW-5.
 	editHalfL = (editFieldW - 5) / 2
 	editHalfR = editFieldW - 5 - editHalfL
 )
 
-// editForm is the "Edit issue" modal for an issue's common fields: title, priority, story point and due
-// date. State and assignee have their own pickers; content has its own editor modal; summary is omitted.
+// editForm edits an issue's common fields. State, assignee and content have their own modals.
 type editForm struct {
 	deps deps.Deps
 
 	title            textinput.Model
-	storyPoint       textinput.Model // numeric; only a tab stop when canUseStoryPoint
-	canUseStoryPoint bool            // the issue type permits a story point; gates the field
-	parentKey        string          // the current parent's key ("" = none); set by the shared parent picker
-	canHaveParent    bool            // the issue type is not top-level; gates the Parent field (below Title)
-	dueAt            time.Time       // the chosen due date (zero = none), set from the calendar picker
+	storyPoint       textinput.Model // numeric, only a tab stop when canUseStoryPoint
+	canUseStoryPoint bool            // the issue type permits a story point
+	parentKey        string          // "" = none, set by the shared parent picker
+	canHaveParent    bool            // the issue type is not top-level, so a Parent field shows
+	dueAt            time.Time       // zero = none, set from the calendar picker
 	dueSet           bool
 	priorityIx       int
 
-	// the issue type's custom fields, seeded from the issue's current values. origCustom is what each
-	// field serialized to when the form opened, so the save can send only what actually changed - the
-	// server merges the map, and re-sending an untouched field would stamp it as edited in the activity
-	// log. Both are keyed by field id as a string, the wire's key type.
+	// origCustom is what each field serialized to at open, so the save sends only real changes (resending
+	// an untouched field would stamp it as edited in the activity log). Keyed by field id as a string.
 	customFields []customFieldInput
 	origCustom   map[string]interface{}
 
@@ -70,8 +64,7 @@ type editForm struct {
 	titleErr string
 }
 
-// focusIsArea reports whether the focused control is a multi-line TEXT custom field, whose enter/up/down
-// are editing keys rather than form navigation (mirroring the create form).
+// focusIsArea reports whether focus is a multi-line TEXT field, where enter/up/down edit instead of navigating.
 func (f editForm) focusIsArea() bool {
 	if !isCustomFocus(f.focus) {
 		return false
@@ -105,8 +98,7 @@ func newEditForm(d deps.Deps, det domain.IssueDetail, canHaveParent bool) editFo
 	orig := make(map[string]interface{}, len(det.CustomFields))
 	for _, cf := range det.CustomFields {
 		in := newCustomFieldInput(cf.Definition()).seed(cf.Raw)
-		// record the seeded value through the same serializer the save uses, so the diff compares like
-		// with like rather than against the wire shape the detail happened to carry
+		// serialize the seed with the save's serializer, so the diff compares like with like
 		if v, present, _ := in.value(); present {
 			orig[strconv.Itoa(in.field.ID)] = v
 		}
@@ -133,12 +125,11 @@ func (f editForm) setDue(v time.Time, set bool) editForm {
 
 func (f editForm) Init() tea.Cmd { return textinput.Blink }
 
-// fields returns the focusable control ids in tab order. Story point is a tab stop only when the issue
-// type permits a point (otherwise the field is not rendered).
+// fields returns the tab order. Story point is a stop only when the type permits a point.
 func (f editForm) fields() []int {
 	ids := []int{efTitle}
 	if f.canHaveParent {
-		ids = append(ids, efParent) // a picker-backed field directly below Title, like the create form
+		ids = append(ids, efParent)
 	}
 	ids = append(ids, efPriority)
 	if f.canUseStoryPoint {
@@ -202,9 +193,9 @@ func (f editForm) onKey(msg tea.KeyPressMsg) (editForm, tea.Cmd) {
 		case efCancel:
 			return f, cancelEditIssue
 		case efDue:
-			return f, openDueEdit // the model opens the calendar over the form
+			return f, openDueEdit
 		case efParent:
-			return f, openParentEditForm // the model opens the parent picker over the form
+			return f, openParentEditForm
 		default:
 			return f.moveFocus(1)
 		}
@@ -241,9 +232,7 @@ func (f editForm) focusOn(id int) (editForm, tea.Cmd) {
 	return f, cmd
 }
 
-// customKey drives the focused custom field: a DATE/TIMESTAMP opens the calendar on enter and ignores
-// typing, a multi-line TEXT takes enter as a newline, and anything else advances on enter. Mirrors the
-// create form so the two modals do not diverge.
+// customKey drives the focused custom field, mirroring the create form.
 func (f editForm) customKey(msg tea.KeyPressMsg) (editForm, tea.Cmd) {
 	i := customIndex(f.focus)
 	if i < 0 || i >= len(f.customFields) {
@@ -279,7 +268,7 @@ func (f editForm) typeIntoFocused(msg tea.KeyPressMsg) (editForm, tea.Cmd) {
 		f.title, cmd = f.title.Update(msg)
 	case efStoryPoint:
 		if msg.Text != "" && !isDigits(msg.Text) {
-			return f, nil // a story point is a whole number; drop non-digit character input
+			return f, nil // a story point is a whole number, so drop non-digit input
 		}
 		f.storyPoint, cmd = f.storyPoint.Update(msg)
 	}
@@ -293,7 +282,7 @@ func (f editForm) updateInputs(msg tea.Msg) (editForm, tea.Cmd) {
 	return f, tea.Batch(tc, sc)
 }
 
-// isDigits reports whether s is non-empty and all ASCII digits, for the story point input filter.
+// isDigits backs the story point input filter (empty is false).
 func isDigits(s string) bool {
 	if s == "" {
 		return false
@@ -317,14 +306,14 @@ func (f editForm) submit() (editForm, tea.Cmd) {
 	if f.dueSet {
 		due = f.dueAt
 	}
-	// the input is digit-filtered, so a non-empty value always parses; empty means unset (0)
+	// digit-filtered input always parses. empty means unset (0)
 	sp := 0
 	if v := strings.TrimSpace(f.storyPoint.Value()); v != "" {
 		sp, _ = strconv.Atoi(v)
 	}
 	f, custom, ok := f.diffCustom()
 	if !ok {
-		return f, nil // a field reported a validation error, which is now rendered under it
+		return f, nil // a field failed validation, now rendered under it
 	}
 	return f, submitEditIssue(editValues{
 		title:        title,
@@ -335,10 +324,8 @@ func (f editForm) submit() (editForm, tea.Cmd) {
 	})
 }
 
-// diffCustom validates every custom input and keeps only the values that differ from what the form
-// opened with, so an untouched field is never resent (which would stamp it as edited in the activity
-// log). A value that was set and is now empty becomes an explicit nil, which clears it. ok is false when
-// a field failed validation - its message is set for rendering and the save is held back.
+// diffCustom keeps only the values that differ from the form's open state, so an untouched field is never
+// resent (that would stamp it as edited). A cleared value becomes an explicit nil. ok=false on a bad field.
 func (f editForm) diffCustom() (editForm, map[string]interface{}, bool) {
 	out := map[string]interface{}{}
 	ok := true
@@ -373,8 +360,6 @@ func (f editForm) onClick(msg tea.MouseClickMsg) (editForm, tea.Cmd) {
 		if i < 0 || i >= len(f.customFields) {
 			return f, nil
 		}
-		// a click on a checklist option or a cycle arrow acts on that control; anything else in the box
-		// just focuses it (or, for a date field, opens the calendar)
 		if c, consumed := f.customFields[i].clickAt(msg, editZone(id)); consumed {
 			f.customFields[i] = c
 			return f, nil
@@ -389,10 +374,10 @@ func (f editForm) onClick(msg tea.MouseClickMsg) (editForm, tea.Cmd) {
 		return f.focusOn(id)
 	case efParent:
 		f, _ = f.focusOn(efParent)
-		return f, openParentEditForm // clicking Parent opens the parent picker
+		return f, openParentEditForm
 	case efDue:
 		f, _ = f.focusOn(efDue)
-		return f, openDueEdit // clicking Due opens the calendar
+		return f, openDueEdit
 	case efSave:
 		return f.submit()
 	case efCancel:
@@ -441,8 +426,7 @@ func (f editForm) customRows() []string {
 	return out
 }
 
-// priorityStoryRow lays Priority and Story point on one line (the point half only when the issue type
-// permits it, in which case Priority takes the full width).
+// priorityStoryRow puts Priority and Story point on one line, Priority full-width without the point.
 func (f editForm) priorityStoryRow() string {
 	if !f.canUseStoryPoint {
 		return f.field(efPriority, "Priority", f.priorityContent(editFieldW), "")
@@ -452,9 +436,8 @@ func (f editForm) priorityStoryRow() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, " ", right)
 }
 
-// FocusRow reports the focused control's row (in the bordered View's coordinates) and height, so a
-// windowed modal scrolls to keep it visible. +2 = top border + the padding row above the body. Priority
-// and Story point share one row, so a focus on either maps to it.
+// FocusRow reports the focused control's row and height in View coordinates, for scroll-into-view.
+// chromeTop 2 = top border + the padding row. Priority and Story point share one row.
 func (f editForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	type frow struct {
@@ -480,12 +463,11 @@ func (f editForm) FocusRow() (int, int, bool) {
 		}
 		row += h
 	}
-	// the Save/Cancel buttons sit after every field plus the blank row before them
+	// the buttons sit after every field plus the blank row
 	return row + 1, lipgloss.Height(f.buttons()), true
 }
 
-// dueContent renders the Due field body: the chosen date, or a "Select…" hint. Accent when focused,
-// matching the picker-backed Parent field. The field is set from the calendar, never typed.
+// dueContent renders the Due field. The value comes from the calendar, never typed.
 func (f editForm) dueContent() string {
 	t := f.deps.Styles.Theme
 	col := t.Muted
@@ -499,8 +481,7 @@ func (f editForm) dueContent() string {
 	return fixField(lipgloss.NewStyle().Foreground(col).Render(label), 1)
 }
 
-// parentContent renders the Parent field body: the current parent's key, or a "Select…" hint. Accent
-// when focused, matching Due. The value is set from the shared parent picker, never typed.
+// parentContent renders the Parent field. The value comes from the parent picker, never typed.
 func (f editForm) parentContent() string {
 	t := f.deps.Styles.Theme
 	col := t.Muted
@@ -633,16 +614,14 @@ func indexOfInt(is []int, v int) int {
 	return -1
 }
 
-// editValues is the new common-field state the form emits on save (content lives in its own editor); the
-// model diffs it against the loaded detail to send only what changed and to update the cache optimistically.
+// editValues is the common-field state emitted on save. The model diffs it against the loaded detail.
 type editValues struct {
 	title      string
 	priority   string
 	dueAt      time.Time // zero = no due date
 	storyPoint int       // 0 = unset
 
-	// customFields holds only the custom fields whose value changed, keyed by field id. A nil value is an
-	// explicit clear. Empty means nothing to send.
+	// only the changed custom fields, keyed by field id. A nil value is an explicit clear.
 	customFields map[string]interface{}
 }
 
@@ -656,8 +635,7 @@ func submitEditIssue(v editValues) tea.Cmd {
 	return func() tea.Msg { return editSubmittedMsg{v: v} }
 }
 
-// openEditForm opens the edit modal, prefilled from the loaded detail. It refuses while the detail is
-// still loading (there would be nothing to prefill or diff against).
+// openEditForm refuses while the detail is loading, since there is nothing to prefill or diff against.
 func (m Model) openEditForm() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -670,9 +648,8 @@ func (m Model) openEditForm() (Model, tea.Cmd) {
 	return m, m.editUI.Init()
 }
 
-// canHaveParent reports whether an issue of this type may be parented (it is not a top-level type and
-// the issue-type catalog is loaded). It gates the edit form's Parent field, mirroring the picker's own
-// guard: an EPIC (or an unresolved type) shows no Parent row.
+// canHaveParent gates the Parent field, mirroring the picker's guard: an EPIC or an unresolved type
+// (catalog not loaded) shows no Parent row.
 func (m Model) canHaveParent(typeName string) bool {
 	hier, ok := m.hierarchyForType(typeName)
 	if !ok {
@@ -682,8 +659,6 @@ func (m Model) canHaveParent(typeName string) bool {
 	return ok
 }
 
-// updateEdit drives the open edit modal: submit/cancel close it, a wheel scrolls a modal too tall for
-// the terminal, and anything else is forwarded to the form (then the window follows the focused field).
 func (m Model) updateEdit(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case editCancelledMsg:
@@ -712,8 +687,7 @@ func (m Model) editScrollMax() int {
 	return max(0, lipgloss.Height(m.editUI.View())-m.height)
 }
 
-// followEditFocus scrolls the windowed edit modal so the focused control stays visible, mirroring the
-// schema dashboard's focus-follow. It is a no-op when the modal already fits the terminal.
+// followEditFocus scrolls the windowed modal to keep the focused control visible.
 func (m Model) followEditFocus() Model {
 	row, height, ok := m.editUI.FocusRow()
 	if !ok {
@@ -735,24 +709,20 @@ func (m Model) followEditFocus() Model {
 	return m
 }
 
-// submitEdit sends only the fields that changed (a PATCH), updates the cache optimistically, and starts
-// a background refetch to reconcile - matching the transition/assign flow. The diff is taken against the
-// snapshot the form was built from (editBase), so a field the user never touched is never resent even if
-// a background refetch changed the live cache while the form was open.
+// submitEdit PATCHes only what changed, applies it optimistically, then refetches to reconcile. The diff
+// is against editBase, so a field the user never touched is never resent.
 func (m Model) submitEdit(v editValues) (Model, tea.Cmd) {
 	m.editing = false
 	edit := diffEdit(m.editBase, v)
 	if edit.Empty() {
 		return m, toast.Show(toast.Info, "No changes.")
 	}
-	m.applyEdit(m.viewKey, edit) // optimistic: show the edited fields at once (a no-op if the cache was evicted)
+	m.applyEdit(m.viewKey, edit) // optimistic (a no-op if the cache was evicted)
 	return m, editIssue(m.deps, m.viewKey, edit)
 }
 
-// diffEdit builds the PATCH: a field is included only when it differs from the open-time snapshot. The
-// title is compared trimmed (the save trims it too), so opening and saving an unchanged issue whose
-// stored title has surrounding whitespace is not treated as an edit. The due date is compared at day
-// granularity (that is all the form edits). Summary and content are not edited here, so they are never sent.
+// diffEdit includes a field only when it differs from the open-time snapshot. The title is compared
+// trimmed and the due date at day granularity. Summary and content are never sent from here.
 func diffEdit(orig domain.IssueDetail, v editValues) domain.IssueEdit {
 	var out domain.IssueEdit
 	if v.title != strings.TrimSpace(orig.Title) {
@@ -768,8 +738,7 @@ func diffEdit(orig domain.IssueDetail, v editValues) domain.IssueEdit {
 			out.DueAt = &v.dueAt
 		}
 	}
-	// story point rides a separate endpoint; include it only when it actually changed (when the type
-	// disallows it the form keeps the original value, so this stays a no-op)
+	// story point rides a separate endpoint. A type that disallows it keeps the original, so this is a no-op.
 	if v.storyPoint != orig.StoryPoint {
 		sp := v.storyPoint
 		out.StoryPoint = &sp
@@ -781,10 +750,8 @@ func diffEdit(orig domain.IssueDetail, v editValues) domain.IssueEdit {
 	return out
 }
 
-// applyEdit writes only the changed fields into the cached detail (and its list row) at once and bumps
-// the load generation so an earlier in-flight refetch cannot clobber this optimistic write. Applying
-// only the diff (not every field) preserves any newer value a background refetch left in the cache for a
-// field the user did not edit.
+// applyEdit writes only the changed fields into the cache and bumps the load generation, so an earlier
+// in-flight refetch cannot clobber it. Diff-only, so a refetched value for an untouched field survives.
 func (m *Model) applyEdit(key string, e domain.IssueEdit) {
 	d, ok := m.details[key]
 	if !ok {
@@ -813,17 +780,14 @@ func (m *Model) applyEdit(key string, e domain.IssueEdit) {
 	m.patchRow(key, d)
 }
 
-// EditDoneMsg is exported so the app shell can route this background result back to the project screen
-// even when the user has left the drill-in before the edit landed (so the toast still shows).
+// EditDoneMsg is exported so the app shell can route it after the user has left the drill-in.
 type EditDoneMsg struct {
 	key     string
 	err     bool
 	errText string // the resolved failure toast line (server reason / mapped code / fallback)
 }
 
-// editIssue applies the diff across the two endpoints it may span: the common-fields PATCH (only when a
-// common field changed) and the separate story point endpoint (only when the point changed). It stops at
-// the first error and reports one result the screen reconciles with a refetch.
+// editIssue spans whichever endpoints the diff touches, stopping at the first error with one result.
 func editIssue(d deps.Deps, key string, e domain.IssueEdit) tea.Cmd {
 	return func() tea.Msg {
 		if e.HasCommonFields() {

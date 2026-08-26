@@ -13,9 +13,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// On first open the window sizes before the project list arrives, so the initial relayout runs
-// SetRows on an empty list and the table cursor lands at -1. Once projects load, the top row (the
-// topmost pinned project, or the topmost project when none are pinned) must be selected by default.
+// The window sizes before the list arrives, so the initial relayout leaves the cursor at -1. Once
+// projects load, the top row must be selected by default.
 func TestInitialLoadSelectsTopRow(t *testing.T) {
 	zone.NewGlobal()
 	m := New(deps.Deps{

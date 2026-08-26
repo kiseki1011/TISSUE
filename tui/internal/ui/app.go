@@ -1,4 +1,4 @@
-// Package ui is the BubbleTea root model routing between screens, with shared theme, keys, and components.
+// Package ui is the BubbleTea root model routing between screens.
 package ui
 
 import (
@@ -54,7 +54,7 @@ type tabDef struct {
 	zone   string
 }
 
-// tabs is the header tab bar order: the project dashboard plus the global schema catalog.
+// tabs is the header tab bar, in order.
 var tabs = []tabDef{
 	{screenHome, "Projects", "app.tab.projects"},
 	{screenSchema, "Schema", "app.tab.schema"},
@@ -62,15 +62,13 @@ var tabs = []tabDef{
 	{screenInbox, "Inbox", "app.tab.inbox"},
 }
 
-// Chrome band sizes.
-// Each band sits one blank row away from the terminal edge and one from the content area.
+// Chrome band sizes. Each band sits one blank row from the terminal edge and one from the content.
 const (
 	padRows      = 1
 	headerHeight = 1
 	footerHeight = 2 // the footer band's minimum: global(common) keys on top, screen-specific below
 	leftInset    = 2
-	// headerCompactW is the width at and below which the header sheds its optional affordances (the server
-	// url, the username, and the drill-in's "‹ Projects" back link) so the brand and the tabs still fit.
+	// headerCompactW is the width at and below which the header sheds the url, username, and back link.
 	headerCompactW = 130
 )
 
@@ -92,15 +90,14 @@ type App struct {
 	rt      *realtime.Consumer // user-scoped SSE stream, live only while authenticated
 	rtState realtime.State     // last connection state, drives the header indicator
 
-	inboxUnread bool // whether the caller has unread notifications, driving the Inbox tab's badge
+	inboxUnread bool // drives the Inbox tab's unread badge
 
-	// sentSize is the body size last handed to the active screen. The footer's wrapped height is part of
-	// the row budget, so a hint row coming or going has to re-issue it even without a terminal resize.
+	// sentSize is the body size last sent to the active screen. A footer hint row coming or going
+	// re-issues it, with no terminal resize involved.
 	sentSize tea.WindowSizeMsg
 
-	// projectOrigin is the tab to return to when the project drill-in closes (esc). It is the screen the
-	// OpenProjectMsg was emitted from, so drilling in from the Inbox returns to the Inbox, and from the
-	// Projects dashboard returns there. Defaults to the dashboard (the silent-restore deep-link path).
+	// projectOrigin is the tab esc returns to from the project drill-in: the screen OpenProjectMsg came
+	// from. Defaults to the dashboard (the silent-restore deep-link path).
 	projectOrigin screen
 
 	connecting connecting.Model
@@ -113,8 +110,7 @@ type App struct {
 	project    project.Model
 }
 
-// newHelpModel builds the footer/help-modal renderer styled to the theme. It is rebuilt on a live
-// theme change, so the short (footer) and full (help modal) views both restyle.
+// newHelpModel builds the footer/help-modal renderer for the theme. Rebuilt on a live theme change.
 func newHelpModel(t theme.Theme) help.Model {
 	h := help.New()
 	keyS := lipgloss.NewStyle().Foreground(t.Primary)
@@ -144,9 +140,8 @@ func (a App) Init() tea.Cmd {
 	return a.connecting.Init()
 }
 
-// appModal is an app-level overlay (help now, settings later) shown centered over a dimmed backdrop.
-// While one is open it owns the keyboard and its own mouse. The host dismisses it on a click outside
-// its box or a modalClosedMsg the modal emits (such as on esc).
+// appModal is an app-level overlay centered over a dimmed backdrop. While open it owns the keyboard
+// and its mouse. The host dismisses it on a click outside its box or on modalClosedMsg.
 type appModal interface {
 	Update(tea.Msg) (appModal, tea.Cmd)
 	View() string
@@ -164,16 +159,13 @@ type modalClosedMsg struct{}
 // closeModal is the command a modal returns to ask the host to dismiss it.
 func closeModal() tea.Msg { return modalClosedMsg{} }
 
-// Update runs the message through the app, then reconciles the layout: the footer's height depends on
-// which hints the new state advertises, so a message that changes them also changes the body's budget.
+// Update runs the message, then reflows: a change to the footer's hints changes the body's budget.
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return reflow(a.update(msg))
 }
 
 // reflow re-issues the body size when the chrome's height no longer matches what the active screen was
-// last told. Screens are sized by message, so a footer that grew a wrapped row has to hand the rows back.
-// It settles in one pass because no screen's hints depend on the height it was granted; a hint gated on
-// the body overflowing would make the two chase each other (a one-row flicker, since this is single-shot).
+// last told. It settles in one pass because no screen's hints depend on the height it was granted.
 func reflow(model tea.Model, cmd tea.Cmd) (tea.Model, tea.Cmd) {
 	a, ok := model.(App)
 	if !ok || a.width == 0 || a.bodySize() == a.sentSize {
@@ -188,16 +180,14 @@ func (a App) bodySize() tea.WindowSizeMsg {
 	return tea.WindowSizeMsg{Width: a.width, Height: a.height - a.reservedRows()}
 }
 
-// resize hands the current body size to the active screen and records it. Every path that sizes a screen
-// goes through here so reflow always compares against what was really sent.
+// resize sizes the active screen and records it, so reflow compares against what was really sent.
 func (a App) resize() (tea.Model, tea.Cmd) {
 	a.sentSize = a.bodySize()
 	return a.updateActive(a.sentSize)
 }
 
 func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// a visible toast swallows mouse input landing on it, so the floating notification is opaque to
-	// clicks/wheel rather than click-through to the widget it covers
+	// a visible toast is opaque to mouse input rather than clicking through to the widget it covers
 	if mm, ok := msg.(tea.MouseMsg); ok && a.mouseOnToast(mm) {
 		return a, nil
 	}
@@ -205,8 +195,8 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if k, ok := msg.(tea.KeyPressMsg); ok && k.String() == "ctrl+c" {
 		return a, tea.Quit
 	}
-	// an open modal owns interactive input. Background messages (resize, loads, toasts) still flow
-	// through to the normal handling below so the inert screen stays current
+	// an open modal owns interactive input. Background messages still flow through below, so the
+	// inert screen stays current
 	if a.modal != nil {
 		switch msg.(type) {
 		case tea.KeyPressMsg, tea.MouseClickMsg, tea.MouseWheelMsg, tea.MouseMotionMsg:
@@ -271,9 +261,8 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// tokens are revoked server-side and cleared locally. The re-probe now routes to login
 		return a.withSize(a.connecting.Init())
 	case tea.MouseClickMsg:
-		// a header-tab click switches tabs only when tab-nav is live. While a modal captures input
-		// (for example a delete is submitting) the click yields to the screen, so a mid-action tab switch
-		// cannot strand the in-flight result message on the wrong screen
+		// a header-tab click switches tabs only when tab-nav is live, so a mid-action tab switch cannot
+		// strand an in-flight result on the wrong screen
 		if a.tabNavActive() {
 			if target, ok := a.tabAt(msg); ok {
 				return a.switchTab(target)
@@ -281,7 +270,6 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return a.updateActive(msg)
 	case tea.MouseMotionMsg:
-		// track the hovered header tab for its highlight, then let the active screen hover too
 		a.hoverTab = ""
 		if a.tabNavActive() {
 			for _, tb := range tabs {
@@ -301,8 +289,7 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.oidcDevice = oidcdevice.New(a.deps, msg.Info)
 		return a.withSize(a.oidcDevice.Init())
 	case nav.OpenProjectMsg:
-		// drill into a project's issues. The origin tab (Projects dashboard, or the Inbox when drilling from
-		// a notification) is remembered so esc returns there; its state is preserved underneath
+		// remember the origin tab so esc returns there. Its state is preserved underneath
 		a.projectOrigin = a.screen
 		a.screen = screenProject
 		a.project = project.New(a.deps, msg.ProjectKey, msg.Title).
@@ -310,13 +297,11 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.rememberLastProject(msg.ProjectKey) // so the next silent restore lands back here
 		return a.withSize(a.project.Init())
 	case nav.CloseProjectMsg:
-		// return to the origin tab (dashboard or Inbox) and re-lay it to the current size. The origin is now
-		// the last screen, so forget the project pointer
+		// back to the origin tab, re-laid to the current size. It is the last screen now, so forget the pointer
 		a.clearLastProject()
 		return a.switchTab(a.projectOrigin)
 	case nav.RefreshDashboardMsg:
-		// a project mutation that changes how the project reads on the dashboard (settings edit) asks the
-		// dashboard to silently reload, so the change shows when the user returns to it
+		// a settings edit changes how the project reads on the dashboard, so reload it silently
 		var cmd tea.Cmd
 		a.home, cmd = a.home.Update(home.RefreshMsg{})
 		return a, cmd
@@ -329,30 +314,26 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.agents = agents.New(a.deps)
 		a.inbox = inbox.New(a.deps)
 		a.inboxUnread = false
-		rtCmd := a.startRealtime() // open the user-scoped SSE stream for this session
-		// prefetch the Schema catalog, the agents list, and the inbox so those tabs are ready when opened;
-		// home loads its projects list in the background so it is ready even when we deep-link past it. The
-		// unread poll starts its self-arming loop so the Inbox badge lights even before the tab is opened.
+		rtCmd := a.startRealtime()
+		// prefetch every tab, home included since a deep-link restore skips past it. The unread poll's
+		// self-arming loop lights the Inbox badge before the tab is opened.
 		inits := []tea.Cmd{
 			rtCmd, fetchProfile(a.deps, a.sessionGen), a.home.Init(), a.schema.Init(), a.agents.Init(),
 			a.inbox.Init(), pollInboxUnread(a.deps, a.sessionGen, true),
 		}
 		if msg.Restore {
-			// a silent restore lands back on the last-open project without flashing the dashboard: set
-			// the project active up front so the first render is already the project. Home stays
-			// initialized underneath, so esc returns to a ready list
+			// set the project active up front so the first render is already it, with no dashboard flash.
+			// Home stays initialized underneath so esc returns to a ready list
 			if key := a.lastProjectKey(); key != "" {
 				a.screen = screenProject
 				a.project = project.New(a.deps, key, "").WithViewer(a.user.Username)
 				inits = append(inits, a.project.Init())
 			}
 		} else {
-			// a fresh login lands on the dashboard and forgets the pointer, so a different user signing in
-			// on the same server does not inherit the previous user's last project
+			// forget the pointer so a different user on the same server does not inherit the last project
 			a.clearLastProject()
 		}
-		// size whichever screen is now active (home, or the restored project). When we deep-linked, home
-		// is sized on esc via CloseProjectMsg, so it needs no sizing here
+		// size whichever screen is now active. A deep-linked home is sized later, on esc via CloseProjectMsg
 		return a.withSize(tea.Batch(inits...))
 	case profileLoadedMsg:
 		if msg.gen == a.sessionGen { // drop a profile that belongs to a superseded session
@@ -386,18 +367,16 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.inbox, cmd = a.inbox.Update(msg)
 		return a, cmd
 	case inbox.ReadChangedMsg:
-		// a read action in the inbox changed unread state: re-check the badge authoritatively (one-shot, so
-		// it does not spawn a second poll loop)
+		// re-check the badge authoritatively. one-shot, so it does not spawn a second poll loop
 		return a, pollInboxUnread(a.deps, a.sessionGen, false)
 	case inbox.MarkedAllMsg, inbox.ActionFailedMsg:
-		// deliver a mark-all/action-failed result to the inbox even if the user left the tab before it
-		// landed, so its toast and badge re-check (and the failed-action reconcile) still fire
+		// deliver even if the user left the tab, so the toast, badge re-check, and reconcile still fire
 		var cmd tea.Cmd
 		a.inbox, cmd = a.inbox.Update(msg)
 		return a, cmd
 	case inboxUnreadMsg:
 		if msg.gen != a.sessionGen {
-			return a, nil // a re-login/logout superseded this poll; end its loop
+			return a, nil // a re-login/logout superseded this poll, so end its loop
 		}
 		if msg.ok {
 			a.inboxUnread = msg.has
@@ -408,20 +387,17 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case inboxRepollMsg:
 		if msg.gen != a.sessionGen {
-			return a, nil // stale session; stop polling
+			return a, nil // stale session, stop polling
 		}
 		return a, pollInboxUnread(a.deps, msg.gen, true)
 	case home.ProjectsLoadedMsg, home.ProjectsErrMsg, home.StatsLoadedMsg, home.StatsErrMsg:
-		// home's projects-list and stats prefetch run in the background. Deliver their results to home
-		// even while the user has drilled into a project - on a silent restore we deep-link straight past
-		// the dashboard, so its own list load would otherwise land on the project screen and be dropped,
-		// stranding the dashboard on "Projects (loading)" (and the stats pending state on Details)
+		// deliver home's background prefetch even while drilled into a project. A silent restore deep-links
+		// past the dashboard, so otherwise the result lands on the project screen and home stays loading
 		var cmd tea.Cmd
 		a.home, cmd = a.home.Update(msg)
 		return a, cmd
 	case project.IssueDetailLoadedMsg, project.TransitionDoneMsg, project.AssignDoneMsg, project.ReviewerDoneMsg, project.ReviewDoneMsg, project.ParentEditDoneMsg, project.EditDoneMsg, project.CommentDoneMsg, project.CommentEditDoneMsg, project.IssueDeletedMsg, project.IssueCreatedMsg:
-		// deliver a project detail/transition/assign/reviewer/review/parent/edit/comment/delete result to the
-		// (preserved) project model even if the user left the drill-in before it landed, so the toast still fires
+		// deliver to the preserved project model even if the user left the drill-in, so the toast fires
 		var cmd tea.Cmd
 		a.project, cmd = a.project.Update(msg)
 		return a, cmd
@@ -439,9 +415,8 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.modal, cmd = a.modal.Update(msg)
 		return a, cmd
 	case optionsPositionSet:
-		// let the modal reflect the change, and refresh the cached profile so a reopen shows it too.
-		// If the modal has already closed (for example a logout raced the result), do nothing — refreshing
-		// would repopulate the just-cleared profile.
+		// refresh the cached profile so a reopen shows the change. If the modal already closed (a logout
+		// raced the result) do nothing - refreshing would repopulate the just-cleared profile.
 		if a.modal == nil {
 			return a, nil
 		}
@@ -485,15 +460,13 @@ func (a App) isTabScreen(s screen) bool {
 	return false
 }
 
-// hasChrome reports whether the screen wears the app header/footer bands. The top-level tabs do, and
-// so does the project drill-in, which supplies its own header-right tabs via HeaderInfo.
+// hasChrome reports whether the screen wears the app header/footer bands.
 func (a App) hasChrome(s screen) bool {
 	return a.isTabScreen(s) || s == screenProject
 }
 
-// headerInfoer is implemented by a screen that draws its own header-right content (its own tab bar)
-// in place of the app's top-level tabs. compact asks it to drop optional affordances (its back link) on
-// a narrow header, matching the app's own hiding of the username.
+// headerInfoer is implemented by a screen that draws its own header-right content in place of the
+// app's tabs. compact asks it to drop optional affordances on a narrow header.
 type headerInfoer interface {
 	HeaderInfo(compact bool) string
 }
@@ -533,8 +506,7 @@ func (a App) switchTab(target screen) (tea.Model, tea.Cmd) {
 	}
 	model, cmd := a.resize()
 	if target == screenInbox {
-		// silently re-pull the inbox each time it is entered; notifications are poll-only, so the boot
-		// prefetch would otherwise go stale between visits
+		// notifications are poll-only, so re-pull on entry or the boot prefetch goes stale between visits
 		app := model.(App)
 		var rcmd tea.Cmd
 		app.inbox, rcmd = app.inbox.Update(inbox.RefreshMsg{})
@@ -543,9 +515,8 @@ func (a App) switchTab(target screen) (tea.Model, tea.Cmd) {
 	return model, cmd
 }
 
-// inputCapturer is implemented by a tab screen that is currently owning the keyboard
-// (a focused text field or an open modal). While it captures, global tab-switch keys
-// (1/2/3, ctrl+h/l) yield to it so digits type into fields instead of switching tabs.
+// inputCapturer is implemented by a tab screen owning the keyboard (a focused field or open modal).
+// While it captures, the global tab-switch keys yield so digits type into fields.
 type inputCapturer interface {
 	CapturingInput() bool
 }
@@ -557,23 +528,19 @@ func (a App) activeCapturingInput() bool {
 	return false
 }
 
-// tabNavActive reports whether the global tab-switch keys should act right now. An open app modal
-// owns the keyboard, so tab-nav (and its footer hint) yields to it.
+// tabNavActive reports whether the global tab-switch keys act now. An open modal owns the keyboard.
 func (a App) tabNavActive() bool {
 	return a.isTabScreen(a.screen) && !a.activeCapturingInput() && a.modal == nil
 }
 
-// optionsNavActive reports whether the app-level Options/help overlays may open right now. Unlike
-// tabNavActive it also covers the project drill-in, which wears the app chrome and can host the same
-// overlays; the tab-switch digits stay on tabNavActive so they never collide with the project's own
-// 1-4 sub-tabs.
+// optionsNavActive reports whether the Options/help overlays may open now. Unlike tabNavActive it
+// also covers the project drill-in. The tab digits stay on tabNavActive, clear of the project's 1-4.
 func (a App) optionsNavActive() bool {
 	return a.hasChrome(a.screen) && !a.activeCapturingInput() && a.modal == nil
 }
 
-// withSize forwards the current window size straight to the activated screen.
-// It must not re-emit a WindowSizeMsg. The app's own handler would treat that as a terminal resize
-// and overwrite the stored full size.
+// withSize forwards the current window size to the activated screen. It must not re-emit a
+// WindowSizeMsg - the app's handler would treat that as a resize and overwrite the stored full size.
 func (a App) withSize(initCmd tea.Cmd) (tea.Model, tea.Cmd) {
 	if a.width == 0 {
 		return a, initCmd
@@ -589,16 +556,13 @@ func (a App) View() tea.View {
 	}
 	bands = append(bands, a.activeView())
 	if footer := a.footerView(); footer != "" {
-		// clipped to the band's budget, so on a terminal too small to hold every wrapped hint the row
-		// that goes is a hint rather than the body or the bottom margin
+		// clipped to the band's budget, so on a too-small terminal a hint gives way, not the body or margin
 		bands = append(bands, "", lipgloss.NewStyle().MaxHeight(a.footerRows()).Render(footer), "")
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, bands...)
-	// never emit more than the terminal
 	content = lipgloss.NewStyle().MaxWidth(a.width).MaxHeight(a.height).Render(content)
 
-	// a modal dims the (inert) backdrop and floats centered. It is spliced in BEFORE Scan so its own
-	// click zones register, unlike the toasts which sit on top after Scan
+	// spliced in BEFORE Scan so the modal's own click zones register (toasts go on top, after Scan)
 	if a.modal != nil {
 		content = a.overlayModalDim(content, a.modalView())
 	}
@@ -613,14 +577,11 @@ func (a App) View() tea.View {
 	return v
 }
 
-// toastBottomGap is how many rows the notification stack floats above the terminal's last row, so
-// it settles into the bottom-right corner over the footer band's blank right side.
+// toastBottomGap floats the stack this far above the last row, into the footer band's blank right side.
 const toastBottomGap = 1
 
-// toastLayout places the notification stack in terminal coordinates: left column x, top and bottom
-// rows (inclusive), and width w. It anchors the stack's bottom just above the last row, keeps the
-// header/tab band clear, and reports ok=false when nothing is showing. overlayToasts (rendering)
-// and mouseOnToast (input) share it so the visible box and the swallowed input rectangle agree.
+// toastLayout places the stack in terminal coordinates: left column x, top and bottom rows
+// (inclusive), width w. Rendering and hit-testing share it so the box and swallowed rectangle agree.
 func (a App) toastLayout() (x, top, bottom, w int, ok bool) {
 	if a.toasts.Empty() || a.width == 0 || a.height == 0 {
 		return 0, 0, 0, 0, false
@@ -650,9 +611,8 @@ func (a App) toastLayout() (x, top, bottom, w int, ok bool) {
 	return x, top, bottom, w, true
 }
 
-// overlayToasts splices the notification stack into the bottom-right of the already-scanned frame.
-// It runs after zone.Scan, so the frame carries no zone markers — only SGR escapes, which spliceAt
-// preserves on the untouched left of each covered row, leaving every other screen's clicks intact.
+// overlayToasts splices the stack into the bottom-right of the already-scanned frame. Running after
+// zone.Scan leaves every other screen's click zones intact.
 func (a App) overlayToasts(frame string) string {
 	x, top, bottom, _, ok := a.toastLayout()
 	if !ok {
@@ -660,8 +620,7 @@ func (a App) overlayToasts(frame string) string {
 	}
 	stackLines := strings.Split(a.toasts.View(), "\n")
 	lines := strings.Split(frame, "\n")
-	// paint bottom-up so that, if the stack is taller than the space, the OLDEST (top) lines clip
-	// first and the newest — nearest the corner — always survive
+	// paint bottom-up so an over-tall stack clips its oldest lines and the newest always survive
 	for i := len(stackLines) - 1; i >= 0; i-- {
 		row := bottom - (len(stackLines) - 1 - i)
 		if row < top || row >= len(lines) {
@@ -673,10 +632,8 @@ func (a App) overlayToasts(frame string) string {
 	return strings.Join(lines, "\n")
 }
 
-// spliceAt keeps the visible columns [0,x) of line with their SGR styling intact, pads to exactly x
-// columns, then places insert. Columns at and past x are covered by insert and dropped. ansi.Cut is
-// grapheme- and SGR-aware — the same measure lipgloss laid the frame out with — so the cut lands on
-// the same column the frame was built to, even across emoji / VS16 / ZWJ clusters.
+// spliceAt keeps columns [0,x) of line with their SGR intact, pads to exactly x, then places insert.
+// ansi.Cut is grapheme- and SGR-aware, so the cut lands on the column lipgloss laid the frame out to.
 func spliceAt(line string, x int, insert string) string {
 	left := ansi.Cut(line, 0, x)
 	pad := x - ansi.StringWidth(left)
@@ -687,8 +644,7 @@ func spliceAt(line string, x int, insert string) string {
 	return left + "\x1b[0m" + strings.Repeat(" ", pad) + insert
 }
 
-// mouseOnToast reports whether a mouse event lands within the visible toast stack, so the shell can
-// swallow it instead of routing it click-through to the covered widget.
+// mouseOnToast reports whether a mouse event lands on the toast stack, so the shell can swallow it.
 func (a App) mouseOnToast(msg tea.MouseMsg) bool {
 	x, top, bottom, w, ok := a.toastLayout()
 	if !ok {
@@ -698,9 +654,8 @@ func (a App) mouseOnToast(msg tea.MouseMsg) bool {
 	return m.Y >= top && m.Y <= bottom && m.X >= x && m.X < x+w
 }
 
-// openHelp raises the help modal for the active screen, seeded with the screen's self-description
-// (when it offers one) and the live global + screen key bindings, so the shortcut list can never
-// drift from what the footer already advertises.
+// openHelp raises the help modal seeded with the screen's self-description and its live key bindings,
+// so the shortcut list cannot drift from what the footer advertises.
 func (a App) openHelp() (tea.Model, tea.Cmd) {
 	title, about := "Help", ""
 	if d, ok := a.activeModel().(describer); ok {
@@ -717,14 +672,12 @@ func (a App) openOptions() (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-// applyTheme switches the whole app to the named theme: it restyles the shell (header/footer/help,
-// toasts) and every persistent screen in place — no state is lost — and persists the choice.
+// applyTheme restyles the shell and every persistent screen in place (no state lost) and persists it.
 func (a App) applyTheme(name string) (tea.Model, tea.Cmd) {
 	a.deps.Styles = theme.New(theme.ByName(name))
 	if a.deps.Config != nil {
 		a.deps.Config.Theme = name
-		// best-effort: a failed persist still applies for this session, but surface it like the
-		// codebase's other best-effort saves
+		// best-effort: a failed persist still applies for this session
 		if err := a.deps.Config.Save(); err != nil {
 			slog.Warn("save theme", "name", name, "err", err)
 		}
@@ -740,8 +693,8 @@ func (a App) applyTheme(name string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// applyIcons switches the glyph set live and persists the choice, mirroring applyTheme. The header
-// reads deps.Glyphs on each render, so only the cached consumers (toasts, screens) need refreshing.
+// applyIcons switches the glyph set live and persists it. The header re-reads deps.Glyphs each
+// render, so only the cached consumers need refreshing.
 func (a App) applyIcons(mode string) (tea.Model, tea.Cmd) {
 	a.deps.Glyphs = glyph.New(glyph.ParseMode(mode))
 	a.deps.Icons = mode
@@ -760,8 +713,8 @@ func (a App) applyIcons(mode string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// applyMouse toggles mouse capture and persists the choice. The View reads a.mouse to set the mouse
-// mode, and the screens read deps.Mouse (refreshed via Retheme) to hide their click-only affordances.
+// applyMouse toggles mouse capture and persists it. View reads a.mouse, screens read deps.Mouse
+// (refreshed via Retheme) to hide their click-only affordances.
 func (a App) applyMouse(on bool) (tea.Model, tea.Cmd) {
 	a.mouse = on
 	a.deps.Mouse = on
@@ -789,8 +742,7 @@ func mouseSetting(on bool) string {
 	return "off"
 }
 
-// lastProjectKey is the project to restore for the current server, or "" when none is saved (or config
-// is unavailable, as in tests).
+// lastProjectKey is the project to restore for this server, "" when none (or no config, as in tests).
 func (a App) lastProjectKey() string {
 	if a.deps.Config == nil {
 		return ""
@@ -798,8 +750,7 @@ func (a App) lastProjectKey() string {
 	return a.deps.Config.LastProjectFor(a.deps.Server)
 }
 
-// rememberLastProject persists the drilled-into project so the next silent restore returns to it. It is
-// best-effort: a failed write still works for this session, matching the other config saves.
+// rememberLastProject persists the drilled-into project for the next silent restore. Best-effort.
 func (a App) rememberLastProject(key string) {
 	if a.deps.Config == nil {
 		return
@@ -814,9 +765,8 @@ func (a App) clearLastProject() { a.rememberLastProject("") }
 
 type loggedOutMsg struct{}
 
-// logoutCmd revokes the session server-side so a token that survives a failed local clear cannot be
-// traded back for a fresh pair (the connecting re-probe's refresh would 401 → login), then clears the
-// local tokens and transport and signals the shell to re-probe.
+// logoutCmd revokes the session server-side first, so a token surviving a failed local clear cannot
+// be traded back for a fresh pair. It then clears local tokens and transport and signals a re-probe.
 func logoutCmd(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		ctx := context.Background()
@@ -840,9 +790,8 @@ func logoutCmd(d deps.Deps) tea.Cmd {
 // realtimeUpdateMsg carries one connection-state change or event off the SSE consumer.
 type realtimeUpdateMsg struct{ u realtime.Update }
 
-// startRealtime (re)opens the user-scoped SSE stream for the current session and returns the command
-// that waits for its first update. Any prior stream is stopped first. It no-ops without an authed
-// transport (as in tests), leaving the indicator disconnected.
+// startRealtime (re)opens the user-scoped SSE stream for the session, stopping any prior one. It
+// no-ops without an authed transport (as in tests), leaving the indicator disconnected.
 func (a *App) startRealtime() tea.Cmd {
 	if a.deps.Transport == nil || a.deps.Server == "" {
 		return nil
@@ -866,9 +815,8 @@ func (a *App) stopRealtime() {
 	a.rtState = realtime.Disconnected
 }
 
-// applyRealtime folds one consumer update into the model and re-arms the wait. Updates from a
-// superseded session (a re-login/logout bumped the generation) are dropped without re-arming, ending
-// that stream's command chain.
+// applyRealtime folds one consumer update into the model and re-arms the wait. An update from a
+// superseded session is dropped without re-arming, ending that stream's command chain.
 func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
 	if a.rt == nil || u.Gen != a.sessionGen {
 		return a, nil
@@ -886,8 +834,7 @@ func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
 			}
 			return a, tea.Batch(cmds...)
 		}
-		// route an event to the drilled-in project screen when it is showing that event's project; the
-		// screen folds it into its list/detail/sprints in place. Other screens have no consumer yet.
+		// route to the drilled-in project screen when it is showing that project. No other consumers yet.
 		if a.screen == screenProject && u.Event.ProjectKey == a.project.ProjectKey() {
 			switch u.Event.Category {
 			case "issue":
@@ -910,8 +857,7 @@ func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
 	return a, waitForRealtime(a.rt)
 }
 
-// sprintIDFromEvent pulls data.sprintId (a JSON number, so float64 in the decoded map) from a sprint
-// event's payload; 0 when absent.
+// sprintIDFromEvent pulls data.sprintId - a JSON number, so float64 in the decoded map. 0 when absent.
 func sprintIDFromEvent(data map[string]any) int64 {
 	if f, ok := data["sprintId"].(float64); ok {
 		return int64(f)
@@ -919,8 +865,7 @@ func sprintIDFromEvent(data map[string]any) int64 {
 	return 0
 }
 
-// issueKeysFromEvent pulls data.issueKeys (a JSON string array) from a sprint event's payload; it is set
-// only for SPRINT_ISSUES_ADDED / SPRINT_ISSUES_REMOVED. nil when absent or malformed.
+// issueKeysFromEvent pulls data.issueKeys, set only for SPRINT_ISSUES_ADDED/REMOVED. nil when absent.
 func issueKeysFromEvent(data map[string]any) []string {
 	raw, ok := data["issueKeys"].([]any)
 	if !ok {
@@ -935,9 +880,8 @@ func issueKeysFromEvent(data map[string]any) []string {
 	return keys
 }
 
-// waitForRealtime blocks on the consumer's next update and re-arms itself after each one — the standard
-// BubbleTea pattern for consuming a channel. A closed channel (the consumer was stopped) yields nil,
-// ending the chain harmlessly.
+// waitForRealtime blocks on the consumer's next update and re-arms after each one - the standard
+// BubbleTea channel pattern. A closed channel (consumer stopped) yields nil, ending the chain.
 func waitForRealtime(c *realtime.Consumer) tea.Cmd {
 	return func() tea.Msg {
 		u, ok := <-c.Updates()
@@ -948,8 +892,7 @@ func waitForRealtime(c *realtime.Consumer) tea.Cmd {
 	}
 }
 
-// updateModal routes interactive input to the open modal. A left click outside the modal's box
-// dismisses it. Everything else is the modal's to handle (it emits modalClosedMsg to close).
+// updateModal routes interactive input to the open modal. A left click outside its box dismisses it.
 func (a App) updateModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if click, ok := msg.(tea.MouseClickMsg); ok {
 		if click.Button == tea.MouseLeft && !a.pointInModal(click) {
@@ -957,8 +900,7 @@ func (a App) updateModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, nil
 		}
 	}
-	// when the modal overflows the terminal the wheel drives its window. Otherwise it belongs to the
-	// modal's own scroll (for example the help viewport)
+	// the wheel drives the window only while the modal overflows, otherwise it is the modal's own scroll
 	if wheel, ok := msg.(tea.MouseWheelMsg); ok && a.modalWindowed() {
 		switch wheel.Button {
 		case tea.MouseWheelUp:
@@ -972,9 +914,8 @@ func (a App) updateModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-// modalBox renders the modal — windowed to the terminal height with a scrollbar when it is too tall —
-// and returns it with its centered top-left origin (mx,my). overlayModalDim (rendering) and
-// pointInModal (input) share it so the visible box and its click-through rectangle agree.
+// modalBox renders the modal, windowed with a scrollbar when too tall, and returns it with its
+// centered origin. Rendering and hit-testing share it so the box and its click rectangle agree.
 func (a App) modalBox() (view string, mx, my, w, h int) {
 	view = a.modalView()
 	w, h = lipgloss.Width(view), lipgloss.Height(view)
@@ -983,8 +924,7 @@ func (a App) modalBox() (view string, mx, my, w, h int) {
 	return
 }
 
-// modalView is the open modal's rendered box, windowed to the terminal height with a scrollbar drawn
-// in its right border when it overflows (self-sizing modals that already fit are returned untouched).
+// modalView is the modal's box, windowed with a scrollbar in its right border when it overflows.
 func (a App) modalView() string {
 	view := a.modal.View()
 	if a.height <= 0 {
@@ -995,8 +935,7 @@ func (a App) modalView() string {
 	return windowed
 }
 
-// modalWindowed reports whether the open modal is taller than the terminal, so wheel scrolling drives
-// the window instead of the modal's own handler.
+// modalWindowed reports whether the modal is taller than the terminal, so the wheel drives the window.
 func (a App) modalWindowed() bool {
 	return a.modal != nil && a.height > 0 && lipgloss.Height(a.modal.View()) > a.height
 }
@@ -1019,16 +958,14 @@ func (a App) pointInModal(msg tea.MouseMsg) bool {
 	return m.X >= mx && m.X < mx+w && m.Y >= my && m.Y < my+h
 }
 
-// overlayModalDim dims the whole (inert) backdrop and splices the centered modal over it. It runs
-// before zone.Scan, so the modal's own markers survive to register. The backdrop is stripped, so its
-// now-stale zones drop out and cannot be clicked behind the modal.
+// overlayModalDim dims the inert backdrop and splices the centered modal over it. It runs before
+// zone.Scan so the modal's markers register, and strips the backdrop so its stale zones cannot fire.
 func (a App) overlayModalDim(backdrop, modal string) string {
 	_, mx, my, w, _ := a.modalBox()
 	dim := lipgloss.NewStyle().Foreground(a.deps.Styles.Theme.Muted)
 	src := strings.Split(backdrop, "\n")
 	modalLines := strings.Split(modal, "\n")
-	// grow past the (height-clamped) backdrop if the modal extends below it, so every modal row — and
-	// its zone markers — is emitted for the scan and pointInModal cannot claim an unrendered row
+	// grow past the height-clamped backdrop so every modal row and its zone markers reach the scan
 	total := len(src)
 	if my+len(modalLines) > total {
 		total = my + len(modalLines)
@@ -1103,14 +1040,12 @@ type helpKeyer interface {
 	HelpKeys() []key.Binding
 }
 
-// globalKeyer is optionally implemented by a screen to contribute nav hints to the footer's top
-// (global) line - the project drill-in surfaces its sub-tab switch and reload there.
+// globalKeyer lets a screen contribute nav hints to the footer's top (global) line.
 type globalKeyer interface {
 	GlobalKeys() []key.Binding
 }
 
-// reservedRows is the terminal rows the chrome takes: footer band always, plus the
-// header band on the screens that wear chrome.
+// reservedRows is the rows the chrome takes: the footer band always, the header where it is worn.
 func (a App) reservedRows() int {
 	rows := padRows + a.footerRows() + padRows
 	if a.hasChrome(a.screen) {
@@ -1119,11 +1054,8 @@ func (a App) reservedRows() int {
 	return rows
 }
 
-// footerRows is the footer band's real height - two rows, or more once a hint group wraps on a narrow
-// terminal. The extra rows are charged to the body rather than left to overflow, so the bottom margin
-// survives and the wrapped hints are not clipped off the terminal. The charge stops one row short of
-// taking the body entirely: past that the footer's own tail is clipped instead, which on a terminal
-// that small is the lesser loss.
+// footerRows is the footer band's real height - two rows, or more once a hint group wraps. The extra
+// rows are charged to the body so the margin survives, stopping one row short of taking the body.
 func (a App) footerRows() int {
 	if a.width == 0 {
 		return footerHeight
@@ -1131,8 +1063,7 @@ func (a App) footerRows() int {
 	return min(max(footerHeight, lipgloss.Height(a.footerView())), max(footerHeight, a.footerBudget()))
 }
 
-// footerBudget is the most rows the footer may claim: the terminal less its margins, the header band
-// where one is worn, and one row for the body itself.
+// footerBudget is the most rows the footer may claim: the terminal less margins, header, and a body row.
 func (a App) footerBudget() int {
 	rows := a.height - padRows - padRows - 1
 	if a.hasChrome(a.screen) {
@@ -1141,8 +1072,7 @@ func (a App) footerBudget() int {
 	return rows
 }
 
-// headerView draws "● Tissue Server · {url} · {user}" on the left. The right side is the app's
-// top-level tabs, or a screen's own HeaderInfo when it supplies one (the project drill-in's tabs).
+// headerView draws the brand/url/user left, and the app tabs or a screen's own HeaderInfo right.
 func (a App) headerView() string {
 	if !a.hasChrome(a.screen) || a.width == 0 {
 		return ""
@@ -1150,8 +1080,7 @@ func (a App) headerView() string {
 	t := a.deps.Styles.Theme
 	brand := a.connectionBrand()
 	muted := lipgloss.NewStyle().Foreground(t.Muted)
-	// a narrow header sheds its optional bits (the server url and username here, the drill-in's back link
-	// via compact) so the brand and the tabs still fit without colliding.
+	// a narrow header sheds its optional bits so the brand and the tabs still fit
 	compact := a.width <= headerCompactW
 	left := brand
 	if !compact {
@@ -1174,8 +1103,7 @@ func (a App) headerView() string {
 	return lipgloss.NewStyle().MaxWidth(a.width).Render(line)
 }
 
-// connectionBrand renders the "● Tissue Server" label, its dot glyph and colour reflecting the live
-// SSE connection state: connected (success ●), connecting (warning ◐), disconnected (error ✕).
+// connectionBrand renders "● Tissue Server", its dot glyph and colour reflecting the live SSE state.
 func (a App) connectionBrand() string {
 	t := a.deps.Styles.Theme
 	g := a.deps.Glyphs
@@ -1189,8 +1117,7 @@ func (a App) connectionBrand() string {
 	return lipgloss.NewStyle().Foreground(col).Bold(true).Render(dot + " Tissue Server")
 }
 
-// tabGlyph maps a tab to its nerd glyph. The fallback is empty so plain terminals show
-// the label alone.
+// tabGlyph maps a tab to its nerd glyph, empty on plain terminals so the label shows alone.
 func (a App) tabGlyph(s screen) string {
 	g := a.deps.Glyphs
 	switch s {
@@ -1206,9 +1133,8 @@ func (a App) tabGlyph(s screen) string {
 	return ""
 }
 
-// tabBar renders the clickable top-level tabs. The active one is accented and underlined. Each tab
-// carries its 1/2/3 switch key as a muted digit prefix, surfacing the shortcut at the tab itself
-// instead of only in the footer help.
+// tabBar renders the clickable top-level tabs, the active one accented and underlined. Each carries
+// its switch digit as a muted prefix, surfacing the shortcut at the tab, not only in the footer.
 func (a App) tabBar() string {
 	t := a.deps.Styles.Theme
 	active := lipgloss.NewStyle().Foreground(t.Accent).Bold(true).Underline(true)
@@ -1231,8 +1157,7 @@ func (a App) tabBar() string {
 		case a.hoverTab == tab.zone:
 			style = lipgloss.NewStyle().Foreground(t.Secondary) // hovered inactive tab brightens
 		}
-		// the digit takes the accent only on the active tab (matching its label), but stays
-		// un-underlined so the underline reads as the single active-tab marker
+		// the digit stays un-underlined so the underline reads as the single active-tab marker
 		cell := numStyle.Render(strconv.Itoa(i+1)+": ") + style.Render(content)
 		// the Inbox tab wears an unread dot (the backend exposes only has-unread, not a count)
 		if tab.screen == screenInbox && a.inboxUnread {
@@ -1243,10 +1168,8 @@ func (a App) tabBar() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, cells...)
 }
 
-// footerView renders the two left-aligned key hint groups: global(common) keys on top, screen-specific
-// below. Each group wraps onto extra lines rather than ellipsizing, so a long hint row on a narrow
-// terminal stays fully readable. The wrapped rows are charged to the body (see footerRows), which keeps
-// the bottom margin; only once the footer would take the body's last row does its own tail get clipped.
+// footerView renders the two hint groups: global keys on top, screen-specific below. Each wraps rather
+// than ellipsizing, and the wrapped rows are charged to the body (see footerRows) to keep the margin.
 func (a App) footerView() string {
 	if a.width == 0 {
 		return ""
@@ -1258,10 +1181,8 @@ func (a App) footerView() string {
 	return lipgloss.JoinVertical(lipgloss.Left, top, bottom)
 }
 
-// wrapHelp renders key-hint bindings as "key desc" cells joined by the help separator, packing them onto
-// as many lines as needed to fit width (rather than ellipsizing like help.ShortHelpView). A single cell
-// wider than width still gets its own line rather than being dropped. Styling matches the footer help so
-// the wrapped rows read identically to the single-line ones.
+// wrapHelp renders key hints as cells joined by the help separator, packing them onto as many lines as
+// fit width rather than ellipsizing like help.ShortHelpView. A cell wider than width gets its own line.
 func (a App) wrapHelp(binds []key.Binding, width int) string {
 	sep := a.help.Styles.ShortSeparator.Inline(true).Render(a.help.ShortSeparator)
 	sepW := lipgloss.Width(sep)
@@ -1295,8 +1216,7 @@ func (a App) wrapHelp(binds []key.Binding, width int) string {
 	return strings.Join(lines, "\n")
 }
 
-// indentEach prefixes every line of s with n spaces (an empty s stays empty, so a blank hint group keeps
-// its blank line rather than gaining stray padding).
+// indentEach prefixes every line of s with n spaces. An empty s stays empty, keeping its blank line.
 func indentEach(s string, n int) string {
 	if s == "" {
 		return ""
@@ -1311,8 +1231,7 @@ func indentEach(s string, n int) string {
 
 func (a App) globalKeys() []key.Binding {
 	binds := make([]key.Binding, 0, 6)
-	// a screen may contribute its own top-line nav keys (the project drill-in's sub-tabs + reload). They
-	// hide while it captures input, so the row never advertises a key the focused field has swallowed.
+	// a screen's own nav keys hide while it captures input, so no hint for a key the field swallowed
 	if !a.activeCapturingInput() {
 		if g, ok := a.activeModel().(globalKeyer); ok {
 			binds = append(binds, g.GlobalKeys()...)
@@ -1324,8 +1243,7 @@ func (a App) globalKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("1", "2", "3", "4", "ctrl+h", "ctrl+l"), key.WithHelp("1/2/3/4", "tab")),
 		)
 	}
-	// help and options also open on the project drill-in, so their hint follows optionsNavActive; each is
-	// gated to the same condition its handler is, so the footer never advertises an inert shortcut.
+	// gated to the same condition as the handler, so the footer never advertises an inert shortcut
 	if a.optionsNavActive() {
 		binds = append(binds,
 			key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
@@ -1352,8 +1270,7 @@ type profileLoadedMsg struct {
 	gen     int // the session generation this fetch was issued for
 }
 
-// fetchProfile loads the authenticated member so the header can show the username. It is stamped with
-// the session generation so a result that arrives after a logout/re-login is ignored.
+// fetchProfile loads the authenticated member. The gen stamp drops a result landing after a re-login.
 func fetchProfile(d deps.Deps, gen int) tea.Cmd {
 	return func() tea.Msg {
 		p, err := d.Authed.Profile(context.Background())

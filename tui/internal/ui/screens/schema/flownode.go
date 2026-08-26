@@ -42,9 +42,7 @@ func categoryColor(t theme.Theme, category string) color.Color {
 	}
 }
 
-// nodeForm creates or edits a single NEW state's fields — name, category, color — before it is
-// folded into the graph editor. It never touches the backend. The graph editor serializes every
-// node together in one whole-graph replace. done/cancelled tell the graph editor how the sub-form closed.
+// nodeForm edits a new state in the editor's working copy, never the backend.
 type nodeForm struct {
 	deps  deps.Deps
 	title string

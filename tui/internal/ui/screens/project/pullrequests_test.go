@@ -9,7 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// prDetail opens a loaded detail carrying the given pull requests.
 func prDetail(t *testing.T, prs []domain.IssuePullRequest) Model {
 	t.Helper()
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
@@ -19,7 +18,6 @@ func prDetail(t *testing.T, prs []domain.IssuePullRequest) Model {
 	return m
 }
 
-// Each pull request shows its number, title, author and how long ago it last moved.
 func TestDetailRendersPullRequests(t *testing.T) {
 	m := prDetail(t, []domain.IssuePullRequest{{
 		Number: 42, Title: "PROJ-12: add login", URL: "https://github.com/acme/repo/pull/42",
@@ -48,7 +46,7 @@ func TestDetailPullRequestStates(t *testing.T) {
 	}
 }
 
-// A pull request with neither author nor timestamp renders no meta line, and no dangling separator.
+// No author and no timestamp must leave no dangling separator behind.
 func TestDetailPullRequestMetaOmittedWhenUnknown(t *testing.T) {
 	m := prDetail(t, []domain.IssuePullRequest{{
 		Number: 42, Title: "PROJ-12: add login", URL: "https://ex.co/42", State: "OPEN",
@@ -60,8 +58,7 @@ func TestDetailPullRequestMetaOmittedWhenUnknown(t *testing.T) {
 	}
 }
 
-// An issue with no linked pull requests shows no section: they arrive from webhooks, so there is no
-// "+ add" entry point that would need to stay visible.
+// No section when empty: PRs arrive from webhooks, so there is no "+ add" entry point to keep visible.
 func TestDetailNoPullRequestsNoSection(t *testing.T) {
 	m := prDetail(t, nil)
 	if body := plain(m.View()); strings.Contains(body, "Pull requests (") {
@@ -69,7 +66,7 @@ func TestDetailNoPullRequestsNoSection(t *testing.T) {
 	}
 }
 
-// The state label and colour are chosen together; merged and closed must not collapse into one reading.
+// merged and closed must not collapse into one reading.
 func TestPullRequestStateLabels(t *testing.T) {
 	th := theme.New(theme.TokyoNight()).Theme
 	cases := map[string]string{"OPEN": "open", "MERGED": "merged", "CLOSED": "closed", "": "open"}

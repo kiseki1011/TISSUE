@@ -13,8 +13,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// mouseOffDeps mirrors a config with "mouse = off": the click affordances are hidden and the f/n keys
-// drive the filter and create form instead.
+// mouseOffDeps mirrors "mouse = off": click affordances hidden, f/n drive the filter and create form.
 func mouseOffDeps() deps.Deps {
 	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: false}
 }
@@ -76,8 +75,7 @@ func TestMouseOffSearchBoxReclaimsButtonWidth(t *testing.T) {
 	}
 }
 
-// GlobalKeys surfaces the sub-tab switch always and reload only on the Issues tab, so the footer's top
-// line carries the navigation hints separately from the per-issue actions.
+// GlobalKeys carries the sub-tab switch always, reload only on the Issues tab.
 func TestGlobalKeysTabAndReload(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	if !hasHelp(m.GlobalKeys(), "tab") {
@@ -99,8 +97,7 @@ func TestGlobalKeysTabAndReload(t *testing.T) {
 	}
 }
 
-// The r reload hint drops off the top line when the filter button is focused, where onFilterKey ignores
-// r - the row must not advertise an inert key.
+// onFilterKey ignores r at the filter focus, so the row must not advertise an inert key.
 func TestGlobalKeysDropsReloadAtFilterFocus(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("tab")) // list -> search
@@ -119,8 +116,7 @@ func TestGlobalKeysDropsReloadAtFilterFocus(t *testing.T) {
 	}
 }
 
-// The list HelpKeys advertise the new f filter key on the bottom line; the leave key now lives on the
-// top (global) line via GlobalKeys, not the bottom HelpKeys line.
+// The leave key lives on the top (global) line, so it must not stay on the bottom HelpKeys line.
 func TestHelpKeysFilterAndBackspace(t *testing.T) {
 	m := loaded(t, 120, 24, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	if !hasHelp(m.HelpKeys(), "filter") {

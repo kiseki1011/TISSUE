@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// WithInitialFocus(issueKey) opens that issue's read-only peek on the first layout, then is consumed so
-// a later resize does not re-open it.
+// WithInitialFocus(issueKey) peeks on the first layout only, so a resize does not re-open it.
 func TestWithInitialFocusOpensIssuePeek(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps(), testKey, "Proj").WithInitialFocus(testKey+"-9", 0)
@@ -28,8 +27,7 @@ func TestWithInitialFocusOpensIssuePeek(t *testing.T) {
 	}
 }
 
-// WithInitialFocus(sprintID) lands on the Sprints tab and, once the sprint list loads, selects the
-// notified sprint (loading its issues).
+// WithInitialFocus(sprintID) lands on Sprints and selects that sprint once the list loads.
 func TestWithInitialFocusSelectsSprint(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps(), testKey, "Proj").WithInitialFocus("", 42)
@@ -55,8 +53,7 @@ func TestWithInitialFocusSelectsSprint(t *testing.T) {
 	}
 }
 
-// When the notified sprint is not in the loaded page, the drill-in still lands on the Sprints tab and
-// selects the default (newest) sprint rather than crashing or pinning the wrong one as the target.
+// A notified sprint absent from the page falls back to the newest, without pinning a wrong target.
 func TestWithInitialFocusSprintNotInPage(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps(), testKey, "Proj").WithInitialFocus("", 999)

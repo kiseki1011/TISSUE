@@ -10,20 +10,19 @@ import (
 	"github.com/charmbracelet/glamour"
 )
 
-// glamour wraps to the given column and keeps a two-cell left margin, so a block rendered at width w
-// is never wider than w. Renderers are reused per (style, width); rendered blocks are memoized per
-// (style, width, content) because View re-renders on every keystroke.
+// glamour wraps to the given column, so a block rendered at width w is never wider than w. Renderers
+// and rendered blocks are cached because View re-renders on every keystroke.
 var (
 	mdMu      sync.Mutex
 	mdCache   = map[string]string{}
 	mdRenders = map[string]*glamour.TermRenderer{}
 )
 
-// mdCacheCap bounds the rendered-block cache so a long browsing session cannot grow it without limit.
+// mdCacheCap bounds the cache so a long session cannot grow it without limit.
 const mdCacheCap = 128
 
-// Markdown renders GitHub-flavored markdown to a styled block wrapped to width. On any error it falls
-// back to the raw text. The result never carries a leading or trailing blank line.
+// Markdown renders GitHub-flavored markdown wrapped to width, falling back to the raw text on error.
+// The result never carries a leading or trailing blank line.
 func Markdown(text string, width int, dark bool) string {
 	if width < 1 {
 		width = 1
@@ -61,8 +60,7 @@ func Markdown(text string, width int, dark bool) string {
 	return out
 }
 
-// IsDark reports whether a background colour is dark, so callers can pick glamour's dark or light
-// style. An unset (NoColor) background is treated as dark, the common terminal default.
+// IsDark treats an unset (NoColor) background as dark, the common terminal default.
 func IsDark(bg color.Color) bool {
 	r, g, b, a := bg.RGBA()
 	if a == 0 {

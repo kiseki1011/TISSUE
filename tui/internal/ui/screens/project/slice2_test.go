@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// The Details panel lists child issues (key + Type chip + state); the Parent is a fixed, read-only meta
-// row showing the parent's key (it is edited from the "Edit issue" form's Parent field, not here).
+// Parent is a fixed read-only meta row. It is edited from the "Edit issue" form, not here.
 func TestDetailChildrenAndParent(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -29,8 +28,7 @@ func TestDetailChildrenAndParent(t *testing.T) {
 	}
 }
 
-// With no parent the Parent meta row still shows (as "-", so it can be added), but the Children section
-// stays hidden when there are none.
+// The Parent row still shows as "-" with no parent, but Children stays hidden when empty.
 func TestDetailHierarchyOmittedWhenEmpty(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey, Title: "T"}})

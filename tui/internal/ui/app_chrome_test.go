@@ -26,8 +26,7 @@ func chromeApp(w, h int) App {
 	return m.(App)
 }
 
-// #8: a wide header shows the server url, the username, and the drill-in's back link; a narrow one
-// (width <= headerCompactW) drops all three but keeps the brand and the tabs.
+// a narrow header (width <= headerCompactW) drops the url, username, and back link, keeping the tabs.
 func TestHeaderCompactDropsUsernameAndBack(t *testing.T) {
 	wide := stripCSI(chromeApp(headerCompactW+20, 30).headerView())
 	for _, want := range []string{"admin", "‹ Projects", "Tissue Server", "localhost:8080", "Issues"} {
@@ -49,8 +48,7 @@ func TestHeaderCompactDropsUsernameAndBack(t *testing.T) {
 	}
 }
 
-// #8: on a narrow terminal the footer wraps its key hints onto extra lines instead of ellipsizing, so
-// every hint stays readable (the project drill-in has the longest hint row).
+// the footer wraps hints onto extra lines instead of ellipsizing (the drill-in has the longest row).
 func TestFooterWrapsWithoutTruncating(t *testing.T) {
 	a := chromeApp(110, 24)
 	footer := stripCSI(a.footerView())
@@ -69,8 +67,7 @@ func TestFooterWrapsWithoutTruncating(t *testing.T) {
 	}
 }
 
-// #8: the wrapped footer never overflows the terminal width (each line is clipped to width) and its hints
-// still all render in the full composed view (the wrapped lines are charged to the body).
+// the wrapped footer stays inside the terminal and still renders every hint in the composed view.
 func TestFooterWrapFitsFullView(t *testing.T) {
 	a := chromeApp(110, 24)
 	view := stripCSI(a.View().Content)
@@ -84,9 +81,8 @@ func TestFooterWrapFitsFullView(t *testing.T) {
 	}
 }
 
-// The wrapped rows come out of the body's budget, not out of the bottom margin: however many lines the
-// hints take, the terminal's last row stays blank and no hint is clipped away. Before this, a 3-line
-// footer ate the margin and a 4-line one (width 80) silently dropped its last hints off the screen.
+// The wrapped rows come out of the body's budget, not the bottom margin. Regression: a 3-line footer
+// ate the margin and a 4-line one (width 80) dropped its last hints off the screen.
 func TestFooterWrapKeepsBottomPaddingAndEveryHint(t *testing.T) {
 	for _, width := range []int{200, 110, 80, 60} {
 		a := chromeApp(width, 24)
@@ -105,9 +101,8 @@ func TestFooterWrapKeepsBottomPaddingAndEveryHint(t *testing.T) {
 	}
 }
 
-// Charging the wrapped rows to the body has a floor: on a terminal too small to hold the hints at all,
-// the footer's own tail gives way instead. The body must never be handed nothing (or a negative grant),
-// and the bottom margin must survive even there.
+// The charge has a floor: on a terminal too small for the hints the footer's tail gives way instead.
+// The body must never be handed nothing, and the bottom margin must survive.
 func TestFooterNeverStarvesTheBody(t *testing.T) {
 	for _, size := range [][2]int{{30, 24}, {20, 24}, {16, 24}, {80, 8}, {60, 8}} {
 		width, height := size[0], size[1]
@@ -125,8 +120,7 @@ func TestFooterNeverStarvesTheBody(t *testing.T) {
 	}
 }
 
-// The body is sized by message, so a footer that grows a wrapped row has to hand those rows back to the
-// screen - otherwise the screen keeps laying out at its old height and the extra rows are clipped.
+// A footer that grows a wrapped row must hand those rows back, or the screen lays out at its old height.
 func TestFooterWrapChargesTheExtraRowsToTheBody(t *testing.T) {
 	wide := chromeApp(200, 24)
 	narrow := chromeApp(80, 24)
@@ -139,9 +133,8 @@ func TestFooterWrapChargesTheExtraRowsToTheBody(t *testing.T) {
 	}
 }
 
-// The hint rows are state-dependent, so the footer can change height with no terminal resize behind it:
-// opening the help modal swaps the screen's long hint row for the modal's short one. Screens are sized
-// by message, so the row the footer gives up has to be handed back, or the body keeps laying out short.
+// The footer can change height with no resize behind it: opening help swaps the long hint row for a
+// short one. The row it gives up must be handed back, or the body keeps laying out short.
 func TestFooterHeightChangeWithoutAResizeReachesTheScreen(t *testing.T) {
 	a := chromeApp(110, 24) // narrow enough that the project screen's hints wrap onto a third line
 	if h := lipgloss.Height(a.footerView()); h <= footerHeight {

@@ -9,8 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// The detail BFF's comment page maps into the detail: count, has-more, and the nested reply thread with
-// its edited/deleted markers.
 func TestToIssueDetailMapsComments(t *testing.T) {
 	view := &client.IssueDetailView{
 		Comments: &client.PageResponseCommentDetailResponse{
@@ -77,8 +75,7 @@ func TestCommentUsername(t *testing.T) {
 	}
 }
 
-// A review's feedback body rides the comment thread carrying the verdict it was submitted with, so the
-// client can label it without asking the reviewer roster (which a later re-request would have reset).
+// The verdict rides the comment so the client need not read the reviewer roster, which a re-request resets.
 func TestToCommentCarriesTheReviewVerdict(t *testing.T) {
 	c := toComment(client.CommentDetailResponse{
 		CommentId:    ptr(int64(9)),
@@ -120,7 +117,7 @@ func TestUpdateCommentSendsTheBody(t *testing.T) {
 	}
 }
 
-// Mentions are optional; sending an empty list would be a meaningless field on the wire.
+// Mentions are optional. An empty list would be a meaningless field on the wire.
 func TestUpdateCommentOmitsEmptyMentions(t *testing.T) {
 	svc, _, body := issueServiceOn(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)

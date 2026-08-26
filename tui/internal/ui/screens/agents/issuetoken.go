@@ -371,7 +371,7 @@ func issueTokenError(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not issue the token. Try again."
 }

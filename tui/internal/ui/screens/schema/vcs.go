@@ -27,8 +27,7 @@ const (
 
 const vcsRowW = 44
 
-// vcsForm edits a workflow's VCS automation: the transition auto-fired when a linked PR is
-// opened or merged, written back in one PATCH.
+// vcsForm edits which transition auto-fires on a linked PR opened/merged, saved in one PATCH.
 type vcsForm struct {
 	deps        deps.Deps
 	wfID        int
@@ -133,7 +132,7 @@ func (f vcsForm) fieldID(field int) int {
 	return f.openedID
 }
 
-// Each transition shows its source → target flow in parentheses so the direction is clear at a glance.
+// openPicker annotates each transition with its source → target flow.
 func (f vcsForm) openPicker(field int) vcsForm {
 	opts := []pickerOption{{value: "0", label: "None"}}
 	for _, tr := range f.transitions {
@@ -205,8 +204,7 @@ func (f vcsForm) View() string {
 		return f.pick.View(f.deps.Styles)
 	}
 	t := f.deps.Styles.Theme
-	// the description is the widest fixed element, so it sets the modal's content width. The
-	// field values and buttons right-align to it, landing flush at the modal's right edge
+	// the description is the widest fixed element, so it sets the modal's content width
 	desc := f.deps.Styles.Muted.Render("Run a transition automatically on a linked PR event.")
 	w := lipgloss.Width(desc)
 	rows := []string{
@@ -343,7 +341,7 @@ func vcsErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not save VCS settings. Try again."
 }

@@ -32,17 +32,15 @@ const (
 	sprintGoalMax  = 255
 )
 
-// sprintEditForm is the sprint title/goal/due modal, serving both "New sprint" and "Edit sprint".
-// Creating drops the Due field: a new sprint starts in PLANNING and its due date is chosen when it is
-// started, so offering it here would collect a value the create call cannot send. Status changes go
-// through the separate start/complete actions.
+// sprintEditForm serves both "New sprint" and "Edit sprint". Creating drops Due: a new sprint starts in
+// PLANNING and its due date is chosen at start, so the create call cannot send one.
 type sprintEditForm struct {
 	deps     deps.Deps
 	creating bool
 
 	title  textinput.Model
 	goal   textinput.Model
-	dueAt  time.Time // the chosen due date (zero = none), set from the calendar picker
+	dueAt  time.Time // zero = none, set from the calendar picker
 	dueSet bool
 
 	focus    int
@@ -73,7 +71,7 @@ func newSprintEditForm(d deps.Deps, sp domain.SprintSummary) sprintEditForm {
 	return f
 }
 
-// newSprintCreateForm is the same modal with empty fields and no Due row, for adding a sprint.
+// newSprintCreateForm is the same modal with empty fields and no Due row.
 func newSprintCreateForm(d deps.Deps) sprintEditForm {
 	f := newSprintEditForm(d, domain.SprintSummary{})
 	f.creating = true
@@ -248,8 +246,8 @@ func (f sprintEditForm) fieldRows() []string {
 	return append(rows, f.field(sefDue, "Due", f.dueContent(), ""))
 }
 
-// FocusRow reports the focused control's row and height in the bordered View, so a windowed modal
-// scrolls to keep it visible (+2 = top border + the padding row above the body).
+// FocusRow reports the focused control's row and height, so a windowed modal scrolls to keep it visible
+// (+2 = top border + the padding row above the body).
 func (f sprintEditForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	ids := f.fields() // same order as fieldRows, minus the two buttons at the end
@@ -351,8 +349,7 @@ func sprintEditZone(id int) string {
 	return ""
 }
 
-// sprintEditValues is the sprint field state the form emits on save; the model diffs it against the
-// selected sprint to send only what changed.
+// sprintEditValues is what the form emits on save. The model diffs it to send only what changed.
 type sprintEditValues struct {
 	title  string
 	goal   string

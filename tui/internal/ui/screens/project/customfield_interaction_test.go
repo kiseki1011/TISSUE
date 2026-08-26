@@ -15,13 +15,11 @@ func checklistField() domain.IssueField {
 	}
 }
 
-// realSpace is the key event a terminal actually delivers for the spacebar. Building it by hand matters:
-// tea.Key.String() deliberately never returns " " (it excludes a single space and falls back to the
-// keystroke name), so a handler matching " " is dead code that a hand-rolled msg can easily hide.
+// realSpace is what a terminal actually delivers for the spacebar. tea.Key.String() never returns " ",
+// so a handler matching " " is dead code that a hand-rolled msg can hide.
 func realSpace() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeySpace, Text: " "} }
 
-// Regression: the spacebar toggles the highlighted checklist option. This was bound to " ", which the
-// key never reports, leaving CHECKLIST with no working toggle at all.
+// Regression: the CHECKLIST toggle was bound to " ", which the key never reports, so it never worked.
 func TestChecklistTogglesWithSpacebar(t *testing.T) {
 	if got := realSpace().String(); got != "space" {
 		t.Fatalf("the spacebar reports %q - the handlers below are keyed on that", got)
@@ -40,8 +38,6 @@ func TestChecklistTogglesWithSpacebar(t *testing.T) {
 	}
 }
 
-// The cursor moves with left/right and the spacebar toggles whatever it sits on, so a multi-select is
-// reachable entirely from the keyboard.
 func TestChecklistCursorThenToggle(t *testing.T) {
 	c := newCustomFieldInput(checklistField())
 	c, _ = c.handleKey(press("right"))
@@ -54,7 +50,6 @@ func TestChecklistCursorThenToggle(t *testing.T) {
 	}
 }
 
-// A BOOLEAN/SELECT_OPTION cycle also advances on the spacebar, matching the right-arrow.
 func TestCycleAdvancesWithSpacebar(t *testing.T) {
 	c := newCustomFieldInput(domain.IssueField{ID: 31, Name: "Flag", Type: "BOOLEAN"})
 	c, consumed := c.handleKey(realSpace())
@@ -75,8 +70,7 @@ func checklistModel(t *testing.T) Model {
 	return m
 }
 
-// Clicking an individual checklist option toggles that option. Previously a click anywhere in the field
-// only moved focus, so a checklist could not be filled with the mouse at all.
+// Regression: a click anywhere in the field only moved focus, so a checklist was unfillable by mouse.
 func TestChecklistOptionClickToggles(t *testing.T) {
 	m := checklistModel(t)
 	click := clickZone(t, m, "project.create.custom.0.opt.1")
@@ -99,7 +93,6 @@ func TestChecklistOptionClickToggles(t *testing.T) {
 	}
 }
 
-// The cycle arrows are click targets, so a SELECT_OPTION can be chosen with the mouse.
 func TestCycleArrowClickSteps(t *testing.T) {
 	m := createReady(t)
 	m.typeFields = map[int64][]domain.IssueField{5: {{

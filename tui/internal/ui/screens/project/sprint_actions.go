@@ -19,9 +19,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// sortSprintsRecentFirst orders sprints newest-first (by id, which is monotonic with creation), so the
-// most recent sprint sits at the top of the list. The current (ACTIVE) sprint is flagged separately in
-// the row/detail rather than pinned, since a just-created upcoming sprint is legitimately newer.
+// sortSprintsRecentFirst orders by id, which is monotonic with creation. The ACTIVE sprint is flagged in
+// the row rather than pinned, since a just-created upcoming sprint is legitimately newer.
 func sortSprintsRecentFirst(in []domain.SprintSummary) []domain.SprintSummary {
 	out := append([]domain.SprintSummary(nil), in...)
 	sort.SliceStable(out, func(i, j int) bool { return out[i].ID > out[j].ID })
@@ -37,8 +36,7 @@ func indexOfSprint(sprints []domain.SprintSummary, id int64) int {
 	return -1
 }
 
-// isCurrentSprint reports whether a sprint is the project's current (running) one: exactly the ACTIVE
-// sprint, of which there is at most one.
+// isCurrentSprint: exactly the ACTIVE sprint, of which there is at most one.
 func isCurrentSprint(sp domain.SprintSummary) bool { return sp.Status == "ACTIVE" }
 
 func sprintName(sp domain.SprintSummary) string {
@@ -48,8 +46,7 @@ func sprintName(sp domain.SprintSummary) string {
 	return sp.Key
 }
 
-// openSprintStart opens the required due-date picker to start the selected PLANNING sprint. The picker
-// reuses m.dating via the dateSprintStart target, which fires the start command on confirm.
+// openSprintStart reuses m.dating via the dateSprintStart target, which fires the start on confirm.
 func (m Model) openSprintStart() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -61,12 +58,11 @@ func (m Model) openSprintStart() (Model, tea.Cmd) {
 	m.sprintActionID = sp.ID
 	m.dating = true
 	m.dateTarget = dateSprintStart
-	// default a two-week sprint; the due date must be in the future (the server stamps the start at now)
+	// default a two-week sprint. the due date must be in the future (the server stamps the start at now)
 	m.datePick = widgets.NewDatePicker("Due date", time.Now().AddDate(0, 0, 14), false, false, datePickerW)
 	return m, nil
 }
 
-// openSprintComplete opens the confirmation to complete the selected ACTIVE sprint.
 func (m Model) openSprintComplete() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -79,7 +75,6 @@ func (m Model) openSprintComplete() (Model, tea.Cmd) {
 		"Complete "+sprintName(sp)+"? Its issues must all be resolved.", "Complete")
 }
 
-// openSprintCancel opens the confirmation to cancel the selected PLANNING/ACTIVE sprint (-> CANCELLED).
 func (m Model) openSprintCancel() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -92,8 +87,7 @@ func (m Model) openSprintCancel() (Model, tea.Cmd) {
 		"Cancel "+sprintName(sp)+"? This abandons the sprint.", "Confirm")
 }
 
-// openSprintConfirm opens a yes/no confirmation for a sprint action (complete or cancel), pinning the
-// target sprint so a later cursor move cannot redirect it.
+// openSprintConfirm pins the target sprint so a later cursor move cannot redirect the action.
 func (m Model) openSprintConfirm(sp domain.SprintSummary, kind, title, message, accept string) (Model, tea.Cmd) {
 	m.sprintActionID = sp.ID
 	m.sprintConfirming = true
@@ -102,8 +96,7 @@ func (m Model) openSprintConfirm(sp domain.SprintSummary, kind, title, message, 
 	return m, m.sprintConfirmUI.Init()
 }
 
-// openSprintEditForm opens the edit modal for the selected sprint, prefilled from its summary. A closed
-// (completed/cancelled) sprint cannot be edited.
+// openSprintEditForm refuses a closed (completed/cancelled) sprint.
 func (m Model) openSprintEditForm() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -120,8 +113,7 @@ func (m Model) openSprintEditForm() (Model, tea.Cmd) {
 	return m, m.sprintEditUI.Init()
 }
 
-// openSprintCreateForm opens the modal for adding a sprint. It needs no selection, so it works on an
-// empty Sprints tab - which is exactly when a project needs its first sprint.
+// openSprintCreateForm needs no selection: an empty tab is exactly when a first sprint is needed.
 func (m Model) openSprintCreateForm() (Model, tea.Cmd) {
 	m.sprintEditing = true
 	m.sprintCreating = true
@@ -130,8 +122,7 @@ func (m Model) openSprintCreateForm() (Model, tea.Cmd) {
 	return m, m.sprintEditUI.Init()
 }
 
-// openSprintDelete opens the confirmation to permanently delete the selected sprint. The server accepts
-// this only for a CANCELLED sprint, so the guard here says why rather than letting the call fail.
+// The server deletes only a CANCELLED sprint, so the guard says why rather than letting the call fail.
 func (m Model) openSprintDelete() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -144,8 +135,6 @@ func (m Model) openSprintDelete() (Model, tea.Cmd) {
 		"Delete "+sprintName(sp)+"? This cannot be undone.", "Delete")
 }
 
-// openSprintEditDuePicker opens the calendar over the sprint edit form to set its (date-only, clearable)
-// Due field.
 func (m Model) openSprintEditDuePicker() (Model, tea.Cmd) {
 	var initial time.Time
 	if m.sprintEditUI.dueSet {
@@ -157,8 +146,6 @@ func (m Model) openSprintEditDuePicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// updateSprintConfirm drives the complete/cancel confirmation: accept fires the matching command
-// (closing the dialog; a failure surfaces as a toast), cancel closes it.
 func (m Model) updateSprintConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
@@ -181,8 +168,6 @@ func (m Model) updateSprintConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// openSprintRemoveIssuePicker opens a picker of the selected sprint's issues so one can be removed. A
-// closed sprint's issues can't be changed, and an empty sprint has nothing to remove.
 func (m Model) openSprintRemoveIssuePicker() (Model, tea.Cmd) {
 	sp, ok := m.selectedSprint()
 	if !ok {
@@ -214,7 +199,6 @@ func (m Model) openSprintRemoveIssuePicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// selectSprintRemoveIssue removes the highlighted issue from the sprint the picker was opened for.
 func (m Model) selectSprintRemoveIssue() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -224,7 +208,6 @@ func (m Model) selectSprintRemoveIssue() (Model, tea.Cmd) {
 	return m, removeSprintIssueCmd(m.deps, m.sprintActionID, opt.Value)
 }
 
-// addSelectedIssueToSprint adds the cursor's issue to the project's current (ACTIVE) sprint.
 func (m Model) addSelectedIssueToSprint() (Model, tea.Cmd) {
 	it, ok := m.selectedIssue()
 	if !ok {
@@ -240,8 +223,6 @@ func (m Model) addSelectedIssueToSprint() (Model, tea.Cmd) {
 	return m, addIssueToSprintCmd(m.deps, cur.ID, it.Key, it.SprintID)
 }
 
-// updateSprintEdit drives the open sprint edit modal: submit/cancel close it, the Due field opens the
-// calendar, a wheel scrolls a modal too tall for the terminal, and anything else forwards to the form.
 func (m Model) updateSprintEdit(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case sprintEditCancelledMsg:
@@ -272,8 +253,6 @@ func (m Model) sprintEditScrollMax() int {
 	return max(0, lipgloss.Height(m.sprintEditUI.View())-m.height)
 }
 
-// followSprintEditFocus scrolls the windowed edit modal so the focused control stays visible, mirroring
-// the issue edit form. A no-op when the modal already fits the terminal.
 func (m Model) followSprintEditFocus() Model {
 	row, height, ok := m.sprintEditUI.FocusRow()
 	if !ok {
@@ -295,9 +274,8 @@ func (m Model) followSprintEditFocus() Model {
 	return m
 }
 
-// submitSprintEdit sends only the fields that changed (a PATCH). The diff is taken against the snapshot
-// the form was built from (sprintEditBase), not a live summary a background reload may have changed
-// mid-edit - so a field the user never touched is never resent (mirroring the issue edit form).
+// submitSprintEdit PATCHes only what changed, diffed against the snapshot the form was built from - not a
+// live summary a background reload may have changed mid-edit.
 func (m Model) submitSprintEdit(v sprintEditValues) (Model, tea.Cmd) {
 	m.sprintEditing = false
 	if m.sprintCreating {
@@ -311,8 +289,7 @@ func (m Model) submitSprintEdit(v sprintEditValues) (Model, tea.Cmd) {
 	return m, updateSprintCmd(m.deps, m.sprintActionID, edit)
 }
 
-// diffSprintEdit builds the PATCH: a field is included only when it differs from the sprint's summary.
-// The due date is compared at day granularity (all the form edits).
+// diffSprintEdit includes a field only when it differs. The due date compares at day granularity.
 func diffSprintEdit(orig domain.SprintSummary, v sprintEditValues) domain.SprintEdit {
 	var out domain.SprintEdit
 	if v.title != strings.TrimSpace(orig.Title) {
@@ -331,23 +308,20 @@ func diffSprintEdit(orig domain.SprintSummary, v sprintEditValues) domain.Sprint
 	return out
 }
 
-// sprintActionDoneMsg is the result of a start/complete/edit command. On success the list is reloaded to
-// reflect the new status/fields; on failure the status maps to a helpful toast.
 type sprintActionDoneMsg struct {
 	action string // "start" | "complete" | "cancel" | "edit" | "create" | "delete"
 	id     int64
 	err    bool
 	status int
-	code   string // the backend error code, for mapping a leaky code to friendlier copy
-	reason string // the server's explanation on failure, so the toast can say why
+	code   string // backend error code, mapped to friendlier copy
+	reason string // the server's explanation, so the toast can say why
 }
 
 func (m Model) onSprintActionDone(msg sprintActionDoneMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, sprintActionErrorText(msg.action, msg.status, msg.code, msg.reason))
 	}
-	// the sprint's status/fields changed; reload the list silently (it stays visible until the fresh page
-	// lands) and re-point the cursor at the same sprint - its issues are unchanged, so they are not refetched
+	// reload the list silently and re-point the cursor at the same sprint. its issues are unchanged
 	m.sprintRestoreID = msg.id
 	m.sprintReqGen++
 	return m, tea.Batch(
@@ -446,8 +420,7 @@ func cancelSprintCmd(d deps.Deps, id int64) tea.Cmd {
 	}
 }
 
-// sprintIssuesChangedMsg is the result of adding/removing an issue to/from a sprint. On success the
-// sprint's issue list (and, for an add, the issue's own detail) is refetched.
+// sprintIssuesChangedMsg is the result of moving an issue in or out of a sprint.
 type sprintIssuesChangedMsg struct {
 	sprintID     int64
 	prevSprintID int64 // the issue's sprint before an add (0 = backlog), so its stale cache is evicted too
@@ -455,8 +428,8 @@ type sprintIssuesChangedMsg struct {
 	added        bool
 	err          bool
 	status       int
-	code         string // the backend error code, for mapping a leaky code to friendlier copy
-	reason       string // the server's explanation on failure, so the toast can say why
+	code         string // backend error code, mapped to friendlier copy
+	reason       string // the server's explanation, so the toast can say why
 }
 
 func addIssueToSprintCmd(d deps.Deps, sprintID int64, issueKey string, prevSprintID int64) tea.Cmd {
@@ -473,9 +446,7 @@ func removeSprintIssueCmd(d deps.Deps, sprintID int64, issueKey string) tea.Cmd 
 	}
 }
 
-// onSprintIssuesChanged reacts to an add/remove result: on failure a toast; on success it evicts the
-// sprint's issue cache (refetching it now when it is the selected sprint) so the bottom panel reflects
-// the change, and refetches the affected issue's detail when it is on screen (its sprint moved).
+// onSprintIssuesChanged evicts or refetches the caches that can now disagree with the server.
 func (m Model) onSprintIssuesChanged(msg sprintIssuesChangedMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, sprintIssuesErrorText(msg.added, msg.status, msg.code, msg.reason))
@@ -486,21 +457,19 @@ func (m Model) onSprintIssuesChanged(msg sprintIssuesChangedMsg) (Model, tea.Cmd
 	}
 	cmds := []tea.Cmd{toast.Show(toast.Success, ok)}
 
-	// keep the issue-list row's sprint in step so the "already in the current sprint" guard (and any sprint
-	// filter) is correct without a full reload: an add moves it into the new sprint, a remove clears it.
+	// keep the row's sprint in step so the "already in the current sprint" guard is right without a reload
 	newSprint := msg.sprintID
 	if !msg.added {
 		newSprint = 0
 	}
 	m.patchRowSprintID(msg.issueKey, newSprint)
 
-	// the target sprint's issue list changed; evict it (refetching now when it is the selected sprint)
 	cmds = append(cmds, m.evictSprintIssues(msg.sprintID)...)
-	// an add may have moved the issue out of a different sprint; that sprint's cached list is now stale too
+	// an add may have moved the issue out of another sprint, whose cached list is now stale too
 	if msg.added && msg.prevSprintID != 0 && msg.prevSprintID != msg.sprintID {
 		cmds = append(cmds, m.evictSprintIssues(msg.prevSprintID)...)
 	}
-	// the issue's sprint changed; if it is the one shown in the issue Details panel, refetch it
+	// refetch the Details panel's issue if it is the one that moved
 	if msg.issueKey != "" && msg.issueKey == m.viewKey {
 		if _, cached := m.details[msg.issueKey]; cached {
 			cmds = append(cmds, m.startDetailLoad(msg.issueKey))
@@ -509,22 +478,20 @@ func (m Model) onSprintIssuesChanged(msg sprintIssuesChangedMsg) (Model, tea.Cmd
 	return m, tea.Batch(cmds...)
 }
 
-// evictSprintIssues drops a sprint's cached issue list. When it is the selected sprint it refetches now
-// (so the bottom panel reflects the change); otherwise it just supersedes any in-flight load so a later
-// re-select refetches. Returns any load command to batch.
+// evictSprintIssues drops a sprint's cached issue list. The selected sprint refetches now, otherwise the
+// eviction only supersedes any in-flight load so a later re-select refetches.
 func (m *Model) evictSprintIssues(sprintID int64) []tea.Cmd {
 	delete(m.sprintIssues, sprintID)
 	delete(m.sprintIssuesFailed, sprintID)
 	if sprintID == m.selSprintID {
-		return []tea.Cmd{m.startSprintIssuesLoad(sprintID)} // refetch now (bumps gen + pending)
+		return []tea.Cmd{m.startSprintIssuesLoad(sprintID)}
 	}
-	m.sprintIssuesGen[sprintID]++ // supersede any in-flight load so a later re-select refetches
+	m.sprintIssuesGen[sprintID]++
 	delete(m.sprintIssuesPending, sprintID)
 	return nil
 }
 
-// patchRowSprintID updates the SprintID of the issue-list row with the given key, so an add/remove is
-// reflected immediately (patchRow cannot carry it - IssueDetail has no sprint field).
+// patchRowSprintID reflects an add/remove immediately (patchRow cannot: IssueDetail has no sprint field).
 func (m *Model) patchRowSprintID(key string, sprintID int64) {
 	if key == "" {
 		return
@@ -553,7 +520,6 @@ func sprintIssuesErrorText(added bool, status int, code, reason string) string {
 	return "Couldn't remove the issue from the sprint."
 }
 
-// findActiveSprint returns a copy of the ACTIVE sprint in the list, or nil when there is none.
 func findActiveSprint(sprints []domain.SprintSummary) *domain.SprintSummary {
 	for i := range sprints {
 		if sprints[i].Status == "ACTIVE" {
@@ -564,14 +530,11 @@ func findActiveSprint(sprints []domain.SprintSummary) *domain.SprintSummary {
 	return nil
 }
 
-// migrateMaxCandidates caps how many of the source sprint's incomplete issues the migrate picker loads.
-// It matches the server's per-request migrate limit; a sprint with more incomplete issues is truncated.
+// migrateMaxCandidates matches the server's per-request migrate limit. A larger sprint is truncated.
 const migrateMaxCandidates = 100
 
-// findNextPlanningSprint returns the sprint to migrate the current sprint's issues into: the oldest
-// (lowest-id) PLANNING sprint, since ids are monotonic with creation and the oldest planning sprint is
-// the next one scheduled to start. It deliberately ignores the active sprint's id - a backlog sprint
-// planned before the active one was started is still a valid onward target. nil when there is none.
+// findNextPlanningSprint is the oldest (lowest-id) PLANNING sprint - ids are monotonic with creation, and
+// a sprint planned before the active one started is still a valid onward target. nil when there is none.
 func findNextPlanningSprint(sprints []domain.SprintSummary) *domain.SprintSummary {
 	var next *domain.SprintSummary
 	for i := range sprints {
@@ -587,13 +550,11 @@ func findNextPlanningSprint(sprints []domain.SprintSummary) *domain.SprintSummar
 	return next
 }
 
-// openMigrate starts the migrate flow for the project's current (ACTIVE) sprint: it resolves the onward
-// target (the next PLANNING sprint) and fetches the current sprint's incomplete issues so the yes/no
-// confirmation can list what will carry over. Migrate always acts on the current sprint, never the
-// highlighted row, and moves every incomplete issue (the server carries them all over).
+// openMigrate resolves the onward target (the next PLANNING sprint) and fetches the incomplete issues so
+// the confirmation can list them. It always acts on the current sprint, never the highlighted row.
 func (m Model) openMigrate() (Model, tea.Cmd) {
 	if m.migrateLoading {
-		return m, nil // a candidate load is already in flight; ignore the repeat press so we don't double-fetch
+		return m, nil // a candidate load is already in flight, so ignore the repeat press
 	}
 	if m.currentSprint == nil {
 		return m, toast.Show(toast.Info, "No active sprint to migrate from.")
@@ -618,8 +579,7 @@ type migrateCandidatesLoadedMsg struct {
 	err       bool
 }
 
-// loadMigrateCandidates fetches the source sprint's incomplete issues (the only ones the server migrates),
-// so the picker offers exactly the eligible issues.
+// loadMigrateCandidates fetches the incomplete issues, the only ones the server migrates.
 func loadMigrateCandidates(d deps.Deps, projectKey string, sourceID int64, gen int) tea.Cmd {
 	return func() tea.Msg {
 		f := domain.IssueFilter{SprintIDs: []int64{sourceID}, StateCategories: []string{"INITIAL", "ACTIVE"}}
@@ -628,17 +588,14 @@ func loadMigrateCandidates(d deps.Deps, projectKey string, sourceID int64, gen i
 	}
 }
 
-// onMigrateCandidatesLoaded opens the yes/no confirmation once the current sprint's incomplete issues
-// land, listing what will carry over to the next sprint. A stale load (the action was reopened) is
-// dropped, as is one that lands after the user moved on, and an empty result closes with a note.
+// onMigrateCandidatesLoaded opens the confirmation listing what carries over. Stale loads are dropped.
 func (m Model) onMigrateCandidatesLoaded(msg migrateCandidatesLoadedMsg) (Model, tea.Cmd) {
 	if msg.gen != m.migrateGen {
 		return m, nil
 	}
 	m.migrateLoading = false
-	// the confirmation opens asynchronously when the fetch lands, so the user may have moved on in the
-	// meantime (opened another modal, or left the Sprints tab). Never steal the screen: drop the result
-	// silently rather than pop the dialog over - or in place of - whatever they are now interacting with.
+	// the confirmation opens asynchronously, so the user may have moved on. Never steal the screen: drop the
+	// result rather than pop a dialog over whatever they are now interacting with.
 	if m.tab != tabSprints || m.CapturingInput() {
 		return m, nil
 	}
@@ -659,9 +616,8 @@ func (m Model) onMigrateCandidatesLoaded(msg migrateCandidatesLoadedMsg) (Model,
 	return m, m.sprintConfirmUI.Init()
 }
 
-// migrateConfirmMessage summarises the carry-over for the confirmation: the count, the source and target
-// sprints, and an inline (capped) list of the incomplete issue keys. ConfirmForm flattens newlines, so
-// the keys are comma-joined and wrap within the dialog width.
+// migrateConfirmMessage summarises the carry-over: count, source, target, and a capped key list.
+// ConfirmForm flattens newlines, so the keys are comma-joined and wrap within the dialog width.
 func migrateConfirmMessage(sourceName, targetName string, issues []domain.IssueSummary, truncated bool) string {
 	const maxKeys = 12
 	noun := "issues"
@@ -670,7 +626,7 @@ func migrateConfirmMessage(sourceName, targetName string, issues []domain.IssueS
 	}
 	count := strconv.Itoa(len(issues))
 	if truncated {
-		count += "+" // more incomplete issues exist than were fetched; the server still moves them all
+		count += "+" // more exist than were fetched. the server still moves them all
 	}
 	keys := make([]string, 0, min(len(issues), maxKeys))
 	for i, it := range issues {
@@ -692,13 +648,12 @@ type sprintMigrateDoneMsg struct {
 	keys     []string
 	err      bool
 	status   int
-	code     string // the backend error code, for mapping a leaky code to friendlier copy
-	reason   string // the server's explanation on failure, so the toast can say why
+	code     string // backend error code, mapped to friendlier copy
+	reason   string // the server's explanation, so the toast can say why
 }
 
-// migrateIssuesCmd asks the server to carry the source sprint's incomplete issues over to the target.
-// keys is not sent (the server moves every incomplete issue); it rides along in the result only so the
-// success handler can optimistically repoint those list rows to the target sprint.
+// migrateIssuesCmd carries the source sprint's incomplete issues over to the target. keys is not sent -
+// the server moves them all - and rides along only so the success handler can repoint those list rows.
 func migrateIssuesCmd(d deps.Deps, sourceID, targetID int64, keys []string) tea.Cmd {
 	return func() tea.Msg {
 		err := d.Sprints.MigrateSprintIssues(context.Background(), sourceID, targetID)
@@ -706,9 +661,6 @@ func migrateIssuesCmd(d deps.Deps, sourceID, targetID int64, keys []string) tea.
 	}
 }
 
-// onSprintMigrateDone reacts to a migrate result: on success it patches the moved rows' sprint, evicts
-// both sprints' cached issue lists (refetching the selected one), and refreshes any migrated issue shown
-// in the Details panel.
 func (m Model) onSprintMigrateDone(msg sprintMigrateDoneMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, migrateErrorText(msg.status, msg.code, msg.reason))
@@ -721,10 +673,10 @@ func (m Model) onSprintMigrateDone(msg sprintMigrateDoneMsg) (Model, tea.Cmd) {
 	for _, k := range msg.keys {
 		m.patchRowSprintID(k, msg.targetID)
 	}
-	// both the source and the target sprint's issue lists changed; evict (and refetch the selected one)
+	// both sprints' issue lists changed, so evict (and refetch the selected one)
 	cmds = append(cmds, m.evictSprintIssues(msg.sourceID)...)
 	cmds = append(cmds, m.evictSprintIssues(msg.targetID)...)
-	// a migrated issue shown in the Details panel now sits in a different sprint; refetch its detail
+	// refetch the Details panel's issue if it was migrated
 	if m.viewKey != "" {
 		for _, k := range msg.keys {
 			if k == m.viewKey {
@@ -771,8 +723,7 @@ func updateSprintCmd(d deps.Deps, id int64, e domain.SprintEdit) tea.Cmd {
 	}
 }
 
-// statusOf pulls the HTTP status from an APIError (errors.As unwraps a wrapped one); a transport error
-// stays 0.
+// statusOf pulls the HTTP status from an APIError (errors.As unwraps). A transport error stays 0.
 func statusOf(err error) int {
 	var ae *domain.APIError
 	if errors.As(err, &ae) {
@@ -781,16 +732,13 @@ func statusOf(err error) int {
 	return 0
 }
 
-// reasonOf pulls the server's human explanation out of an APIError, or "" for a transport error or a
-// body-less failure. Carried on action-result messages so a toast can say why the action failed.
+// reasonOf is the server's human explanation, or "" for a transport or body-less failure.
 func reasonOf(err error) string { return domain.ErrorReason(err) }
 
-// codeOf pulls the backend error code (ProblemDetail title) out of an APIError, or "" otherwise. Carried
-// on action-result messages so a toast can map a leaky code to friendlier copy (see errmsg).
+// codeOf is the backend error code (ProblemDetail title), which errmsg maps to friendlier copy.
 func codeOf(err error) string { return domain.ErrorCode(err) }
 
-// withReason appends the server's explanation to a base line when the backend sent one, so an action
-// failure always names its cause (e.g. "Could not move the issue. The project is archived (read-only).").
+// withReason appends the server's explanation when there is one, so a failure always names its cause.
 func withReason(base, reason string) string {
 	if reason == "" {
 		return base

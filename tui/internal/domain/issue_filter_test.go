@@ -41,7 +41,6 @@ func TestApplyFilterMapsAxes(t *testing.T) {
 	}
 }
 
-// A zero filter carries nothing, so an empty search stays unscoped (all issues).
 func TestApplyFilterEmptyIsNoOp(t *testing.T) {
 	params := &client.SearchProjectIssuesParams{}
 	applyFilter(params, IssueFilter{})
@@ -58,8 +57,7 @@ func TestOpenIssuesFilterIsInitialAndActive(t *testing.T) {
 	}
 }
 
-// The backend drops reviewerStatuses when no reviewer is named, so sending them alone would silently
-// widen the search instead of narrowing it. The client must not emit that combination.
+// The backend drops reviewerStatuses when no reviewer is named, silently widening the search.
 func TestApplyFilterOmitsReviewerStatusesWithoutAReviewer(t *testing.T) {
 	params := &client.SearchProjectIssuesParams{}
 	applyFilter(params, IssueFilter{ReviewerStatuses: []string{"PENDING"}})

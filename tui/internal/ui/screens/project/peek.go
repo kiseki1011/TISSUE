@@ -6,9 +6,8 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// openPeek raises the read-only peek modal for a linked issue (a parent/child/relation), loading its
-// detail into the shared cache when it is not already there (or in flight). The load is cache-aware and
-// deduped like a selection; the peek body reads from the cache each render, so a landing load fills it in.
+// openPeek raises the read-only peek modal for a linked issue, loading its detail into the shared cache
+// when cold. The body reads the cache each render, so a landing load fills it in.
 func (m Model) openPeek(key string) (Model, tea.Cmd) {
 	if key == "" {
 		return m, nil
@@ -22,7 +21,6 @@ func (m Model) openPeek(key string) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// closePeek dismisses the peek modal, returning to the issue that opened it.
 func (m Model) closePeek() (Model, tea.Cmd) {
 	m.peeking = false
 	m.peekKey = ""
@@ -30,8 +28,7 @@ func (m Model) closePeek() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// updatePeek owns input while the peek modal is open: esc closes it, the scroll keys and the wheel move
-// its window. It is read-only, so every other key (and any click) is swallowed.
+// updatePeek owns input while the peek is open: everything but close and scroll is swallowed.
 func (m Model) updatePeek(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
@@ -66,9 +63,8 @@ func (m Model) updatePeek(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// hitPeek reports the linked issue whose key cell the click landed on, scanning the viewed issue's parent,
-// children and relations. Checked before the panel zone (which spans the whole Details area and would
-// otherwise swallow the click as a focus), mirroring hitCommentReply.
+// hitPeek reports the linked issue whose key cell was clicked. Checked before the panel zone, which spans
+// the whole Details area and would otherwise swallow the click.
 func (m Model) hitPeek(msg tea.MouseMsg) (string, bool) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -92,8 +88,7 @@ func (m Model) hitPeek(msg tea.MouseMsg) (string, bool) {
 	return "", false
 }
 
-// hoverPeekZone reports the peek zone id under the cursor (for the hover highlight), scanning the same
-// links hitPeek does but returning the section-qualified zone rather than the key.
+// hoverPeekZone is hitPeek for the hover highlight, returning the section-qualified zone, not the key.
 func (m Model) hoverPeekZone(msg tea.MouseMsg) (string, bool) {
 	d, ok := m.details[m.viewKey]
 	if !ok {

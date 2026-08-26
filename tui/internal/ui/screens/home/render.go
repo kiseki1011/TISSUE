@@ -22,14 +22,12 @@ func tableStyles(d deps.Deps) table.Styles {
 	return table.Styles{
 		Header: lipgloss.NewStyle().Bold(true).Foreground(t.Text).Padding(0, 1),
 		Cell:   lipgloss.NewStyle().Padding(1, 1, 0, 1), // one blank line above each row, none below
-		// The selection highlight is painted per content line in listView (paintRow), so the
-		// widget must not band the whole 2-line row block.
+		// listView paints the highlight per content line, so the widget must not band the row block.
 		Selected: lipgloss.NewStyle(),
 	}
 }
 
-// activityColW fits the widest time value
-// (example: "12mon")
+// activityColW fits the widest time value (example: "12mon").
 const activityColW = 6
 
 // Narrow terminals drop Repository (see Model.showRepo) since it only holds a placeholder.
@@ -139,8 +137,8 @@ func yesNo(b bool) string {
 	return "No"
 }
 
-// formatDate renders an instant as the calendar day it falls on in the viewer's own timezone. The server
-// serializes instants as UTC, so formatting one raw would show UTC's day rather than the viewer's.
+// formatDate renders the day in the viewer's timezone. The server serializes instants as UTC, so a
+// raw format would show UTC's day.
 func formatDate(t time.Time) string {
 	if t.IsZero() {
 		return "-"
@@ -148,8 +146,7 @@ func formatDate(t time.Time) string {
 	return t.Local().Format("2006-01-02")
 }
 
-// The ANSI-strip, overlay, and color-mix helpers live in components. These thin wrappers keep this
-// package's call sites unqualified. See components/render.go for the implementations.
+// Thin wrappers over components so this package's call sites stay unqualified.
 
 func stripANSI(s string) string { return components.StripANSI(s) }
 
@@ -282,8 +279,7 @@ func attentionColor(s theme.Styles, n int) color.Color {
 	return s.Theme.Muted
 }
 
-// effectiveActivity is the time a row sorts by. It prefers real issue activity and
-// falls back to the project's own timestamp, so a fresh project reads as recent.
+// effectiveActivity falls back to the project's own timestamp so a fresh project reads as recent.
 func effectiveActivity(p domain.Project) time.Time {
 	switch {
 	case !p.LastActivity.IsZero():

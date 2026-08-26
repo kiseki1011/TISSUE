@@ -14,8 +14,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// dpFocus is which segment of the picker the keyboard drives: the calendar grid, or (when timed) the
-// hour or minute stepper.
+// dpFocus is which segment the keyboard drives: the calendar grid, or the hour/minute stepper.
 type dpFocus int
 
 const (
@@ -29,13 +28,8 @@ const dpGridW = 7*2 + 6
 
 const weekdayHeader = "Su Mo Tu We Th Fr Sa"
 
-// DatePicker is a month-grid calendar with an optional HH:MM time stepper, shown in a modal so a due
-// date or a DATE/TIMESTAMP field is chosen from a calendar rather than typed. It is a pure value type
-// (Elm-style): the host forwards keys via Update, applies clicks via the Hit* helpers, and reads
-// Value() on confirm. sel is always kept in UTC so day/week/month/time arithmetic never crosses a DST
-// gap (which would otherwise freeze the hour stepper or drift the wall-clock). For a date-only picker
-// that IS the value (UTC midnight, the wire format for a date); for a timed picker sel's Y/M/D/H/M
-// components are the intended local wall-clock, which the caller localizes into a UTC instant.
+// DatePicker is a month-grid calendar with an optional HH:MM stepper. sel is always UTC so date and time
+// arithmetic never crosses a DST gap. Date-only, that midnight is the value. Timed, it is wall-clock.
 type DatePicker struct {
 	title      string
 	sel        time.Time
@@ -46,8 +40,7 @@ type DatePicker struct {
 	width      int
 }
 
-// NewDatePicker builds a picker seeded from initial (or today/now when initial is zero). withTime adds
-// the HH:MM stepper; allowClear lets the host offer an "unset" affordance for an optional field.
+// NewDatePicker seeds from initial, or today when it is zero. allowClear offers an "unset" affordance.
 func NewDatePicker(title string, initial time.Time, withTime, allowClear bool, width int) DatePicker {
 	now := time.Now()
 	base := initial
@@ -57,28 +50,25 @@ func NewDatePicker(title string, initial time.Time, withTime, allowClear bool, w
 	y, mo, d := base.Date()
 	h, mi := 0, 0
 	if withTime {
-		h, mi = base.Hour(), base.Minute() // base's own components; for a fresh (now) or reopened field these are the local wall-clock
+		h, mi = base.Hour(), base.Minute() // local wall-clock, whether base is now or a reopened value
 	}
 	sel := time.Date(y, mo, d, h, mi, 0, 0, time.UTC) // always UTC: gap-free arithmetic (see the type doc)
 	return DatePicker{title: title, sel: sel, now: now, withTime: withTime, allowClear: allowClear, width: width}
 }
 
-// Value is the selection, always in UTC: midnight for a date-only picker; for a timed picker the
-// Y/M/D/H/M components are the intended local wall-clock (the caller converts them to a UTC instant).
+// Value is always UTC: midnight when date-only, else the local wall-clock in its UTC components.
 func (p DatePicker) Value() time.Time { return p.sel }
 
 func (p DatePicker) WithTime() bool   { return p.withTime }
 func (p DatePicker) AllowClear() bool { return p.allowClear }
 
-// SetSel replaces the selection, keeping the picker's zone/time semantics. Used by the host after a day
-// click resolves to a date (HitDay already carries the current time-of-day).
+// SetSel replaces the selection after a day click (HitDay already carries the current time-of-day).
 func (p DatePicker) SetSel(t time.Time) DatePicker {
 	p.sel = t
 	return p
 }
 
-// Update handles a key while the picker is open. The host owns esc/enter (cancel/confirm) and the clear
-// key; everything else - day/week/month navigation and the time steppers - is handled here.
+// Update handles a key while the picker is open. The host owns esc/enter and the clear key.
 func (p DatePicker) Update(msg tea.KeyPressMsg) DatePicker {
 	if p.withTime { // tab cycles calendar -> hour -> minute -> calendar
 		switch msg.String() {
@@ -143,8 +133,7 @@ func (p DatePicker) updateTime(msg tea.KeyPressMsg) DatePicker {
 	return p
 }
 
-// MoveMonth steps the shown month, clamping the day to the target month's length (so Jan 31 -> Feb 28,
-// not a silent skip into March). Exported for the host's month-arrow clicks.
+// MoveMonth clamps the day to the target month's length (Jan 31 -> Feb 28, not a skip into March).
 func (p DatePicker) MoveMonth(delta int) DatePicker { return p.moveMonth(delta) }
 
 func (p DatePicker) moveMonth(delta int) DatePicker {
@@ -173,8 +162,7 @@ const (
 	dpClearZone  = "widgets.datepicker.clear"
 )
 
-// HitDay resolves a click to the day cell it lands on, returning that day at the picker's current
-// time-of-day so a timed selection keeps its HH:MM.
+// HitDay resolves a click to its day cell, keeping the picker's current HH:MM.
 func (p DatePicker) HitDay(msg tea.MouseMsg) (time.Time, bool) {
 	total := daysIn(p.sel.Year(), p.sel.Month())
 	for d := 1; d <= total; d++ {
@@ -196,8 +184,7 @@ func (p DatePicker) HitMonthNav(msg tea.MouseMsg) (int, bool) {
 	return 0, false
 }
 
-// HitTimeSegment focuses the hour or minute stepper when its click lands, so the wheel/keys then drive
-// that segment. A no-op on a date-only picker.
+// HitTimeSegment focuses the hour or minute stepper a click lands on. A no-op on a date-only picker.
 func (p DatePicker) HitTimeSegment(msg tea.MouseMsg) (DatePicker, bool) {
 	if !p.withTime {
 		return p, false
@@ -222,7 +209,6 @@ func (p DatePicker) HitClear(msg tea.MouseMsg) bool {
 	return z != nil && z.InBounds(msg)
 }
 
-// HitConfirm reports a click on the OK button.
 func (p DatePicker) HitConfirm(msg tea.MouseMsg) bool {
 	z := zone.Get(dpOKZone)
 	return z != nil && z.InBounds(msg)
@@ -257,8 +243,7 @@ func (p DatePicker) View(s theme.Styles) string {
 	return components.TitledBoxCentered(p.title, body, t.Primary)
 }
 
-// grid renders the day cells as week rows. Leading/trailing blanks pad the first and last weeks so every
-// row is exactly the grid width and the box stays rectangular.
+// grid renders week rows. Blanks pad the first and last weeks so the box stays rectangular.
 func (p DatePicker) grid(t theme.Theme, first time.Time, total int) []string {
 	cells := make([]string, 0, 42)
 	for i := 0; i < int(first.Weekday()); i++ {
@@ -277,8 +262,7 @@ func (p DatePicker) grid(t theme.Theme, first time.Time, total int) []string {
 	return rows
 }
 
-// dayCell styles one day: the selected day is reversed (an Accent block, theme-robust), today is
-// underlined, the rest plain.
+// dayCell styles one day: selected is reversed (theme-robust), today underlined, the rest plain.
 func (p DatePicker) dayCell(t theme.Theme, d int) lipgloss.Style {
 	switch {
 	case d == p.sel.Day():
@@ -290,8 +274,7 @@ func (p DatePicker) dayCell(t theme.Theme, d int) lipgloss.Style {
 	}
 }
 
-// isToday compares the grid cell's calendar date to the session's captured now (numeric Y/M/D, so the
-// picker's UTC-vs-local sel zone does not matter for the marker).
+// isToday compares numeric Y/M/D, so the picker's UTC-vs-local sel zone cannot skew the marker.
 func (p DatePicker) isToday(d int) bool {
 	ny, nmo, nd := p.now.Date()
 	return d == nd && p.sel.Month() == nmo && p.sel.Year() == ny
@@ -337,8 +320,7 @@ func (p DatePicker) footer(t theme.Theme) string {
 	return clear + strings.Repeat(" ", gap) + ok
 }
 
-// padCenter left-pads a zone-marked line to center it within the content width, given its plain width
-// (lipgloss.Width would count the invisible zone markers, so the caller passes the true visible width).
+// padCenter centers by the caller's plain width, since lipgloss.Width would count the zone markers.
 func (p DatePicker) padCenter(s string, plainW int) string {
 	if pad := (p.contentW() - plainW) / 2; pad > 0 {
 		return strings.Repeat(" ", pad) + s

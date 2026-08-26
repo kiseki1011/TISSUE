@@ -15,8 +15,7 @@ func mentionMembers() []domain.ProjectMember {
 	}
 }
 
-// mentionReady opens the comment modal on the root composer of a comment-less issue, with members
-// loaded, so typing '@' can drive the autocomplete popup.
+// mentionReady opens the comment modal on the root composer with members loaded, ready for '@'.
 func mentionReady(t *testing.T) Model {
 	t.Helper()
 	m := editReady(t, domain.IssueDetail{Title: "Root", StateLabel: "Active", StateCategory: "ACTIVE"})
@@ -29,7 +28,7 @@ func mentionReady(t *testing.T) Model {
 	return m
 }
 
-// typeInto forwards each rune of s to the focused composer, exactly as keystrokes would.
+// typeInto types s one rune at a time, as real keystrokes would.
 func typeInto(m Model, s string) Model {
 	for _, r := range s {
 		m, _ = m.Update(press(string(r)))
@@ -62,8 +61,7 @@ func TestMentionQueryDetectsToken(t *testing.T) {
 	}
 }
 
-// matchMembers ranks username-prefix ahead of display-name-prefix, offers everyone on an empty query,
-// skips members with no username, and caps to the dropdown height.
+// username-prefix outranks display-name-prefix. An empty query offers all, no-username is skipped, capped.
 func TestMatchMembers(t *testing.T) {
 	members := []domain.ProjectMember{
 		{Username: "alice", DisplayName: "Alice"},
@@ -98,8 +96,7 @@ func TestMatchMembers(t *testing.T) {
 	}
 }
 
-// insertMention swaps the "@token" for "@username " and leaves the cursor right after it, on a single
-// line and across lines, preserving the surrounding text.
+// insertMention swaps the token and leaves the caret right after it, single-line and across lines.
 func TestInsertMention(t *testing.T) {
 	ta := newCommentArea("")
 	ta.SetValue("hi @al world")
@@ -131,8 +128,7 @@ func TestInsertMention(t *testing.T) {
 	}
 }
 
-// collectMentions extracts only real, sendable handles: matched against members (case-insensitive),
-// de-duplicated, with an embedded '@' (email) ignored and trailing punctuation trimmed.
+// Only real handles are sent: case-insensitive, de-duplicated, email '@' ignored, punctuation trimmed.
 func TestCollectMentions(t *testing.T) {
 	members := mentionMembers()
 
@@ -154,7 +150,7 @@ func TestCollectMentions(t *testing.T) {
 	}
 }
 
-// Typing '@' opens the popup, and typing narrows it to the matching members (dropping the rest).
+// Typing '@' opens the popup. More typing narrows it to the matching members.
 func TestMentionPopupOpensAndFilters(t *testing.T) {
 	m := mentionReady(t)
 	m = typeInto(m, "@")
@@ -171,8 +167,7 @@ func TestMentionPopupOpensAndFilters(t *testing.T) {
 	}
 }
 
-// enter with the popup open accepts the highlighted candidate (inserting "@username ") and does NOT
-// submit the comment or add a newline.
+// enter accepts the highlighted candidate instead of submitting the comment or adding a newline.
 func TestMentionEnterAcceptsWithoutSubmitting(t *testing.T) {
 	m := mentionReady(t)
 	m = typeInto(m, "@bo") // a single match: bob
@@ -191,7 +186,7 @@ func TestMentionEnterAcceptsWithoutSubmitting(t *testing.T) {
 	}
 }
 
-// esc with the popup open dismisses only the popup; the modal and the typed text stay.
+// esc dismisses only the popup. The modal and the typed text stay.
 func TestMentionEscDismissesPopupOnly(t *testing.T) {
 	m := mentionReady(t)
 	m = typeInto(m, "@bo")
@@ -207,8 +202,7 @@ func TestMentionEscDismissesPopupOnly(t *testing.T) {
 	}
 }
 
-// down moves the popup selection instead of moving the textarea cursor, so accepting takes the second
-// candidate.
+// down moves the popup selection, not the textarea cursor.
 func TestMentionArrowMovesSelection(t *testing.T) {
 	m := mentionReady(t)
 	m = typeInto(m, "@a") // alice + albert (albert sorts first on the username tiebreak)
@@ -237,8 +231,7 @@ func TestMentionClickAccepts(t *testing.T) {
 	}
 }
 
-// Accepting a mention mid-line (the caret on an existing space) reuses that space and lands the caret
-// PAST it, so the completed token is not re-detected and the popup does not reopen (review finding #1).
+// A mid-line accept reuses the existing space and lands the caret past it, so the popup does not reopen.
 func TestInsertMentionMidLineLandsPastSpace(t *testing.T) {
 	ta := newCommentArea("")
 	ta.SetValue("see @bo here")
@@ -252,8 +245,7 @@ func TestInsertMentionMidLineLandsPastSpace(t *testing.T) {
 	}
 }
 
-// esc dismisses the popup durably: a later cursor blink or cursor move (a non-edit refresh) must not
-// reopen it, while an actual edit still may (review finding #2).
+// esc dismisses durably: a blink or cursor move must not reopen the popup, an actual edit may.
 func TestMentionEscStaysDismissed(t *testing.T) {
 	m := mentionReady(t)
 	m = typeInto(m, "@bob")
@@ -280,8 +272,7 @@ func TestMentionCursorMoveAfterEscDoesNotReopen(t *testing.T) {
 	}
 }
 
-// When the modal overflows the terminal, opening the popup scrolls it into the visible window (review
-// finding #3: the grown focused block must be followed).
+// When the modal overflows the terminal, opening the popup scrolls it into the visible window.
 func TestMentionPopupScrollsIntoView(t *testing.T) {
 	m := loaded(t, 120, 12, domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "Root", StateCategory: "ACTIVE"}}, TotalElements: 1,
@@ -306,8 +297,7 @@ func TestMentionPopupScrollsIntoView(t *testing.T) {
 	}
 }
 
-// collectMentions keeps a username that legitimately ends in '_' (or '.'/'-'), matching the whole token
-// before falling back to a trailing-punctuation trim for hand-typed handles (review finding #4).
+// A username ending in '_' survives: the whole token matches before the punctuation-trim fallback.
 func TestCollectMentionsKeepsPunctuationUsername(t *testing.T) {
 	members := []domain.ProjectMember{{Username: "john_", DisplayName: "John"}, {Username: "bob"}}
 	got := collectMentions("hi @john_ and @bob.", members)

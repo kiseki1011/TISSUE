@@ -32,8 +32,7 @@ const (
 	configDescH     = 5 // visible rows of the description textarea
 )
 
-// configEditForm is the "Edit project" modal for a project's title, description, and visibility.
-// Archiving is a separate action.
+// configEditForm is the "Edit project" modal. Archiving is a separate action.
 type configEditForm struct {
 	deps deps.Deps
 
@@ -56,7 +55,7 @@ func newConfigEditForm(d deps.Deps, p domain.Project) configEditForm {
 	description := textarea.New()
 	description.Prompt = ""
 	description.ShowLineNumbers = false
-	description.CharLimit = 0 // no client cap; the server enforces its own limit (and rejects an overflow)
+	description.CharLimit = 0 // no client cap: the server enforces its own limit
 	description.Placeholder = "None"
 	description.SetWidth(editFieldW)
 	description.SetHeight(configDescH)
@@ -64,7 +63,7 @@ func newConfigEditForm(d deps.Deps, p domain.Project) configEditForm {
 
 	vis := p.Visibility
 	if vis != "PRIVATE" {
-		vis = "PUBLIC" // default/normalise anything unexpected to the safer public-list default
+		vis = "PUBLIC" // normalise anything unexpected to the public default
 	}
 	f := configEditForm{
 		deps: d, title: title, description: description, visibility: vis,
@@ -237,8 +236,7 @@ func (f configEditForm) body() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// FocusRow reports the focused control's row and height in the bordered View, so a windowed modal
-// scrolls to keep it visible (+2 = top border + the padding row above the body).
+// FocusRow reports the focused control's row/height in the bordered View (+2 = border + padding row).
 func (f configEditForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	rows := []struct {
@@ -260,7 +258,6 @@ func (f configEditForm) FocusRow() (int, int, bool) {
 	return row + 1, lipgloss.Height(f.buttons()), true // Save/Cancel sit after the blank row
 }
 
-// visibilityContent renders the two options as a segmented toggle, the active one accented.
 func (f configEditForm) visibilityContent() string {
 	t := f.deps.Styles.Theme
 	opt := func(label, value string) string {
@@ -344,8 +341,7 @@ func configEditZone(id int) string {
 	return ""
 }
 
-// configEditValues is the project field state the form emits on save; the model diffs it against the
-// loaded project to send only what changed.
+// configEditValues is what the form emits on save. The model diffs it to send only what changed.
 type configEditValues struct {
 	title       string
 	description string

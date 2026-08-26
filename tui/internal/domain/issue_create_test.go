@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// toCreateBody sends the required fields and omits optional scalars left at their zero value.
 func TestToCreateBodyOmitsEmptyOptionals(t *testing.T) {
 	body := toCreateBody(CreateIssueInput{IssueTypeID: 7, Title: "Fix", Priority: "P1"})
 	if body.IssueTypeId != 7 || body.Title != "Fix" || string(body.Priority) != "P1" {
@@ -16,7 +15,6 @@ func TestToCreateBodyOmitsEmptyOptionals(t *testing.T) {
 	}
 }
 
-// A fully populated input carries every optional through.
 func TestToCreateBodyIncludesSetOptionals(t *testing.T) {
 	due := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 	body := toCreateBody(CreateIssueInput{
@@ -34,7 +32,6 @@ func TestToCreateBodyIncludesSetOptionals(t *testing.T) {
 	}
 }
 
-// A parent key is sent when set, omitted when empty.
 func TestToCreateBodyParent(t *testing.T) {
 	with := toCreateBody(CreateIssueInput{IssueTypeID: 1, Title: "T", Priority: "P2", ParentKey: "ENG-2"})
 	if with.ParentIssueKey == nil || *with.ParentIssueKey != "ENG-2" {
@@ -46,7 +43,6 @@ func TestToCreateBodyParent(t *testing.T) {
 	}
 }
 
-// Custom fields are sent (keyed by field id) when set, omitted when empty.
 func TestToCreateBodyCustomFields(t *testing.T) {
 	with := toCreateBody(CreateIssueInput{IssueTypeID: 1, Title: "T", Priority: "P2", CustomFields: map[string]interface{}{"10": int64(2)}})
 	if with.CustomFields == nil || (*with.CustomFields)["10"] != int64(2) {

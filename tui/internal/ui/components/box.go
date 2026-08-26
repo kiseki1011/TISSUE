@@ -22,22 +22,18 @@ func TitledBoxCentered(title, body string, borderColor color.Color) string {
 	return titledBox(lipgloss.RoundedBorder(), title, "", body, borderColor, true)
 }
 
-// TitledBoxWeighted is TitledBox that signals focus by border COLOUR (the borderColor passed by the
-// caller). The focused parameter is accepted and ignored — retained for call-site compatibility —
-// because focus is never shown by thickening the border, only by its colour.
+// TitledBoxWeighted ignores focused: focus is signalled by borderColor, never by border weight.
 func TitledBoxWeighted(title, body string, borderColor color.Color, focused bool) string {
 	return TitledBox(title, body, borderColor)
 }
 
-// TitledBoxSubWeighted is TitledBoxSub that signals focus by colour (see TitledBoxWeighted).
+// TitledBoxSubWeighted ignores focused (see TitledBoxWeighted).
 func TitledBoxSubWeighted(title, subtitle, body string, borderColor color.Color, focused bool) string {
 	return TitledBoxSub(title, subtitle, body, borderColor)
 }
 
 // TitledRule renders body between titled top/bottom rules with no side borders — the "Details" look.
-// Its outer width and height match TitledBox exactly (chrome rows + one-cell blank insets each side),
-// so it drops into a boxed layout without disturbing neighbouring sizes. Focus is signalled by the
-// rule COLOUR, not weight.
+// Its footprint matches TitledBox exactly, so it drops into a boxed layout without resizing neighbours.
 func TitledRule(title, subtitle, body string, borderColor color.Color) string {
 	line := lipgloss.NewStyle().Foreground(borderColor)
 	dash := "─"

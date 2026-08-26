@@ -20,9 +20,8 @@ var stackCSI = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func stackPlain(s string) string { return stackCSI.ReplaceAllString(zone.Scan(s), "") }
 
-// zoneAfter scans v and waits for the async zone manager to register id, so a following read is
-// reliable. zone.Scan hands the parsed zones to a worker goroutine, so zone.Get right after a Scan
-// can race and see the zone as not-yet-registered (flaky under parallel test load).
+// zone.Scan hands the parsed zones to a worker goroutine, so a zone.Get right after can race and see
+// the zone as not-yet-registered. Poll instead.
 func zoneAfter(v, id string) *zone.ZoneInfo {
 	zone.Scan(v)
 	for i := 0; i < 500; i++ {
@@ -49,8 +48,8 @@ func stackModel(t *testing.T, w, h int) Model {
 	return m
 }
 
-// A narrow-and-tall terminal stacks the Details above the project list and stays within the height
-// budget (a regression guard: the list must window to its slice, not fill the whole height).
+// A narrow-and-tall terminal stacks Details above the list. Regression guard: the list must window to
+// its slice, not fill the whole height.
 func TestHomeStackedLayout(t *testing.T) {
 	m := stackModel(t, 95, 40)
 	if !m.stacked() {
@@ -68,8 +67,7 @@ func TestHomeStackedLayout(t *testing.T) {
 	if detailAt > listAt {
 		t.Error("stacked layout should render Details above the project list")
 	}
-	// the list zone sits below the Details slice, and its click hit-testing is zone-relative, so a
-	// click resolves to the right row even though the list moved down
+	// hit-testing is zone-relative, so a click still resolves to the right row once the list moves down
 	if z := zoneAfter(raw, "home.list"); z == nil || z.IsZero() {
 		t.Error("home.list zone did not register in the stacked layout")
 	} else if z.StartY < m.stackDetailH()/2 {
@@ -77,7 +75,6 @@ func TestHomeStackedLayout(t *testing.T) {
 	}
 }
 
-// A wide terminal keeps the side-by-side layout.
 func TestHomeSideWhenWide(t *testing.T) {
 	m := stackModel(t, 140, 34)
 	if m.stacked() {
@@ -88,8 +85,7 @@ func TestHomeSideWhenWide(t *testing.T) {
 	}
 }
 
-// Stacking lowers the render floor: a width below the side-by-side floor still renders when the
-// terminal is tall enough to stack.
+// Stacking lowers the render floor: a sub-floor width still renders when the terminal is tall enough.
 func TestHomeStackingLowersFloor(t *testing.T) {
 	m := stackModel(t, 95, 40)
 	if m.minWidth() >= m.sideFloor() {

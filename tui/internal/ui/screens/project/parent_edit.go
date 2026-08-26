@@ -14,9 +14,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// hierarchyForType looks up an issue type's hierarchy level from the loaded catalog by display name.
-// The detail carries only the type name, so the catalog (loaded for the filter/create flows) supplies
-// the level needed to compute which issues may be this one's parent.
+// hierarchyForType resolves a level from the catalog by name, since the detail carries only the type name.
 func (m Model) hierarchyForType(typeName string) (string, bool) {
 	for _, t := range m.types {
 		if t.Name == typeName {
@@ -26,15 +24,12 @@ func (m Model) hierarchyForType(typeName string) (string, bool) {
 	return "", false
 }
 
-// openParentEditFromFormMsg asks the model to open the parent picker over the edit form; the edit
-// form's Parent field emits it, mirroring the Due field's calendar (openDueEditMsg).
+// openParentEditFromFormMsg asks the model to open the parent picker, mirroring openDueEditMsg.
 type openParentEditFromFormMsg struct{}
 
 func openParentEditForm() tea.Msg { return openParentEditFromFormMsg{} }
 
-// openParentEditPicker changes the current issue's parent. It is reached from the edit form's Parent
-// field: it resolves the issue's hierarchy, then loads the eligible parent candidates (one level up)
-// for a picker that also offers "None" to detach.
+// openParentEditPicker loads the eligible parents (one level up) for the current issue.
 func (m Model) openParentEditPicker() (Model, tea.Cmd) {
 	d, ok := m.details[m.viewKey]
 	if !ok {
@@ -78,8 +73,7 @@ func loadParentEditCandidates(d deps.Deps, projectKey, key string, gen int, type
 	}
 }
 
-// onParentEditCandidates opens the parent picker with the loaded candidates. Self is excluded (an issue
-// cannot be its own parent); "None (clear parent)" leads, in the error colour, to detach.
+// onParentEditCandidates opens the picker, excluding self and leading with "None" when detach is allowed.
 func (m Model) onParentEditCandidates(msg parentEditCandidatesLoadedMsg) (Model, tea.Cmd) {
 	if msg.gen != m.parentEditGen || msg.key != m.viewKey {
 		return m, nil // superseded, or the user moved to another issue while it loaded
@@ -92,8 +86,7 @@ func (m Model) onParentEditCandidates(msg parentEditCandidatesLoadedMsg) (Model,
 		return m, nil
 	}
 	var opts []widgets.PickerOption
-	// only an optional-parent type (STANDARD) may detach; SUBTASK/MICROTASK require a parent, so offer no
-	// "None" for them (mirroring the create flow, which gates its None option the same way)
+	// only an optional-parent type may detach - SUBTASK/MICROTASK require one, as in the create flow
 	hier, _ := m.hierarchyForType(d.TypeName)
 	if !parentRequired(hier) {
 		opts = append(opts, widgets.PickerOption{Value: "", Label: "None (clear parent)", Color: m.deps.Styles.Theme.Error})
@@ -125,8 +118,7 @@ func (m Model) onParentEditCandidates(msg parentEditCandidatesLoadedMsg) (Model,
 	return m, nil
 }
 
-// selectParentEdit applies the chosen parent (or detaches on "None"), optimistically updating the cache
-// and firing the change; the reload reconciles the parent's type/state (which the picker did not carry).
+// selectParentEdit updates the cache optimistically. The reload reconciles the parent's type/state.
 func (m Model) selectParentEdit() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -149,22 +141,19 @@ func (m Model) selectParentEdit() (Model, tea.Cmd) {
 	if d.Parent != nil && d.Parent.Key == opt.Value {
 		return m, nil // unchanged
 	}
-	m.applyParent(key, &domain.IssueRef{Key: opt.Value}) // minimal ref; the reload fills type/state
+	m.applyParent(key, &domain.IssueRef{Key: opt.Value}) // minimal ref - the reload fills type/state
 	m.syncEditParent(opt.Value)
 	return m, assignParentCmd(m.deps, key, opt.Value)
 }
 
-// syncEditParent updates the open edit form's displayed parent after a pick, so the Parent row reflects
-// the change once the picker closes and the form reappears. A no-op when the picker was not opened from
-// the edit form.
+// syncEditParent keeps the open edit form's Parent row in step with the pick. A no-op when not editing.
 func (m *Model) syncEditParent(parentKey string) {
 	if m.editing {
 		m.editUI.parentKey = parentKey
 	}
 }
 
-// applyParent optimistically sets the cached detail's parent and bumps the load generation so an earlier
-// in-flight refetch cannot clobber it. The list row carries no parent, so it is not patched.
+// applyParent bumps the load generation so an in-flight refetch cannot clobber the optimistic parent.
 func (m *Model) applyParent(key string, parent *domain.IssueRef) {
 	d, ok := m.details[key]
 	if !ok {
@@ -175,8 +164,7 @@ func (m *Model) applyParent(key string, parent *domain.IssueRef) {
 	m.details[key] = d
 }
 
-// ParentEditDoneMsg is exported so the app shell can route this background result back to the project
-// screen even when the user has left the drill-in before it landed (so the toast still shows).
+// ParentEditDoneMsg is exported so the app shell can route it back after the user leaves the drill-in.
 type ParentEditDoneMsg struct {
 	key     string
 	err     bool

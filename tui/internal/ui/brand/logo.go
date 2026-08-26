@@ -15,7 +15,7 @@ const Logo = `███      ███     ███
  ███     ███     ███     ███    ███ ███  ███  ███
 ███       ████ ██████ █████  █████   ██████    ██████`
 
-// RenderVertical paints Logo with a top-to-bottom gradient fading base toward black.
+// RenderVertical paints Logo with a top-to-bottom gradient toward black.
 // Lines are padded to the widest so the block stays rectangular when centered.
 func RenderVertical(base color.Color) string {
 	lines := strings.Split(Logo, "\n")

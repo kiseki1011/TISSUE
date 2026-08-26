@@ -37,7 +37,6 @@ func (s *ProjectService) ListProjects(ctx context.Context, includeArchived bool)
 	return toProjects(resp.JSON200.Content), nil
 }
 
-// ProjectMember is one member of a project, for the issue assignee picker.
 type ProjectMember struct {
 	MemberID    int64
 	DisplayName string
@@ -58,7 +57,7 @@ func (m ProjectMember) Name() string {
 	return m.Username
 }
 
-// Owner is the agent owner's display label (name, falling back to username); "" for a human.
+// Owner is the agent owner's label, name falling back to username. "" for a human.
 func (m ProjectMember) Owner() string {
 	if m.OwnerName != "" {
 		return m.OwnerName
@@ -66,8 +65,7 @@ func (m ProjectMember) Owner() string {
 	return m.OwnerUser
 }
 
-// MemberStats is one member's contribution stats in a project. AvgResolveSeconds is nil when the member
-// has no resolved issues (so there is no average to report).
+// MemberStats is one member's contribution stats. AvgResolveSeconds is nil with no resolved issues.
 type MemberStats struct {
 	MemberID          int64
 	ResolvedCount     int64
@@ -77,8 +75,8 @@ type MemberStats struct {
 	AvgResolveSeconds *int64
 }
 
-// MemberStats returns per-member contribution stats for a project. The backend returns a row only for
-// members with at least one assigned issue; callers zero-fill the rest from the roster.
+// MemberStats returns per-member contribution stats. The backend returns a row only for members with
+// at least one assigned issue, so callers zero-fill the rest from the roster.
 func (s *ProjectService) MemberStats(ctx context.Context, projectKey string) ([]MemberStats, error) {
 	resp, err := s.api.GetProjectMemberStatsWithResponse(ctx, projectKey)
 	if err != nil {
@@ -134,8 +132,8 @@ func (s *ProjectService) ListMembers(ctx context.Context, projectKey string) ([]
 	return out, nil
 }
 
-// ListMemberCandidates returns people who can be added to the project (not already members), optionally
-// narrowed by a keyword. One generous page; the add-member picker filters it further client-side.
+// ListMemberCandidates returns people not already in the project, optionally narrowed by a keyword.
+// One generous page. The add-member picker filters it further client-side.
 func (s *ProjectService) ListMemberCandidates(ctx context.Context, projectKey, keyword string) ([]ProjectMember, error) {
 	size := int32(100)
 	params := &client.ListMemberCandidatesParams{Pageable: client.Pageable{Size: &size}}
@@ -203,9 +201,7 @@ func (s *ProjectService) GetProjectStats(ctx context.Context, projectKey string)
 	return toStats(resp.JSON200), nil
 }
 
-// GetProjectDetail loads one project's editable settings (title, description, visibility, archived).
-// JoinProject self-joins the caller to a PUBLIC project. A PRIVATE project rejects self-join with 403
-// PROJECT_JOIN_NOT_ALLOWED - its members must be added by a manager.
+// JoinProject self-joins a PUBLIC project. A PRIVATE one rejects it with 403 PROJECT_JOIN_NOT_ALLOWED.
 func (s *ProjectService) JoinProject(ctx context.Context, projectKey string) error {
 	resp, err := s.api.JoinProjectWithResponse(ctx, projectKey)
 	if err != nil {
@@ -238,8 +234,7 @@ func (s *ProjectService) GetProjectDetail(ctx context.Context, projectKey string
 	}, nil
 }
 
-// ProjectEdit is a project settings PATCH: only the set fields are sent. Description can be cleared to
-// empty (ClearDescription); Title and Visibility are only ever set to a new value.
+// ProjectEdit is a settings PATCH. Only set fields are sent, and ClearDescription empties the description.
 type ProjectEdit struct {
 	Title            *string
 	Description      *string
@@ -282,7 +277,6 @@ func (s *ProjectService) ArchiveProject(ctx context.Context, projectKey string) 
 	return apiError(resp.StatusCode(), resp.Body)
 }
 
-// UnarchiveProject lifts the archive, making a project writable again.
 func (s *ProjectService) UnarchiveProject(ctx context.Context, projectKey string) error {
 	resp, err := s.api.UnarchiveProjectWithResponse(ctx, projectKey)
 	if err != nil {
@@ -432,9 +426,8 @@ func priorityBuckets(rows *[]client.PriorityCount) []StatBucket {
 	return out
 }
 
-// AgingStats is the project's open-issue aging snapshot: how long open work has been sitting, bucketed by
-// age (time since work started, or since creation when not yet started), plus how many open issues are
-// currently blocked by a still-open blocker.
+// AgingStats is the open-issue aging snapshot. Age runs from when work started, else from creation.
+// Blocked counts open issues held by a still-open blocker.
 type AgingStats struct {
 	OpenTotal int
 	Under3d   int
@@ -444,8 +437,7 @@ type AgingStats struct {
 	Blocked   int
 }
 
-// DurationStat summarizes a set of durations (in seconds): the sample size and the mean, median (p50) and
-// 90th percentile.
+// DurationStat summarizes durations in seconds: count, mean, p50, p90.
 type DurationStat struct {
 	Count      int
 	AvgSeconds int
@@ -453,15 +445,13 @@ type DurationStat struct {
 	P90Seconds int
 }
 
-// CycleTimeStats holds cycle time (start of work to resolution) and lead time (creation to resolution)
-// over a window, each as a DurationStat.
+// CycleTimeStats holds cycle time (work start to resolution) and lead time (creation to resolution).
 type CycleTimeStats struct {
 	Window string
 	Cycle  DurationStat
 	Lead   DurationStat
 }
 
-// FlowDay is one UTC day's created and resolved counts in the flow series.
 type FlowDay struct {
 	Date     time.Time
 	Created  int
@@ -499,9 +489,8 @@ func (s *ProjectService) GetProjectCycleTime(ctx context.Context, projectKey, wi
 	return toCycleTime(resp.JSON200), nil
 }
 
-// GetProjectFlow loads the created-vs-resolved daily series over the given window. The series is cut into
-// days on the viewer's own timezone (see LocalZoneID); without that the server buckets on UTC, which
-// shifts every point for anyone not on it. Member-only.
+// GetProjectFlow loads the created-vs-resolved daily series. Days are cut on the viewer's timezone
+// (see LocalZoneID). Without it the server buckets on UTC, shifting every point. Member-only.
 func (s *ProjectService) GetProjectFlow(ctx context.Context, projectKey, window string) (FlowStats, error) {
 	zone := LocalZoneID()
 	resp, err := s.api.GetProjectFlowStatsWithResponse(
@@ -574,11 +563,8 @@ func toFlow(f *client.ProjectFlowStats) FlowStats {
 	return out
 }
 
-// SprintReport is a snapshot of one sprint's current scope: how much is done, how much would carry over,
-// and the story-point progress. Not a burndown - there is no scope history, so this reflects the issues in
-// the sprint right now (the final tally once completed, live progress while active). The server's state
-// distribution is omitted here: "carried" already is the still-open work and the sprint's issue list shows
-// the per-state detail.
+// SprintReport is a snapshot of one sprint's scope as it stands now, not a burndown: the server keeps
+// no scope history. The state distribution is dropped, since OpenIssues is already the still-open work.
 type SprintReport struct {
 	TotalIssues          int
 	CompletedIssues      int
@@ -617,9 +603,8 @@ func toSprintReport(r *client.ProjectSprintReport) SprintReport {
 	}
 }
 
-// Velocity is a project's delivered work per COMPLETED sprint, oldest first, plus the mean over them - the
-// usual basis for planning the next sprint's commitment. Not a burndown; each point is that sprint's final
-// delivered tally (completed story points, EPICs excluded, and completed issue count).
+// Velocity is delivered work per COMPLETED sprint, oldest first, plus the mean over them.
+// Each point is that sprint's final tally. EPICs are excluded from the story points.
 type Velocity struct {
 	Sprints                []VelocityPoint
 	AverageStoryPoints     float64
@@ -674,9 +659,8 @@ func toVelocity(v *client.ProjectVelocity) Velocity {
 	return out
 }
 
-// Contributions is a per-member resolution heatmap ("잔디"): one count per UTC day over the window, oldest
-// first and zero-filled, with the busiest day's count for scaling the shading. Attribution is by the
-// issue's current assignee (matching the per-member stats), counting issues resolved on each day.
+// Contributions is a per-member resolution heatmap ("잔디"): zero-filled resolved counts per day, oldest
+// first, plus the busiest day for shading. Attribution is by the issue's current assignee.
 type Contributions struct {
 	Days          []ContributionDay
 	TotalResolved int
@@ -684,13 +668,12 @@ type Contributions struct {
 }
 
 type ContributionDay struct {
-	Date  time.Time // UTC calendar day (midnight)
+	Date  time.Time // calendar day, as midnight UTC
 	Count int
 }
 
-// GetProjectContributions loads a member's daily resolution heatmap over the last `days` days (the server
-// clamps to a year). The days are cut on the viewer's own timezone (see LocalZoneID), so a morning's work
-// lands on the day the viewer had, not the day UTC was on. Member-only server-side.
+// GetProjectContributions loads a member's daily heatmap over the last `days` days (server clamps to a
+// year). Days are cut on the viewer's timezone, so a morning's work lands on their day, not UTC's.
 func (s *ProjectService) GetProjectContributions(
 	ctx context.Context, projectKey string, memberID int64, days int,
 ) (Contributions, error) {
@@ -725,24 +708,21 @@ func toContributions(c *client.ProjectContributionStats) Contributions {
 	return out
 }
 
-// GithubIntegration is a project's GitHub webhook integration status. Connected is false when no
-// integration exists yet (the server 404s); WebhookURL is the endpoint to register in GitHub, SyncEnabled
-// whether inbound events are applied.
+// GithubIntegration is a project's GitHub webhook status. Connected is false when no integration exists
+// yet (the server 404s). WebhookURL is the endpoint to register in GitHub.
 type GithubIntegration struct {
 	Connected   bool
 	WebhookURL  string
 	SyncEnabled bool
 }
 
-// GithubSecret is the one-time reveal returned when the webhook secret is (re)generated: the webhook URL
-// to register in GitHub and the signing secret, which the server will not show again.
+// GithubSecret is the one-time reveal of the signing secret. The server will not show it again.
 type GithubSecret struct {
 	WebhookURL string
 	Secret     string
 }
 
-// GetGithubIntegration reads the project's GitHub integration status. A 404 means no integration exists
-// yet, reported as a not-connected status rather than an error.
+// GetGithubIntegration reports a 404 as a not-connected status rather than an error.
 func (s *ProjectService) GetGithubIntegration(ctx context.Context, projectKey string) (GithubIntegration, error) {
 	resp, err := s.api.GetGithubIntegrationWithResponse(ctx, projectKey)
 	if err != nil {
@@ -761,8 +741,7 @@ func (s *ProjectService) GetGithubIntegration(ctx context.Context, projectKey st
 	}, nil
 }
 
-// RegenerateGithubSecret creates the integration if needed and issues a fresh webhook secret, returning it
-// once (the server will not reveal it again).
+// RegenerateGithubSecret creates the integration if needed and returns the fresh secret once.
 func (s *ProjectService) RegenerateGithubSecret(ctx context.Context, projectKey string) (GithubSecret, error) {
 	resp, err := s.api.RegenerateGithubSecretWithResponse(ctx, projectKey)
 	if err != nil {
@@ -774,8 +753,7 @@ func (s *ProjectService) RegenerateGithubSecret(ctx context.Context, projectKey 
 	return GithubSecret{WebhookURL: deref(resp.JSON200.WebhookUrl), Secret: deref(resp.JSON200.Secret)}, nil
 }
 
-// SetGithubSync pauses or resumes acting on the project's GitHub webhooks. The integration and its secret
-// stay in place, so resuming needs no re-registration on GitHub's side.
+// SetGithubSync pauses or resumes acting on webhooks. The secret stays, so resuming needs no re-registration.
 func (s *ProjectService) SetGithubSync(ctx context.Context, projectKey string, enabled bool) (GithubIntegration, error) {
 	resp, err := s.api.UpdateGithubSyncWithResponse(ctx, projectKey, client.UpdateVcsSyncRequest{SyncEnabled: enabled})
 	if err != nil {
@@ -791,9 +769,8 @@ func (s *ProjectService) SetGithubSync(ctx context.Context, projectKey string, e
 	}, nil
 }
 
-// WebhookDelivery is one inbound webhook and how it was handled. Detail says what happened - which branch
-// linked, or why nothing was done - and is the whole point of the record: an integration that silently
-// does nothing is diagnosed here rather than in server logs.
+// WebhookDelivery is one inbound webhook and how it was handled. Detail is what diagnoses a silently
+// inert integration.
 type WebhookDelivery struct {
 	EventType     string
 	Status        string // PROCESSED | IGNORED | FAILED | DEAD | RECEIVED
@@ -803,8 +780,7 @@ type WebhookDelivery struct {
 	NextAttemptAt time.Time // zero unless a retry is pending
 }
 
-// ListGithubDeliveries reads the project's recent webhook deliveries, newest first. Requires a project
-// manager, so a plain member gets a 403 the caller is expected to treat as "not available".
+// ListGithubDeliveries requires a project manager, so a plain member gets a 403 to treat as "not available".
 func (s *ProjectService) ListGithubDeliveries(ctx context.Context, projectKey string, size int32) ([]WebhookDelivery, error) {
 	params := &client.ListGithubDeliveriesParams{Pageable: client.Pageable{Size: &size}}
 	resp, err := s.api.ListGithubDeliveriesWithResponse(ctx, projectKey, params)
@@ -835,7 +811,6 @@ func (s *ProjectService) ListGithubDeliveries(ctx context.Context, projectKey st
 	return out, nil
 }
 
-// RemoveGithubIntegration disconnects the project's GitHub integration.
 func (s *ProjectService) RemoveGithubIntegration(ctx context.Context, projectKey string) error {
 	resp, err := s.api.RemoveGithubIntegrationWithResponse(ctx, projectKey)
 	if err != nil {

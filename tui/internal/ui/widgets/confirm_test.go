@@ -11,8 +11,7 @@ import (
 
 func confirmStyles() theme.Styles { return theme.New(theme.TokyoNight()) }
 
-// The dialog defaults focus to Cancel so a stray enter never confirms a destructive action; the
-// enter then emits a cancel, not an accept.
+// Focus defaults to Cancel so a stray enter never confirms a destructive action.
 func TestConfirmDefaultsToCancel(t *testing.T) {
 	f := NewConfirmForm(confirmStyles(), "Delete team", `Delete "Infra"?`, "Delete")
 	f, cmd := f.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
@@ -27,8 +26,6 @@ func TestConfirmDefaultsToCancel(t *testing.T) {
 	}
 }
 
-// Toggling focus to the accept button and pressing enter enters the submitting state and asks the
-// parent to run the command.
 func TestConfirmAcceptSubmits(t *testing.T) {
 	f := NewConfirmForm(confirmStyles(), "Delete team", `Delete "Infra"?`, "Delete")
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyLeft}) // Cancel -> Delete
@@ -45,8 +42,7 @@ func TestConfirmAcceptSubmits(t *testing.T) {
 	}
 }
 
-// Esc cancels the dialog, matching the advertised "esc cancel" hint and HelpKeys, regardless of
-// which button is focused.
+// Esc cancels whichever button is focused, matching the advertised hint.
 func TestConfirmEscCancels(t *testing.T) {
 	f := NewConfirmForm(confirmStyles(), "Deactivate agent", `Deactivate "Bot"?`, "Deactivate")
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyLeft}) // focus the destructive button
@@ -59,7 +55,6 @@ func TestConfirmEscCancels(t *testing.T) {
 	}
 }
 
-// The dialog renders its title, message, and both buttons.
 func TestConfirmView(t *testing.T) {
 	f := NewConfirmForm(confirmStyles(), "Delete position", `Delete "Lead"?`, "Delete")
 	view := f.View()
@@ -70,7 +65,6 @@ func TestConfirmView(t *testing.T) {
 	}
 }
 
-// A parent-surfaced failure (Status set, Submitting cleared) is shown in place.
 func TestConfirmSurfacesStatus(t *testing.T) {
 	f := NewConfirmForm(confirmStyles(), "Delete team", `Delete "Infra"?`, "Delete")
 	f.Submitting, f.Status = false, "You do not have permission."

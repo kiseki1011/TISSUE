@@ -34,8 +34,7 @@ func TestCreateSprintSendsTitleAndGoal(t *testing.T) {
 	}
 }
 
-// Goal is optional. Sending "" would set an empty goal rather than leaving it unset, so the field is
-// omitted entirely when the user left it blank.
+// Sending "" would set an empty goal instead of leaving it unset, so a blank goal omits the field.
 func TestCreateSprintOmitsAnEmptyGoal(t *testing.T) {
 	svc, _, body := sprintServiceOn(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -71,8 +70,7 @@ func TestDeleteSprintCallsTheEndpoint(t *testing.T) {
 	}
 }
 
-// The server refuses to delete a sprint that is not CANCELLED; that refusal must surface as an error the
-// screen can turn into a reason, not be swallowed.
+// A refusal to delete a non-CANCELLED sprint must surface as an error, not be swallowed.
 func TestDeleteSprintSurfacesTheServerRefusal(t *testing.T) {
 	svc, _, _ := sprintServiceOn(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/problem+json")

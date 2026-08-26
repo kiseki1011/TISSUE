@@ -29,8 +29,7 @@ func (m Model) updateCreateType(msg tea.Msg) (Model, tea.Cmd) {
 		m.creatingType = false
 		return m, nil
 	case tea.KeyPressMsg:
-		// esc closes the modal, unless a picker (color grid or dropdown) is open — then it closes
-		// only that
+		// esc closes the modal, unless a picker is open — then it closes only the picker
 		if msg.String() == "esc" && !m.ctype.submitting && !m.ctype.picking && !m.ctype.pickOpen {
 			m.creatingType = false
 			return m, nil
@@ -56,8 +55,7 @@ func (m Model) updateCreateWorkflow(msg tea.Msg) (Model, tea.Cmd) {
 		m.creatingWorkflow = false
 		return m, nil
 	case tea.KeyPressMsg:
-		// esc closes the modal, unless a sub-form (node/edge/color grid) is open — then it backs
-		// out of that level only
+		// esc closes the modal, unless a sub-form is open — then it backs out of that level only
 		if msg.String() == "esc" && !m.cworkflow.submitting && !m.cworkflow.hasOverlay() {
 			m.creatingWorkflow = false
 			return m, nil

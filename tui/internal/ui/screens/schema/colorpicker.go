@@ -2,7 +2,7 @@ package schema
 
 import "github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 
-// Aliases keep this package's forms and their many call sites unqualified — see widgets/colorpicker.go.
+// Aliases keep call sites unqualified. The widget lives in widgets/colorpicker.go.
 
 type colorPicker = widgets.ColorPicker
 

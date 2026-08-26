@@ -7,7 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// relationModel loads TIS-1 with the given relation groups and the Details panel open on it.
+// relationModel loads TIS-1 with the given relations, Details panel open on it.
 func relationModel(t *testing.T, groups []domain.IssueRelationGroup) Model {
 	t.Helper()
 	m := loaded(t, 120, 40, domain.IssuePage{
@@ -55,8 +55,7 @@ func TestUnlinkPickerListsRemovableRelations(t *testing.T) {
 	}
 }
 
-// A directional relation lives on its source, so its inverse cannot be dropped from this side: offering
-// it would produce RELATION_NOT_FOUND against a link the user can plainly see.
+// A directional relation lives on its source. Unlinking its inverse here would 404 (RELATION_NOT_FOUND).
 func TestUnlinkSkipsInverseDirectionalRelations(t *testing.T) {
 	m := relationModel(t, []domain.IssueRelationGroup{
 		inverse("Blocked by", "TIS-9"),

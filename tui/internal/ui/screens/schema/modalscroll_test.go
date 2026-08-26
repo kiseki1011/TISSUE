@@ -8,7 +8,6 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// openCreateFieldModal walks to the + Field handle and opens the create-field modal.
 func openCreateFieldModal(t *testing.T) Model {
 	t.Helper()
 	m := typeFieldsModel(t)
@@ -22,8 +21,7 @@ func openCreateFieldModal(t *testing.T) Model {
 	return m
 }
 
-// On a terminal too short for a schema modal, View windows it with a scrollbar and the wheel scrolls
-// the window; closing the modal resets the offset so the next modal opens at the top.
+// A modal taller than the terminal is windowed with a scrollbar. Closing it resets the offset.
 func TestSchemaModalWindowsScrollsAndResets(t *testing.T) {
 	m := openCreateFieldModal(t)
 	view, ok := m.activeModalView()
@@ -37,14 +35,13 @@ func TestSchemaModalWindowsScrollsAndResets(t *testing.T) {
 		t.Fatalf("windowed schema modal has no scrollbar (full=%d, term=%d)", full, m.height)
 	}
 
-	// wheel down scrolls the window
 	m, _ = m.Update(tea.MouseWheelMsg{Button: tea.MouseWheelDown})
 	m, _ = m.Update(tea.MouseWheelMsg{Button: tea.MouseWheelDown})
 	if m.modalScroll == 0 {
 		t.Error("wheel did not scroll the schema modal window")
 	}
 
-	// closing the modal, then any dashboard event, resets the offset (no modal is floating)
+	// any dashboard event with no modal floating resets the offset
 	m.creatingField = false
 	m, _ = m.Update(tea.MouseMotionMsg{})
 	if m.modalScroll != 0 {
@@ -52,8 +49,7 @@ func TestSchemaModalWindowsScrollsAndResets(t *testing.T) {
 	}
 }
 
-// A schema modal that fits the terminal is not windowed and the wheel is left for the modal / an
-// inline flow editor, not consumed as a window scroll.
+// A modal that fits is not windowed, so the wheel is left for the modal itself.
 func TestSchemaModalNotWindowedWhenItFits(t *testing.T) {
 	m := openCreateFieldModal(t)
 	view, _ := m.activeModalView()

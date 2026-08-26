@@ -7,11 +7,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// CustomField is one custom field value on an issue, decoded from the detail BFF into a render-ready
-// shape. The backend stores each field type as a specific JSON scalar/shape (numbers for INTEGER/
-// PERCENTAGE/SELECT_OPTION, strings for TEXT/SHORT_TEXT/DECIMAL/DATE/TIMESTAMP, a bool for BOOLEAN, and a
-// {optionId: bool} map for CHECKLIST); toCustomField normalizes those. Exactly one carrier below is
-// meaningful per Type - the rest stay zero, and an unset field leaves them all zero (rendered "-").
+// CustomField is one custom field value on an issue, decoded into a render-ready shape.
+// Exactly one carrier below is meaningful per Type. The rest stay zero, and an unset field renders "-".
 type CustomField struct {
 	ID    int64 // the field definition id, for resolving an activity's customFields.{id} change key
 	Label string
@@ -22,17 +19,14 @@ type CustomField struct {
 	Percent *int            // PERCENTAGE (nil = unset)
 	Items   []ChecklistItem // CHECKLIST (nil = unset)
 
-	// Raw and Options carry what the render-ready carriers above discard, so the value can be edited and
-	// not just shown: Raw is the stored JSON value verbatim (nil = unset), Options the field's selectable
-	// options. Together with Type they are enough to rebuild an editable input without refetching the
-	// issue type's schema.
+	// Raw and Options carry what the render-ready carriers discard, so the value can be edited.
+	// With Type they rebuild an editable input without refetching the issue type's schema.
 	Raw     interface{}
 	Options []FieldOption
 }
 
-// Definition reconstructs the field's schema from what the detail carries, for seeding an editable input.
-// Required is not part of the detail payload, so it reads false here: the edit form leaves the "this
-// field is required" judgement to the server, which rejects clearing one.
+// Definition rebuilds the field's schema from the detail, for seeding an editable input.
+// Required is not in the detail payload, so it reads false. The server rejects clearing a required field.
 func (c CustomField) Definition() IssueField {
 	return IssueField{ID: int(c.ID), Name: c.Label, Type: c.Type, Options: c.Options}
 }
@@ -80,8 +74,7 @@ func toCustomField(v client.CustomFieldValueInfo) CustomField {
 	return f
 }
 
-// formatTimestamp renders an ISO-8601 instant string as "2006-01-02 15:04" in local time, or the raw
-// string if it does not parse (better to show something than to drop the value).
+// formatTimestamp renders an ISO-8601 instant in local time, or the raw string when it does not parse.
 func formatTimestamp(s string) string {
 	if s == "" {
 		return ""
@@ -93,8 +86,7 @@ func formatTimestamp(s string) string {
 	return t.Local().Format("2006-01-02 15:04")
 }
 
-// optionName resolves a SELECT_OPTION id to its display name via the field's options, falling back to
-// "#id" when the option is not found among them.
+// optionName resolves a SELECT_OPTION id to its name, falling back to "#id".
 func optionName(options *[]client.FieldOptionDetail, id int64) string {
 	if options != nil {
 		for _, o := range *options {
@@ -106,7 +98,6 @@ func optionName(options *[]client.FieldOptionDetail, id int64) string {
 	return "#" + strconv.FormatInt(id, 10)
 }
 
-// toFieldOptions copies a field's selectable options into the domain shape, preserving their order.
 func toFieldOptions(options *[]client.FieldOptionDetail) []FieldOption {
 	if options == nil {
 		return nil
@@ -118,9 +109,8 @@ func toFieldOptions(options *[]client.FieldOptionDetail) []FieldOption {
 	return out
 }
 
-// checklistItems builds the checklist from the field's options (preserving their defined order), marking
-// each checked per the stored {optionId: bool} map. An unset field (value not a map) maps to nil, so the
-// UI renders "-" rather than a list of all-unchecked options.
+// checklistItems builds the list in the defined option order, checked per the stored {optionId: bool} map.
+// An unset field (value not a map) maps to nil, so the UI renders "-" instead of all-unchecked.
 func checklistItems(options *[]client.FieldOptionDetail, value interface{}) []ChecklistItem {
 	checked, ok := value.(map[string]interface{})
 	if !ok || options == nil {

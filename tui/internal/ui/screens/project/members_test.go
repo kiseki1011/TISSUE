@@ -27,8 +27,7 @@ func memberList(n int) []domain.ProjectMember {
 	return out
 }
 
-// membersTabModel is a loaded model sitting on the Members tab with the given roster (cursor on the
-// first), for exercising the tab without a network load.
+// membersTabModel is a loaded model on the Members tab with the given roster, cursor on the first.
 func membersTabModel(t *testing.T, members []domain.ProjectMember) Model {
 	t.Helper()
 	m := loaded(t, 160, 40, domain.IssuePage{})
@@ -41,9 +40,8 @@ func membersTabModel(t *testing.T, members []domain.ProjectMember) Model {
 	return m
 }
 
-// Opening the Members tab (key 4) while the Init roster prefetch is still in flight does NOT re-dispatch
-// the roster load (the landing prefetch drives the sync, so a late-failing duplicate cannot clobber the
-// good roster). It does kick off the one-time per-member stats batch.
+// Opening the tab while the Init prefetch is in flight must not re-dispatch the roster load: a late-failing
+// duplicate would clobber the good roster. It does kick off the per-member stats batch.
 func TestMembersTabInflightNoDoubleLoad(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(2), TotalElements: 2}) // membersRequested=true
 	m, _ = m.Update(press("4"))
@@ -74,11 +72,10 @@ func TestMembersTabRetriesAfterError(t *testing.T) {
 	}
 }
 
-// Reopening the Members tab retries a failed member-work load for the selected member, which a single
-// unchanged selection (e.g. a one-member project) could never recover through cursor movement.
+// Reopening retries a failed work load - a one-member project can never recover it by moving the cursor.
 func TestMembersTabRetriesFailedWork(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
-	m.memberWorkFailed[1] = true // a prior work fetch failed; nothing cached
+	m.memberWorkFailed[1] = true // a prior work fetch failed, nothing cached
 	m, cmd := m.selectTab(tabMembers)
 	if cmd == nil {
 		t.Error("reopening the tab should retry the failed work load for the selected member")
@@ -116,7 +113,7 @@ func TestMemberCursorMovesAndLoads(t *testing.T) {
 	}
 }
 
-// A member-work load caches the result; a superseded (stale-gen) load for the same member is dropped.
+// A member-work load caches the result. A superseded (stale-gen) load is dropped.
 func TestMemberWorkLoadedGenGuard(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m.memberWorkGen[1] = 1
@@ -136,8 +133,7 @@ func TestMemberWorkLoadedGenGuard(t *testing.T) {
 
 func i64ptr(v int64) *int64 { return &v }
 
-// A landed member-stats batch renders the selected member's Stats section (counts, story points,
-// completion %, humanized average resolve time).
+// A landed stats batch renders the Stats section (counts, points, completion %, humanized avg resolve).
 func TestMemberStatsRendered(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m.memberStatsGen = 1
@@ -155,7 +151,6 @@ func TestMemberStatsRendered(t *testing.T) {
 	}
 }
 
-// A stale-generation stats load is dropped.
 func TestMemberStatsGenGuard(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m.memberStatsGen = 2
@@ -168,8 +163,7 @@ func TestMemberStatsGenGuard(t *testing.T) {
 	}
 }
 
-// A member absent from the batch (no assigned issues) reads as zeros, and the average resolve time is
-// "—" when they have resolved nothing.
+// A member absent from the batch reads as zeros, with "—" for the average resolve time.
 func TestMemberStatsZeroFill(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m.memberStatsGen = 1
@@ -183,8 +177,7 @@ func TestMemberStatsZeroFill(t *testing.T) {
 	}
 }
 
-// The Details panel spells out whether the selected member is a human or an agent, and names an agent's
-// owner (humans show no Owner row).
+// Details spells out human/agent and names an agent's owner (humans show no Owner row).
 func TestMemberDetailShowsTypeAndOwner(t *testing.T) {
 	agent := domain.ProjectMember{MemberID: 1, DisplayName: "Bot", Username: "agent-bot", Role: "MEMBER", IsAgent: true, OwnerName: "Gildong", OwnerUser: "gildong"}
 	human := domain.ProjectMember{MemberID: 2, DisplayName: "Ana", Username: "ana", Role: "MANAGER"}
@@ -207,8 +200,7 @@ func TestMemberDetailShowsTypeAndOwner(t *testing.T) {
 	}
 }
 
-// The Members view renders the roster (name + role) and the selected member's Assigned/Reviewing
-// sections with counts.
+// The view renders the roster (name + role) and the Assigned/Reviewing sections with counts.
 func TestMembersViewRendersRosterAndSections(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m.memberWorkGen[1] = 1
@@ -224,8 +216,7 @@ func TestMembersViewRendersRosterAndSections(t *testing.T) {
 	}
 }
 
-// The member detail renders the resolution contribution heatmap when the member's work has loaded: a
-// summary line, the shaded grid (peak day at full block), and the legend.
+// Loaded work renders the heatmap: summary line, shaded grid (peak day at full block), legend.
 func TestMemberContribHeatmapRenders(t *testing.T) {
 	m := membersTabModel(t, memberList(2)) // selected member id = 1
 	base := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
@@ -265,8 +256,7 @@ func TestContribLevel(t *testing.T) {
 	}
 }
 
-// contribSeries is `n` consecutive days from the Sunday on/before 2026-08-02, each with one resolution,
-// so every cell in the grid is drawn.
+// contribSeries is n consecutive days from a Sunday, each with one resolution, so every cell is drawn.
 func contribSeries(n int) domain.Contributions {
 	base := time.Date(2026, 8, 2, 0, 0, 0, 0, time.UTC)
 	base = base.AddDate(0, 0, -int(base.Weekday())) // snap to Sunday so the weeks line up as whole columns
@@ -277,8 +267,7 @@ func contribSeries(n int) domain.Contributions {
 	return domain.Contributions{Days: days, TotalResolved: n, MaxDaily: 1}
 }
 
-// The week columns are separated by a blank column, so a run of busy days reads as distinct days rather
-// than one solid bar.
+// Week columns are separated by a blank column, so a busy run does not read as one solid bar.
 func TestContribHeatmapSpacesColumns(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	lines := m.contribHeatmap(contribSeries(21), 40) // 3 whole weeks
@@ -290,9 +279,8 @@ func TestContribHeatmapSpacesColumns(t *testing.T) {
 	}
 }
 
-// The grid must stay inside the panel it is drawn in. The gap doubles what a column costs, so the
-// week-fitting maths has to account for it or the rows overflow and wrap. Only the grid rows are checked:
-// the summary and legend are fixed prose that predates this and has its own (much lower) floor.
+// The grid must fit the panel: the gap doubles a column's cost, so the week-fitting maths must account for
+// it or the rows wrap. Only grid rows are checked - the summary and legend are fixed prose.
 func TestContribHeatmapFitsPanelWidth(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	c := contribSeries(126) // the 18 weeks the Members tab actually requests

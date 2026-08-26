@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// withChildDetail loads a page of one issue and gives that issue a cached detail with a clickable child,
-// so the Details panel renders the child's peek link.
+// withChildDetail caches a detail with one clickable child, so Details renders its peek link.
 func withChildDetail(t *testing.T, childKey string) (Model, string) {
 	t.Helper()
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
@@ -23,8 +22,7 @@ func withChildDetail(t *testing.T, childKey string) (Model, string) {
 	return m, key
 }
 
-// A linked issue's key cell is a peek link only when it is clickable: not while a peek is already open
-// (the reused body must render no nested links) and not with the mouse off.
+// A key cell is a peek link only when clickable - never nested inside an already-open peek.
 func TestPeekLinkGating(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 
@@ -72,7 +70,7 @@ func TestPeekOpensFromChildClick(t *testing.T) {
 	}
 }
 
-// esc closes the peek; while it is open the per-issue action keys are swallowed (it owns the keyboard).
+// esc closes the peek. While open it owns the keyboard, swallowing the per-issue action keys.
 func TestPeekEscClosesAndOwnsKeyboard(t *testing.T) {
 	m, _ := withChildDetail(t, "TIS-CHILD")
 	m, _ = m.Update(clickZone(t, m, peekZone("c", "TIS-CHILD")))
@@ -88,7 +86,7 @@ func TestPeekEscClosesAndOwnsKeyboard(t *testing.T) {
 	}
 }
 
-// Opening a peek for an uncached issue starts a deduped load; a cached target opens without refetching.
+// An uncached peek starts a deduped load. A cached one opens without refetching.
 func TestPeekLoadIsCacheAware(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 
@@ -110,7 +108,7 @@ func TestPeekShowsLandedDetail(t *testing.T) {
 	m, _ = m.openPeek("TIS-COLD")
 
 	if got := plain(m.peekBody(80)); !strings.Contains(got, "Loading") && !strings.Contains(got, "…") {
-		// the exact skeleton text may vary; the point is the body is not yet the real content
+		// the skeleton text may vary - the point is the body is not the real content yet
 		if strings.Contains(got, "Landed title") {
 			t.Fatal("peek showed content before the load landed")
 		}
@@ -123,8 +121,7 @@ func TestPeekShowsLandedDetail(t *testing.T) {
 	}
 }
 
-// A failed peek load offers an in-place retry: the body shows the hint and R re-fires the load (adversarial
-// review finding - the modal was a dead-end with no retry).
+// A failed peek load offers an in-place retry - the modal used to be a dead end.
 func TestPeekFailedLoadRetries(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.openPeek("TIS-COLD")
@@ -145,8 +142,7 @@ func TestPeekFailedLoadRetries(t *testing.T) {
 	}
 }
 
-// A resize while peeking re-clamps peekScroll, so the next scroll key is not eaten as a dead press
-// (adversarial review finding - the WindowSizeMsg clamp omitted peekScroll).
+// A resize re-clamps peekScroll, so the next scroll key is not eaten as a dead press.
 func TestPeekScrollReclampedOnResize(t *testing.T) {
 	m := loaded(t, 120, 12, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	// a peeked issue whose body overflows a short terminal
@@ -163,16 +159,14 @@ func TestPeekScrollReclampedOnResize(t *testing.T) {
 	}
 }
 
-// The same issue key in two sections (a parent that is also a relation target) marks distinct zones, so
-// the higher link is not a dead click (adversarial review finding - shared zone id).
+// The same key in two sections gets distinct zones, else the higher link is a dead click.
 func TestPeekZoneDistinctPerSection(t *testing.T) {
 	if peekZone("p", "TIS-DUP") == peekZone("r", "TIS-DUP") {
 		t.Error("a key in two sections must map to distinct peek zones")
 	}
 }
 
-// A hovered issue link takes the focus Accent; at rest it keeps its base colour, and a read-only peek's
-// own links never highlight.
+// A hovered link takes the focus Accent. A read-only peek's own links never highlight.
 func TestPeekKeyColorHover(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	th := m.deps.Styles.Theme

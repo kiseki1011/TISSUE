@@ -15,10 +15,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// openDeleteConfirm opens the delete confirmation for the viewed issue. The server soft-deletes into
-// the project's trash, so the dialog says the issue can come back rather than claiming it is gone for
-// good. It is still never optimistic: the dialog stays open (with a spinner) until the server confirms,
-// and only then is the row removed.
+// openDeleteConfirm confirms deleting the viewed issue. The server soft-deletes into the trash, so the
+// dialog promises a restore. Not optimistic: the row goes only once the server confirms.
 func (m Model) openDeleteConfirm() (Model, tea.Cmd) {
 	if m.viewKey == "" {
 		return m, toast.Show(toast.Info, "No issue selected.")
@@ -37,9 +35,6 @@ func (m Model) openDeleteConfirm() (Model, tea.Cmd) {
 	return m, m.deleteUI.Init()
 }
 
-// updateDelete drives the open confirmation: accept runs the delete (keeping the dialog open so a
-// failure shows in place), cancel closes it, and the result closes the modal and drops the row on
-// success or surfaces the error on failure.
 func (m Model) updateDelete(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
@@ -64,14 +59,13 @@ func (m Model) updateDelete(msg tea.Msg) (Model, tea.Cmd) {
 		m.viewKey = ""         // force the panel to re-point at the issue now under the cursor
 		cmds := []tea.Cmd{toast.Show(toast.Success, "Issue deleted.")}
 		if len(m.issues) == 0 && m.page.HasNext {
-			// the loaded rows are all gone but more pages exist server-side; reload page 0 so the list is
-			// not stranded empty (moveCursor cannot page an empty list)
+			// more pages exist server-side, so reload page 0 (moveCursor cannot page an empty list)
 			m.loading, m.loadErr, m.loadingMore = true, false, false
 			m.reqGen++
 			cmds = append(cmds, loadIssues(m.deps, m.projectKey, m.filter, m.reqGen, 0, false))
 		} else {
 			var sel tea.Cmd
-			m, sel = m.syncSelection() // show the issue now under the cursor in the panel
+			m, sel = m.syncSelection()
 			cmds = append(cmds, sel)
 		}
 		return m, tea.Batch(cmds...)
@@ -81,7 +75,6 @@ func (m Model) updateDelete(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// removeIssue drops the deleted issue from the loaded page and keeps the cursor and total in range.
 func (m *Model) removeIssue(key string) {
 	out := make([]domain.IssueSummary, 0, len(m.issues))
 	for _, it := range m.issues {
@@ -98,8 +91,7 @@ func (m *Model) removeIssue(key string) {
 	}
 }
 
-// IssueDeletedMsg is exported so the app shell can route this background result back to the project
-// screen even if the user has left the drill-in before it landed.
+// IssueDeletedMsg is exported so the app shell can route it after the user has left the drill-in.
 type IssueDeletedMsg struct {
 	key     string
 	err     bool
@@ -131,7 +123,7 @@ func deleteErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not delete the issue. Try again."
 }

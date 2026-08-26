@@ -43,8 +43,7 @@ func TestHeaderConnectionIndicator(t *testing.T) {
 	}
 }
 
-// applyRealtime folds a matching-generation update into the model and re-arms the wait; an update from
-// a superseded session is dropped and does not re-arm.
+// A matching-gen update is folded in and re-arms. A superseded session's update is dropped.
 func TestApplyRealtimeGenGating(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
 	a := New(d)
@@ -69,8 +68,7 @@ func TestApplyRealtimeGenGating(t *testing.T) {
 	}
 }
 
-// Without an authed transport (as in tests that never log in) startRealtime is a no-op: no consumer,
-// no command, and the indicator stays disconnected.
+// Without an authed transport startRealtime is a no-op and the indicator stays disconnected.
 func TestStartRealtimeNoTransportNoop(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://x"}
 	a := New(d) // Transport nil
@@ -86,7 +84,6 @@ func TestStartRealtimeNoTransportNoop(t *testing.T) {
 	}
 }
 
-// stopRealtime resets the indicator to disconnected.
 func TestStopRealtimeResetsIndicator(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
 	a := New(d)
@@ -97,9 +94,8 @@ func TestStopRealtimeResetsIndicator(t *testing.T) {
 	}
 }
 
-// An issue event is routed to the drilled-in project screen only when the screen and project key match;
-// otherwise it falls through to the log path. Every case still re-arms the wait, and stale-gen events are
-// dropped (as for state updates).
+// An issue event routes to the project screen only when screen and project key match, otherwise it
+// falls to the log path. Every case still re-arms, and stale-gen events are dropped.
 func TestApplyRealtimeRoutesIssueEvent(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
 	a := New(d)
@@ -113,7 +109,6 @@ func TestApplyRealtimeRoutesIssueEvent(t *testing.T) {
 			Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: pk, IssueKey: pk + "-1"}}
 	}
 
-	// matching project + screen: routed and re-armed
 	m, cmd := a.applyRealtime(evt("ENG"))
 	if cmd == nil {
 		t.Error("a routed issue event should re-arm the wait")
@@ -122,20 +117,17 @@ func TestApplyRealtimeRoutesIssueEvent(t *testing.T) {
 		t.Errorf("routing must not swap the project, got %q", got)
 	}
 
-	// a different project falls through to the log path but still re-arms
 	if _, cmd := a.applyRealtime(evt("OTHER")); cmd == nil {
 		t.Error("an event for another project should still re-arm")
 	}
 
-	// a stale-gen event is dropped without re-arming, as for state updates
 	if _, cmd := a.applyRealtime(realtime.Update{Kind: realtime.EventUpdate, Gen: 6,
 		Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: "ENG"}}); cmd != nil {
 		t.Error("a stale-gen event should not re-arm")
 	}
 }
 
-// A sprint event for the drilled-in project is routed to the project screen (which folds it into its
-// sprint list/caches); one for another project falls through but still re-arms.
+// A sprint event for the drilled-in project routes to it. One for another project still re-arms.
 func TestApplyRealtimeRoutesSprintEvent(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
 	a := New(d)
@@ -162,9 +154,8 @@ func TestApplyRealtimeRoutesSprintEvent(t *testing.T) {
 	}
 }
 
-// A "notification" realtime event re-polls the unread badge regardless of the current screen and
-// re-arms the wait; when the Inbox is showing it also refreshes the list. A stale-generation event is
-// dropped without re-arming.
+// A notification event re-polls the badge on any screen and re-arms. On the Inbox it also refreshes
+// the list. A stale-generation event is dropped.
 func TestApplyRealtimeNotificationRepolls(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://x"}
 	a := New(d)
@@ -178,7 +169,7 @@ func TestApplyRealtimeNotificationRepolls(t *testing.T) {
 		t.Error("a notification event should re-poll the badge and re-arm")
 	}
 
-	// on the Inbox screen the branch also refreshes the list; it must not panic and still re-arms
+	// on the Inbox the branch also refreshes the list - it must not panic and still re-arms
 	a.screen = screenInbox
 	a.inbox = inbox.New(d)
 	if _, cmd := a.applyRealtime(notif); cmd == nil {
@@ -192,8 +183,7 @@ func TestApplyRealtimeNotificationRepolls(t *testing.T) {
 	}
 }
 
-// The sprint-event payload extractors read data.sprintId (a JSON number) and data.issueKeys, and are safe
-// on absent/nil payloads.
+// The extractors read data.sprintId (a JSON number) and data.issueKeys, and are safe on nil payloads.
 func TestSprintEventDataExtraction(t *testing.T) {
 	data := map[string]any{"sprintId": float64(42), "issueKeys": []any{"ENG-1", "ENG-2"}}
 	if got := sprintIDFromEvent(data); got != 42 {

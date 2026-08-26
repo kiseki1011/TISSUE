@@ -12,8 +12,7 @@ import (
 )
 
 // loadSprintList kicks off the sprint list fetch, flagging the request so re-opening the tab does not
-// refetch a list already loaded. Used both for the first open (via selectTab) and to retry after a
-// failed load (reopening the tab, which clears sprintsRequested).
+// refetch a list already loaded. A failed load clears that flag, so reopening the tab retries.
 func (m Model) loadSprintList() (Model, tea.Cmd) {
 	m.sprintsRequested = true
 	m.sprintsLoading = true

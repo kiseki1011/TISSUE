@@ -11,8 +11,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// createTypeFieldsMsg asks the model to (re)load the custom-field inputs for a type. The create form
-// emits it when the type changes or when it opens.
+// createTypeFieldsMsg asks the model to (re)load a type's custom-field inputs.
 type createTypeFieldsMsg struct{ typeID int64 }
 
 func requestTypeFields(typeID int64) tea.Cmd {
@@ -33,8 +32,7 @@ func loadTypeFields(d deps.Deps, typeID int64, gen int) tea.Cmd {
 	}
 }
 
-// requestCustomFields points the create form at a type's custom fields: from the per-type cache when
-// available (cycling back to a type is then instant), else it clears the fields and fires a fetch.
+// requestCustomFields serves a type's fields from the per-type cache, else clears them and fetches.
 func (m Model) requestCustomFields(typeID int64) (Model, tea.Cmd) {
 	if !m.creating {
 		return m, nil
@@ -48,8 +46,6 @@ func (m Model) requestCustomFields(typeID int64) (Model, tea.Cmd) {
 	return m, loadTypeFields(m.deps, typeID, m.typeFieldsGen)
 }
 
-// onTypeFieldsLoaded caches the fetched fields and, when the form is still open on that type and this is
-// the latest request, builds their inputs.
 func (m Model) onTypeFieldsLoaded(msg typeFieldsLoadedMsg) (Model, tea.Cmd) {
 	if !msg.err {
 		if m.typeFields == nil {

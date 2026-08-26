@@ -11,16 +11,15 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// memberWorkload is a member's open (INITIAL/ACTIVE) issues: the ones assigned to them and the ones
-// they review, plus their resolution contribution heatmap - fetched together and cached as one unit per
-// member.
+// memberWorkload is a member's open (INITIAL/ACTIVE) assigned and reviewing issues plus their
+// contribution heatmap, fetched and cached as one unit.
 type memberWorkload struct {
 	assigned domain.IssuePage
 	reviewer domain.IssuePage
 	contrib  domain.Contributions
 }
 
-// contribDays is how many days of resolution history the member contribution heatmap requests (~18 weeks).
+// contribDays is the heatmap window (~18 weeks).
 const contribDays = 126
 
 func (m Model) selectedMember() (domain.ProjectMember, bool) {
@@ -30,8 +29,8 @@ func (m Model) selectedMember() (domain.ProjectMember, bool) {
 	return m.members[m.memberCursor], true
 }
 
-// syncMemberSelection points the right panel at the cursor's member, resetting its scroll and loading
-// that member's work (SWR: a cached page shows at once, else a deduped fetch). A no-op when unchanged.
+// syncMemberSelection retargets the Details panel at the cursor's member. SWR: a cached page shows at
+// once, else a deduped fetch.
 func (m Model) syncMemberSelection() (Model, tea.Cmd) {
 	mem, ok := m.selectedMember()
 	if !ok {
@@ -64,9 +63,8 @@ func (m Model) moveMemberCursor(delta int) (Model, tea.Cmd) {
 	return m.syncMemberSelection()
 }
 
-// startMemberWorkLoad bumps the load generation for a member and returns the fetch, so a superseded
-// in-flight load for the same member is dropped when it lands. Pointer receiver so the bump propagates
-// through the value-receiver syncMemberSelection (mirrors startSprintIssuesLoad).
+// startMemberWorkLoad bumps the load generation so a superseded in-flight load is dropped. Pointer
+// receiver so the bump propagates through the value-receiver syncMemberSelection.
 func (m *Model) startMemberWorkLoad(id int64) tea.Cmd {
 	m.memberWorkGen[id]++
 	m.memberWorkPending[id] = true
@@ -111,9 +109,8 @@ func (m Model) onMemberWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// pruneMemberWork drops cached (and in-flight) work for member ids no longer in the roster, so a member
-// removed by a kick cannot leave a stale entry that a later re-add of the same member id would show. It
-// runs whenever a fresh roster lands; the common no-membership-change reload prunes nothing.
+// pruneMemberWork drops cached and in-flight work for ids no longer in the roster, so re-adding that id
+// cannot show the pre-kick entry. Runs on every fresh roster.
 func (m *Model) pruneMemberWork() {
 	keep := make(map[int64]bool, len(m.members))
 	for _, mem := range m.members {
@@ -182,8 +179,7 @@ func loadMemberWork(d deps.Deps, projectKey string, memberID int64, gen int) tea
 			domain.IssueFilter{AssigneeMemberIDs: []string{id}, StateCategories: open}, 0, pageSize)
 		reviewer, rErr := d.Issues.SearchProjectIssues(context.Background(), projectKey,
 			domain.IssueFilter{ReviewerMemberIDs: []string{id}, StateCategories: open}, 0, pageSize)
-		// contributions are a nice-to-have: a failure here leaves an empty heatmap rather than failing the
-		// whole member load (the assigned/reviewer lists are the load-bearing part)
+		// a contributions failure leaves an empty heatmap rather than failing the whole member load
 		contrib, _ := d.Projects.GetProjectContributions(context.Background(), projectKey, memberID, contribDays)
 		return memberWorkLoadedMsg{
 			memberID: memberID,

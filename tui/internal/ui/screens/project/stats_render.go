@@ -322,8 +322,7 @@ func withPct(n, denom int) string {
 	return fmt.Sprintf("%d (%d%%)", n, (n*100+denom/2)/denom)
 }
 
-// statBucketRows renders one bar per bucket - a fixed-width label, a bar sized to the bucket's share of
-// the total, and the count - or a single muted "None" when the project has no issues in that grouping.
+// statBucketRows renders one bar per bucket, or a single muted "None" when the grouping is empty.
 func (m Model) statBucketRows(buckets []domain.StatBucket, total, barW int, label func(string) string, colorOf func(domain.StatBucket) color.Color) []string {
 	s := m.deps.Styles
 	if len(buckets) == 0 {

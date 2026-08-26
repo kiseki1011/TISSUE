@@ -15,16 +15,13 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// isEditPart reports whether a focus part belongs to the inline edit composer, so esc can tell an open
-// edit from an open reply when both hang off the same comment id.
+// isEditPart lets esc tell an open edit from an open reply on the same comment id.
 func isEditPart(p commentPart) bool {
 	return p == partEditText || p == partEditSave || p == partEditCancel
 }
 
-// commentEditable reports whether the caller may rewrite or remove this comment. It mirrors the server's
-// rule - the author, or anyone who manages the project - minus the system-admin override, which the
-// client cannot see; an admin acting on someone else's comment simply has no button and would have to
-// use the API. Guessing wrong only costs a 403 the screen reports.
+// commentEditable mirrors the server's rule (author, or a project manager) minus the system-admin
+// override the client cannot see. Guessing wrong only costs a 403 the screen reports.
 func (m Model) commentEditable(c domain.IssueComment) bool {
 	if c.Deleted || c.ID == 0 || m.peeking {
 		return false // a peeked issue is read-only, and a tombstone has nothing left to change
@@ -35,8 +32,7 @@ func (m Model) commentEditable(c domain.IssueComment) bool {
 	return m.viewerManages()
 }
 
-// viewerManages reports whether the caller is a MANAGER of this project, read off the member roster the
-// screen already prefetches (the project detail the screen holds does not carry the caller's role).
+// viewerManages reads the caller's role off the member roster: the project detail does not carry it.
 func (m Model) viewerManages() bool {
 	if m.viewer == "" {
 		return false
@@ -49,8 +45,7 @@ func (m Model) viewerManages() bool {
 	return false
 }
 
-// commentTreeHas reports whether id is c or one of its replies, so the edit composer can be emitted under
-// the root block that contains the comment being edited.
+// commentTreeHas finds the root block that contains the comment being edited.
 func commentTreeHas(c domain.IssueComment, id int64) bool {
 	if c.ID == id {
 		return true
@@ -63,7 +58,6 @@ func commentTreeHas(c domain.IssueComment, id int64) bool {
 	return false
 }
 
-// findComment returns the comment with this id anywhere in the thread.
 func findComment(cs []domain.IssueComment, id int64) (domain.IssueComment, bool) {
 	for _, c := range cs {
 		if c.ID == id {
@@ -76,8 +70,7 @@ func findComment(cs []domain.IssueComment, id int64) (domain.IssueComment, bool)
 	return domain.IssueComment{}, false
 }
 
-// commentAuthorLabel names a comment's author for a composer title, falling back to a neutral word so the
-// title is never blank.
+// commentAuthorLabel names a comment's author for a composer title, never blank.
 func commentAuthorLabel(d domain.IssueDetail, id int64) string {
 	if c, ok := findComment(d.Comments, id); ok && c.AuthorName != "" {
 		return c.AuthorName + "'s comment"
@@ -85,7 +78,6 @@ func commentAuthorLabel(d domain.IssueDetail, id int64) string {
 	return "comment"
 }
 
-// commentActionLink is one affordance in a comment's action row: muted, accenting when focused or hovered.
 func (m Model) commentActionLink(id int64, part commentPart, label string) string {
 	tok := commentFocus{id, part}
 	col := m.deps.Styles.Theme.Muted
@@ -95,8 +87,7 @@ func (m Model) commentActionLink(id int64, part commentPart, label string) strin
 	return zone.Mark(commentZoneID(tok), lipgloss.NewStyle().Foreground(col).Render(label))
 }
 
-// loadMoreControl is the focusable "Load more" affordance under a partially-loaded thread, carrying the
-// same count the read-only note shows so the user knows how much is left.
+// loadMoreControl carries the same count the read-only note shows.
 func (m Model) loadMoreControl(d domain.IssueDetail) string {
 	tok := commentFocus{moreCommentID, partMore}
 	t := m.deps.Styles.Theme
@@ -111,8 +102,7 @@ func (m Model) loadMoreControl(d domain.IssueDetail) string {
 	return zone.Mark(commentZoneID(tok), lipgloss.NewStyle().Foreground(col).Render(label))
 }
 
-// openInlineEdit opens (or re-focuses) the inline edit composer on comment id, prefilled with its body.
-// Opening an edit closes any open reply composer: two open composers on one comment would be ambiguous.
+// openInlineEdit closes any open reply composer: two open composers on one comment would be ambiguous.
 func (m Model) openInlineEdit(id int64) (Model, tea.Cmd) {
 	c, ok := findComment(m.details[m.viewKey].Comments, id)
 	if !ok || !m.commentEditable(c) {
@@ -128,7 +118,6 @@ func (m Model) openInlineEdit(id int64) (Model, tea.Cmd) {
 	return m.focusComment(commentFocus{id, partEditText})
 }
 
-// closeInlineEdit discards the edit composer and returns focus to the comment's Edit affordance.
 func (m Model) closeInlineEdit() (Model, tea.Cmd) {
 	id := m.commentUI.editingID
 	m.commentUI.editingID = 0
@@ -136,8 +125,7 @@ func (m Model) closeInlineEdit() (Model, tea.Cmd) {
 	return m.focusComment(commentFocus{id, partEdit})
 }
 
-// submitInlineEdit validates the edited body and sends it. An unchanged body is not resent: the server
-// would stamp the comment "edited" for nothing.
+// An unchanged body is not resent: the server would stamp the comment "edited" for nothing.
 func (m Model) submitInlineEdit() (Model, tea.Cmd) {
 	id := m.commentUI.editingID
 	if id == 0 || m.commentUI.sending != -1 {
@@ -156,8 +144,7 @@ func (m Model) submitInlineEdit() (Model, tea.Cmd) {
 	return m, updateCommentCmd(m.deps, m.viewKey, id, content, collectMentions(content, m.members))
 }
 
-// openCommentDelete floats a confirmation over the comment modal. Deleting is not reversible from the UI,
-// so it is never a single keystroke.
+// Deleting is not reversible from the UI, so it is never a single keystroke.
 func (m Model) openCommentDelete(id int64) (Model, tea.Cmd) {
 	c, ok := findComment(m.details[m.viewKey].Comments, id)
 	if !ok || !m.commentEditable(c) {
@@ -176,7 +163,6 @@ func (m Model) openCommentDelete(id int64) (Model, tea.Cmd) {
 	return m, m.commentDeleteUI.Init()
 }
 
-// updateCommentDelete drives the confirmation floated over the comment modal.
 func (m Model) updateCommentDelete(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
@@ -191,7 +177,6 @@ func (m Model) updateCommentDelete(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// loadMoreComments fetches the next page of the thread and appends it in place.
 func (m Model) loadMoreComments() (Model, tea.Cmd) {
 	if m.commentUI.loadingMore {
 		return m, nil
@@ -201,14 +186,12 @@ func (m Model) loadMoreComments() (Model, tea.Cmd) {
 		return m, nil
 	}
 	m.commentUI.loadingMore = true
-	// the loaded roots are exactly the pages already consumed, so the next page index falls out of the
-	// count rather than being tracked separately (a refetch resets both together)
+	// loaded roots == pages consumed, so the next page index falls out of the count
 	next := len(d.Comments) / domain.CommentPageSize
 	return m, loadCommentPage(m.deps, m.viewKey, next)
 }
 
-// CommentEditDoneMsg is exported so the app shell routes an edit/delete result back to the project screen
-// even if the user left the drill-in before it landed (so the toast still shows).
+// CommentEditDoneMsg is exported so the app shell can route it after the user leaves the drill-in.
 type CommentEditDoneMsg struct {
 	key     string
 	id      int64
@@ -235,7 +218,6 @@ func deleteCommentCmd(d deps.Deps, key string, id int64) tea.Cmd {
 	}
 }
 
-// commentPageLoadedMsg carries one "load more" page back to the screen.
 type commentPageLoadedMsg struct {
 	key     string // the issue the page was for, so a stale cross-issue result is ignored
 	page    domain.IssueCommentPage
@@ -253,9 +235,8 @@ func loadCommentPage(d deps.Deps, key string, page int) tea.Cmd {
 	}
 }
 
-// onCommentEditDone reconciles an edit/delete result. The modal stays open on success so the refreshed
-// thread shows the change in place; the detail is refetched either way, since a failure may still have
-// applied (and the cached thread can no longer be trusted).
+// onCommentEditDone reconciles an edit/delete result. The detail is refetched either way: a failure may
+// still have applied, so the cached thread can no longer be trusted.
 func (m Model) onCommentEditDone(msg CommentEditDoneMsg) (Model, tea.Cmd) {
 	if m.commentUI.sending == msg.id {
 		m.commentUI.sending = -1
@@ -274,9 +255,7 @@ func (m Model) onCommentEditDone(msg CommentEditDoneMsg) (Model, tea.Cmd) {
 	return m, tea.Batch(focusCmd, m.startDetailLoad(msg.key), toast.Show(toast.Success, text))
 }
 
-// onCommentPageLoaded appends a fetched page to the cached thread. The append is guarded on the page
-// still belonging to the viewed issue, so a result that lands after the user moved on is dropped rather
-// than grafted onto a different issue's comments.
+// onCommentPageLoaded appends a fetched page, guarded on it still belonging to the viewed issue.
 func (m Model) onCommentPageLoaded(msg commentPageLoadedMsg) (Model, tea.Cmd) {
 	m.commentUI.loadingMore = false
 	if msg.err {

@@ -8,7 +8,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// editDetail is an issue whose type carries one of each interesting custom field, already valued.
+// editDetail carries one of each interesting custom field, already valued.
 func editDetail() domain.IssueDetail {
 	return domain.IssueDetail{
 		Key: "PROJ-1", Title: "Wire it up", Priority: "P2",
@@ -32,8 +32,7 @@ func editFormWithCustom(t *testing.T) editForm {
 	return f
 }
 
-// The form opens on the issue's current values, not empty - otherwise saving would wipe every field the
-// user did not retype.
+// The form must open on the current values, else saving would wipe every field not retyped.
 func TestEditFormSeedsCustomValues(t *testing.T) {
 	f := editFormWithCustom(t)
 	if got := f.customFields[0].text.Value(); got != "before" {
@@ -50,8 +49,7 @@ func TestEditFormSeedsCustomValues(t *testing.T) {
 	}
 }
 
-// Saving an untouched form sends no custom fields: re-sending an unchanged value would stamp it as an
-// edit in the activity log.
+// Re-sending an unchanged value would stamp it as an edit in the activity log.
 func TestEditFormUntouchedSendsNoCustomFields(t *testing.T) {
 	f := editFormWithCustom(t)
 	_, diff, ok := f.diffCustom()
@@ -63,7 +61,6 @@ func TestEditFormUntouchedSendsNoCustomFields(t *testing.T) {
 	}
 }
 
-// Only the fields the user actually changed are sent, each in its wire shape.
 func TestEditFormSendsOnlyChangedCustomFields(t *testing.T) {
 	f := editFormWithCustom(t)
 	f.customFields[0].text.SetValue("after")
@@ -100,7 +97,6 @@ func TestEditFormClearedFieldSendsNil(t *testing.T) {
 	}
 }
 
-// A bad value holds the save back and reports on the offending field rather than sending it.
 func TestEditFormInvalidCustomFieldBlocksSave(t *testing.T) {
 	f := editFormWithCustom(t)
 	f.customFields[1].text.SetValue("not-a-number")
@@ -114,7 +110,6 @@ func TestEditFormInvalidCustomFieldBlocksSave(t *testing.T) {
 	}
 }
 
-// The custom fields are tab stops and render in the modal, so they can be reached and read.
 func TestEditFormRendersCustomFields(t *testing.T) {
 	f := editFormWithCustom(t)
 	ids := f.fields()
@@ -134,7 +129,6 @@ func TestEditFormRendersCustomFields(t *testing.T) {
 	}
 }
 
-// A checklist in the edit modal toggles from the keyboard, like the create form's.
 func TestEditFormChecklistSpacebar(t *testing.T) {
 	f := editFormWithCustom(t)
 	f, _ = f.focusOn(nfCustomBase + 3)

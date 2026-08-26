@@ -76,8 +76,7 @@ func applyFilter(params *client.SearchProjectIssuesParams, filter IssueFilter) {
 	}
 	if len(reviewers) > 0 {
 		params.ReviewerMemberIds = &reviewers
-		// only sent alongside a reviewer: the backend drops the status filter when no reviewer is named,
-		// so sending it alone would silently widen the result set instead of narrowing it
+		// the backend drops the status filter when no reviewer is named, silently widening the results
 		if len(filter.ReviewerStatuses) > 0 {
 			st := make([]client.SearchProjectIssuesParamsReviewerStatuses, len(filter.ReviewerStatuses))
 			for i, v := range filter.ReviewerStatuses {

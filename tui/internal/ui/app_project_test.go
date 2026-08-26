@@ -13,9 +13,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// The project drill-in wears the app chrome and supplies its own header-right tabs (via HeaderInfo)
-// while the app keeps the left brand/server/user. Its own tab keys stay live because the app's
-// tab-nav yields to it.
+// The project drill-in wears the app chrome but supplies its own header-right tabs, keeping the app's
+// left brand/server/user. Its tab keys stay live because the app's tab-nav yields to it.
 func TestProjectScreenHeaderChrome(t *testing.T) {
 	zone.NewGlobal()
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://localhost:8080"}

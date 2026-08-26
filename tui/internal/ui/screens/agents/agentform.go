@@ -54,8 +54,7 @@ func modelName(models []domain.AiModel, id int64) string {
 	return "None"
 }
 
-// withModel ensures the list contains the agent's current model, so editing preserves it even when
-// the catalog is stale or failed to load (otherwise saving would silently clear the model).
+// withModel keeps the agent's current model in the list, so a stale catalog cannot silently clear it.
 func withModel(models []domain.AiModel, id int64, name, color string) []domain.AiModel {
 	if id == 0 {
 		return models
@@ -101,8 +100,7 @@ func formButton(t theme.Theme, label, zoneID string, focused, hovered bool) stri
 	return zone.Mark(zoneID, components.TitledBoxWeighted("", body, borderCol, focused))
 }
 
-// titleCase renders an ALL-CAPS enum name for display (DEVELOPMENT -> Development), keeping short
-// acronyms like QA uppercase.
+// titleCase renders an ALL-CAPS enum for display (DEVELOPMENT -> Development), keeping QA uppercase.
 func titleCase(s string) string {
 	if len(s) <= 2 {
 		return s

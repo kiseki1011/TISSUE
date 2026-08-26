@@ -14,10 +14,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// enterProject opens the selected project. A member opens it directly; a non-member is offered a join
-// first, because the project's issues, members and sprints all require membership to read - browsing
-// without joining is not possible. A PRIVATE project can only be self-joined by a system admin; anyone
-// else must be added by a manager, so they are told rather than shown a join that would only 403.
+// enterProject offers a non-member a join first, since issues, members and sprints all require
+// membership to read. Only a system admin can self-join a PRIVATE project, so others are told instead.
 func (m Model) enterProject(p domain.Project) (Model, tea.Cmd) {
 	if p.MyRole != "" {
 		return m, openProjectCmd(p) // already a member
@@ -40,13 +38,11 @@ func openProjectCmd(p domain.Project) tea.Cmd {
 	return func() tea.Msg { return nav.OpenProjectMsg{ProjectKey: p.Key, Title: p.Title} }
 }
 
-// updateJoin drives the join confirmation: accept joins the target, cancel closes it.
 func (m Model) updateJoin(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
-		// keep the modal open in its submitting state while the join POST is in flight: this holds input
-		// capture (so app-level tab/option keys cannot switch away and drop the home-internal joinDoneMsg)
-		// until onJoinDone lands and closes it
+		// hold the modal open while the POST is in flight — its input capture stops an app-level key
+		// switching away and dropping the home-internal joinDoneMsg
 		return m, joinProjectCmd(m.deps, m.joinTarget)
 	case widgets.ConfirmCancelledMsg:
 		m.joining = false
@@ -70,30 +66,26 @@ func joinProjectCmd(d deps.Deps, p domain.Project) tea.Cmd {
 	}
 }
 
-// onJoinDone opens the project on a successful join (and reloads the list in the background so the row
-// reflects the new membership when the user returns); on failure it surfaces the reason - a PRIVATE
-// project a non-admin cannot self-join maps to "ask a manager to add you".
+// onJoinDone opens the project, or surfaces the reason the join failed.
 func (m Model) onJoinDone(msg joinDoneMsg) (Model, tea.Cmd) {
-	m.joining = false // close the submitting modal now that the result has landed
+	m.joining = false
 	if msg.err {
 		return m, toast.Show(toast.Error, msg.errText)
 	}
 	return m, tea.Batch(
 		toast.Show(toast.Success, "Joined "+projectName(msg.project)+"."),
 		openProjectCmd(msg.project),
-		loadProjects(m.deps), // the row's MyRole is now stale; refresh so a return reflects membership
+		loadProjects(m.deps), // the row's MyRole is now stale, so a return would not reflect membership
 	)
 }
 
-// WithAdmin records whether the caller is a system admin (able to self-join even a PRIVATE project). It is
-// back-filled from the profile once that loads.
+// WithAdmin records system-admin status (self-join even a PRIVATE project), back-filled from the profile.
 func (m Model) WithAdmin(v bool) Model {
 	m.isAdmin = v
 	return m
 }
 
-// projectName is the project's title (or its key when untitled), flattened to a single line and quoted for
-// a toast or modal prompt.
+// projectName is the title (or the key when untitled), flattened to one line and quoted for a prompt.
 func projectName(p domain.Project) string {
 	name := strings.TrimSpace(p.Title)
 	if name == "" {

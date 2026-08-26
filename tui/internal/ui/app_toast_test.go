@@ -25,8 +25,6 @@ var csiSeq = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func stripCSI(s string) string { return csiSeq.ReplaceAllString(s, "") }
 
-// spliceAt keeps the styled left of a line intact, pads to the cut column, then places the insert,
-// preserving the total visible layout.
 func TestSpliceAtPreservesLeftAndPlacesInsert(t *testing.T) {
 	left := "\x1b[31mred\x1b[0m" // "red" — 3 visible columns, styled
 	out := spliceAt(left, 10, "XYZ")
@@ -45,8 +43,6 @@ func TestSpliceAtPreservesLeftAndPlacesInsert(t *testing.T) {
 	}
 }
 
-// overlayToasts composites the notification stack into the bottom-right of the frame without
-// disturbing the rows above it.
 func TestOverlayToastsCompositesBottomRight(t *testing.T) {
 	a := App{width: 80, height: 20}
 	a.toasts = toast.New(theme.TokyoNight(), glyph.New(glyph.Unicode))
@@ -66,17 +62,14 @@ func TestOverlayToastsCompositesBottomRight(t *testing.T) {
 	if !strings.Contains(stripCSI(out), "Deleted workflow") {
 		t.Error("the toast text was not composited into the frame")
 	}
-	// the top rows are untouched by a bottom-right toast
 	if stripCSI(outLines[0]) != strings.Repeat("·", 80) {
 		t.Errorf("a top row was altered by the overlay: %q", stripCSI(outLines[0]))
 	}
-	// the toast sits on the right: the last content rows keep their left backdrop
 	if !strings.HasPrefix(stripCSI(outLines[15]), "·") {
 		t.Errorf("the toast overran the left of its row: %q", stripCSI(outLines[15]))
 	}
 }
 
-// An empty stack leaves the frame exactly as-is.
 func TestOverlayToastsNoopWhenEmpty(t *testing.T) {
 	a := App{width: 80, height: 20}
 	a.toasts = toast.New(theme.TokyoNight(), glyph.New(glyph.Unicode))
@@ -86,10 +79,9 @@ func TestOverlayToastsNoopWhenEmpty(t *testing.T) {
 	}
 }
 
-// spliceAt lands the cut on the same column lipgloss laid the frame out with, even when a wide
-// (2-cell) grapheme straddles the cut — the whole straddling cluster drops rather than half of it.
+// A wide grapheme straddling the cut drops whole, not half.
 func TestSpliceAtWideClusterStraddle(t *testing.T) {
-	// each of 가/나/다 is 2 columns; cutting at x=3 lands in the middle of '나'
+	// each of 가/나/다 is 2 columns, so cutting at x=3 lands in the middle of '나'
 	out := spliceAt("\x1b[31m가나다\x1b[0m", 3, "XY")
 	p := stripCSI(out)
 	if !strings.HasPrefix(p, "가") {
@@ -106,8 +98,6 @@ func TestSpliceAtWideClusterStraddle(t *testing.T) {
 	}
 }
 
-// A cut inside styled content drops everything at/after x and preserves the left segment's SGR
-// byte-for-byte, so the visible left keeps both its text and its color.
 func TestSpliceAtDropsRightAndKeepsLeftSGR(t *testing.T) {
 	out := spliceAt("\x1b[31mredblue\x1b[0m", 3, "XY")
 	p := stripCSI(out)
@@ -125,8 +115,7 @@ func TestSpliceAtDropsRightAndKeepsLeftSGR(t *testing.T) {
 	}
 }
 
-// settleZone waits out bubblezone's async scan worker, returning the zone once its bounds are
-// stable (mirrors the schema package's scanView helper).
+// settleZone waits out bubblezone's async scan worker, returning the zone once its bounds are stable.
 func settleZone(t *testing.T, id string) *zone.ZoneInfo {
 	t.Helper()
 	var sx, sy, ex, ey, stable int
@@ -147,8 +136,7 @@ func settleZone(t *testing.T, id string) *zone.ZoneInfo {
 	return nil
 }
 
-// The core invariant behind overlaying after zone.Scan: the overlay never touches zone
-// registration, so a clickable region outside the toast keeps its exact bounds and stays clickable.
+// The invariant behind overlaying after zone.Scan: a zone outside the toast keeps its exact bounds.
 func TestOverlayPreservesZonesOutsideToast(t *testing.T) {
 	zone.NewGlobal()
 	a := toastApp()
@@ -172,8 +160,7 @@ func TestOverlayPreservesZonesOutsideToast(t *testing.T) {
 	}
 }
 
-// Deterministic counterpart: the overlay edits only the toast band, leaving every other row
-// byte-identical — the visual guarantee that backs the zone-preservation invariant above.
+// Deterministic counterpart: every row outside the toast band stays byte-identical.
 func TestOverlayLeavesRowsOutsideBandUntouched(t *testing.T) {
 	a := toastApp()
 	a.toasts, _ = a.toasts.Update(toast.ShowMsg{Level: toast.Error, Text: "still in use"})
@@ -199,8 +186,7 @@ func TestOverlayLeavesRowsOutsideBandUntouched(t *testing.T) {
 	}
 }
 
-// mouseOnToast reports whether a point lands inside the visible stack, so the shell can swallow
-// input that would otherwise pass through the floating toast to the widget beneath.
+// mouseOnToast lets the shell swallow input that would pass through the toast to the widget beneath.
 func TestMouseOnToastBounds(t *testing.T) {
 	a := toastApp()
 	if a.mouseOnToast(tea.MouseClickMsg{X: 70, Y: 22}) {

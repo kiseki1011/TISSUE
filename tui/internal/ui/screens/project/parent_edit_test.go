@@ -9,8 +9,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// parentEditReady loads a STANDARD-hierarchy issue with a catalog that has an EPIC type (a valid parent
-// level), so the parent-edit picker can resolve eligible candidates.
+// parentEditReady is a STANDARD issue with an EPIC type in the catalog, so a parent is resolvable.
 func parentEditReady(t *testing.T, parent *domain.IssueRef) Model {
 	t.Helper()
 	det := sampleDetail()
@@ -25,8 +24,7 @@ func parentEditReady(t *testing.T, parent *domain.IssueRef) Model {
 	return m
 }
 
-// openParentPickerViaForm opens the parent picker the way the UI now does it: the 'p' shortcut is gone,
-// so Parent is a field in the "Edit issue" form (directly below Title) that opens the picker on Enter.
+// openParentPickerViaForm goes through the edit form's Parent field (the 'p' shortcut is gone).
 func openParentPickerViaForm(t *testing.T, m Model) (Model, tea.Cmd) {
 	t.Helper()
 	m, _ = m.Update(press("e"))
@@ -41,8 +39,7 @@ func openParentPickerViaForm(t *testing.T, m Model) (Model, tea.Cmd) {
 	return m.Update(cmd()) // run openParentEditForm -> openParentEditPicker
 }
 
-// The Parent field sits directly below Title in the edit form for a parentable type, and is absent for a
-// top-level (EPIC) type that cannot have a parent.
+// Parent sits directly below Title, and is absent for a top-level (EPIC) type.
 func TestEditFormParentFieldPlacement(t *testing.T) {
 	det := sampleDetail()
 	det.TypeName = "Story"
@@ -62,8 +59,7 @@ func TestEditFormParentFieldPlacement(t *testing.T) {
 	}
 }
 
-// Enter on the edit form's Parent field loads the eligible parents and opens the picker; the issue
-// itself is never offered as its parent.
+// Enter on the Parent field loads the eligible parents. The issue itself is never offered.
 func TestParentEditOpensFromEditForm(t *testing.T) {
 	m := parentEditReady(t, nil)
 	m, cmd := openParentPickerViaForm(t, m)
@@ -86,8 +82,7 @@ func TestParentEditOpensFromEditForm(t *testing.T) {
 	}
 }
 
-// Selecting a candidate optimistically sets the parent, fires the assign, and updates the still-open
-// edit form's Parent row.
+// Selecting sets the parent optimistically, fires the assign, and updates the edit form's row.
 func TestParentEditSelectAssigns(t *testing.T) {
 	m := parentEditReady(t, nil)
 	m, _ = openParentPickerViaForm(t, m)
@@ -126,8 +121,7 @@ func TestParentEditNoneClears(t *testing.T) {
 	}
 }
 
-// A SUBTASK/MICROTASK requires a parent, so the edit picker offers no "None (clear parent)" (mirroring
-// the create flow). Regression for the review's CONFIRMED finding.
+// A parent-required type offers no "None (clear parent)", mirroring the create flow.
 func TestParentEditRequiredTypeHasNoNone(t *testing.T) {
 	det := sampleDetail()
 	det.TypeName = "Subtask"

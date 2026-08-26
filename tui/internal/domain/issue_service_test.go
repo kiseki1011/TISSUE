@@ -6,8 +6,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// applyFilter maps the specific-member axes onto the query params and composes them with the "me"
-// convenience flags (the Members tab passes a member id; the filter modal passes AssigneeMe).
+// The Members tab passes a member id, the filter modal passes AssigneeMe. Both must compose.
 func TestApplyFilterMemberIDs(t *testing.T) {
 	params := &client.SearchProjectIssuesParams{}
 	applyFilter(params, IssueFilter{
@@ -26,7 +25,6 @@ func TestApplyFilterMemberIDs(t *testing.T) {
 	}
 }
 
-// AssigneeMe composes with explicit assignee ids rather than replacing them.
 func TestApplyFilterAssigneeMeComposes(t *testing.T) {
 	params := &client.SearchProjectIssuesParams{}
 	applyFilter(params, IssueFilter{AssigneeMemberIDs: []string{"42"}, AssigneeMe: true})
@@ -39,7 +37,6 @@ func TestApplyFilterAssigneeMeComposes(t *testing.T) {
 	}
 }
 
-// With no assignee axis set the param stays nil (omitted from the query).
 func TestApplyFilterNoAssigneeOmitted(t *testing.T) {
 	params := &client.SearchProjectIssuesParams{}
 	applyFilter(params, IssueFilter{Keyword: "x"})

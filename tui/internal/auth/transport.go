@@ -14,7 +14,7 @@ import (
 type RefreshFunc func(ctx context.Context, refreshToken string) (domain.TokenPair, error)
 
 // Transport adds the bearer token to each request and on a 401, refreshes once and retries.
-// It runs outside the BubbleTea loop, so it guards its tokens with a mutex.
+// It runs outside the Bubble Tea loop, so tokens are mutex-guarded.
 type Transport struct {
 	base    http.RoundTripper
 	refresh RefreshFunc
@@ -64,8 +64,7 @@ func (t *Transport) accessToken() string {
 	return t.tokens.Access
 }
 
-// send clones the request (RoundTripper must not mutate the original) and attaches the bearer token,
-// restoring the body so the request can be retried.
+// send clones the request (a RoundTripper must not mutate the original) and restores the body for retries.
 func (t *Transport) send(req *http.Request, access string) (*http.Response, error) {
 	clone := req.Clone(req.Context())
 	if req.Body != nil && req.GetBody != nil {

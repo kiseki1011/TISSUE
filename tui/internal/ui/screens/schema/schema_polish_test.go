@@ -22,8 +22,7 @@ func TestWorkflowCreateCtrlSSaves(t *testing.T) {
 	}
 }
 
-// Hovering an action-bar button in the create-workflow modal tracks it, and a key press clears the
-// stale hover so the keyboard focus is the sole highlight again.
+// A hovered action-bar button tracks the hover, and a key press clears it.
 func TestWorkflowCreateButtonHover(t *testing.T) {
 	f := newCreateWorkflowForm(optionsDeps())
 	_ = scanView(t, f.View(), "cw.save")
@@ -38,7 +37,6 @@ func TestWorkflowCreateButtonHover(t *testing.T) {
 	}
 }
 
-// The in-place flow editor tracks hover over its action-bar buttons too.
 func TestFlowEditorButtonHover(t *testing.T) {
 	m := flowModel(t)
 	_ = scanView(t, m.View(), "flow.save")
@@ -62,7 +60,6 @@ func TestFlowEditorCtrlSSaves(t *testing.T) {
 	}
 }
 
-// The VCS transition picker annotates each transition with its source → target flow.
 func TestVcsPickerShowsTransitionFlow(t *testing.T) {
 	d := exampleWorkflow()
 	f := newVcsForm(optionsDeps(), 1, d.Transitions, d.States, 0, 0)

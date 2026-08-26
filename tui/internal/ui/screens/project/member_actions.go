@@ -15,8 +15,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// memberByID looks a roster member up by id, so an action pinned to a member id (memberActionID) can
-// read that member's current fields even after the cursor has moved.
+// memberByID reads a member pinned by id, so an action survives the cursor moving on.
 func (m Model) memberByID(id int64) (domain.ProjectMember, bool) {
 	for _, mem := range m.members {
 		if mem.MemberID == id {
@@ -26,9 +25,8 @@ func (m Model) memberByID(id int64) (domain.ProjectMember, bool) {
 	return domain.ProjectMember{}, false
 }
 
-// openAddMemberPicker starts the add-member flow: it fetches the people who can be added (non-members)
-// and, once they land, opens a multi-select picker. The loading guard drops a repeat press so a double
-// tap does not double-fetch.
+// openAddMemberPicker fetches the addable people, then opens a multi-select picker. The loading guard
+// drops a repeat press so a double tap does not double-fetch.
 func (m Model) openAddMemberPicker() (Model, tea.Cmd) {
 	if m.memberCandidateLoading {
 		return m, nil
@@ -45,7 +43,7 @@ type memberCandidatesLoadedMsg struct {
 	gen        int
 	candidates []domain.ProjectMember
 	err        bool
-	status     int    // the HTTP status on failure, so a 403 surfaces the manager-role hint like the write ops
+	status     int    // HTTP status on failure, so a 403 surfaces the manager-role hint
 	reason     string // the server's explanation on failure, for the non-403 tail
 }
 
@@ -56,9 +54,8 @@ func loadMemberCandidates(d deps.Deps, projectKey string, gen int) tea.Cmd {
 	}
 }
 
-// onMemberCandidatesLoaded opens the multi-select add picker once the candidates land. A superseded load
-// is dropped, as is one that lands after the user moved on (left the tab or opened another modal), so the
-// picker never pops over - or in place of - whatever they are now interacting with.
+// onMemberCandidatesLoaded opens the add picker once the candidates land. A superseded load, or one
+// landing after the user moved on, is dropped so the picker cannot pop over what they are now using.
 func (m Model) onMemberCandidatesLoaded(msg memberCandidatesLoadedMsg) (Model, tea.Cmd) {
 	if msg.gen != m.memberCandidateGen {
 		return m, nil
@@ -94,8 +91,7 @@ func (m Model) onMemberCandidatesLoaded(msg memberCandidatesLoadedMsg) (Model, t
 	return m, nil
 }
 
-// memberCandidateLabel is a candidate's picker label: the display name, with the @username appended when
-// it adds information (so two people sharing a display name are still distinguishable).
+// memberCandidateLabel appends @username when it disambiguates two people sharing a display name.
 func memberCandidateLabel(c domain.ProjectMember) string {
 	label := flattenLine(c.Name())
 	if c.Username != "" && c.Username != c.Name() {
@@ -123,8 +119,8 @@ func (m Model) selectAddMembers() (Model, tea.Cmd) {
 	)
 }
 
-// openMemberRolePicker opens a small picker to set the highlighted member's project role, with the
-// cursor on their current one. The target is pinned by id so a background roster reload cannot redirect it.
+// openMemberRolePicker opens on the member's current role, pinned by id so a roster reload cannot
+// redirect the change.
 func (m Model) openMemberRolePicker() (Model, tea.Cmd) {
 	mem, ok := m.selectedMember()
 	if !ok {
@@ -148,7 +144,6 @@ func (m Model) openMemberRolePicker() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// selectMemberRole changes the pinned member's role, unless it is already the chosen one.
 func (m Model) selectMemberRole() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {
@@ -161,8 +156,7 @@ func (m Model) selectMemberRole() (Model, tea.Cmd) {
 	return m, updateMemberRoleCmd(m.deps, m.projectKey, m.memberActionID, opt.Value)
 }
 
-// openMemberKickConfirm opens the yes/no confirmation to remove the highlighted member from the project,
-// pinning the target so a later roster reload cannot redirect it.
+// openMemberKickConfirm pins the target so a later roster reload cannot redirect the removal.
 func (m Model) openMemberKickConfirm() (Model, tea.Cmd) {
 	mem, ok := m.selectedMember()
 	if !ok {
@@ -176,8 +170,6 @@ func (m Model) openMemberKickConfirm() (Model, tea.Cmd) {
 	return m, m.memberConfirmUI.Init()
 }
 
-// updateMemberConfirm drives the kick confirmation: accept fires the remove (a failure surfaces as a
-// toast), cancel closes it, anything else forwards to the dialog.
 func (m Model) updateMemberConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg.(type) {
 	case widgets.ConfirmAcceptedMsg:
@@ -192,14 +184,13 @@ func (m Model) updateMemberConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// memberActionDoneMsg is the result of an add/role/kick command. On success the roster is reloaded (and,
-// for a membership change, the per-member stats too); on failure the status maps to a helpful toast.
+// memberActionDoneMsg is the result of an add/role/kick command.
 type memberActionDoneMsg struct {
 	action string // "add" | "role" | "kick"
 	count  int    // members added (add only)
 	err    bool
 	status int
-	code   string // the backend error code, for mapping a leaky code to friendlier copy
+	code   string // backend error code, for mapping a leaky code to friendlier copy
 	reason string // the server's explanation on failure, so the toast can say why
 }
 
@@ -224,17 +215,14 @@ func kickMemberCmd(d deps.Deps, projectKey string, id int64) tea.Cmd {
 	}
 }
 
-// onMemberActionDone reloads the roster after a successful action so the tab reflects it, and refreshes
-// the per-member stats when membership changed (a role change leaves the stats untouched, only the
-// roster's role label moves). membersRequested guards the in-flight reload; the stats gen bump drops any
-// superseded stats load.
+// onMemberActionDone reloads the roster, plus the per-member stats when membership changed (a role change
+// leaves the stats untouched). The stats gen bump drops any superseded stats load.
 func (m Model) onMemberActionDone(msg memberActionDoneMsg) (Model, tea.Cmd) {
 	if msg.err {
 		return m, toast.Show(toast.Error, memberActionErrorText(msg.action, msg.status, msg.code, msg.reason))
 	}
-	// keep the current highlight across the reload. Departed members' stale work caches are pruned when
-	// the fresh roster lands (membersLoadedMsg), not evicted here: if this reload fails, the kept roster
-	// still shows the member, and a surviving cache renders their (stale) issues rather than a stuck spinner.
+	// keep the highlight across the reload. Departed caches are pruned when the fresh roster lands, not
+	// here: if the reload fails the member is still shown, with stale issues rather than a stuck spinner.
 	m.memberRestoreID = m.selMemberID
 	m.membersRequested = true
 	cmds := []tea.Cmd{
@@ -267,8 +255,8 @@ func memberActionOkText(action string, count int) string {
 
 func memberActionErrorText(action string, status int, code, reason string) string {
 	if code == "PROJECT_MEMBER_NOT_FOUND" && action != "add" {
-		// in role/kick this code is about the TARGET member (e.g. removed concurrently), not the caller,
-		// so the generic caller-scoped mapping ("you're not a member") would be wrong for the acting manager
+		// here the code is about the TARGET member, not the caller, so the generic caller-scoped mapping
+		// ("you're not a member") would mislead the acting manager
 		return "That member is no longer in this project."
 	}
 	if m, ok := errmsg.OverrideParts(status, code); ok {
@@ -276,8 +264,8 @@ func memberActionErrorText(action string, status int, code, reason string) strin
 	}
 	switch status {
 	case http.StatusForbidden:
-		// adding requires the manager role; changing/removing a member is also refused when the target is a
-		// fellow manager, so its 403 must not claim the actor lacks a role they may well hold
+		// a change/remove 403 can also mean the target is a fellow manager, so it must not claim the actor
+		// lacks a role they may well hold
 		if action == "add" {
 			return "You need the Manager role for that."
 		}

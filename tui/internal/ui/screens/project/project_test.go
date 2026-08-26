@@ -19,8 +19,7 @@ var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
-// testDeps mirrors the real default (resolveMouse returns true unless the config says "off"), so the
-// click affordances render and the Tab ring includes the filter button, as in a fresh install.
+// testDeps mirrors the real default (mouse on), so click affordances render and Tab includes filter.
 func testDeps() deps.Deps {
 	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
@@ -51,8 +50,7 @@ func press(s string) tea.KeyPressMsg {
 	return tea.KeyPressMsg{Text: s}
 }
 
-// clickZone renders and scans m until zone id registers, then returns a left click on its top-left
-// cell. bubblezone records bounds off a background scan, so this retries like TestListWindowsToSelection.
+// clickZone retries because bubblezone records zone bounds off a background scan.
 func clickZone(t *testing.T, m Model, id string) tea.MouseClickMsg {
 	t.Helper()
 	for i := 0; i < 1000; i++ {
@@ -88,7 +86,6 @@ func TestLoadError(t *testing.T) {
 	}
 }
 
-// Moving past the last loaded row with more pages available requests the next page (appended).
 func TestMoveLoadsNextPage(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 10, HasNext: true, Page: 0})
 	m.cursor = 2 // last loaded
@@ -101,7 +98,6 @@ func TestMoveLoadsNextPage(t *testing.T) {
 	}
 }
 
-// Without a next page, moving past the end just clamps and issues no command.
 func TestMoveAtEndNoMore(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3, HasNext: false})
 	m.cursor = 2
@@ -114,7 +110,7 @@ func TestMoveAtEndNoMore(t *testing.T) {
 	}
 }
 
-// Appending a page keeps existing issues and adds the new ones without resetting the cursor.
+// Appending a page must not reset the cursor.
 func TestAppendPage(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	m.cursor = 2
@@ -127,8 +123,7 @@ func TestAppendPage(t *testing.T) {
 	}
 }
 
-// Backspace requests a return to the Projects tab. esc/q are intentionally inert at the list root, so a
-// reflex press cannot escape the project.
+// esc/q are intentionally inert at the list root, so a reflex press cannot escape the project.
 func TestBackNavigation(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(2), TotalElements: 2})
 	_, cmd := m.Update(press("backspace"))
@@ -147,7 +142,6 @@ func TestBackNavigation(t *testing.T) {
 	}
 }
 
-// 'r' reloads the first page.
 func TestReload(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(2), TotalElements: 2})
 	m, cmd := m.Update(press("R"))
@@ -156,7 +150,6 @@ func TestReload(t *testing.T) {
 	}
 }
 
-// A load result for a different project (a stale drill-in) is ignored, not applied to this model.
 func TestStaleCrossProjectLoadIgnored(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	m, _ = m.Update(issuesLoadedMsg{key: "OTHER", gen: m.reqGen, page: domain.IssuePage{Issues: issues(9), TotalElements: 9}})
@@ -165,7 +158,6 @@ func TestStaleCrossProjectLoadIgnored(t *testing.T) {
 	}
 }
 
-// A reload (r) supersedes an in-flight load: the older generation's late result is dropped.
 func TestReloadSupersedesInFlight(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	staleGen := m.reqGen
@@ -177,7 +169,6 @@ func TestReloadSupersedesInFlight(t *testing.T) {
 	}
 }
 
-// A failed load-more keeps the already-loaded pages instead of blanking the whole list.
 func TestLoadMoreErrorKeepsList(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	m.loadingMore = true
@@ -193,7 +184,6 @@ func TestLoadMoreErrorKeepsList(t *testing.T) {
 	}
 }
 
-// A list longer than the panel windows to the selected row and never overflows the height budget.
 func TestListWindowsToSelection(t *testing.T) {
 	const h = 24
 	m := loaded(t, 130, h, domain.IssuePage{Issues: issues(50), TotalElements: 50})

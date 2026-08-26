@@ -8,8 +8,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// The reply gutter borrows a Details section title's Text color (like the "Children"/"Reviewers" rules),
-// not the Muted it used before, so nested replies read with the same weight as the section headers.
+// The reply gutter uses a section title's Text color, not the Muted it used before.
 func TestCommentGutterUsesSectionTitleColor(t *testing.T) {
 	m := New(testDeps(), testKey, "Tissue")
 	th := m.deps.Styles.Theme
@@ -27,8 +26,7 @@ func TestCommentGutterUsesSectionTitleColor(t *testing.T) {
 	}
 }
 
-// priorityColor gives P0/P1/P2 each a distinct color and leaves the low priorities muted. P2 - the
-// middle/default priority - used to share the muted color of P3/P4; it now stands apart in Primary.
+// P2 used to share the muted color of P3/P4. It now stands apart in Primary.
 func TestPriorityColorP2IsDistinct(t *testing.T) {
 	th := theme.TokyoNight()
 

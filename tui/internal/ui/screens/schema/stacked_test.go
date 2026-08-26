@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// A narrow-and-tall terminal stacks the Details above the catalog lists and stays within the height
-// budget.
+// A narrow-and-tall terminal stacks Details above the lists, within the height budget.
 func TestSchemaStackedLayout(t *testing.T) {
 	m := mk(80, 34, 2, 2, false)
 	m, _ = m.Update(TypeDetailLoadedMsg{ID: 1, Detail: domain.IssueTypeDetail{
@@ -30,7 +29,6 @@ func TestSchemaStackedLayout(t *testing.T) {
 	}
 }
 
-// A wide terminal keeps the side-by-side layout.
 func TestSchemaSideWhenWide(t *testing.T) {
 	m := mk(120, 26, 2, 2, false)
 	if m.stacked() {

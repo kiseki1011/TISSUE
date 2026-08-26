@@ -9,8 +9,7 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// flowDetailModel loads a versioned example workflow with the Details pane focused, ready for the
-// Flow "Edit" button.
+// flowDetailModel loads a versioned example workflow with the Details pane focused.
 func flowDetailModel(t *testing.T) Model {
 	t.Helper()
 	m := mkWorkflowModel(t)
@@ -35,7 +34,6 @@ func keyLeft() tea.KeyPressMsg  { return tea.KeyPressMsg{Code: tea.KeyLeft} }
 func keyRight() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeyRight} }
 func keyX() tea.KeyPressMsg     { return tea.KeyPressMsg{Code: 'x', Text: "x"} }
 
-// The editor seeds an editable copy of every state and transition plus the workflow's version.
 func TestOpenFlowSeedsGraph(t *testing.T) {
 	m := flowModel(t)
 	if !m.flowEditing || !m.CapturingInput() {
@@ -52,8 +50,7 @@ func TestOpenFlowSeedsGraph(t *testing.T) {
 	}
 }
 
-// Entering the editor anchors the selection on the diagram's first (initial) state and resets the
-// scroll to the top, even when the read view was scrolled down, so the user lands on a known spot.
+// Entering resets the scroll inherited from the read view and anchors on the initial state.
 func TestOpenFlowFocusesFirstState(t *testing.T) {
 	m := flowDetailModel(t)
 	m.detailScroll = 50 // an inherited scroll from browsing the read view
@@ -70,7 +67,6 @@ func TestOpenFlowFocusesFirstState(t *testing.T) {
 	}
 }
 
-// The editor does not open before the graph is loaded.
 func TestOpenFlowOnlyForLoadedWorkflow(t *testing.T) {
 	m := mkWorkflowModel(t)
 	delete(m.wfDetail, 1)
@@ -79,8 +75,7 @@ func TestOpenFlowOnlyForLoadedWorkflow(t *testing.T) {
 	}
 }
 
-// Cycling a state's category to INITIAL demotes the previous initial state, so exactly one
-// starting point is ever presented.
+// Cycling a category to INITIAL demotes the previous initial state.
 func TestFlowCategoryCycleEnforcesSingleInitial(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.stateFocus(1) // In Progress, ACTIVE
@@ -97,7 +92,6 @@ func TestFlowCategoryCycleEnforcesSingleInitial(t *testing.T) {
 	}
 }
 
-// Deleting a state also drops every transition that touches it.
 func TestFlowDeleteStateCascadesTransitions(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.stateFocus(1) // In Progress (id 2)
@@ -115,7 +109,6 @@ func TestFlowDeleteStateCascadesTransitions(t *testing.T) {
 	}
 }
 
-// Deleting a transition leaves the states untouched.
 func TestFlowDeleteTransition(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.transFocus(0)
@@ -125,8 +118,6 @@ func TestFlowDeleteTransition(t *testing.T) {
 	}
 }
 
-// The add-transition affordance opens the edge sub-form and folds the result back as a new,
-// unsaved transition.
 func TestFlowAddTransitionAppends(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.addTransFocus()
@@ -150,7 +141,7 @@ func TestFlowAddTransitionAppends(t *testing.T) {
 	}
 }
 
-// Rewiring an existing transition changes its endpoints while keeping its id (and name).
+// Rewiring changes the endpoints but keeps the transition's id and name.
 func TestFlowRewireExistingTransition(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.transFocus(0) // Start (id 10): s1 -> s2
@@ -166,7 +157,6 @@ func TestFlowRewireExistingTransition(t *testing.T) {
 	}
 }
 
-// The add-state affordance opens the node sub-form and folds the result back as a new state.
 func TestFlowAddStateAppends(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.addStateFocus()
@@ -190,7 +180,6 @@ func TestFlowAddStateAppends(t *testing.T) {
 	}
 }
 
-// A new state with a blank name keeps the sub-form open instead of adding an invalid node.
 func TestFlowAddStateRequiresName(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.addStateFocus()
@@ -206,8 +195,6 @@ func TestFlowAddStateRequiresName(t *testing.T) {
 	}
 }
 
-// buildInputs serializes existing nodes by id and new nodes by temp key, and resolves each
-// transition endpoint to the right reference kind.
 func TestFlowBuildInputsRefsNewNodes(t *testing.T) {
 	f := flowModel(t).flow
 	f.states = append(f.states, flowState{key: "n1", name: "Blocked", category: "ACTIVE", color: "ANSI_RED"})
@@ -217,16 +204,13 @@ func TestFlowBuildInputsRefsNewNodes(t *testing.T) {
 	if len(states) != 6 || len(trans) != 7 {
 		t.Fatalf("built %d states, %d transitions; want 6/7", len(states), len(trans))
 	}
-	// existing state carries only id + category
 	if states[0].ID != 1 || states[0].TempKey != "" || states[0].Name != "" {
 		t.Errorf("existing state input = %+v, want id-only", states[0])
 	}
-	// new state carries temp key + name + color, no id
 	ns := states[5]
 	if ns.ID != 0 || ns.TempKey != "n1" || ns.Name != "Blocked" || ns.Color != "ANSI_RED" {
 		t.Errorf("new state input = %+v", ns)
 	}
-	// new transition resolves an existing source (id) and a new target (temp key)
 	nt := trans[6]
 	if nt.ID != 0 || nt.TempKey != "e1" || nt.Name != "Block" {
 		t.Errorf("new transition input = %+v", nt)
@@ -239,7 +223,7 @@ func TestFlowBuildInputsRefsNewNodes(t *testing.T) {
 	}
 }
 
-// A valid graph submits (spinner + save command); the example workflow is valid as loaded.
+// The example workflow is valid as loaded, so it submits.
 func TestFlowSubmitIssuesSave(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.saveFocus()
@@ -249,7 +233,6 @@ func TestFlowSubmitIssuesSave(t *testing.T) {
 	}
 }
 
-// An invalid graph (no completed state) is rejected client-side with a message and no command.
 func TestFlowSubmitRejectsInvalid(t *testing.T) {
 	f := flowModel(t).flow
 	f.states[3].category = "ACTIVE" // Done was the only COMPLETED state
@@ -262,7 +245,6 @@ func TestFlowSubmitRejectsInvalid(t *testing.T) {
 	}
 }
 
-// The Flow rule's Edit button opens the structure editor when clicked.
 func TestFlowEditButtonOpensEditor(t *testing.T) {
 	m := flowDetailModel(t)
 	_ = scanView(t, m.View(), "schema.flow.edit")
@@ -273,7 +255,6 @@ func TestFlowEditButtonOpensEditor(t *testing.T) {
 	}
 }
 
-// Hovering the Flow Edit button records the hover and repaints it; moving away clears it.
 func TestFlowEditButtonHover(t *testing.T) {
 	m := flowDetailModel(t)
 	_ = scanView(t, m.View(), "schema.flow.edit")
@@ -312,7 +293,6 @@ func TestFlowEscClosesSubformThenEditor(t *testing.T) {
 	}
 }
 
-// A successful save closes the editor, drops the cached graph, and refetches it.
 func TestFlowSaveInvalidatesAndRefetches(t *testing.T) {
 	m := flowModel(t)
 	m, cmd := m.Update(flowSavedMsg{wfID: 1})
@@ -327,7 +307,6 @@ func TestFlowSaveInvalidatesAndRefetches(t *testing.T) {
 	}
 }
 
-// The f shortcut opens the structure editor from the Details pane.
 func TestFlowShortcutOpensEditor(t *testing.T) {
 	m := flowDetailModel(t)
 	m, _ = m.Update(keyRune('f'))
@@ -336,8 +315,7 @@ func TestFlowShortcutOpensEditor(t *testing.T) {
 	}
 }
 
-// The draft diagram reflects the working copy, not the saved graph: a pending new state and its
-// wiring appear in the synthetic detail the in-place diagram is drawn from.
+// The draft diagram is drawn from the working copy, so unsaved states and wiring show up.
 func TestFlowDraftDetailReflectsEdits(t *testing.T) {
 	f := flowModel(t).flow
 	f.states = append(f.states, flowState{key: "n1", name: "Blocked", category: "ACTIVE", color: "ANSI_RED"})
@@ -363,8 +341,7 @@ func TestFlowDraftDetailReflectsEdits(t *testing.T) {
 	}
 }
 
-// The in-place editor diagram drops the "+ Guard" affordance (guards are edited from the read
-// view) but still shows existing guards, so the draft reads like the saved graph.
+// The editor diagram drops "+ Guard" (guards are edited from the read view) but still shows guards.
 func TestFlowEditorHidesAddGuard(t *testing.T) {
 	m := flowModel(t)
 	panel := plain(m.detailPanel())
@@ -386,8 +363,7 @@ func TestFlowLongStatusDoesNotWiden(t *testing.T) {
 	}
 }
 
-// The structure editor draws into the Details panel, not a centered modal: it is capturing input
-// yet has no overlay, and the panel shows the editing chrome (mode banner + action bar).
+// The structure editor draws into the Details panel, not a centered modal.
 func TestFlowEditsInPlace(t *testing.T) {
 	m := flowModel(t)
 	if !m.flowEditing || !m.CapturingInput() {
@@ -404,8 +380,7 @@ func TestFlowEditsInPlace(t *testing.T) {
 	}
 }
 
-// The action-bar handles are clickable zones inside the Details panel, so the editor can be
-// driven by mouse without a modal.
+// The action-bar handles are clickable zones inside the Details panel — mouse without a modal.
 func TestFlowActionBarZonesInPanel(t *testing.T) {
 	m := flowModel(t)
 	view := m.View()
@@ -419,8 +394,7 @@ func TestFlowActionBarZonesInPanel(t *testing.T) {
 	}
 }
 
-// Clicking a draft node/edge in the in-place editor moves the selection to it without opening a
-// modal, so the diagram is directly navigable by mouse.
+// Clicking a draft node/edge moves the selection without opening a modal.
 func TestFlowClickSelectsElement(t *testing.T) {
 	m := flowModel(t)
 	view := scanView(t, m.View(), "schema.detail")
@@ -445,8 +419,6 @@ func TestFlowClickSelectsElement(t *testing.T) {
 	}
 }
 
-// selElem maps the flat focus onto the draft diagram element it highlights (states and
-// transitions numbered by draft-order index+1); a command item highlights no element.
 func TestFlowSelElemTracksFocus(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.stateFocus(2)
@@ -463,9 +435,7 @@ func TestFlowSelElemTracksFocus(t *testing.T) {
 	}
 }
 
-// ↑/↓ walk the editor selection in visual diagram order (states and transitions interleaved by
-// row) like the read view, with the command handles last, rather than all states then all
-// transitions in draft order.
+// ↑/↓ walk in visual diagram order (interleaved by row), not all states then all transitions.
 func TestFlowNavFollowsDiagramOrder(t *testing.T) {
 	f := flowModel(t).flow
 	f.focus = f.stateFocus(0) // To Do, the initial state at the top of the diagram
@@ -479,8 +449,6 @@ func TestFlowNavFollowsDiagramOrder(t *testing.T) {
 	}
 }
 
-// Navigation wraps at both ends, so ↓ from the last command returns to the top element and ↑ from
-// the top reaches the last command — the selection cycles in either direction.
 func TestFlowNavWrapsBothWays(t *testing.T) {
 	f := flowModel(t).flow
 	order := f.navOrder()
@@ -496,7 +464,7 @@ func TestFlowNavWrapsBothWays(t *testing.T) {
 	}
 }
 
-// a adds a state; t adds a transition and, when a state is focused, pre-fills it as the source.
+// t pre-fills a focused state as the new transition's source.
 func TestFlowAddShortcuts(t *testing.T) {
 	f := flowModel(t).flow
 	fa, _ := f.onKey(keyRune('a'))

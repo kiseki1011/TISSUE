@@ -29,7 +29,7 @@ func TestTokenIsUsable(t *testing.T) {
 	}
 }
 
-// toAgent must be nil-safe on every optional field and copy the id/name/username/model/created.
+// toAgent must be nil-safe on every optional field.
 func TestToAgentMapping(t *testing.T) {
 	created := time.Date(2026, 8, 1, 9, 0, 0, 0, time.UTC)
 	agentType := client.AgentResponseAgentTypeDEVELOPMENT
@@ -49,13 +49,13 @@ func TestToAgentMapping(t *testing.T) {
 	if got != want {
 		t.Errorf("toAgent = %+v, want %+v", got, want)
 	}
-	// an all-nil response must not panic and yields the zero agent
+	// all-nil response must not panic
 	if z := toAgent(&client.AgentResponse{}); z != (Agent{}) {
 		t.Errorf("toAgent(empty) = %+v, want zero", z)
 	}
 }
 
-// toToken must map the scope enum and be nil-safe on the timestamps and revoked flag.
+// toToken must be nil-safe on timestamps and the revoked flag.
 func TestToTokenMapping(t *testing.T) {
 	rw := client.PatResponseScopeREADWRITE
 	created := time.Date(2026, 7, 30, 8, 0, 0, 0, time.UTC)
@@ -68,7 +68,6 @@ func TestToTokenMapping(t *testing.T) {
 	if !got.ExpiresAt.IsZero() || !got.LastUsedAt.IsZero() {
 		t.Errorf("nil timestamps should map to zero time, got expires=%v lastUsed=%v", got.ExpiresAt, got.LastUsedAt)
 	}
-	// an all-nil response yields an empty scope and the zero token
 	if z := toToken(&client.PatResponse{}); z.Scope != "" || z.ID != 0 {
 		t.Errorf("toToken(empty) = %+v, want zero", z)
 	}

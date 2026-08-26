@@ -31,7 +31,7 @@ const (
 	editIssueType
 )
 
-// fields present in the edit modal. efColor is skipped for transitions.
+// Edit-modal fields. efColor is skipped for transitions.
 const (
 	efName = iota
 	efColor
@@ -45,8 +45,8 @@ const (
 	editDescH  = 3
 )
 
-// editForm is the "Edit …" modal for a graph element's metadata. Only name, color
-// (states/workflow) and description are editable — category and wiring are not.
+// editForm is the "Edit …" modal for element metadata. Only name, color (states/workflow) and
+// description are editable, not category or wiring.
 type editForm struct {
 	deps   deps.Deps
 	kind   editKind
@@ -56,7 +56,7 @@ type editForm struct {
 
 	name    textinput.Model
 	desc    textarea.Model
-	colors  []string // color options — nil for a kind without a color field
+	colors  []string // nil for a kind without a color field
 	colorIx int
 	spinner spinner.Model
 
@@ -70,7 +70,7 @@ type editForm struct {
 	submitting bool
 }
 
-// withColor adds the color picker (states and workflows have one — transitions do not).
+// newEditForm builds the metadata modal. withColor is false for transitions, which have no color.
 func newEditForm(d deps.Deps, kind editKind, wfID, elemID int, title, name, colorName, desc string, withColor bool) editForm {
 	n := textinput.New()
 	n.Prompt = ""
@@ -329,9 +329,8 @@ func (f editForm) View() string {
 	return components.TitledBoxCentered(f.title, body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
-// scrolls to keep it visible. +2 = top border + the padding row above the body. The Color field is
-// absent (height 0) for a kind without a colour, matching body(). ok=false while the picker is open.
+// FocusRow reports the focused row and height so a windowed modal can scroll it into view. Color
+// counts as height 0 for a kind without one, matching body(). ok=false while the picker is open.
 func (f editForm) FocusRow() (int, int, bool) {
 	if f.picking {
 		return 0, 0, false
@@ -528,7 +527,7 @@ func editErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's own explanation
 	}
 	return "Could not save. Try again."
 }

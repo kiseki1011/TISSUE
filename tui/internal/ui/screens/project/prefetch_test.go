@@ -6,8 +6,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// A settled cursor warms the detail cache for the rows within prefetchSpan on each side, leaving the
-// cursor's own row (loaded via selection) and rows outside the span untouched.
+// A settled cursor warms the rows within prefetchSpan, not its own row (selection loads that) or beyond.
 func TestPrefetchWarmsNeighbors(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(9), TotalElements: 9})
 	m.cursor = 4 // park in the middle so the span reaches both ways
@@ -29,8 +28,7 @@ func TestPrefetchWarmsNeighbors(t *testing.T) {
 	}
 }
 
-// A prefetch tick from an earlier cursor stop is dropped: only the latest generation prefetches, so a
-// fast scroll does not fire a warm at every row it passed through.
+// A tick from an earlier cursor stop is dropped, so a fast scroll does not warm every row it passed.
 func TestPrefetchStaleSeqIgnored(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(9), TotalElements: 9})
 	m.cursor = 4
@@ -47,8 +45,7 @@ func TestPrefetchStaleSeqIgnored(t *testing.T) {
 	}
 }
 
-// Prefetch reuses the detail cache's dedupe: a neighbor already cached (or in flight) is skipped, while
-// a cold neighbor gets a fresh load (its generation is bumped).
+// Prefetch reuses the cache dedupe: a cached (or in-flight) neighbor is skipped, a cold one loads.
 func TestPrefetchDedupesCachedNeighbor(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(9), TotalElements: 9})
 	m.cursor = 4
@@ -75,10 +72,8 @@ func TestPrefetchDedupesCachedNeighbor(t *testing.T) {
 	}
 }
 
-// At a load-more boundary the newly appended rows within span are warmed immediately: syncSelection
-// no-ops on the unchanged selection, so the append branch must prefetch them directly - otherwise
-// scrolling onto the next page shows the skeleton flash the feature exists to prevent (adversarial
-// review finding, confirmed by two lenses).
+// Appended rows within span must be warmed by the append branch itself: syncSelection no-ops on the
+// unchanged selection, so without it the next page flashes the skeleton.
 func TestPrefetchWarmsAppendedRows(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true})
 	m, _ = m.Update(press("down")) // cursor 0 -> 1
@@ -107,8 +102,7 @@ func TestPrefetchWarmsAppendedRows(t *testing.T) {
 	}
 }
 
-// Scrolling to a new row arms the debounce: the prefetch generation advances and a tick command is
-// scheduled, so the warm fires once the cursor settles.
+// Scrolling to a new row arms the debounce, so the warm fires once the cursor settles.
 func TestScrollArmsPrefetch(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: issues(9), TotalElements: 9})
 	before := m.prefetchSeq

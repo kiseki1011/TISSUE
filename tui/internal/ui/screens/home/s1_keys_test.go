@@ -36,8 +36,7 @@ func homeModel(t *testing.T, mouse bool) Model {
 	return m
 }
 
-// RefreshMsg silently reloads the projects list (kept visible, title flags "(loading)") so the app can
-// refresh the dashboard on return from a project.
+// RefreshMsg reloads silently — the list stays visible while the title flags "(loading)".
 func TestHomeRefreshMsgReloads(t *testing.T) {
 	m := homeModel(t, true)
 	m, cmd := m.Update(RefreshMsg{})
@@ -52,8 +51,7 @@ func TestHomeRefreshMsgReloads(t *testing.T) {
 	}
 }
 
-// A refresh that FAILS keeps the list (and its Details panel) that was already showing, instead of
-// replacing the whole dashboard with an error over a transient blip.
+// A failed refresh keeps the showing list rather than replacing the dashboard over a transient blip.
 func TestHomeRefreshFailureKeepsList(t *testing.T) {
 	m := homeModel(t, true) // has landed a projects list, so m.loaded is true
 	m, _ = m.Update(RefreshMsg{})
@@ -66,7 +64,7 @@ func TestHomeRefreshFailureKeepsList(t *testing.T) {
 	}
 }
 
-// An INITIAL load failure (nothing ever loaded) does surface the error, so the empty dashboard explains itself.
+// An INITIAL load failure does surface the error, so the empty dashboard explains itself.
 func TestHomeInitialLoadFailureShowsError(t *testing.T) {
 	m := New(deps.Deps{
 		Server: "srv", Config: &config.Config{},
@@ -78,7 +76,6 @@ func TestHomeInitialLoadFailureShowsError(t *testing.T) {
 	}
 }
 
-// R from the list manually refreshes the dashboard.
 func TestHomeRefreshKey(t *testing.T) {
 	m := homeModel(t, true)
 	m.focus = focusList
@@ -88,7 +85,6 @@ func TestHomeRefreshKey(t *testing.T) {
 	}
 }
 
-// f opens the filter modal straight from the project list.
 func TestHomeFilterOpensViaFKey(t *testing.T) {
 	m := homeModel(t, true)
 	m.focus = focusList

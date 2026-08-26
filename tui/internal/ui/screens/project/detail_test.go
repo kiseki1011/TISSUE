@@ -17,7 +17,6 @@ func openDetailOn(t *testing.T, w, h int, page domain.IssuePage) Model {
 	return m
 }
 
-// Loading a page points the Details panel at the first issue and starts its fetch; enter focuses the panel.
 func TestEnterFocusesDetail(t *testing.T) {
 	m := loaded(t, 120, 40, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	if m.viewKey == "" {
@@ -35,7 +34,6 @@ func TestEnterFocusesDetail(t *testing.T) {
 	}
 }
 
-// Until the fetch lands the modal shows the loading skeleton.
 func TestDetailSkeletonWhileLoading(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(2), TotalElements: 2})
 	if body := plain(m.View()); !strings.Contains(body, "Loading issue") {
@@ -43,7 +41,6 @@ func TestDetailSkeletonWhileLoading(t *testing.T) {
 	}
 }
 
-// A loaded detail renders the title, metadata, and the Content section.
 func TestDetailLoadedRendersContent(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -58,7 +55,6 @@ func TestDetailLoadedRendersContent(t *testing.T) {
 	}
 }
 
-// esc returns focus to the list; re-focusing the (cached) panel triggers no fetch.
 func TestDetailCacheSkipsRefetch(t *testing.T) {
 	m := openDetailOn(t, 120, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey, Title: "Cached"}})
@@ -81,15 +77,13 @@ func TestDetailFailedShowsRetry(t *testing.T) {
 	if body := plain(m.View()); !strings.Contains(body, "Failed to load") {
 		t.Errorf("a failed detail should surface the error:\n%s", body)
 	}
-	// R retries the failed load
 	_, cmd := m.Update(press("R"))
 	if cmd == nil {
 		t.Error("R should retry a failed detail load")
 	}
 }
 
-// Server free text may carry stray control characters; a lone carriage return would reset the cursor
-// to column 0 and corrupt the frame, so the body strips them while keeping real newlines.
+// A lone carriage return would reset the cursor to column 0 and corrupt the frame.
 func TestDetailSanitizesControlChars(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -118,9 +112,7 @@ func TestDetailMetaValueClipped(t *testing.T) {
 	}
 }
 
-// A superseded detail load (an earlier fetch) that lands after a newer one must be ignored, so an
-// out-of-order response cannot revert the modal (and list row) to stale state. Regression for the
-// missing generation guard on the detail path.
+// Regression: an out-of-order detail load must not revert the cache (missing generation guard).
 func TestDetailStaleLoadDropped(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey, StateLabel: "New"}})
@@ -132,19 +124,16 @@ func TestDetailStaleLoadDropped(t *testing.T) {
 		t.Fatal("a refetch should bump the detail generation")
 	}
 
-	// the earlier load lands late and must be dropped
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: staleGen, detail: domain.IssueDetail{Key: m.viewKey, StateLabel: "Stale"}})
 	if got := m.details[m.viewKey].StateLabel; got == "Stale" {
 		t.Errorf("a superseded detail load overwrote the cache: %q", got)
 	}
-	// the current load lands and applies
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: freshGen, detail: domain.IssueDetail{Key: m.viewKey, StateLabel: "Fresh"}})
 	if got := m.details[m.viewKey].StateLabel; got != "Fresh" {
 		t.Errorf("the current detail load should apply, got %q", got)
 	}
 }
 
-// A tall detail scrolls with the arrow keys, clamped to the content.
 func TestDetailScrolls(t *testing.T) {
 	m := openDetailOn(t, 100, 12, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	long := strings.Repeat("A paragraph of body text.\n", 60)
@@ -166,15 +155,14 @@ func TestDetailScrolls(t *testing.T) {
 	}
 }
 
-// A background list reload (e.g. a search debounce landing mid-edit) must not repoint viewKey out from
-// under an open action form, or the save would target a different issue. Regression for cross-issue write.
+// Regression: a background reload must not repoint viewKey while a form is open (cross-issue write).
 func TestSelectionPinnedWhileActing(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: []domain.IssueSummary{
 		{Key: "ENG-1", Title: "A", StateCategory: "ACTIVE"}, {Key: "ENG-2", Title: "B", StateCategory: "ACTIVE"},
 	}, TotalElements: 2})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: "ENG-1", gen: m.detailGen["ENG-1"], detail: domain.IssueDetail{Key: "ENG-1", Title: "A"}})
-	m, _ = m.Update(press("enter")) // focus the panel on ENG-1
-	m, _ = m.Update(press("e"))     // open the edit form for ENG-1
+	m, _ = m.Update(press("enter"))
+	m, _ = m.Update(press("e"))
 	if !m.editing || m.viewKey != "ENG-1" {
 		t.Fatalf("precondition: editing ENG-1, got editing=%v viewKey=%q", m.editing, m.viewKey)
 	}
@@ -187,9 +175,7 @@ func TestSelectionPinnedWhileActing(t *testing.T) {
 	}
 }
 
-// A comment carries an untrusted, unbounded author name; on a narrow terminal the read-only modal must
-// wrap the body so no rendered line exceeds the terminal width (else the overlay spills and corrupts the
-// frame). Regression for the missing width clamp in detailModal.
+// Regression: an unbounded comment author name spilled the narrow modal past the terminal width.
 func TestNarrowModalWrapsLongCommentAuthor(t *testing.T) {
 	m := openDetailOn(t, 100, 30, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	longAuthor := strings.Repeat("verylongauthorname", 10) // far past the 100-column terminal
@@ -204,8 +190,7 @@ func TestNarrowModalWrapsLongCommentAuthor(t *testing.T) {
 	}
 }
 
-// A background refetch that shortens the on-screen detail re-clamps the scroll offset, so the next scroll
-// key moves by one line instead of jumping the old overflow. Regression for the un-clamped detailScroll.
+// Regression: a refetch that shortens the detail must re-clamp the scroll offset.
 func TestDetailScrollReclampedOnShrink(t *testing.T) {
 	m := openDetailOn(t, 100, 12, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	long := strings.Repeat("a line of body text\n", 80)
@@ -214,15 +199,13 @@ func TestDetailScrollReclampedOnShrink(t *testing.T) {
 	if m.detailScroll == 0 {
 		t.Fatal("precondition: the long detail should be scrolled off zero")
 	}
-	// the same on-screen issue is refetched with much shorter content
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey, Title: "T", Content: "short"}})
 	if m.detailScroll > m.detailScrollMax() {
 		t.Errorf("scroll offset %d exceeds the new max %d after the content shrank (not re-clamped)", m.detailScroll, m.detailScrollMax())
 	}
 }
 
-// In narrow mode the Tab focus ring skips focusDetail (there it means "modal open"): tabbing through the
-// controls must not pop the read-only modal - only enter/click open it. Wide mode keeps it in the ring.
+// Narrow Tab must skip focusDetail (there it means "modal open"), so tabbing cannot pop the modal.
 func TestTabRingSkipsDetailByLayout(t *testing.T) {
 	narrow := loaded(t, 100, 40, domain.IssuePage{Issues: issues(2), TotalElements: 2})
 	narrow, _ = narrow.Update(press("tab")) // list -> search
@@ -241,8 +224,7 @@ func TestTabRingSkipsDetailByLayout(t *testing.T) {
 	}
 }
 
-// A wide terminal always shows the side Details panel (skeleton before focus); a narrow one has no room
-// for it, so the detail only appears once opened as a read-only modal (enter).
+// Wide always shows the side panel. Narrow has no room, so the detail only appears as a modal.
 func TestNarrowDetailIsModalOnly(t *testing.T) {
 	page := domain.IssuePage{Issues: issues(1), TotalElements: 1}
 
@@ -255,7 +237,7 @@ func TestNarrowDetailIsModalOnly(t *testing.T) {
 	if strings.Contains(plain(narrow.View()), "Loading issue") {
 		t.Error("the narrow layout should not show the detail before the modal is opened")
 	}
-	narrow, _ = narrow.Update(press("enter")) // open the read-only modal
+	narrow, _ = narrow.Update(press("enter"))
 	if narrow.focus != focusDetail {
 		t.Fatal("enter should open/focus the detail")
 	}
@@ -264,7 +246,6 @@ func TestNarrowDetailIsModalOnly(t *testing.T) {
 	}
 }
 
-// On a narrow terminal esc closes the read-only detail modal back to the list, hiding the detail again.
 func TestNarrowModalEscClosesToList(t *testing.T) {
 	m := loaded(t, 100, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(press("enter"))
@@ -280,8 +261,7 @@ func TestNarrowModalEscClosesToList(t *testing.T) {
 	}
 }
 
-// A row click on a narrow terminal selects that row and opens the read-only modal (there is no side
-// panel to reveal); on a wide terminal the panel is already visible, so a click keeps focus on the list.
+// A narrow row click opens the modal (no side panel to reveal). A wide one keeps focus on the list.
 func TestRowClickFocusByLayout(t *testing.T) {
 	narrow := loaded(t, 100, 40, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	narrow, _ = narrow.Update(clickZone(t, narrow, issueRowZone(1)))
@@ -302,8 +282,7 @@ func TestRowClickFocusByLayout(t *testing.T) {
 	}
 }
 
-// With no issue selected (empty list), the comment and delete actions are inert rather than firing on an
-// empty key. Regression for the empty-selection guards.
+// Regression: with no selection, c and d must be inert rather than firing on an empty key.
 func TestActionsGuardedOnEmptySelection(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: nil, TotalElements: 0})
 	if m.viewKey != "" {

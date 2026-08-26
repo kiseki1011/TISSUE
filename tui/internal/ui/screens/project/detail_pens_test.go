@@ -10,20 +10,18 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// detailWithPens loads a detail on ENG-1 (with a transition, an assignee, and members) and focuses it,
-// so the Details panel renders its inline edit pens.
+// detailWithPens focuses a loaded detail so the Details panel renders its inline edit pens.
 func detailWithPens(t *testing.T) Model {
 	t.Helper()
-	// Tall enough that the read-only narrow modal does not need the ScrollBox: a windowed modal collapses
-	// its right-anchored pen zones to zero width (a pre-existing narrow+scroll rendering quirk, unrelated
-	// to what this test checks). The always-shown Relations section made the old 30-row height overflow.
+	// 60 rows so the modal never needs the ScrollBox: a windowed modal collapses its right-anchored pen
+	// zones to zero width (an unrelated narrow+scroll quirk).
 	m := loaded(t, 120, 60, domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1,
 	})
 	m, _ = m.Update(membersLoadedMsg{members: []domain.ProjectMember{
 		{MemberID: 1, DisplayName: "Hong"}, {MemberID: 2, DisplayName: "Kim"},
 	}})
-	m, _ = m.Update(press("enter")) // focus the panel; m.viewKey == ENG-1
+	m, _ = m.Update(press("enter")) // focus the panel (m.viewKey == ENG-1)
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
 		Key: m.viewKey, Title: "X", StateLabel: "Active", StateCategory: "ACTIVE",
 		AssigneeID: 2, AssigneeName: "Kim",
@@ -32,7 +30,6 @@ func detailWithPens(t *testing.T) Model {
 	return m
 }
 
-// Each Details edit pen opens the same editor its keyboard shortcut does.
 func TestDetailEditPensOpenEditors(t *testing.T) {
 	m := detailWithPens(t)
 
@@ -52,8 +49,7 @@ func TestDetailEditPensOpenEditors(t *testing.T) {
 	}
 }
 
-// With the mouse off the pens are not rendered (the e/t/a keys still act). Asserted on the plain view
-// text (like the agents screen's mouse test) to avoid cross-test bubblezone state.
+// Asserted on plain view text, not zones, to avoid cross-test bubblezone state.
 func TestDetailEditPensHiddenWithMouseOff(t *testing.T) {
 	build := func(mouse bool) Model {
 		zone.NewGlobal()
@@ -75,7 +71,7 @@ func TestDetailEditPensHiddenWithMouseOff(t *testing.T) {
 		return m
 	}
 
-	// the exact marker penCell renders (the PenSquare glyph in nerd mode, the "edit" fallback otherwise)
+	// the exact marker penCell renders
 	pen := testDeps().Glyphs.Or(testDeps().Glyphs.PenSquare, "edit")
 	if !strings.Contains(plain(build(true).View()), pen) {
 		t.Errorf("mouse-on Details should show the edit pen %q", pen)
@@ -84,7 +80,6 @@ func TestDetailEditPensHiddenWithMouseOff(t *testing.T) {
 		t.Error("mouse-off Details must hide the edit pens")
 	}
 
-	// the a key still opens the assignee picker with the mouse off
 	m := build(false)
 	m, _ = m.Update(press("a"))
 	if !m.picking || m.pickKind != pickAssignee {

@@ -13,8 +13,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// The 4-level issue hierarchy, top to bottom. A parent must sit exactly one level above its child; a
-// SUBTASK or MICROTASK cannot be created standalone (its parent is required).
+// The 4-level issue hierarchy, top to bottom. A parent sits exactly one level above its child, and a
+// SUBTASK or MICROTASK cannot be created standalone.
 var hierarchyLevel = map[string]int{"EPIC": 0, "STANDARD": 1, "SUBTASK": 2, "MICROTASK": 3}
 
 var hierarchyByLevel = map[int]string{0: "EPIC", 1: "STANDARD", 2: "SUBTASK", 3: "MICROTASK"}
@@ -25,8 +25,7 @@ const (
 	parentPickerMaxW     = 72 // wider than the transition/assignee pickers - parent labels carry a title
 )
 
-// parentHierarchy is the hierarchy one level above hier (a valid parent's level), or ok=false when hier
-// is top-level (EPIC) or unknown, so no parent is possible.
+// parentHierarchy is the level above hier, ok=false for top-level (EPIC) or unknown.
 func parentHierarchy(hier string) (string, bool) {
 	lvl, ok := hierarchyLevel[hier]
 	if !ok || lvl == 0 {
@@ -40,8 +39,7 @@ func parentRequired(hier string) bool {
 	return hierarchyLevel[hier] >= 2
 }
 
-// childHierarchy is the hierarchy one level below hier (the level this issue's children sit at), or
-// ok=false when hier is the bottom level (MICROTASK) or unknown, so no child issue is possible.
+// childHierarchy is the level below hier, ok=false for the bottom level (MICROTASK) or unknown.
 func childHierarchy(hier string) (string, bool) {
 	lvl, ok := hierarchyLevel[hier]
 	if !ok || lvl >= 3 {
@@ -50,8 +48,7 @@ func childHierarchy(hier string) (string, bool) {
 	return hierarchyByLevel[lvl+1], true
 }
 
-// typeIDsAtHierarchy is the ids of the loaded issue types sitting at the given hierarchy level - the
-// eligible parent types to filter the candidate search by.
+// typeIDsAtHierarchy is the loaded type ids at a level - the eligible parent types to filter by.
 func (m Model) typeIDsAtHierarchy(hier string) []int64 {
 	var ids []int64
 	for _, t := range m.types {
@@ -62,8 +59,7 @@ func (m Model) typeIDsAtHierarchy(hier string) []int64 {
 	return ids
 }
 
-// typesAtHierarchy is the loaded issue types sitting at the given hierarchy level - the types a child
-// issue created under a parent of the level above may take.
+// typesAtHierarchy is the loaded types at a level - what a child under the level above may take.
 func (m Model) typesAtHierarchy(hier string) []domain.IssueTypeSummary {
 	var out []domain.IssueTypeSummary
 	for _, t := range m.types {
@@ -86,8 +82,7 @@ type parentCandidatesLoadedMsg struct {
 	err        bool
 }
 
-// loadParentCandidates searches the project for issues of the eligible parent types. Passing the type
-// ids as the filter makes the backend return only candidates, so no client-side filtering is needed.
+// loadParentCandidates filters by the eligible parent type ids, so the backend returns only candidates.
 func loadParentCandidates(d deps.Deps, projectKey, parentHier string, gen int, typeIDs []int64) tea.Cmd {
 	return func() tea.Msg {
 		filter := domain.IssueFilter{
@@ -99,8 +94,7 @@ func loadParentCandidates(d deps.Deps, projectKey, parentHier string, gen int, t
 	}
 }
 
-// openParentPicker starts the candidate load for the create form's selected type, or explains why no
-// parent applies (a top-level type, or no eligible parent types exist).
+// openParentPicker loads the candidates for the selected type, or explains why no parent applies.
 func (m Model) openParentPicker() (Model, tea.Cmd) {
 	if !m.creating {
 		return m, nil
@@ -120,19 +114,16 @@ func (m Model) openParentPicker() (Model, tea.Cmd) {
 	)
 }
 
-// onParentCandidates opens the parent picker with the loaded candidates, or reports why it cannot. An
-// optional parent (STANDARD child) gets a leading "None" option to clear the selection.
+// onParentCandidates opens the picker. An optional parent (STANDARD child) gets a leading "None".
 func (m Model) onParentCandidates(msg parentCandidatesLoadedMsg) (Model, tea.Cmd) {
 	if !m.creating {
 		return m, nil // the form closed while the candidates were loading
 	}
-	// drop a superseded/stale load: one from a prior form session or an earlier activation (a reopened
-	// form or a double-press must not pop an unsolicited picker or reset an open one)
+	// a load from a prior form session or an earlier activation must not pop an unsolicited picker
 	if msg.gen != m.parentGen {
 		return m, nil
 	}
-	// drop a result whose parent level no longer matches the selected type (the user changed the type
-	// while these candidates were loading), else the picker would offer parents of the wrong hierarchy
+	// the type changed while these candidates loaded, so they are of the wrong hierarchy
 	if cur, ok := parentHierarchy(m.createUI.selectedHierarchy()); !ok || cur != msg.hier {
 		return m, nil
 	}
@@ -166,7 +157,6 @@ func (m Model) onParentCandidates(msg parentCandidatesLoadedMsg) (Model, tea.Cmd
 	return m, nil
 }
 
-// selectParent applies the highlighted candidate as the create form's parent and closes the picker.
 func (m Model) selectParent() (Model, tea.Cmd) {
 	opt, ok := m.picker.Selected()
 	if !ok {

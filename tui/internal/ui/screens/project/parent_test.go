@@ -33,7 +33,7 @@ func TestParentHierarchyHelpers(t *testing.T) {
 	}
 }
 
-// A SUBTASK issue cannot be submitted without a parent; setting one unblocks the submit and carries it.
+// A SUBTASK cannot submit without a parent. Setting one unblocks the submit and carries it.
 func TestCreateSubtaskRequiresParent(t *testing.T) {
 	f := newCreateForm(testDeps(), hierTypes())
 	f.typeIx = 2 // Subtask
@@ -84,7 +84,7 @@ func TestParentFieldEnterOpensPicker(t *testing.T) {
 	}
 }
 
-// A top-level (EPIC) type has no parent, so activating the field explains that instead of opening a picker.
+// A top-level (EPIC) type explains itself instead of opening a picker.
 func TestOpenParentPickerTopLevel(t *testing.T) {
 	m := createReady(t)
 	m.types = hierTypes()
@@ -96,7 +96,7 @@ func TestOpenParentPickerTopLevel(t *testing.T) {
 	}
 }
 
-// Loaded candidates open the picker; an optional parent gets a leading None, a required one does not.
+// Loaded candidates open the picker. An optional parent gets a leading None, a required one does not.
 func TestOnParentCandidatesOpensPicker(t *testing.T) {
 	cands := []domain.IssueSummary{{Key: "ENG-2", Title: "A story"}}
 
@@ -124,8 +124,7 @@ func TestOnParentCandidatesOpensPicker(t *testing.T) {
 	}
 }
 
-// Candidates that finish loading after the user changed the type are dropped, so the picker never
-// offers parents of the wrong hierarchy.
+// Candidates landing after a type change are dropped, so the picker never offers the wrong hierarchy.
 func TestParentCandidatesStaleTypeDropped(t *testing.T) {
 	m := createReady(t)
 	m.types = hierTypes()
@@ -139,8 +138,7 @@ func TestParentCandidatesStaleTypeDropped(t *testing.T) {
 	}
 }
 
-// A candidate load from a prior form session (cancelled then reopened) is dropped, so it cannot pop an
-// unsolicited picker over the fresh form even when the reopened type shares the parent hierarchy.
+// A load from a prior form session must not pop a picker over the reopened form.
 func TestParentCandidatesStaleGenDropped(t *testing.T) {
 	m := createReady(t)
 	m.types = hierTypes()
@@ -155,8 +153,7 @@ func TestParentCandidatesStaleGenDropped(t *testing.T) {
 	}
 }
 
-// Two quick Parent activations issue two loads; only the latest opens the picker, so an earlier load
-// cannot reopen a dismissed picker or reset an open one.
+// With two quick activations only the latest opens the picker.
 func TestParentDoubleLoadOnlyLatestOpens(t *testing.T) {
 	m := createReady(t)
 	m.types = hierTypes()

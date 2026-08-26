@@ -8,8 +8,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// A loaded detail with linked branches renders a Branches section: each branch name, the short commit
-// hash, and the commit subject.
 func TestDetailRendersBranches(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -29,14 +27,12 @@ func TestDetailRendersBranches(t *testing.T) {
 			t.Errorf("branches section missing %q:\n%s", want, body)
 		}
 	}
-	// the hash is shortened to 7 chars, not the full 10
 	if strings.Contains(body, "abc1234def") {
 		t.Errorf("commit hash should be shortened to 7 chars:\n%s", body)
 	}
 }
 
-// Each branch says who pushed it last and when, which is what separates a branch being worked on from one
-// abandoned weeks ago - the commit subject alone cannot.
+// Who pushed and when separates a live branch from one abandoned weeks ago.
 func TestDetailRendersBranchPushMeta(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -53,7 +49,7 @@ func TestDetailRendersBranchPushMeta(t *testing.T) {
 	}
 }
 
-// A branch that has never been pushed to carries neither half, and must not render a bare separator.
+// A never-pushed branch has neither half, so it must not render a bare separator.
 func TestDetailBranchPushMetaOmittedWhenUnknown(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -86,8 +82,7 @@ func TestDetailBranchPushMetaPartial(t *testing.T) {
 	}
 }
 
-// A detail with no branches renders no Branches section (they arrive from webhooks, so an issue may have
-// none, and there is no "+ add" affordance to show).
+// Branches arrive from webhooks, so an issue may have none and there is no "+ add" affordance.
 func TestDetailNoBranchesNoSection(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{

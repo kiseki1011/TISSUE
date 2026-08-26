@@ -12,8 +12,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 )
 
-// openPrefs opens the email-notification preferences modal and (re)loads the current settings each time,
-// so a change made elsewhere is reflected.
+// openPrefs reloads the settings on every open, so a change made elsewhere is reflected.
 func (m Model) openPrefs() (Model, tea.Cmd) {
 	m.prefsOpen = true
 	m.prefsLoading = true
@@ -27,7 +26,6 @@ func (m Model) closePrefs() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onPrefsKey owns the keyboard while the preferences modal is open.
 func (m Model) onPrefsKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc", "p":
@@ -46,7 +44,6 @@ func (m Model) onPrefsKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// togglePref flips the focused type's email setting optimistically and persists it.
 func (m Model) togglePref() (Model, tea.Cmd) {
 	if m.prefsCursor < 0 || m.prefsCursor >= len(m.prefsRows) {
 		return m, nil
@@ -57,7 +54,7 @@ func (m Model) togglePref() (Model, tea.Cmd) {
 	return m, savePref(m.deps, row.Type, row.Channel, next)
 }
 
-// emailPrefs keeps only the EMAIL-channel rows (the only channel today), preserving the backend's order.
+// emailPrefs keeps only EMAIL-channel rows (the only channel today), in the backend's order.
 func emailPrefs(rows []domain.NotificationPref) []domain.NotificationPref {
 	out := make([]domain.NotificationPref, 0, len(rows))
 	for _, r := range rows {
@@ -97,8 +94,6 @@ func savePref(d deps.Deps, notifType, channel string, enabled bool) tea.Cmd {
 
 const prefsModalW = 44
 
-// prefsModalView renders the centered preferences box: a windowed list of notification types, each with
-// an email on/off checkbox.
 func (m Model) prefsModalView() string {
 	t := m.deps.Styles.Theme
 	title := lipgloss.NewStyle().Foreground(t.Primary).Bold(true).Render("Email notifications")
@@ -120,7 +115,7 @@ func (m Model) prefsModalView() string {
 
 func (m Model) prefsRowsView() string {
 	t := m.deps.Styles.Theme
-	// keep the modal within the terminal: leave room for the border, padding, title, sub and help rows
+	// 12 = border, padding, title, sub and help rows
 	avail := max(1, m.height-12)
 	visible := max(1, min(len(m.prefsRows), avail))
 	top := listTop(m.prefsCursor, visible, len(m.prefsRows))
@@ -148,7 +143,6 @@ func (m Model) prefsRow(p domain.NotificationPref, i int) string {
 	return box + " " + nameStyle.Render(fit(domain.HumanizeNotificationType(p.Type), prefsModalW-4))
 }
 
-// overlayModal dims the backdrop and floats the centered modal over it, mirroring the agents tab.
 func (m Model) overlayModal(backdrop, modal string) string {
 	t := m.deps.Styles.Theme
 	bd := components.StripANSI(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, backdrop))

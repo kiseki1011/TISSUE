@@ -13,8 +13,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
-// openFieldCreate opens the new-field modal, seeded with the append position (one past the
-// highest existing field position).
+// openFieldCreate seeds the new-field modal with the append position.
 func (m Model) openFieldCreate() (Model, tea.Cmd, bool) {
 	if m.kind != selType {
 		return m, nil, false
@@ -36,8 +35,6 @@ func (m Model) openFieldCreate() (Model, tea.Cmd, bool) {
 	return m, m.cfield.Init(), true
 }
 
-// updateCreateField invalidates the type's cached fields on a successful create and refetches them
-// so the new field appears.
 func (m Model) updateCreateField(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case fieldCreatedMsg:
@@ -64,7 +61,6 @@ func (m Model) updateCreateField(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// deleteSelectedField opens the delete-confirm dialog for the selected field (the x/d key).
 func (m Model) deleteSelectedField() (Model, tea.Cmd, bool) {
 	if m.kind != selType {
 		return m, nil, false
@@ -92,15 +88,14 @@ func (m Model) deleteSelectedField() (Model, tea.Cmd, bool) {
 	return m, m.confirm.Init(), true
 }
 
-// clearPending forgets whatever delete it was guarding, so a fresh dialog never inherits a stale target.
+// clearPending drops the pending target so a fresh dialog never inherits a stale one.
 func (m Model) clearPending() Model {
 	m.confirming = false
 	m.pendingDeleteField, m.pendingDeleteType, m.pendingDeleteWorkflow = 0, 0, 0
 	return m
 }
 
-// updateConfirm runs whichever delete is pending on accept, keeping the dialog open (submitting)
-// so a failure such as "in use" can be shown in place.
+// updateConfirm runs whichever delete is pending. The dialog stays open so a failure shows in place.
 func (m Model) updateConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case confirmAcceptedMsg:
@@ -155,8 +150,7 @@ func (m Model) updateConfirm(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// reorderSelectedField moves the selected field up (delta -1) or down (delta +1), applying the new
-// order optimistically and committing the full id list.
+// reorderSelectedField applies the new order optimistically and commits the full id list.
 func (m Model) reorderSelectedField(delta int) (Model, tea.Cmd, bool) {
 	if m.kind != selType {
 		return m, nil, false
@@ -199,8 +193,6 @@ func (m Model) reorderSelectedField(delta int) (Model, tea.Cmd, bool) {
 	return m, reorderFieldsCmd(m.deps, t.ID, ids), true
 }
 
-// selectedFieldHasOptions reports whether the selected field is SELECT_OPTION / CHECKLIST, so the
-// options shortcut is offered only where it applies.
 func (m Model) selectedFieldHasOptions() bool {
 	if m.kind != selType {
 		return false
@@ -223,8 +215,7 @@ func (m Model) selectedFieldHasOptions() bool {
 	return false
 }
 
-// openOptionsForNewField opens the options editor for a just-created SELECT_OPTION/CHECKLIST field,
-// found by name in the reloaded detail (the create call does not return the new id).
+// openOptionsForNewField finds the new field by name — the create call does not return its id.
 func (m Model) openOptionsForNewField(typeID int, name string) (Model, tea.Cmd, bool) {
 	d, ok := m.typeDetail[typeID]
 	if !ok {
@@ -269,9 +260,8 @@ func (m Model) openFieldOptions() (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// updateOptions drives the options editor. On failure it also refetches, so a partly-applied commit
-// (some deletes/renames landed before an error) reseeds from the server instead of re-issuing the
-// applied changes on the next Save.
+// updateOptions drives the options editor. A failure refetches too, so a partly-applied commit
+// reseeds from the server instead of re-issuing landed changes on the next Save.
 func (m Model) updateOptions(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case optionsSavedMsg:
@@ -302,8 +292,8 @@ func (m Model) updateOptions(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// reseedOptions rebuilds the options editor after a partial failure so its baseline (orig) matches
-// the server. The error message is preserved. If the field no longer exists the editor closes.
+// reseedOptions rebuilds the editor after a partial failure so its baseline matches the server.
+// The error message is kept. The editor closes if the field is gone.
 func (m *Model) reseedOptions(d domain.IssueTypeDetail) {
 	for _, f := range d.Fields {
 		if f.ID == m.options.fieldID {
@@ -356,7 +346,7 @@ func deleteFieldErrorMessage(err error) string {
 		}
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // prefer the server's own explanation
 	}
 	return "Could not delete. Try again."
 }

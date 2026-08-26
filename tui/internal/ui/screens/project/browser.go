@@ -8,9 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-// openURLCmd opens an http(s) URL in the user's default browser off the update loop. It is used by the
-// issue detail's clickable branch and commit links. A failure is swallowed: a link that will not open is
-// a minor inconvenience, not worth interrupting the UI, and the URL text is still on screen.
+// openURLCmd opens a URL off the update loop. A failure is swallowed: the URL text is still on screen.
 func openURLCmd(url string) tea.Cmd {
 	return func() tea.Msg {
 		_ = openURL(url)
@@ -18,8 +16,8 @@ func openURLCmd(url string) tea.Cmd {
 	}
 }
 
-// openURL launches the platform browser for an http(s) URL. Non-http(s) input is ignored so a malformed
-// or non-web link cannot be handed to the shell. Start (not Run) returns immediately without waiting.
+// openURL launches the platform browser. Non-http(s) input is ignored so a malformed link cannot reach
+// the shell. Start (not Run) avoids waiting on the browser.
 func openURL(rawURL string) error {
 	if !strings.HasPrefix(rawURL, "http://") && !strings.HasPrefix(rawURL, "https://") {
 		return nil

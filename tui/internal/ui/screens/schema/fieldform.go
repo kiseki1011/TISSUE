@@ -25,11 +25,11 @@ const (
 	ffCancel
 )
 
-// fieldForm edits one custom field's metadata (name, description, required). Type and options are
-// not editable here: type is fixed at creation and options go through their own endpoints.
+// fieldForm edits one custom field's metadata. Type is fixed at creation and options go through
+// their own endpoints.
 type fieldForm struct {
 	deps    deps.Deps
-	typeID  int // the owning issue type, for cache invalidation on save
+	typeID  int // owning type, for cache invalidation on save
 	fieldID int
 
 	name     textinput.Model
@@ -239,8 +239,8 @@ func (f fieldForm) View() string {
 	return components.TitledBoxCentered("Edit Field", body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
-// scrolls to keep it visible. +2 = top border + the padding row above the body.
+// FocusRow reports the focused row and height so a windowed modal can scroll it into view.
+// chromeTop 2 = top border + the padding row.
 func (f fieldForm) FocusRow() (int, int, bool) {
 	const chromeTop = 2
 	nameH := lipgloss.Height(f.field(ffName, "Name", fixEdit(f.name.View(), 1), f.nameErr))

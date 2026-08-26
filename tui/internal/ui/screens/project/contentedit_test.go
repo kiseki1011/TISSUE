@@ -7,7 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// #7: the metadata edit form no longer carries the Content field (it moved to its own editor).
+// Content moved out of the metadata form into its own editor.
 func TestEditFormHasNoContentField(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, _ = m.Update(press("e"))
@@ -16,7 +16,6 @@ func TestEditFormHasNoContentField(t *testing.T) {
 	}
 }
 
-// #7: 'E' opens the standalone content editor prefilled from the loaded detail.
 func TestContentEditorOpensPrefilled(t *testing.T) {
 	m := editReady(t, sampleDetail()) // Content "# body"
 	m, cmd := m.Update(press("E"))
@@ -34,11 +33,9 @@ func TestContentEditorOpensPrefilled(t *testing.T) {
 	}
 }
 
-// #7: the preview toggle swaps the editable textarea for the rendered markdown, and back.
 func TestContentEditorPreviewToggle(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, _ = m.Update(press("E"))
-	// the body is a raw textarea until preview is toggled
 	if body := plain(m.contentUI.View()); strings.Contains(body, "Preview ─") && !strings.Contains(body, "Content ─") {
 		t.Errorf("the editor should start in edit mode (Content box), got:\n%s", body)
 	}
@@ -56,7 +53,6 @@ func TestContentEditorPreviewToggle(t *testing.T) {
 	}
 }
 
-// #7: an empty body previews a muted placeholder rather than a blank box.
 func TestContentEditorPreviewEmpty(t *testing.T) {
 	m := editReady(t, domain.IssueDetail{Title: "X", Priority: "P2"}) // no content
 	m, _ = m.Update(press("E"))
@@ -66,8 +62,6 @@ func TestContentEditorPreviewEmpty(t *testing.T) {
 	}
 }
 
-// #7: saving a changed body optimistically updates the cached detail and fires the edit; an unchanged
-// body reports no changes.
 func TestContentEditorSaves(t *testing.T) {
 	m := editReady(t, sampleDetail())
 	m, _ = m.Update(press("E"))
@@ -90,18 +84,15 @@ func TestContentEditorSaves(t *testing.T) {
 	}
 }
 
-// #7: a background list reload (e.g. a search debounce) that lands while the content editor is open must
-// not repoint viewKey, so the save still targets the issue being edited. Regression for the review's
-// CONFIRMED finding.
+// Regression: a list reload landing mid-edit must not repoint viewKey away from the edited issue.
 func TestContentEditorPinsViewKeyAcrossReload(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-1", StateCategory: "ACTIVE"}, {Key: "ENG-2", StateCategory: "ACTIVE"}}, TotalElements: 2,
 	})
-	m, _ = m.Update(press("enter")) // focus ENG-1
+	m, _ = m.Update(press("enter"))
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey, Title: "One", Content: "# body"}})
 	edited := m.viewKey
 	m, _ = m.Update(press("E"))
-	// a reload lands mid-edit and would otherwise reset the cursor to a different issue
 	m, _ = m.Update(issuesLoadedMsg{key: testKey, gen: m.reqGen, page: domain.IssuePage{
 		Issues: []domain.IssueSummary{{Key: "ENG-9", StateCategory: "ACTIVE"}, {Key: "ENG-1", StateCategory: "ACTIVE"}}, TotalElements: 2,
 	}})
@@ -114,7 +105,6 @@ func TestContentEditorPinsViewKeyAcrossReload(t *testing.T) {
 	}
 }
 
-// #7: 'E' before the detail loads waits (a toast) rather than opening an empty editor.
 func TestContentEditorWaitsForDetail(t *testing.T) {
 	m := loaded(t, 120, 44, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(press("enter")) // detail still loading
@@ -127,7 +117,6 @@ func TestContentEditorWaitsForDetail(t *testing.T) {
 	}
 }
 
-// #7: clicking the Content section pen opens the content editor (the keyboard route is E).
 func TestContentPenOpensEditor(t *testing.T) {
 	m := openDetailOn(t, 160, 40, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{

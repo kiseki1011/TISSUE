@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// With the mouse off the Edit pens (issue-type/workflow headers and per-field rows) are hidden, since
-// they only duplicate the focused block's e/enter. The field itself and the +Field focus stop stay.
+// Mouse off hides the Edit pens (they only duplicate e/enter) but keeps the fields and +Field.
 func TestMouseOffHidesEditPens(t *testing.T) {
 	build := func(mouse bool) Model {
 		m := mk(120, 26, 1, 1, false)

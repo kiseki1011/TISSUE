@@ -12,8 +12,7 @@ import (
 func pbool(b bool) *bool { return &b }
 func pint(i int) *int    { return &i }
 
-// The Custom fields section renders each type: scalar inline, BOOLEAN as ✓, PERCENTAGE with a bar,
-// CHECKLIST as a checkbox list, TEXT as a block, and an unset value as "-".
+// Each custom field type renders in its own shape, and an unset value as "-".
 func TestDetailCustomFields(t *testing.T) {
 	m := openDetailOn(t, 160, 60, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -38,8 +37,7 @@ func TestDetailCustomFields(t *testing.T) {
 	}
 }
 
-// Wide custom-field values (long labels, long text, long checklist names) must not overflow the narrow
-// read-only modal.
+// Wide custom-field values must not overflow the narrow read-only modal.
 func TestDetailCustomFieldsFitNarrow(t *testing.T) {
 	m := openDetailOn(t, 100, 30, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{
@@ -58,8 +56,7 @@ func TestDetailCustomFieldsFitNarrow(t *testing.T) {
 	}
 }
 
-// A custom field label is untrusted server text; a stray control char in a TEXT/CHECKLIST label header
-// must be flattened so it cannot reset the cursor and corrupt the frame. Regression for the raw head.
+// A custom field label is untrusted server text: a stray control char must not corrupt the frame.
 func TestCustomFieldLabelSanitized(t *testing.T) {
 	m := openDetailOn(t, 160, 60, domain.IssuePage{Issues: issues(1), TotalElements: 1})
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{

@@ -8,8 +8,7 @@ import (
 
 func keyUp() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeyUp} }
 
-// Focusing a workflow's Details selects a graph element first, not one of the section buttons,
-// so the established "edit the start state" default is preserved.
+// Details focuses a graph element, not a section button, keeping the "edit the start state" default.
 func TestDetailDefaultSelectsGraphElement(t *testing.T) {
 	m := mkWorkflowModel(t)
 	e, ok := m.selectedElem()
@@ -21,8 +20,7 @@ func TestDetailDefaultSelectsGraphElement(t *testing.T) {
 	}
 }
 
-// The section "Edit" buttons are keyboard focus stops above the graph: navigating up from the
-// first graph element reaches the Flow button, then the VCS button.
+// The section Edit buttons are focus stops above the graph: up reaches Flow, then VCS.
 func TestDetailActionButtonsNavigable(t *testing.T) {
 	m := mkWorkflowModel(t)
 	m, _ = m.Update(keyUp())
@@ -35,8 +33,7 @@ func TestDetailActionButtonsNavigable(t *testing.T) {
 	}
 }
 
-// A focused section button reports focused so its rule paints with the focus color, and only
-// while the Details pane holds focus.
+// A section button reports focused only while the Details pane holds focus.
 func TestDetailActionFocusFlag(t *testing.T) {
 	m := mkWorkflowModel(t)
 	if m.actionFocused(elemVcsEdit) || m.actionFocused(elemFlowEdit) {
@@ -52,7 +49,6 @@ func TestDetailActionFocusFlag(t *testing.T) {
 	}
 }
 
-// Enter on the focused VCS Edit button opens the VCS editor.
 func TestDetailActionEnterOpensVcs(t *testing.T) {
 	m := selectElem(vcsModel(t, 10, 0), wfElem{elemVcsEdit, 0})
 	m, _ = m.Update(keyEnter())
@@ -61,7 +57,6 @@ func TestDetailActionEnterOpensVcs(t *testing.T) {
 	}
 }
 
-// Enter on the focused Flow Edit button opens the graph-structure editor.
 func TestDetailActionEnterOpensFlow(t *testing.T) {
 	m := selectElem(flowDetailModel(t), wfElem{elemFlowEdit, 0})
 	m, _ = m.Update(keyEnter())
@@ -70,7 +65,6 @@ func TestDetailActionEnterOpensFlow(t *testing.T) {
 	}
 }
 
-// Enter on a graph element does not open a section editor (it is reserved for the buttons).
 func TestDetailActionEnterIgnoredOnElement(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemState, 1})
 	m, _ = m.Update(keyEnter())

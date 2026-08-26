@@ -22,7 +22,6 @@ func twoIssuesOpen(t *testing.T) Model {
 	return m
 }
 
-// 'd' opens the delete confirmation naming the issue.
 func TestDeleteOpensConfirm(t *testing.T) {
 	m := twoIssuesOpen(t)
 	m, cmd := m.Update(press("d"))
@@ -39,8 +38,8 @@ func TestDeleteOpensConfirm(t *testing.T) {
 func TestDeleteStrayEnterCancels(t *testing.T) {
 	m := twoIssuesOpen(t)
 	m, _ = m.Update(press("d"))
-	m, cmd := m.Update(press("enter")) // focus starts on Cancel
-	m, _ = m.Update(cmd())             // the emitted ConfirmCancelledMsg
+	m, cmd := m.Update(press("enter"))
+	m, _ = m.Update(cmd())
 	if m.deleting {
 		t.Error("a stray enter should cancel the delete, not run it")
 	}
@@ -49,7 +48,7 @@ func TestDeleteStrayEnterCancels(t *testing.T) {
 	}
 }
 
-// Accepting runs the delete and keeps the dialog open until the result lands.
+// The dialog stays open until the result lands.
 func TestDeleteAcceptRunsDelete(t *testing.T) {
 	m := twoIssuesOpen(t)
 	m, _ = m.Update(press("d"))
@@ -62,7 +61,6 @@ func TestDeleteAcceptRunsDelete(t *testing.T) {
 	}
 }
 
-// A successful delete closes the modal, drops the row, decrements the total, and evicts the cached detail.
 func TestDeleteSuccessRemovesRow(t *testing.T) {
 	m := twoIssuesOpen(t)
 	m, _ = m.Update(press("d"))
@@ -84,13 +82,12 @@ func TestDeleteSuccessRemovesRow(t *testing.T) {
 	}
 }
 
-// A late detail load that was in flight when the issue was deleted must not resurrect the evicted cache.
+// A late in-flight detail load must not resurrect the evicted cache.
 func TestDeleteBumpsDetailGen(t *testing.T) {
 	m := twoIssuesOpen(t)
 	gen := m.detailGen["ENG-1"]
 	m, _ = m.Update(press("d"))
 	m, _ = m.Update(IssueDeletedMsg{key: "ENG-1"})
-	// a detail load tagged with the pre-delete generation lands late
 	m, _ = m.Update(IssueDetailLoadedMsg{key: "ENG-1", gen: gen, detail: domain.IssueDetail{Key: "ENG-1", Title: "GHOST"}})
 	if _, cached := m.details["ENG-1"]; cached {
 		t.Error("a late detail load must not resurrect a deleted issue's cache")
@@ -118,7 +115,6 @@ func TestDeleteEmptyReloadsNextPage(t *testing.T) {
 	}
 }
 
-// A failed delete keeps the dialog open with the reason and removes nothing.
 func TestDeleteErrorStaysOpen(t *testing.T) {
 	m := twoIssuesOpen(t)
 	m, _ = m.Update(press("d"))
@@ -137,7 +133,6 @@ func TestDeleteErrorStaysOpen(t *testing.T) {
 	}
 }
 
-// removeIssue drops the deleted row and keeps the cursor in range.
 func TestRemoveIssueClampsCursor(t *testing.T) {
 	m := loaded(t, 120, 40, domain.IssuePage{
 		Issues:        []domain.IssueSummary{{Key: "A"}, {Key: "B"}, {Key: "C"}},
@@ -169,8 +164,7 @@ func TestDeleteErrorMessage(t *testing.T) {
 	}
 }
 
-// The server soft-deletes into the project's trash and offers a restore endpoint, so the dialog must not
-// tell the user the issue is gone for good - overstating it makes people avoid a reversible action.
+// The server soft-deletes, so the dialog must not claim the issue is gone for good.
 func TestDeleteConfirmDoesNotClaimPermanence(t *testing.T) {
 	m := detailWith(t, nil)
 	m, _ = m.Update(press("d"))

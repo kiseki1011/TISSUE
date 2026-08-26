@@ -18,7 +18,6 @@ func TestIssueEditEmpty(t *testing.T) {
 	}
 }
 
-// A touched field is sent with its value; an untouched one stays unspecified (omitted from the PATCH).
 func TestToUpdateCommonBodyOnlyTouched(t *testing.T) {
 	title, priority := "New title", "P1"
 	body := toUpdateCommonBody(IssueEdit{Title: &title, Priority: &priority})
@@ -34,7 +33,6 @@ func TestToUpdateCommonBodyOnlyTouched(t *testing.T) {
 	}
 }
 
-// Clearing the due date sends an explicit null; setting it sends the instant.
 func TestToUpdateCommonBodyDue(t *testing.T) {
 	cleared := toUpdateCommonBody(IssueEdit{ClearDue: true})
 	if !cleared.DueAt.IsSpecified() || !cleared.DueAt.IsNull() {

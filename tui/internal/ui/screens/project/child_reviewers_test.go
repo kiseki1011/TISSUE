@@ -7,9 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// childReady loads a STANDARD ("Story") issue with a catalog holding Epic/Story/Subtask types, so the
-// issue can take Subtask children (one level below STANDARD) and members are present for the reviewers
-// picker. children/reviewers seed the two sections.
+// childReady loads a STANDARD ("Story") issue with Epic/Story/Subtask types, so it can take children.
 func childReady(t *testing.T, children []domain.IssueRef, reviewers []domain.Reviewer) Model {
 	t.Helper()
 	det := sampleDetail()
@@ -28,8 +26,7 @@ func childReady(t *testing.T, children []domain.IssueRef, reviewers []domain.Rev
 	return m
 }
 
-// #4b: the Reviewers section always shows - even empty - with a "+ Reviewer" button (mouse on) in place
-// of a placeholder, so its entry point is visible.
+// The Reviewers section always shows, even empty, so its entry point stays visible.
 func TestReviewersSectionAlwaysShown(t *testing.T) {
 	m := childReady(t, nil, nil)
 	body := plain(m.detailContent(m.details[m.viewKey], 90))
@@ -73,7 +70,7 @@ func TestAddButtonBelowItems(t *testing.T) {
 	}
 }
 
-// #4b: clicking the "+ Reviewer" button opens the reviewers picker (the same one r opens).
+// Clicking "+ Reviewer" opens the same picker r opens.
 func TestReviewersButtonOpensPicker(t *testing.T) {
 	m := childReady(t, nil, nil)
 	m, _ = m.Update(clickZone(t, m, zoneEditReviewers))
@@ -82,8 +79,7 @@ func TestReviewersButtonOpensPicker(t *testing.T) {
 	}
 }
 
-// #4c: a Story (STANDARD) can take Subtask children, so its Children section shows even when empty, with
-// a placeholder and the "+" affordance.
+// A Story (STANDARD) can take Subtask children, so its Children section shows even when empty.
 func TestChildrenSectionShownWhenCanAddChild(t *testing.T) {
 	m := childReady(t, nil, nil)
 	if !m.canAddChild(m.details[m.viewKey]) {
@@ -101,7 +97,7 @@ func TestChildrenSectionShownWhenCanAddChild(t *testing.T) {
 	}
 }
 
-// #4c: a bottom-level issue (a Microtask) can have no children, so its Children section stays hidden.
+// A Microtask is bottom-level, so its Children section stays hidden.
 func TestChildrenSectionHiddenWhenBottomLevel(t *testing.T) {
 	det := sampleDetail()
 	det.TypeName = "Micro"
@@ -120,8 +116,7 @@ func TestChildrenSectionHiddenWhenBottomLevel(t *testing.T) {
 	}
 }
 
-// #4c: clicking the Children "+" opens the create form preset as a child - the parent locked to this
-// issue and the type cycle restricted to the child (Subtask) level.
+// Clicking the Children "+" opens the create form with the parent locked and types cut to Subtask.
 func TestAddChildOpensLockedForm(t *testing.T) {
 	m := childReady(t, nil, nil)
 	key := m.viewKey
@@ -141,8 +136,7 @@ func TestAddChildOpensLockedForm(t *testing.T) {
 	}
 }
 
-// #4c: a locked parent survives a type cycle (all restricted types share the same parent level) and the
-// Parent field is not a tab stop.
+// A locked parent survives a type cycle and is not a tab stop.
 func TestChildCreateFormLocksParent(t *testing.T) {
 	f := newChildCreateForm(testDeps(), []domain.IssueTypeSummary{
 		{ID: 7, Name: "Subtask", Hierarchy: "SUBTASK"},
@@ -162,7 +156,7 @@ func TestChildCreateFormLocksParent(t *testing.T) {
 	}
 }
 
-// #4c: openChildCreateForm refuses a bottom-level issue with a toast rather than opening the form.
+// openChildCreateForm refuses a bottom-level issue with a toast.
 func TestOpenChildCreateGuardsBottomLevel(t *testing.T) {
 	det := sampleDetail()
 	det.TypeName = "Micro"

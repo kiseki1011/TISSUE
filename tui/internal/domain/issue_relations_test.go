@@ -9,7 +9,6 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// The relations detail flattens into display groups in a fixed order, dropping the kinds with no issues.
 func TestToRelationGroups(t *testing.T) {
 	rel := &client.IssueRelationsDetail{
 		BlockedBy: &[]client.RelatedIssueInfo{
@@ -26,7 +25,6 @@ func TestToRelationGroups(t *testing.T) {
 	if len(groups) != 2 {
 		t.Fatalf("expected 2 non-empty groups, got %d: %+v", len(groups), groups)
 	}
-	// Blocks is ordered before Blocked by
 	if groups[0].Kind != "Blocks" || groups[1].Kind != "Blocked by" {
 		t.Errorf("groups out of order: %q, %q", groups[0].Kind, groups[1].Kind)
 	}
@@ -38,15 +36,13 @@ func TestToRelationGroups(t *testing.T) {
 	}
 }
 
-// A relations block with every kind empty (or nil) maps to no groups, so the UI omits the section.
 func TestToRelationGroupsEmpty(t *testing.T) {
 	if g := toRelationGroups(&client.IssueRelationsDetail{}); len(g) != 0 {
 		t.Errorf("an empty relations detail should map to no groups, got %+v", g)
 	}
 }
 
-// The inverse of a directional relation lives on its source, so the group is flagged unremovable here.
-// RELEVANT is symmetric and can go from either side.
+// The inverse of a directional relation lives on its source, so it is unremovable here.
 func TestRelationGroupsFlagRemovability(t *testing.T) {
 	one := []client.RelatedIssueInfo{{IssueKey: ptr("TIS-2")}}
 	groups := toRelationGroups(&client.IssueRelationsDetail{
@@ -95,8 +91,7 @@ func TestRemoveRelationSendsTheTarget(t *testing.T) {
 	}
 }
 
-// A relation may point at another project, so the project is read off the target's own key rather than
-// assumed to be the one being browsed.
+// A relation may point at another project, so the project comes off the target's own key.
 func TestProjectKeyOf(t *testing.T) {
 	cases := map[string]string{
 		"TIS-12":    "TIS",

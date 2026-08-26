@@ -13,8 +13,7 @@ import (
 
 const filterServer = "http://srv"
 
-// filterDeps builds deps whose config lives in a throwaway dir, so a project's filter can persist and
-// reload without touching the user's real config file.
+// filterDeps points config at a temp dir, so tests never touch the user's real config.
 func filterDeps(t *testing.T) (deps.Deps, *config.Config) {
 	t.Helper()
 	tmp := t.TempDir()
@@ -28,7 +27,6 @@ func filterDeps(t *testing.T) (deps.Deps, *config.Config) {
 	return d, cfg
 }
 
-// A project opens with its last-applied filter restored, replacing the default open-issues view.
 func TestNewLoadsSavedFilter(t *testing.T) {
 	d, cfg := filterDeps(t)
 	if err := cfg.SetProjectFilter(filterServer, "ENG", config.FilterState{Priorities: []string{"P0"}, AssigneeMe: true}); err != nil {
@@ -43,7 +41,6 @@ func TestNewLoadsSavedFilter(t *testing.T) {
 	}
 }
 
-// Without a saved filter a project falls back to the default open-issues view.
 func TestNewDefaultsWhenNoSavedFilter(t *testing.T) {
 	d, _ := filterDeps(t)
 	m := New(d, "ENG", "")
@@ -52,7 +49,6 @@ func TestNewDefaultsWhenNoSavedFilter(t *testing.T) {
 	}
 }
 
-// A nil config (as in most tests) is safe and yields the default filter.
 func TestNewNilConfigDefaults(t *testing.T) {
 	m := New(testDeps(), "ENG", "")
 	if !reflect.DeepEqual(m.filter.StateCategories, domain.OpenIssuesFilter().StateCategories) {
@@ -60,7 +56,6 @@ func TestNewNilConfigDefaults(t *testing.T) {
 	}
 }
 
-// Applying a filter writes it to config so re-opening the project restores it.
 func TestApplyFilterPersists(t *testing.T) {
 	d, _ := filterDeps(t)
 	m := New(d, "ENG", "")
@@ -83,14 +78,12 @@ func TestApplyFilterPersists(t *testing.T) {
 		t.Errorf("persisted filter mismatch: %+v", fs)
 	}
 
-	// re-opening the project restores exactly what was applied
 	m2 := New(d, "ENG", "")
 	if !reflect.DeepEqual(m2.filter.StateCategories, []string{"COMPLETED"}) || !m2.filter.AssigneeMe {
 		t.Errorf("re-opened project did not restore the applied filter: %+v", m2.filter)
 	}
 }
 
-// The persisted filter never includes the transient search keyword.
 func TestApplyFilterExcludesKeyword(t *testing.T) {
 	d, _ := filterDeps(t)
 	m := New(d, "ENG", "")

@@ -59,9 +59,8 @@ type optionsPositionsLoaded struct {
 	err       error
 }
 
-// optionsPositionSet reports a successful save. It carries the id/name that were actually sent so the
-// handler applies THAT (not a value the user may have re-picked while the request was in flight).
-// positionID is 0 when cleared.
+// optionsPositionSet reports a successful save. It carries the id/name actually sent, so a value the
+// user re-picked mid-flight is not applied. positionID is 0 when cleared.
 type optionsPositionSet struct {
 	positionID int
 	name       string
@@ -99,15 +98,13 @@ func positionErrMessage(err error) string {
 		return "Not allowed."
 	}
 	if r := domain.ErrorReason(err); r != "" {
-		return r // the server explained the failure; prefer it over the generic line
+		return r // the server explained the failure, so prefer it over the generic line
 	}
 	return "Could not update. Try again."
 }
 
-// optionsModal is the settings overlay with three sections: Info (server), Settings (theme), and
-// Account (the caller's own info, an editable self-service position, and logout). The modal is mostly
-// presentational (theme/logout effects are the shell's, driven by the messages it emits) but repaints
-// itself in the new theme immediately and owns the position picker's async state.
+// optionsModal is the settings overlay: Info (server), Settings (theme), Account (profile, position,
+// logout). Effects belong to the shell via the messages it emits, but it repaints itself immediately.
 type optionsModal struct {
 	deps  deps.Deps
 	theme theme.Theme // live-preview theme (may lead deps after a switch)
@@ -130,7 +127,7 @@ type optionsModal struct {
 	positionSaving   bool
 	positionStatus   string // last save error, shown inline under Position
 
-	picking int // pickerNone | pickerTheme | pickerPosition
+	picking int
 	pick    widgets.ListPicker
 }
 
@@ -188,8 +185,6 @@ func (m optionsModal) Update(msg tea.Msg) (appModal, tea.Cmd) {
 	case optionsPositionSet:
 		m.positionSaving = false
 		m.positionStatus = ""
-		// reflect exactly what was saved (from the message), not a value the user may have re-picked
-		// while the request was in flight
 		m.user.PositionID, m.user.PositionName = msg.positionID, msg.name
 		return m, toast.Show(toast.Success, positionToastText(msg.name, msg.cleared))
 	case optionsPositionFailed:
@@ -238,8 +233,7 @@ func (m optionsModal) onKey(msg tea.KeyPressMsg) (appModal, tea.Cmd) {
 	return m, nil
 }
 
-// switchSection moves to the neighbouring section, resetting focus and dropping a stale picker error
-// so it cannot follow the user across sections.
+// switchSection moves to the neighbouring section, dropping a stale picker error so it cannot follow.
 func (m optionsModal) switchSection(delta int) (appModal, tea.Cmd) {
 	m.section = (m.section + delta + sectionCount) % sectionCount
 	m.focus = 0
@@ -309,16 +303,14 @@ func (m optionsModal) selectIcons(mode string) (appModal, tea.Cmd) {
 	return m, func() tea.Msg { return iconsSelectedMsg{mode: mode} }
 }
 
-// toggleMouse flips mouse capture. Unlike the pickers it acts in place (no drill-in), repainting the
-// checkbox immediately and asking the shell to apply and persist the new state.
+// toggleMouse flips mouse capture in place (no picker drill-in) and asks the shell to persist it.
 func (m optionsModal) toggleMouse() (appModal, tea.Cmd) {
 	m.mouseOn = !m.mouseOn
 	on := m.mouseOn
 	return m, func() tea.Msg { return mouseSelectedMsg{on: on} }
 }
 
-// openPositionPicker stays closed while the list is loading or failed to load — there is nothing to
-// choose.
+// openPositionPicker stays closed while the list is loading or failed - there is nothing to choose.
 func (m optionsModal) openPositionPicker() optionsModal {
 	if !m.positionEditable() {
 		return m
@@ -374,9 +366,8 @@ func (m optionsModal) selectPosition(value string) (appModal, tea.Cmd) {
 	return m, setOptionPosition(m.deps, id, name, cleared)
 }
 
-// positionSetArgs resolves a picker value into the arguments for setOptionPosition: value "" clears
-// (nil id, cleared=true). A numeric value selects that position (its id + resolved name). ok is false
-// only for a non-empty value that does not parse, which the caller treats as a no-op.
+// positionSetArgs resolves a picker value into setOptionPosition's arguments: "" clears (nil id,
+// cleared=true). ok is false only for a non-empty value that does not parse, which the caller no-ops.
 func positionSetArgs(value string, positions []domain.PositionSummary) (id *int, name string, cleared, ok bool) {
 	if value == "" {
 		return nil, "", true, true
@@ -428,8 +419,7 @@ func (m optionsModal) onClick(msg tea.MouseClickMsg) (appModal, tea.Cmd) {
 
 func (m optionsModal) View() string {
 	if m.picking != pickerNone {
-		// drill in: the popup replaces the options body and the shell centers it, matching schema's
-		// color/list pickers. It renders in the modal's live theme, not the (stale) open-time deps.
+		// the popup replaces the options body. It renders in the modal's live theme, not the stale deps
 		box := m.pick.View(theme.New(m.theme))
 		if m.picking == pickerTheme {
 			return lipgloss.JoinHorizontal(lipgloss.Top, box, " ", m.themeSwatches(m.pickedTheme()))
@@ -481,8 +471,7 @@ func (m optionsModal) infoBody() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// settingsLabelW is the Muted label column shared by every Settings row, wide enough for the longest
-// label ("Interactive Mouse") so the controls line up in a single column.
+// settingsLabelW fits the longest label ("Interactive Mouse") so every Settings control lines up.
 const settingsLabelW = 19
 
 func (m optionsModal) settingsBody() string {
@@ -494,8 +483,7 @@ func (m optionsModal) settingsBody() string {
 	return lipgloss.JoinVertical(lipgloss.Left, rows...)
 }
 
-// settingRow lays a control on the same line as its Muted label, matching the Account section's rows.
-// The label stays Muted always; the control carries the focus accent.
+// settingRow puts a control on its label's line. The label stays Muted, the control takes the accent.
 func (m optionsModal) settingRow(label, control string) string {
 	l := lipgloss.NewStyle().Foreground(m.theme.Muted).Width(settingsLabelW).Render(label)
 	return "  " + l + control
@@ -534,10 +522,7 @@ func (m optionsModal) iconsButton() string {
 	return zone.Mark("opt.icons", m.dropdownButton(iconsLabel(m.iconsModes[m.iconsIx]), m.onIconsControl()))
 }
 
-// mouseButton renders mouse capture as a checkbox toggle (enter/click flips it) rather than a
-// drop-in picker, since it is a two-state setting. The row label already names it, so the box carries
-// no "Enabled" caption. The check glyph is BMP and our runewidth is EastAsianWidth=false, so it stays
-// width 1 and does not shift the line.
+// mouseButton's check glyph is BMP, so with runewidth EastAsianWidth=false it stays width 1.
 func (m optionsModal) mouseButton() string {
 	t := m.theme
 	box := "[ ]"
@@ -552,15 +537,13 @@ func (m optionsModal) mouseButton() string {
 	return zone.Mark("opt.mouse", label)
 }
 
-// positionEditable gates the dropdown affordance, the enter/click action, and the footer hint together
-// so they never disagree.
+// positionEditable gates the affordance, the action, and the footer hint together so they agree.
 func (m optionsModal) positionEditable() bool {
 	return !m.positionsLoading && m.positionsErr == nil && !m.positionSaving
 }
 
-// positionRow shows the position as the same "value ▾" dropdown control the Theme setting uses, so
-// both self-service selectors read alike. While the list is loading/unavailable, or a save is in
-// flight, the dropdown is withheld (a plain value, nothing to pick yet).
+// positionRow uses the same "value ▾" dropdown as the Theme setting. While the list is loading or a
+// save is in flight the dropdown is withheld, leaving a plain value.
 func (m optionsModal) positionRow() string {
 	t := m.theme
 	label := lipgloss.NewStyle().Foreground(t.Muted).Width(10).Render("Position")
@@ -576,8 +559,7 @@ func (m optionsModal) positionRow() string {
 		}
 		return "  " + label + lipgloss.NewStyle().Foreground(t.Text).Render(value)
 	}
-	// the dropdown carries the click zone that opens the picker (registered only while editable, so a
-	// stale click cannot fire)
+	// the zone is registered only while editable, so a stale click cannot fire
 	control := zone.Mark("opt.pos", m.dropdownButton(m.currentPositionLabel(), m.onPositionControl()))
 	return "  " + label + control
 }
@@ -601,8 +583,7 @@ func (m optionsModal) pickedTheme() theme.Theme {
 	return m.theme
 }
 
-// themeSwatches renders a theme's palette as labelled colour boxes. The boxes and border use the
-// previewed theme's colours. The labels stay in the live theme so they read on the backdrop.
+// themeSwatches paints the previewed theme's palette. Labels stay in the live theme so they read.
 func (m optionsModal) themeSwatches(preview theme.Theme) string {
 	type swatch struct {
 		label string
@@ -615,8 +596,7 @@ func (m optionsModal) themeSwatches(preview theme.Theme) string {
 	}
 	rows := make([]string, len(palette))
 	for i, s := range palette {
-		// a NoColor role (like the ANSI theme's Text = terminal default) has no paintable swatch.
-		// Show a neutral "no fill" marker instead of a blank gap that reads as broken
+		// a NoColor role (the ANSI theme's Text) has no paintable swatch, so show a "no fill" marker
 		box := lipgloss.NewStyle().Background(s.c).Render("   ")
 		if _, none := s.c.(lipgloss.NoColor); none {
 			box = lipgloss.NewStyle().Foreground(m.theme.Muted).Render(" - ")
@@ -683,8 +663,7 @@ func (m optionsModal) HelpKeys() []key.Binding {
 	case m.onMouseControl():
 		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "toggle")))
 	case m.onPositionControl():
-		// only advertise the action when the position can actually be edited (list loaded, not
-		// saving). Otherwise enter is a no-op and the hint would promise nothing
+		// only advertise the action when it is live, or enter is a no-op the hint promised
 		if m.positionEditable() {
 			binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "edit")))
 		}
@@ -719,9 +698,8 @@ func orDash(s string) string {
 	return s
 }
 
-// rightAlignBlock left-pads a possibly multi-line block so it sits flush right within w. It pads each
-// line by hand rather than using lipgloss.PlaceHorizontal, which mis-measures a block carrying
-// bubblezone markers (its width probe trips on the marker) and shreds the alignment.
+// rightAlignBlock left-pads a multi-line block flush right within w. It pads by hand because
+// lipgloss.PlaceHorizontal mis-measures a block carrying bubblezone markers and shreds the alignment.
 func rightAlignBlock(block string, w int) string {
 	pad := w - lipgloss.Width(block)
 	if pad <= 0 {

@@ -34,17 +34,16 @@ type Model struct {
 	nextCursor string
 
 	loadingMore bool // a next-page (append) fetch is in flight
-	// reqGen supersedes a stale first-page load: a filter toggle or a re-entry refresh bumps it, so a
-	// slower earlier load that lands late is dropped. Append loads carry the same gen so they only apply
-	// to the list they were paged from.
+	// reqGen supersedes a stale first-page load: a filter toggle or refresh bumps it, so a slow earlier
+	// load landing late is dropped. Append loads carry the same gen.
 	reqGen int
 
 	unreadOnly   bool
 	mentionsOnly bool   // server-side @mention filter (types=[ISSUE_MENTIONED]), toggled with "m"
 	hover        string // zone id of the row under the cursor, "" when none
 
-	// email-notification preferences modal (opened with "p"): the backend exposes only the EMAIL channel
-	// (the in-app inbox is always kept), so each row is one notification type's email on/off.
+	// preferences modal ("p"). The backend exposes only the EMAIL channel (the in-app inbox is always
+	// kept), so each row is one notification type's email on/off.
 	prefsOpen    bool
 	prefsRows    []domain.NotificationPref
 	prefsCursor  int
@@ -52,7 +51,7 @@ type Model struct {
 	prefsErr     bool
 }
 
-// New starts empty; Init loads the first page.
+// New starts empty. Init loads the first page.
 func New(d deps.Deps) Model {
 	return Model{deps: d, loading: true}
 }
@@ -66,8 +65,7 @@ func (m Model) Retheme(d deps.Deps) Model {
 	return m
 }
 
-// CapturingInput reports whether the preferences modal owns the keyboard, so the app's global
-// tab-switch keys yield to it while it is open. The list itself has no text fields.
+// CapturingInput reports whether the prefs modal owns the keyboard, so global tab-switch keys yield.
 func (m Model) CapturingInput() bool { return m.prefsOpen }
 
 func (m Model) selected() (domain.Notification, bool) {
@@ -78,7 +76,7 @@ func (m Model) selected() (domain.Notification, bool) {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	// the preferences modal owns interactive input while open; background loads still flow through below
+	// the prefs modal owns interactive input while open. background loads still flow through below
 	if m.prefsOpen {
 		switch msg := msg.(type) {
 		case tea.KeyPressMsg:
@@ -118,8 +116,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onLoaded(msg)
 
 	case RefreshMsg:
-		// silently re-pull the first page each time the tab is (re)entered; notifications are poll-only, so
-		// without this the list would go stale after the boot prefetch. Yields to an in-flight load.
+		// notifications are poll-only, so without a re-pull on tab entry the list goes stale after the boot
+		// prefetch. yields to an in-flight load.
 		if m.loading || m.loadingMore {
 			return m, nil
 		}
@@ -132,9 +130,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		)
 
 	case ActionFailedMsg:
-		// the optimistic read was applied locally but the server rejected it: reconcile by re-pulling the
-		// first page (restoring the authoritative read flags, reverting the optimistic write) and re-checking
-		// the badge, alongside the error toast.
+		// the server rejected an optimistic read: re-pull page 1 for the authoritative flags
 		m2, cmd := m.reloadFirstPage()
 		return m2, tea.Batch(toast.Show(toast.Error, msg.Text), emitReadChanged(), cmd)
 
@@ -157,7 +153,7 @@ func (m Model) onLoaded(msg NotificationsLoadedMsg) (Model, tea.Cmd) {
 	if msg.Append {
 		m.loadingMore = false
 		if msg.Err {
-			return m, nil // keep what we have; a failed page-append is non-fatal
+			return m, nil // a failed page-append is non-fatal
 		}
 		m.items = append(m.items, msg.Page.Items...)
 		m.hasNext, m.nextCursor = msg.Page.HasNext, msg.Page.NextCursor
@@ -173,7 +169,7 @@ func (m Model) onLoaded(msg NotificationsLoadedMsg) (Model, tea.Cmd) {
 	m.loadErr = false
 	m.items = msg.Page.Items
 	m.hasNext, m.nextCursor = msg.Page.HasNext, msg.Page.NextCursor
-	m.cursor = 0 // a first-page (open / toggle / refresh) load lands the cursor on the newest item
+	m.cursor = 0 // a fresh first page lands the cursor on the newest item
 	return m, nil
 }
 
@@ -208,7 +204,7 @@ func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 		return m, nil
 	}
 	m.cursor = clamp(m.cursor+delta, 0, len(m.items)-1)
-	// reaching the last loaded row with more server-side pages: pull the next one (infinite scroll)
+	// infinite scroll: the last loaded row pulls the next page
 	if m.cursor >= len(m.items)-1 && m.hasNext && !m.loadingMore {
 		m.loadingMore = true
 		return m, loadNotifications(m.deps, m.unreadOnly, m.mentionsOnly, m.nextCursor, m.reqGen, true)
@@ -216,9 +212,7 @@ func (m Model) moveCursor(delta int) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// openSelected drills into the selected notification's target — its issue (a read-only peek in the
-// project), its sprint (the Sprints tab), or the project's issue list — and marks it read as part of
-// opening. A target-less notification (no project reference) is only marked read.
+// openSelected marks the notification read and drills into its target, if it has one.
 func (m Model) openSelected() (Model, tea.Cmd) {
 	n, ok := m.selected()
 	if !ok {
@@ -235,9 +229,8 @@ func (m Model) openSelected() (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// navCmdFor returns the command that drills into the notification's target: the issue's read-only peek,
-// the sprint (Sprints tab), or the project's issue list. Returns nil when there is no project reference
-// to open, so enter on such a notification only marks it read.
+// navCmdFor drills into the notification's target: issue peek, sprint tab, or project issue list.
+// Nil when there is no project reference.
 func navCmdFor(n domain.Notification) tea.Cmd {
 	projectKey := n.Ref.ProjectKey
 	if projectKey == "" {
@@ -257,7 +250,7 @@ func navCmdFor(n domain.Notification) tea.Cmd {
 	return func() tea.Msg { return msg }
 }
 
-// markAllRead marks every notification read: optimistically in the loaded list, then on the server.
+// markAllRead marks every notification read optimistically, then on the server.
 func (m Model) markAllRead() (Model, tea.Cmd) {
 	if len(m.items) == 0 {
 		return m, nil
@@ -268,20 +261,16 @@ func (m Model) markAllRead() (Model, tea.Cmd) {
 	return m, markAllReadCmd(m.deps)
 }
 
-// reloadFirstPage issues a silent SWR reload of the first page: it supersedes any in-flight load with a
-// fresh generation and clears the pagination cursor so infinite scroll is fenced during the reload
-// window. Without clearing hasNext/nextCursor, a scroll-to-bottom mid-reload would fire an append using
-// the pre-reload cursor but stamped with the new generation — indistinguishable from the reload's own
-// page-1 load — and graft a stale page onto the fresh list. The current items stay visible (SWR) until
-// the fresh page lands, which restores hasNext/nextCursor and resets the cursor to the top.
+// reloadFirstPage re-pulls page 1 with a fresh generation and clears the cursor. Without that clear, a
+// mid-reload scroll would append the pre-reload cursor's page under the new gen, grafting a stale page.
 func (m Model) reloadFirstPage() (Model, tea.Cmd) {
 	m.reqGen++
 	m.hasNext, m.nextCursor = false, ""
 	return m, loadNotifications(m.deps, m.unreadOnly, m.mentionsOnly, "", m.reqGen, false)
 }
 
-// toggleUnreadOnly flips the unread-only filter and reloads from the top with a fresh generation, so a
-// slower prior load cannot repopulate the other filter's list.
+// toggleUnreadOnly reloads from the top with a fresh generation so a slower prior load cannot
+// repopulate the other filter's list.
 func (m Model) toggleUnreadOnly() (Model, tea.Cmd) {
 	m.unreadOnly = !m.unreadOnly
 	m.items, m.cursor, m.hasNext, m.nextCursor = nil, 0, false, ""
@@ -378,8 +367,8 @@ func clamp(v, lo, hi int) int {
 	return v
 }
 
-// NotificationsLoadedMsg carries a first page (Append=false) or a next page (Append=true). Exported so
-// the app shell can route the boot prefetch here while another tab is active.
+// NotificationsLoadedMsg carries a first page (Append=false) or a next page. Exported so the app shell
+// can route the boot prefetch here while another tab is active.
 type NotificationsLoadedMsg struct {
 	Gen    int
 	Page   domain.NotificationPage
@@ -387,16 +376,13 @@ type NotificationsLoadedMsg struct {
 	Append bool
 }
 
-// RefreshMsg asks the inbox to silently re-pull its first page; the app shell sends it whenever the tab
-// is entered.
+// RefreshMsg asks the inbox to silently re-pull its first page. Sent by the app shell on tab entry.
 type RefreshMsg struct{}
 
-// ReadChangedMsg signals that a read/unread change happened here, so the app shell re-checks the unread
-// badge authoritatively. Handled by the app, not this screen.
+// ReadChangedMsg tells the app shell to re-check the unread badge. Handled by the app, not here.
 type ReadChangedMsg struct{}
 
-// MarkedAllMsg and ActionFailedMsg are the results of the async mark-read commands. They are exported
-// and routed at the app level (like ReadChangedMsg) so their toast + badge-refresh follow-ups survive
+// MarkedAllMsg and ActionFailedMsg are routed at the app level so their toast and badge refresh survive
 // the user leaving the tab before the request completes.
 type MarkedAllMsg struct{}
 type ActionFailedMsg struct{ Text string }

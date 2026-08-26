@@ -29,7 +29,6 @@ func homeWith(t *testing.T, admin bool, projects ...domain.Project) Model {
 	return m
 }
 
-// A member opens the project directly, with no join modal.
 func TestEnterMemberOpensDirectly(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "ENG", Title: "Eng", Visibility: "PUBLIC", MyRole: "MEMBER"})
 	m, cmd := m.Update(keyPress("enter"))
@@ -44,7 +43,6 @@ func TestEnterMemberOpensDirectly(t *testing.T) {
 	}
 }
 
-// A non-member on a PUBLIC project is offered a join first.
 func TestEnterNonMemberPublicOffersJoin(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "PUB", Title: "Pub", Visibility: "PUBLIC"})
 	m, _ = m.Update(keyPress("enter"))
@@ -56,7 +54,7 @@ func TestEnterNonMemberPublicOffersJoin(t *testing.T) {
 	}
 }
 
-// A non-admin cannot self-join a PRIVATE project, so entry is blocked with an explanation (no modal).
+// A non-admin cannot self-join a PRIVATE project, so entry is blocked with a toast and no modal.
 func TestEnterNonMemberPrivateBlockedForNonAdmin(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "SEC", Title: "Sec", Visibility: "PRIVATE"})
 	m, cmd := m.Update(keyPress("enter"))
@@ -68,7 +66,6 @@ func TestEnterNonMemberPrivateBlockedForNonAdmin(t *testing.T) {
 	}
 }
 
-// A system admin may self-join even a PRIVATE project, so they get the join modal.
 func TestEnterNonMemberPrivateAdminOffersJoin(t *testing.T) {
 	m := homeWith(t, true, domain.Project{Key: "SEC", Title: "Sec", Visibility: "PRIVATE"})
 	m, _ = m.Update(keyPress("enter"))
@@ -77,8 +74,7 @@ func TestEnterNonMemberPrivateAdminOffersJoin(t *testing.T) {
 	}
 }
 
-// Accepting the join confirmation fires the join and HOLDS the modal open (submitting) so the in-flight
-// result cannot be dropped by navigating away; onJoinDone closes it.
+// Accepting HOLDS the modal open so the in-flight result cannot be dropped by navigating away.
 func TestJoinAcceptHoldsModalAndFires(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "PUB", Title: "Pub", Visibility: "PUBLIC"})
 	m, _ = m.Update(keyPress("enter"))
@@ -89,15 +85,13 @@ func TestJoinAcceptHoldsModalAndFires(t *testing.T) {
 	if cmd == nil {
 		t.Error("accepting should fire the join")
 	}
-	// the result closes the modal
 	m, _ = m.Update(joinDoneMsg{project: domain.Project{Key: "PUB", Title: "Pub"}})
 	if m.joining {
 		t.Error("the join result should close the submitting modal")
 	}
 }
 
-// While the join modal is open the home screen captures input, so app-level tab/option keys cannot switch
-// away and strand the flow.
+// An open join modal captures input, so app-level keys cannot switch away and strand the flow.
 func TestJoiningCapturesInput(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "PUB", Title: "Pub", Visibility: "PUBLIC"})
 	m, _ = m.Update(keyPress("enter"))
@@ -106,7 +100,6 @@ func TestJoiningCapturesInput(t *testing.T) {
 	}
 }
 
-// Cancelling the join confirmation closes it and stays on the dashboard.
 func TestJoinCancelCloses(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "PUB", Title: "Pub", Visibility: "PUBLIC"})
 	m, _ = m.Update(keyPress("enter"))
@@ -116,7 +109,7 @@ func TestJoinCancelCloses(t *testing.T) {
 	}
 }
 
-// A successful join navigates into the project; a failure surfaces a toast without navigating.
+// A successful join navigates into the project. A failure surfaces a toast instead.
 func TestJoinDoneOutcomes(t *testing.T) {
 	m := homeWith(t, false, domain.Project{Key: "PUB", Title: "Pub", Visibility: "PUBLIC"})
 	_, okCmd := m.Update(joinDoneMsg{project: domain.Project{Key: "PUB", Title: "Pub"}})

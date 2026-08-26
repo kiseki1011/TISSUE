@@ -6,9 +6,7 @@ import (
 	"time"
 )
 
-// Notification types mirror the backend NotificationType enum. The inbox renders each into a human
-// sentence (the REST payload carries only the raw type plus a data map — the sentence is the client's
-// to build).
+// Mirrors the backend NotificationType enum. The payload carries no sentence, so Headline builds it.
 const (
 	NotifIssueStatusChanged   = "ISSUE_STATUS_CHANGED"
 	NotifIssueCommentAdded    = "ISSUE_COMMENT_ADDED"
@@ -26,8 +24,7 @@ const (
 	NotifProjectRoleChanged   = "PROJECT_ROLE_CHANGED"
 )
 
-// Notification data-map keys, mirroring the backend NotificationDataKeys. Only the subset the inbox
-// reads is named here.
+// Data-map keys from the backend NotificationDataKeys. Only the subset the inbox reads.
 const (
 	ndIssueKey    = "issueKey"
 	ndActorName   = "actorName"
@@ -45,14 +42,14 @@ const (
 type Notification struct {
 	ID        int64
 	Type      string            // raw backend NotificationType, e.g. ISSUE_ASSIGNED
-	ActorName string            // actorDisplayName (e.g. "System (webhook)"); "" when none
+	ActorName string            // actorDisplayName, e.g. "System (webhook)". "" when none
 	Data      map[string]string // per-type payload (issueKey, oldState, content, …)
 	Ref       EntityRef         // the resource the notification concerns
 	IsRead    bool
 	CreatedAt time.Time
 }
 
-// EntityRef points a notification at the resource it concerns, for display and (later) navigation.
+// EntityRef points a notification at the resource it concerns.
 type EntityRef struct {
 	ResourceType string // ISSUE | SPRINT | ISSUE_COMMENT | PROJECT_MEMBER
 	ResourceID   int64  // sprint id / comment id, 0 when none
@@ -61,28 +58,24 @@ type EntityRef struct {
 	MemberID     int64
 }
 
-// NotificationPage is one cursor page of the inbox (newest first). The list is cursor-paginated (no
-// total), so HasNext plus the opaque NextCursor is all that is needed to pull the next page.
+// NotificationPage is one cursor page of the inbox, newest first. There is no total, only HasNext.
 type NotificationPage struct {
 	Items      []Notification
 	HasNext    bool
 	NextCursor string
 }
 
-// ChannelEmail is the only delivery channel the backend exposes today (the in-app inbox is always
-// stored and cannot be disabled), so a preference is effectively "email me about this type: on/off".
+// ChannelEmail is the only channel the backend exposes. The in-app inbox is always stored.
 const ChannelEmail = "EMAIL"
 
-// NotificationPref is one delivery preference: whether a given notification type is delivered over a
-// given channel. The backend returns one per (type × channel), defaulting to enabled.
+// NotificationPref is one (type × channel) delivery preference. The backend defaults them to enabled.
 type NotificationPref struct {
 	Type    string
 	Channel string
 	Enabled bool
 }
 
-// actor is the display name of whoever caused the notification, falling back to the data map then a
-// generic label so a sentence never renders a dangling verb.
+// actor falls back to the data map, then a generic label, so a sentence never dangles.
 func (n Notification) actor() string {
 	if n.ActorName != "" {
 		return n.ActorName
@@ -93,7 +86,6 @@ func (n Notification) actor() string {
 	return "Someone"
 }
 
-// Actor is the display name of whoever caused the notification, for the detail pane's "From" row.
 func (n Notification) Actor() string { return n.actor() }
 
 // issueKey prefers the entity reference's key (authoritative) and falls back to the data map.
@@ -111,8 +103,7 @@ func (n Notification) projectKey() string {
 	return n.Data[ndProjectKey]
 }
 
-// Target is the short resource label shown in the list's right column: the issue key for issue
-// notifications, else the project key (sprint / role events).
+// Target is the issue key, else the project key. Sprint and role events carry no issue.
 func (n Notification) Target() string {
 	if k := n.issueKey(); k != "" {
 		return k
@@ -120,8 +111,7 @@ func (n Notification) Target() string {
 	return n.projectKey()
 }
 
-// Headline renders the one-line human summary of the notification. The recipient is always the caller,
-// so the second person ("you", "your") refers to them.
+// Headline renders the one-line summary. The recipient is always the caller, so "you" means them.
 func (n Notification) Headline() string {
 	actor, key, d := n.actor(), n.issueKey(), n.Data
 	switch n.Type {
@@ -164,8 +154,7 @@ func (n Notification) Headline() string {
 	return HumanizeNotificationType(n.Type)
 }
 
-// Detail is the secondary preview line for a notification, or "" when it has none. Only comment and
-// mention events carry a body worth previewing.
+// Detail is the preview line, "" when there is none. Only comment and mention events carry a body.
 func (n Notification) Detail() string {
 	switch n.Type {
 	case NotifIssueCommentAdded, NotifIssueCommentUpdated, NotifIssueMentioned:
@@ -174,8 +163,7 @@ func (n Notification) Detail() string {
 	return ""
 }
 
-// HumanizeNotificationType turns a raw enum ("SOME_NEW_EVENT") into a readable label ("Some new
-// event"), used for the detail pane's Type row and as the headline fallback for an unrecognized type.
+// HumanizeNotificationType turns "SOME_NEW_EVENT" into "Some new event", also the headline fallback.
 func HumanizeNotificationType(t string) string {
 	if t == "" {
 		return "Notification"

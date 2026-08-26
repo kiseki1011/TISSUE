@@ -14,7 +14,7 @@ func customTypeFields() []domain.IssueField {
 	}
 }
 
-// customReady opens the create form with a type whose custom fields are already cached, so they load in.
+// customReady opens the create form with the type's custom fields already cached.
 func customReady(t *testing.T) Model {
 	t.Helper()
 	m := createReady(t) // types = [{ID:5}]
@@ -23,7 +23,6 @@ func customReady(t *testing.T) Model {
 	return m
 }
 
-// Opening the form loads the selected type's custom fields from the cache.
 func TestCustomFieldsLoadIntoForm(t *testing.T) {
 	m := customReady(t)
 	if len(m.createUI.customFields) != 3 {
@@ -34,10 +33,9 @@ func TestCustomFieldsLoadIntoForm(t *testing.T) {
 	}
 }
 
-// A field load lands on the form when the gen matches and the type is unchanged; a stale gen is dropped.
 func TestTypeFieldsLoadedSetsFormAndDropsStale(t *testing.T) {
 	m := createReady(t)
-	m, _ = m.Update(press("n")) // no cache -> fires a load, bumps typeFieldsGen, form has no custom fields yet
+	m, _ = m.Update(press("n")) // no cache -> fires a load and bumps typeFieldsGen
 	m, _ = m.Update(typeFieldsLoadedMsg{gen: m.typeFieldsGen, typeID: 5, fields: customTypeFields()})
 	if len(m.createUI.customFields) != 3 {
 		t.Fatalf("a matching load should populate the form, got %d", len(m.createUI.customFields))
@@ -49,7 +47,6 @@ func TestTypeFieldsLoadedSetsFormAndDropsStale(t *testing.T) {
 	}
 }
 
-// Submitting collects each set custom field into the payload, keyed by field id.
 func TestSubmitCollectsCustomFields(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}})
 	f = f.withCustomFields(buildCustomInputs(customTypeFields()))
@@ -73,7 +70,6 @@ func TestSubmitCollectsCustomFields(t *testing.T) {
 	}
 }
 
-// A required custom field left empty blocks submit and is flagged + focused.
 func TestSubmitBlocksRequiredCustomField(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}})
 	f = f.withCustomFields(buildCustomInputs(customTypeFields()))
@@ -93,10 +89,9 @@ func TestSubmitBlocksRequiredCustomField(t *testing.T) {
 	}
 }
 
-// Submitting while a type's fields are still loading is blocked (so required custom fields are never
-// silently skipped), and no create command fires.
+// Submit is blocked while fields load, so required custom fields are never silently skipped.
 func TestSubmitBlockedWhileFieldsLoading(t *testing.T) {
-	m := createReady(t) // types = [{ID:5}], no field cache -> opening fires a load
+	m := createReady(t) // no field cache -> opening fires a load
 	m, _ = m.Update(press("n"))
 	if !m.createUI.customLoading {
 		t.Fatal("opening with an uncached type should mark the fields as loading")
@@ -111,8 +106,7 @@ func TestSubmitBlockedWhileFieldsLoading(t *testing.T) {
 	}
 }
 
-// A TEXT custom field is a multi-line area: enter inserts a newline (it does not advance focus), while a
-// single-line custom field still advances on enter.
+// TEXT is a multi-line area, so enter inserts a newline instead of advancing focus.
 func TestCustomTextFieldEnterDoesNotAdvance(t *testing.T) {
 	area := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}})
 	area = area.withCustomFields(buildCustomInputs([]domain.IssueField{{ID: 20, Name: "Notes", Type: "TEXT", Position: 1}}))
@@ -132,7 +126,6 @@ func TestCustomTextFieldEnterDoesNotAdvance(t *testing.T) {
 	}
 }
 
-// A TEXT area's value preserves newlines through to the payload.
 func TestCustomTextAreaValueMultiline(t *testing.T) {
 	c := newCustomFieldInput(domain.IssueField{ID: 20, Name: "Notes", Type: "TEXT"})
 	c.area.SetValue("line1\nline2")
@@ -145,7 +138,6 @@ func TestCustomTextAreaValueMultiline(t *testing.T) {
 	}
 }
 
-// Changing the type clears the old fields and requests the new type's fields.
 func TestCycleTypeReloadsFields(t *testing.T) {
 	f := newCreateForm(testDeps(), []domain.IssueTypeSummary{{ID: 5, Name: "Story"}, {ID: 6, Name: "Bug"}})
 	f = f.withCustomFields(buildCustomInputs(customTypeFields()))

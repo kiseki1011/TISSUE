@@ -8,8 +8,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// Pressing "a" on the Members tab kicks off the candidate load (guarded so a second press mid-load does
-// not double-fetch); the multi-select add picker opens only once the candidates land.
+// "a" starts the candidate load, guarded against a double press. The picker opens only once they land.
 func TestAddMemberFlowOpensPicker(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m, cmd := m.Update(press("a"))
@@ -17,7 +16,6 @@ func TestAddMemberFlowOpensPicker(t *testing.T) {
 		t.Fatalf("pressing a should start the candidate load: loading=%v cmd=%v", m.memberCandidateLoading, cmd != nil)
 	}
 	gen := m.memberCandidateGen
-	// a repeat press while loading is ignored (no second fetch)
 	m2, cmd2 := m.Update(press("a"))
 	if cmd2 != nil || m2.memberCandidateGen != gen {
 		t.Errorf("a repeat add press while loading should be a no-op, got cmd=%v gen=%d->%d", cmd2 != nil, gen, m2.memberCandidateGen)
@@ -33,7 +31,6 @@ func TestAddMemberFlowOpensPicker(t *testing.T) {
 	}
 }
 
-// A superseded candidate load (older generation) is dropped and never opens a picker.
 func TestAddMemberStaleGenDropped(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m, _ = m.Update(press("a")) // memberCandidateGen -> 1
@@ -43,7 +40,7 @@ func TestAddMemberStaleGenDropped(t *testing.T) {
 	}
 }
 
-// Candidates that land after the user has left the Members tab do not steal the screen with a picker.
+// Candidates landing after the user left the Members tab must not steal the screen.
 func TestAddMemberCandidatesDroppedOffTab(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m, _ = m.Update(press("a"))
@@ -71,8 +68,7 @@ func TestAddMemberNoCandidates(t *testing.T) {
 	}
 }
 
-// Confirming the add picker with some rows checked fires the batch add; confirming with nothing checked
-// just closes it.
+// Confirming with rows checked fires the batch add. With nothing checked it just closes.
 func TestSelectAddMembers(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m.picking = true
@@ -101,11 +97,10 @@ func TestSelectAddMembers(t *testing.T) {
 	}
 }
 
-// The role picker opens pinned to the selected member, with the cursor on their current role; picking
-// the same role is a no-op (no PATCH), and picking the other role fires the change.
+// The role picker opens pinned to the member, cursor on their current role. The same role is a no-op.
 func TestMemberRolePicker(t *testing.T) {
 	m := membersTabModel(t, memberList(2)) // member 1 = MANAGER, 2 = MEMBER
-	m.memberCursor = 1                     // select the MEMBER
+	m.memberCursor = 1
 	m, _ = m.syncMemberSelection()
 	m, _ = m.openMemberRolePicker()
 	if !m.picking || m.pickKind != pickMemberRole || m.memberActionID != 2 {
@@ -116,8 +111,7 @@ func TestMemberRolePicker(t *testing.T) {
 		t.Errorf("cursor should start on the member's current role, got %q", sel.Value)
 	}
 
-	// selecting the same role is a no-op change (still closes the picker, but no PATCH command distinct
-	// from the informational toast) — assert it closes and selecting the other role also closes.
+	// the same role still closes the picker, emitting only the informational toast (no PATCH)
 	same, cmd := m.selectMemberRole()
 	if same.picking {
 		t.Error("selecting a role should close the picker")
@@ -127,8 +121,7 @@ func TestMemberRolePicker(t *testing.T) {
 	}
 }
 
-// Kicking a member opens a confirmation pinned to that member; accepting fires the remove, cancelling
-// closes it without a command.
+// Kick opens a confirmation pinned to that member. Accepting fires the remove, cancelling does not.
 func TestKickConfirmFlow(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m, _ = m.openMemberKickConfirm()
@@ -148,8 +141,7 @@ func TestKickConfirmFlow(t *testing.T) {
 	}
 }
 
-// A successful membership change reloads the roster and the per-member stats; a role change reloads only
-// the roster (the stats are unaffected). Either way the current selection is pinned for restore.
+// A membership change reloads roster and stats, a role change only the roster. Selection is pinned.
 func TestMemberActionDoneReloads(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m.selMemberID = 2
@@ -197,14 +189,13 @@ func TestKickReloadClampsCursor(t *testing.T) {
 	}
 }
 
-// A fresh roster prunes cached work for members no longer present (e.g. one just kicked), so a later
-// re-add of the same member id cannot show their pre-kick issues; members still present keep their cache.
+// A fresh roster prunes departed members' cached work, so re-adding that id cannot show pre-kick issues.
 func TestReloadPrunesDepartedMemberWork(t *testing.T) {
 	m := membersTabModel(t, memberList(3))
 	m.memberWork[3] = memberWorkload{assigned: domain.IssuePage{TotalElements: 3}}
 	m.memberWorkFailed[3] = true
 	m.memberWork[2] = memberWorkload{assigned: domain.IssuePage{TotalElements: 5}}
-	m, _ = m.Update(membersLoadedMsg{members: memberList(2)}) // roster [1,2]; member 3 is gone
+	m, _ = m.Update(membersLoadedMsg{members: memberList(2)}) // roster [1,2] - member 3 is gone
 	if _, ok := m.memberWork[3]; ok {
 		t.Error("a departed member's cached work should be pruned on reload")
 	}
@@ -216,8 +207,8 @@ func TestReloadPrunesDepartedMemberWork(t *testing.T) {
 	}
 }
 
-// A kick's cache eviction is deferred to the roster reload: if that reload FAILS, the kept roster still
-// shows the member, and their surviving cache renders their (stale) issues rather than a stuck spinner.
+// Cache eviction is deferred to the reload: if it fails, the kept member shows stale issues rather than
+// a stuck spinner.
 func TestKickReloadFailureKeepsWork(t *testing.T) {
 	m := membersTabModel(t, memberList(3))
 	m.memberCursor = 2
@@ -234,8 +225,7 @@ func TestKickReloadFailureKeepsWork(t *testing.T) {
 	}
 }
 
-// A failed post-action reload drops the pending restore id, so it cannot later yank the highlight during
-// an unrelated reload.
+// A failed reload drops the restore id, so it cannot yank the highlight during a later reload.
 func TestReloadFailureClearsRestoreID(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m.memberRestoreID = 2
@@ -245,8 +235,7 @@ func TestReloadFailureClearsRestoreID(t *testing.T) {
 	}
 }
 
-// A post-action reload re-selects the acted-on member by id, so an unordered roster query that returns
-// a reordered list cannot drift the highlight to a different member.
+// Reload re-selects by id, so a reordered roster cannot drift the highlight to another member.
 func TestMemberReloadRestoresSelectionByID(t *testing.T) {
 	m := membersTabModel(t, memberList(3))
 	m.memberCursor = 1
@@ -262,8 +251,7 @@ func TestMemberReloadRestoresSelectionByID(t *testing.T) {
 	}
 }
 
-// A failed post-action roster refresh keeps the roster already on screen (rather than wiping it with an
-// error banner that would contradict the action's success toast).
+// A failed refresh keeps the on-screen roster, not an error banner contradicting the success toast.
 func TestMembersReloadFailureKeepsRoster(t *testing.T) {
 	m := membersTabModel(t, memberList(2))
 	m, cmd := m.Update(membersLoadedMsg{err: true})
@@ -278,8 +266,7 @@ func TestMembersReloadFailureKeepsRoster(t *testing.T) {
 	}
 }
 
-// The add flow surfaces the manager-role hint when the (manager-gated) candidate load 403s, instead of
-// the generic load error.
+// A 403 on the manager-gated candidate load shows the manager-role hint, not the generic error.
 func TestAddMemberForbiddenClearsGuard(t *testing.T) {
 	m := membersTabModel(t, memberList(1))
 	m, _ = m.Update(press("a"))

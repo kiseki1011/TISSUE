@@ -11,7 +11,7 @@ import (
 func textField(t string, req bool, val string) customFieldInput {
 	c := newCustomFieldInput(domain.IssueField{ID: 1, Name: "F", Type: t, Required: req})
 	switch {
-	case cfIsArea(t): // TEXT is a multi-line textarea
+	case cfIsArea(t):
 		c.area.SetValue(val)
 	case cfIsDate(t): // DATE/TIMESTAMP are set from the calendar, not typed
 		if val != "" {
@@ -23,8 +23,7 @@ func textField(t string, req bool, val string) customFieldInput {
 	return c
 }
 
-// parseTestDate builds the time.Time a DATE/TIMESTAMP field holds after a calendar pick: always
-// UTC-stored (matching the picker), with TIMESTAMP's components being the intended local wall-clock.
+// parseTestDate mirrors the picker: UTC-stored, with TIMESTAMP's components the local wall-clock.
 func parseTestDate(fieldType, val string) time.Time {
 	if fieldType == "TIMESTAMP" {
 		tt, _ := time.Parse("2006-01-02 15:04", val) // Parse defaults to UTC: components = the wall-clock
@@ -34,7 +33,6 @@ func parseTestDate(fieldType, val string) time.Time {
 	return tt
 }
 
-// value serializes each field type to the backend's expected JSON shape.
 func TestCustomFieldValueSerialization(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -71,8 +69,7 @@ func TestCustomFieldValueSerialization(t *testing.T) {
 	}
 }
 
-// A TIMESTAMP entry is wall-clock in the local zone: the emitted instant, rendered back in local time,
-// must match what was typed (timezone-independent, unlike a hard-coded "Z" assertion).
+// Asserted via a local round-trip, so the test is timezone-independent (a hard-coded "Z" would not be).
 func TestCustomFieldTimestampRoundTrips(t *testing.T) {
 	v, present, errMsg := textField("TIMESTAMP", false, "2026-08-15 14:00").value()
 	if !present || errMsg != "" {

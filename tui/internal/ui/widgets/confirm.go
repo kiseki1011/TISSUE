@@ -20,10 +20,8 @@ const (
 
 const confirmW = 44
 
-// ConfirmForm is a small yes/no dialog for a destructive action. It is presentational: it emits
-// ConfirmAcceptedMsg / ConfirmCancelledMsg and the parent runs the real command, routing any failure
-// back into Status so the dialog can stay open and show it. Submitting and Status are exported so the
-// parent can end the submitting state and surface an error in place.
+// ConfirmForm is a yes/no dialog for a destructive action. It only emits Accepted/Cancelled: the parent
+// runs the command and routes a failure back into Status, so the dialog stays open and shows it.
 type ConfirmForm struct {
 	styles  theme.Styles
 	title   string
@@ -38,8 +36,7 @@ type ConfirmForm struct {
 	Status     string
 }
 
-// NewConfirmForm builds a dialog defaulting focus to Cancel, so a stray enter does not confirm a
-// destructive action.
+// NewConfirmForm defaults focus to Cancel, so a stray enter does not confirm a destructive action.
 func NewConfirmForm(s theme.Styles, title, message, acceptLabel string) ConfirmForm {
 	return ConfirmForm{
 		styles: s, title: title, message: message, accept: acceptLabel,
