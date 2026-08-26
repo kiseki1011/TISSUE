@@ -17,9 +17,8 @@ import (
 // helpModalWidth caps the box so long descriptions do not sprawl across a wide terminal.
 const helpModalWidth = 72
 
-// helpModal is a read-only overlay: what the active screen is for, plus every shortcut available on
-// it. The shortcut list is the screen's own live key bindings (the same ones the footer draws), so
-// it can never drift. Content taller than the terminal scrolls in a viewport.
+// helpModal is a read-only overlay: what the active screen is for, plus its shortcuts. The list is
+// the screen's own live key bindings, the same ones the footer draws, so it cannot drift.
 type helpModal struct {
 	theme  theme.Theme
 	help   help.Model
@@ -83,7 +82,6 @@ func (m helpModal) content(width int) string {
 	return strings.Join(parts, "\n\n")
 }
 
-// FullHelpView of a single group renders one column of "key  desc" rows.
 func (m helpModal) section(label string, binds []key.Binding) string {
 	head := lipgloss.NewStyle().Foreground(m.theme.Text).Bold(true).Render(label)
 	return head + "\n" + m.help.FullHelpView([][]key.Binding{binds})

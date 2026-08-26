@@ -7,6 +7,7 @@ import com.tissue.feature.notification.application.port.repository.NotificationR
 import com.tissue.feature.notification.application.port.usecase.NotificationCommandUseCase;
 import com.tissue.feature.notification.domain.Notification;
 import com.tissue.feature.notification.domain.enums.NotificationType;
+import com.tissue.feature.notification.domain.event.NotificationCreatedEvent;
 import com.tissue.feature.notification.domain.exception.NotificationNotFoundException;
 import com.tissue.feature.notification.domain.service.NotificationMessageFactory;
 import com.tissue.feature.notification.domain.vo.NotificationMessage;
@@ -16,9 +17,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +33,7 @@ public class NotificationCommandService implements NotificationCommandUseCase {
     private final NotificationRepository notificationRepository;
     private final NotificationMessageFactory messageFactory;
     private final NotificationDispatchService dispatchService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createAndSend(
@@ -43,9 +48,24 @@ public class NotificationCommandService implements NotificationCommandUseCase {
             return;
         }
 
-        NotificationMessage message = messageFactory.createMessage(type, data);
+        List<Notification> notifications =
+                buildNotifications(eventId, type, reference, receivers, actorMemberId, actorDisplayName, data);
 
-        List<Notification> notifications = receivers.stream()
+        notificationRepository.saveAll(notifications);
+        dispatchService.dispatch(notifications);
+        publishRealtimeSignal(eventId, type, reference, receivers, actorMemberId);
+    }
+
+    private List<Notification> buildNotifications(
+            UUID eventId,
+            NotificationType type,
+            EntityReference reference,
+            Collection<MemberContactInfo> receivers,
+            @Nullable Long actorMemberId,
+            @Nullable String actorDisplayName,
+            Map<String, String> data) {
+        NotificationMessage message = messageFactory.createMessage(type, data);
+        return receivers.stream()
                 .map(receiver -> Notification.create(
                         eventId,
                         type,
@@ -57,9 +77,18 @@ public class NotificationCommandService implements NotificationCommandUseCase {
                         actorMemberId,
                         actorDisplayName))
                 .toList();
+    }
 
-        notificationRepository.saveAll(notifications);
-        dispatchService.dispatch(notifications);
+    private void publishRealtimeSignal(
+            UUID eventId,
+            NotificationType type,
+            EntityReference reference,
+            Collection<MemberContactInfo> receivers,
+            @Nullable Long actorMemberId) {
+        Set<Long> receiverMemberIds =
+                receivers.stream().map(MemberContactInfo::getMemberId).collect(Collectors.toSet());
+        eventPublisher.publishEvent(new NotificationCreatedEvent(
+                eventId, type, receiverMemberIds, reference.getProjectKey(), reference.getIssueKey(), actorMemberId));
     }
 
     @Override

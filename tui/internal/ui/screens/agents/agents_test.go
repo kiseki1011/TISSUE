@@ -29,8 +29,7 @@ func testDeps() deps.Deps {
 	}
 }
 
-// twoAgents builds a loaded model with two agents (ids 1,2), sized and with the global zone manager
-// reset so View/Scan work.
+// twoAgents builds a sized two-agent model with the global zone manager reset, so View/Scan work.
 func twoAgents(t *testing.T) Model {
 	t.Helper()
 	zone.NewGlobal()
@@ -50,7 +49,6 @@ func keyStr(s string) tea.KeyPressMsg {
 	return tea.KeyPressMsg{Text: s}
 }
 
-// Loading agents selects the first and asks to load its tokens.
 func TestAgentsLoadedSelectsFirst(t *testing.T) {
 	m := New(testDeps())
 	m, cmd := m.Update(AgentsLoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "A"}, {ID: 2, Name: "B"}}})
@@ -68,7 +66,6 @@ func TestAgentsLoadedSelectsFirst(t *testing.T) {
 	}
 }
 
-// A load error flips loadErr and the view says so.
 func TestAgentsLoadError(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps())
@@ -82,7 +79,6 @@ func TestAgentsLoadError(t *testing.T) {
 	}
 }
 
-// Moving the cursor to a different agent re-targets the token pane and requests that agent's tokens.
 func TestMoveCursorLoadsNewAgentTokens(t *testing.T) {
 	m := twoAgents(t)
 	m, cmd := m.Update(keyStr("j")) // down to agent 2
@@ -97,7 +93,6 @@ func TestMoveCursorLoadsNewAgentTokens(t *testing.T) {
 	}
 }
 
-// Opening a modal makes the screen capture input so the shell yields its tab keys.
 func TestOpenCreateCapturesInput(t *testing.T) {
 	m := twoAgents(t)
 	if m.CapturingInput() {
@@ -112,11 +107,10 @@ func TestOpenCreateCapturesInput(t *testing.T) {
 	}
 }
 
-// The create-agent form rejects an empty name, rejects digits, and accepts a letters/spaces name.
 func TestCreateAgentValidation(t *testing.T) {
 	f := newCreateAgentForm(testDeps(), nil)
 	if _, _ = f.submit(); f.nameErr == "" {
-		// submit returns a copy; re-run capturing it
+		// submit returns a copy, so re-run it capturing the result
 	}
 	f2, _ := f.submit()
 	if f2.nameErr == "" {
@@ -139,7 +133,6 @@ func TestCreateAgentValidation(t *testing.T) {
 	}
 }
 
-// A successful create closes the modal and reloads the list.
 func TestAgentCreatedClosesModal(t *testing.T) {
 	m := twoAgents(t)
 	m, _ = m.Update(keyStr("n"))
@@ -152,7 +145,6 @@ func TestAgentCreatedClosesModal(t *testing.T) {
 	}
 }
 
-// The issue-token form defaults to READ_WRITE, toggles scope with ←/→, and validates ttl bounds.
 func TestIssueTokenScopeAndTtl(t *testing.T) {
 	f := newIssueTokenForm(testDeps(), domain.Agent{ID: 1, Name: "Bot"})
 	if f.scope != domain.ScopeReadWrite {
@@ -181,7 +173,7 @@ func TestIssueTokenScopeAndTtl(t *testing.T) {
 	}
 }
 
-// Issuing a token opens the reveal modal carrying the raw secret exactly once.
+// The raw secret is shown exactly once, in the reveal modal.
 func TestTokenIssuedOpensReveal(t *testing.T) {
 	m := twoAgents(t)
 	m, _ = m.Update(keyStr("a")) // open issue modal for agent 1
@@ -203,7 +195,6 @@ func TestTokenIssuedOpensReveal(t *testing.T) {
 	}
 }
 
-// Copying in the reveal modal emits a clipboard command and marks it copied.
 func TestRevealCopy(t *testing.T) {
 	r := newRevealModal(testDeps(), domain.IssuedToken{Secret: "s3cret"})
 	r, cmd := r.Update(keyStr("c"))
@@ -215,7 +206,6 @@ func TestRevealCopy(t *testing.T) {
 	}
 }
 
-// 'd' on the agents pane arms a deactivate confirm; accepting it runs the deactivate command.
 func TestDeactivateConfirmFlow(t *testing.T) {
 	m := twoAgents(t)
 	m, _ = m.Update(keyStr("d"))
@@ -231,7 +221,7 @@ func TestDeactivateConfirmFlow(t *testing.T) {
 	}
 }
 
-// 'd' while the tokens pane is focused arms a revoke confirm targeting the selected token.
+// 'd' in the tokens pane revokes the selected token instead of deactivating the agent.
 func TestRevokeConfirmFlow(t *testing.T) {
 	m := twoAgents(t)
 	m, _ = m.Update(TokensLoadedMsg{AgentID: 1, Tokens: []domain.Token{{ID: 50, Name: "ci", Scope: domain.ScopeReadWrite}}})
@@ -245,7 +235,6 @@ func TestRevokeConfirmFlow(t *testing.T) {
 	}
 }
 
-// A confirm-driven action failure keeps the dialog open and shows the reason in place.
 func TestActionFailureKeepsConfirmOpen(t *testing.T) {
 	m := twoAgents(t)
 	m, _ = m.Update(keyStr("d"))
@@ -258,7 +247,6 @@ func TestActionFailureKeepsConfirmOpen(t *testing.T) {
 	}
 }
 
-// Token status labels reflect revoked / expired / active state.
 func TestTokenStatusLabels(t *testing.T) {
 	zone.NewGlobal()
 	m := twoAgents(t)
@@ -276,17 +264,16 @@ func TestTokenStatusLabels(t *testing.T) {
 	}
 }
 
-// Name length is validated in characters, not bytes, so multi-byte scripts the regex allows (e.g.
-// Hangul) are measured the same way the backend measures them.
+// Length is counted in runes, not bytes, so Hangul is measured the way the backend measures it.
 func TestCreateAgentNameLengthIsRuneBased(t *testing.T) {
 	f := newCreateAgentForm(testDeps(), nil)
-	// 12 Hangul characters = 36 bytes but 12 runes — within the 35-char limit, must be accepted.
+	// 12 Hangul chars = 36 bytes but 12 runes, inside the 35-char limit
 	f.name.SetValue("가나다라마바사아자차카타")
 	f2, _ := f.submit()
 	if f2.nameErr != "" {
 		t.Errorf("a 12-character Hangul name was rejected: %q", f2.nameErr)
 	}
-	// a single Hangul character is 3 bytes but 1 rune — must be rejected as too short.
+	// 1 Hangul char = 3 bytes but 1 rune, too short
 	f.name.SetValue("봇")
 	f3, _ := f.submit()
 	if f3.nameErr == "" {
@@ -294,8 +281,6 @@ func TestCreateAgentNameLengthIsRuneBased(t *testing.T) {
 	}
 }
 
-// A list longer than the pane windows to the selected row: the pane never exceeds the height budget,
-// and the selected agent's row stays rendered (reachable), not scrolled off.
 func TestAgentListWindowsToSelection(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps())
@@ -325,7 +310,6 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 	}
 }
 
-// The view renders without panicking across a range of sizes, including below the minimum.
 func TestViewNoPanic(t *testing.T) {
 	for _, sz := range [][2]int{{40, 8}, {60, 12}, {70, 40}, {100, 24}, {200, 50}} {
 		zone.NewGlobal()

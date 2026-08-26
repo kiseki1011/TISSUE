@@ -10,8 +10,7 @@ import (
 
 func keyN() tea.KeyPressMsg { return tea.KeyPressMsg{Code: 'n', Text: "n"} }
 
-// Pressing n on the Workflows pane opens the create-workflow modal, seeded with the two standard
-// states (To Do / Done) and no transitions, leaving the author to wire the graph.
+// The seed graph is To Do / Done with no transitions — the author wires it.
 func TestWorkflowCreateOpensWithSeedGraph(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -23,7 +22,7 @@ func TestWorkflowCreateOpensWithSeedGraph(t *testing.T) {
 	if len(f.states) != 2 || len(f.trans) != 0 {
 		t.Fatalf("seed graph = %d states / %d trans, want 2 / 0", len(f.states), len(f.trans))
 	}
-	// naming it leaves only the missing transition to add before it validates
+	// with a name set, only the missing transition blocks validation
 	f.name.SetValue("Seed Flow")
 	if msg := f.validate(); msg != "Add at least one transition." {
 		t.Errorf("named seed with no transition = %q, want the add-transition prompt", msg)
@@ -34,8 +33,7 @@ func TestWorkflowCreateOpensWithSeedGraph(t *testing.T) {
 	}
 }
 
-// The starter graph builds a create payload where every state carries a temp key and transitions
-// reference those keys.
+// Every state in the payload carries a temp key, and transitions reference those keys.
 func TestWorkflowCreateBuildInputs(t *testing.T) {
 	f := newCreateWorkflowForm(optionsDeps())
 	f.name.SetValue("Bugfix")
@@ -50,7 +48,6 @@ func TestWorkflowCreateBuildInputs(t *testing.T) {
 			t.Errorf("incomplete state in payload: %+v", st)
 		}
 	}
-	// the added edge references temp keys of existing states
 	found := false
 	for _, tr := range trans {
 		if tr.Name == "Start" && tr.SourceTempKey == "n1" && tr.TargetTempKey == "n3" {
@@ -62,10 +59,10 @@ func TestWorkflowCreateBuildInputs(t *testing.T) {
 	}
 }
 
-// Recategorizing a second state to INITIAL demotes the previous initial, keeping exactly one.
+// Marking a second state INITIAL demotes the previous one — exactly one initial survives.
 func TestWorkflowCreateSingleInitial(t *testing.T) {
 	f := newCreateWorkflowForm(optionsDeps())
-	// state 1 (Done) -> INITIAL should demote state 0 (To Do)
+	// state 1 (Done) -> INITIAL demotes state 0 (To Do)
 	f.states[1].category = "INITIAL"
 	f = f.enforceInitial(1)
 	initial := 0
@@ -82,7 +79,6 @@ func TestWorkflowCreateSingleInitial(t *testing.T) {
 	}
 }
 
-// Validation rejects a too-short name and a graph with no completed state.
 func TestWorkflowCreateValidation(t *testing.T) {
 	f := newCreateWorkflowForm(optionsDeps())
 	f.name.SetValue("x")
@@ -96,7 +92,6 @@ func TestWorkflowCreateValidation(t *testing.T) {
 	}
 }
 
-// A successful create closes the modal and reloads the catalog list.
 func TestWorkflowCreateSaveReloads(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -110,7 +105,6 @@ func TestWorkflowCreateSaveReloads(t *testing.T) {
 	}
 }
 
-// A create failure keeps the modal open with the error shown.
 func TestWorkflowCreateFailureKeepsOpen(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -126,7 +120,7 @@ func TestWorkflowCreateEscNesting(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
 	m, _ = m.Update(keyN())
-	m.cworkflow = m.cworkflow.openAddState() // opens the node sub-form
+	m.cworkflow = m.cworkflow.openAddState()
 	m, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if !m.creatingWorkflow {
 		t.Fatal("esc closed the whole modal while a sub-form was open")
@@ -140,9 +134,8 @@ func TestWorkflowCreateEscNesting(t *testing.T) {
 	}
 }
 
-// The add handles and Save/Cancel carry clickable zones in the modal. scanView polls until the
-// async zone scan settles (a bare Scan+Get races the background scan worker), and NewGlobal makes
-// the test self-contained rather than depending on another test to initialize the zone manager.
+// scanView polls because a bare Scan+Get races bubblezone's background scan worker. NewGlobal keeps
+// the test from depending on another test to initialize the zone manager.
 func TestWorkflowCreateActionZones(t *testing.T) {
 	zone.NewGlobal()
 	f := newCreateWorkflowForm(optionsDeps())

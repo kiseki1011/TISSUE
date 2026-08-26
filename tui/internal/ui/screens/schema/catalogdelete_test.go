@@ -13,8 +13,7 @@ import (
 
 func keyD() tea.KeyPressMsg { return tea.KeyPressMsg{Code: 'd', Text: "d"} }
 
-// callSafe runs a cmd, swallowing a panic (mk's deps have a nil Catalog, so a reload cmd panics
-// when executed — we only want to read the sibling toast cmd out of the batch).
+// callSafe swallows the panic a reload cmd throws on mk's nil Catalog.
 func callSafe(c tea.Cmd) (msg tea.Msg) {
 	defer func() { _ = recover() }()
 	if c != nil {
@@ -23,8 +22,7 @@ func callSafe(c tea.Cmd) (msg tea.Msg) {
 	return
 }
 
-// toastFromBatch pulls the toast.ShowMsg out of a delete-success batch (reload + toast), regardless
-// of the order tea.Batch stored the two commands in.
+// toastFromBatch scans the whole batch: tea.Batch does not guarantee command order.
 func toastFromBatch(t *testing.T, cmd tea.Cmd) toast.ShowMsg {
 	t.Helper()
 	if cmd == nil {
@@ -43,8 +41,6 @@ func toastFromBatch(t *testing.T, cmd tea.Cmd) toast.ShowMsg {
 	return toast.ShowMsg{}
 }
 
-// d on the Workflows list opens a delete-confirm dialog targeting the selected workflow, and no
-// unrelated delete target is set.
 func TestDeleteWorkflowOpensConfirm(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -59,8 +55,7 @@ func TestDeleteWorkflowOpensConfirm(t *testing.T) {
 	}
 }
 
-// Accepting the dialog runs the delete command and keeps the dialog open so an in-place failure
-// (such as "in use") can still be shown.
+// The dialog stays open after accept so an in-place failure ("in use") can still be shown.
 func TestDeleteWorkflowAcceptRunsDelete(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -74,7 +69,6 @@ func TestDeleteWorkflowAcceptRunsDelete(t *testing.T) {
 	}
 }
 
-// A successful workflow delete closes and clears the confirm and returns a command (reload + toast).
 func TestWorkflowDeletedReloadsAndToasts(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -93,7 +87,6 @@ func TestWorkflowDeletedReloadsAndToasts(t *testing.T) {
 	}
 }
 
-// A workflow delete failure keeps the dialog open with the error surfaced in place.
 func TestWorkflowDeleteFailureKeepsOpen(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -104,7 +97,6 @@ func TestWorkflowDeleteFailureKeepsOpen(t *testing.T) {
 	}
 }
 
-// d on the Issue Types list opens a delete-confirm dialog targeting the selected type.
 func TestDeleteTypeOpensConfirm(t *testing.T) {
 	m := mk(120, 30, 3, 2, false) // focus defaults to the Issue Types pane
 	m, _ = m.Update(keyD())
@@ -114,7 +106,6 @@ func TestDeleteTypeOpensConfirm(t *testing.T) {
 	}
 }
 
-// A successful type delete closes and clears the confirm and returns a command (reload + toast).
 func TestTypeDeletedReloadsAndToasts(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.Update(keyD())
@@ -132,7 +123,6 @@ func TestTypeDeletedReloadsAndToasts(t *testing.T) {
 	}
 }
 
-// The 409 delete failure is rendered as a specific in-use message, not the generic fallback.
 func TestDeleteErrorMessageNamesInUse(t *testing.T) {
 	err := &domain.APIError{Status: http.StatusConflict}
 	if got := deleteCatalogErrorMessage(err, "workflow"); !strings.Contains(got, "in use") {

@@ -8,14 +8,12 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// focusAccentSGR is the TokyoNight accent (#ff9e64) that mk() builds every form with; focus is shown
-// by painting the focused control's border in this colour.
+// focusAccentSGR is the TokyoNight accent (#ff9e64) mk() builds every form with. Focus is shown by
+// painting the focused control's border in it.
 const focusAccentSGR = "38;2;255;158;100"
 
-// focusedBorderRow is the line index of the focused control's top border in a form's full, unwindowed
-// render. Focus is shown by the accent border COLOUR (not weight); a box's top-left corner is ╭ (a
-// form field) or ┌ (a graph state box), so the line carrying an accent-coloured corner is the focused
-// control's top row — the same row FocusRow reports. It is the ground truth for FocusRow.
+// focusedBorderRow is the ground truth for FocusRow. Focus shows as border COLOUR, not weight, so the
+// line carrying an accent-coloured corner (╭ form field, ┌ graph state) is the focused top row.
 func focusedBorderRow(view string) int {
 	for i, ln := range strings.Split(view, "\n") {
 		if strings.ContainsAny(accentedRunes([]string{ln}, focusAccentSGR), "╭┌") {
@@ -25,12 +23,11 @@ func focusedBorderRow(view string) int {
 	return -1
 }
 
-// FocusRow must report the row where the focused control actually renders, for every focus stop —
-// so the host scrolls to the right place. The accent-coloured border marks the focused control.
+// FocusRow must match the real render row at every stop, or the host scrolls to the wrong place.
 func TestCreateFieldFocusRowMatchesRender(t *testing.T) {
 	m := openCreateFieldModal(t)
 	f := m.cfield
-	// walk every focus stop (Name, Type, Required, Description, Create, Cancel) and check agreement
+	// the 6 stops: Name, Type, Required, Description, Create, Cancel
 	for stop := 0; stop < 6; stop++ {
 		row, _, ok := f.FocusRow()
 		if !ok {
@@ -43,7 +40,6 @@ func TestCreateFieldFocusRowMatchesRender(t *testing.T) {
 	}
 }
 
-// The Edit Field modal reports the focused control's row correctly at every stop.
 func TestFieldFormFocusRowMatchesRender(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown()) // metadata -> first field
@@ -64,7 +60,7 @@ func TestFieldFormFocusRowMatchesRender(t *testing.T) {
 	}
 }
 
-// The Edit (issue type) modal — which includes a Color field — reports the focused row correctly.
+// This modal has a Color field, unlike the others.
 func TestEditFormFocusRowMatchesRender(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)
@@ -85,7 +81,6 @@ func TestEditFormFocusRowMatchesRender(t *testing.T) {
 	}
 }
 
-// The New Issue Type modal — five fields plus buttons — reports the focused row correctly.
 func TestCreateTypeFocusRowMatchesRender(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)
@@ -106,8 +101,8 @@ func TestCreateTypeFocusRowMatchesRender(t *testing.T) {
 	}
 }
 
-// createTypeForm width-constrains its status message, so a long one wraps to two lines. FocusRow must
-// count the wrapped height, or the buttons row it reports drifts above where they actually render.
+// A long status wraps at the field width. FocusRow must count the wrapped height, or the buttons row
+// it reports drifts above where they render.
 func TestCreateTypeFocusRowWithWrappingStatus(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneTypes)
@@ -127,9 +122,7 @@ func TestCreateTypeFocusRowWithWrappingStatus(t *testing.T) {
 	}
 }
 
-// The New Workflow modal reports the focused row for both its metadata fields and the states inside
-// the draft graph. Each renders an accent-coloured border when focused (fields via TitledBoxWeighted,
-// the selected state via the graph's emphasizeBorder), so that colour is the ground truth.
+// Covers both metadata fields and draft-graph states: both paint an accent border when focused.
 func TestCreateWorkflowFocusRowMatchesRender(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -148,8 +141,6 @@ func TestCreateWorkflowFocusRowMatchesRender(t *testing.T) {
 	}
 }
 
-// Focusing a state low in the draft graph scrolls a windowed New Workflow modal so that state stays
-// fully visible.
 func TestCreateWorkflowFocusFollowsGraph(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -169,8 +160,7 @@ func TestCreateWorkflowFocusFollowsGraph(t *testing.T) {
 	}
 }
 
-// A routed (back/skip) transition whose multi-word name wraps to several rows must report its FULL
-// height, so a windowed modal reveals every line and not just the label's first row.
+// A wrapped transition label must report its full height, or the window reveals only its first row.
 func TestCreateWorkflowTransitionHeightCoversWrappedLabel(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -192,13 +182,12 @@ func TestCreateWorkflowTransitionHeightCoversWrappedLabel(t *testing.T) {
 	}
 }
 
-// While the type picker is open, FocusRow reports not-ok (the picker view replaces the form, so
-// there is no form control to scroll to).
+// The picker view replaces the form, so there is no control to scroll to.
 func TestCreateFieldFocusRowSuppressedWhilePicking(t *testing.T) {
 	m := openCreateFieldModal(t)
 	f := m.cfield
 	f, _ = f.focusOn(cffType)
-	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEnter}) // open the type picker
+	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
 	if !f.pickOpen {
 		t.Fatal("type picker did not open")
 	}
@@ -207,8 +196,7 @@ func TestCreateFieldFocusRowSuppressedWhilePicking(t *testing.T) {
 	}
 }
 
-// On a terminal too short for the modal, tabbing down scrolls the window so the focused control stays
-// visible, and tabbing back up brings it back to the top.
+// On a terminal too short for the modal, the focused control must stay visible while tabbing.
 func TestModalFocusFollowScrolls(t *testing.T) {
 	m := openCreateFieldModal(t)
 	m.height = 14 // shorter than the ~23-row New Field modal
@@ -221,14 +209,13 @@ func TestModalFocusFollowScrolls(t *testing.T) {
 		}
 		off := m.modalScroll
 		top, bottom := row, row+height-1
-		// the control's top must be visible; its whole span too when it fits the window
+		// the control's top must be visible, and its whole span too when it fits
 		return top >= 1+off && (bottom < 1+off+visible || height >= visible)
 	}
 
 	if !inWindow(m) {
 		t.Fatal("initial focus (Name) is not inside the window")
 	}
-	// tab down to the buttons; the focused control must stay in the window at every step
 	for i := 0; i < 5; i++ {
 		m, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
 		if !inWindow(m) {
@@ -242,14 +229,13 @@ func TestModalFocusFollowScrolls(t *testing.T) {
 	if !strings.Contains(stripANSI(m.View()), "Create") {
 		t.Error("the Create button is not visible after tabbing to it")
 	}
-	// tab forward once more wraps to Name (top); the window must return to the top
+	// tab once more wraps to Name, so the window must return to the top
 	m, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
 	if !inWindow(m) {
 		t.Error("wrapping focus back to Name did not bring the window to the top")
 	}
 }
 
-// A modal that fits the terminal is never scrolled by focus movement.
 func TestModalFocusFollowNoScrollWhenItFits(t *testing.T) {
 	m := openCreateFieldModal(t)
 	m.height = lipgloss.Height(m.cfield.View()) + 6 // ample room

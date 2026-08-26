@@ -88,8 +88,7 @@ func (m Model) View() string {
 	return view
 }
 
-// dashboard arranges the agents list and the detail pane per the active layout: side by side, or
-// stacked (detail above the list) on a narrow-and-tall terminal.
+// dashboard lays list and detail side by side, or stacked (detail above) when narrow and tall.
 func (m Model) dashboard() string {
 	if m.layout() == layoutStacked {
 		w, detailH := m.stackWidth(), m.stackDetailH()
@@ -101,7 +100,6 @@ func (m Model) dashboard() string {
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
 }
 
-// layout resolves the arrangement from the terminal size: stacked when narrow and tall, else side by side.
 func (m Model) layout() layoutKind {
 	if components.StackVertically(m.width, m.height, stackBelowW, stackMinH) {
 		return layoutStacked
@@ -109,12 +107,10 @@ func (m Model) layout() layoutKind {
 	return layoutSide
 }
 
-// stackWidth is the single-column width the stacked and list-only arrangements use, capped so a very
-// wide terminal does not stretch rows to an unreadable measure.
+// stackWidth is the single-column width, capped so a very wide terminal keeps a readable measure.
 func (m Model) stackWidth() int { return clamp(m.width-2*hInset, 24, 84) }
 
-// stackDetailH gives the detail (summary block plus a few tokens) the top slice, leaving the rest for
-// the list below.
+// stackDetailH gives the detail the top slice when stacked, leaving the rest for the list below.
 func (m Model) stackDetailH() int { return clamp(m.height*45/100, 10, m.height-6) }
 
 // The list windows to the selected row so a long list never overflows the pane.
@@ -168,8 +164,7 @@ func (m Model) agentRow(a domain.Agent, i, w int, hovered bool) string {
 	return lipgloss.JoinVertical(lipgloss.Left, head, sub)
 }
 
-// hoverBand is the subtle background band a mouse-hovered row gets, dimmer than the selection. On the
-// ANSI theme (no real background to dim) it tints the text instead.
+// hoverBand dims a hovered row. The ANSI theme has no background to dim, so it tints the text.
 func (m Model) hoverBand() lipgloss.Style {
 	t := m.deps.Styles.Theme
 	if _, noBg := t.Background.(lipgloss.NoColor); noBg {
@@ -186,8 +181,7 @@ func (m Model) detailPane(w, h int) string {
 	return zone.Mark("agents.detail", components.TitledRule("Details", "", m.detailContent(w-4, max(1, h-2)), border))
 }
 
-// detailContent is the inner block shared by the inline pane and the stacked pane: the agent summary, the
-// new-token affordance, and the windowed tokens list, sized to innerW x bodyH.
+// detailContent is the inner block shared by the side-by-side and the stacked pane, sized to innerW x bodyH.
 func (m Model) detailContent(innerW, bodyH int) string {
 	a, ok := m.selectedAgent()
 	if !ok {
@@ -253,7 +247,7 @@ func (m Model) agentTitle(a domain.Agent, w int) string {
 	return name + strings.Repeat(" ", gap) + penStr
 }
 
-// Windowed to the selected row so a long list never overflows the pane. avail is the rows left for this block.
+// Windowed to the selected row. avail is the lines left for this block.
 func (m Model) tokensBlock(w, avail int) []string {
 	t := m.deps.Styles.Theme
 	head := lipgloss.NewStyle().Foreground(t.Muted).Bold(true).Render("Tokens")

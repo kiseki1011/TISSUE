@@ -7,8 +7,7 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// Every backend ColorType name must resolve, or its issue types render without a swatch.
-// This list mirrors com.tissue.shared.enums.ColorType.
+// Mirrors com.tissue.shared.enums.ColorType. An unresolved name renders issue types without a swatch.
 var allColorTypes = []string{
 	"ANSI_BLACK", "ANSI_RED", "ANSI_GREEN", "ANSI_YELLOW", "ANSI_BLUE", "ANSI_MAGENTA",
 	"ANSI_CYAN", "ANSI_WHITE", "ANSI_BRIGHT_BLACK", "ANSI_BRIGHT_RED", "ANSI_BRIGHT_GREEN",
@@ -39,8 +38,7 @@ func TestUnknownAndEmptyColorHaveNoSwatch(t *testing.T) {
 	}
 }
 
-// The extended-color hexes must be well-formed; the backend stores two of them without a
-// leading '#', so this pins the correction.
+// The backend stores two extended hexes without a leading '#'. This pins the correction.
 func TestExtendedColorsAreValidHex(t *testing.T) {
 	for name, hex := range extendedColorHex {
 		if !strings.HasPrefix(hex, "#") || len(hex) != 7 {
@@ -62,8 +60,7 @@ func TestColorLabelHumanizes(t *testing.T) {
 	}
 }
 
-// A chip paints the text on the color as a background, and picks a foreground that stays
-// legible: black on light colors, white on dark ones.
+// A chip picks a legible foreground: black on light colors, white on dark ones.
 func TestColorChipContrastsText(t *testing.T) {
 	const black = "38;2;0;0;0"
 	const white = "38;2;255;255;255"
@@ -100,8 +97,7 @@ func TestColorChipUnknownFallsBack(t *testing.T) {
 	}
 }
 
-// ANSI names must map to ANSI palette indexes (so swatches follow the terminal theme), not
-// to a hardcoded hex.
+// ANSI names must map to palette indexes, not hex, so swatches follow the terminal theme.
 func TestANSIColorsUsePalette(t *testing.T) {
 	c, ok := IssueColor("ANSI_RED")
 	if !ok {

@@ -50,6 +50,9 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private ProjectMemberQueryRepository projectMemberQueryRepository;
 
+    @Autowired
+    private com.tissue.feature.project.application.port.usecase.ProjectMemberQueryUseCase projectMemberQueryUseCase;
+
     private Member newHuman(String username) {
         return memberCommandRepository.save(Member.create(username + "@tissue.dev", username, "Human"));
     }
@@ -171,5 +174,41 @@ class AgentProjectEnrollmentIntegrationTest extends IntegrationTestSupport {
         // then
         assertThat(projectMemberQueryRepository.findByProjectAndMemberId(project, agent.id()))
                 .isPresent();
+    }
+
+    @Test
+    @DisplayName("success: the member roster tags each member as human or agent and names an agent's owner")
+    void rosterExposesMemberTypeAndAgentOwner() {
+        // given
+        Member owner = newHuman("gildong");
+        Project project = newProject("PROJ");
+        addAsManager(project, owner);
+        AgentResponse agent = agentService.createAgent(
+                owner.getId(), CreateAgentCommand.builder().name("Bot").build());
+
+        // when
+        var roster = projectMemberQueryUseCase.getProjectMembers(
+                ProjectIdentifier.ofProjectKey(project.getKey()),
+                null,
+                null,
+                org.springframework.data.domain.PageRequest.of(0, 50),
+                owner.getId());
+
+        // then
+        var humanSummary = roster.getContent().stream()
+                .filter(s -> s.memberId().equals(owner.getId()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(humanSummary.memberType()).isEqualTo(com.tissue.feature.member.domain.MemberType.HUMAN);
+        assertThat(humanSummary.ownerUsername()).isNull();
+        assertThat(humanSummary.ownerName()).isNull();
+
+        var agentSummary = roster.getContent().stream()
+                .filter(s -> s.memberId().equals(agent.id()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(agentSummary.memberType()).isEqualTo(com.tissue.feature.member.domain.MemberType.AGENT);
+        assertThat(agentSummary.ownerUsername()).isEqualTo(owner.getUsername());
+        assertThat(agentSummary.ownerName()).isEqualTo(owner.getName());
     }
 }

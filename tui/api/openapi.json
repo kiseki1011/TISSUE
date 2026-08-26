@@ -787,7 +787,7 @@
         "type": "object"
       },
       "CommentDetailResponse": {
-        "description": "A comment on an issue with author info and nested replies. Only deleted comments contents are `null` to preserve structure.",
+        "description": "A comment on an issue with author info and nested replies. Only deleted comments contents are `null` to preserve structure. `reviewStatus` is set only when the comment is the feedback body of a submitted review, and holds the verdict it was submitted with.",
         "example": {
           "author": {
             "displayName": "Gildong",
@@ -847,6 +847,14 @@
               "$ref": "#/components/schemas/CommentDetailResponse"
             },
             "type": "array"
+          },
+          "reviewStatus": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "CHANGES_REQUESTED"
+            ],
+            "type": "string"
           }
         },
         "type": "object"
@@ -857,13 +865,11 @@
           "guards": [
             {
               "guardType": "ASSIGNEE_REQUIRED",
-              "order": 1,
-              "params": null
+              "order": 1
             },
             {
               "guardType": "BLOCKING_ISSUE_RESOLVE_REQUIRED",
-              "order": 2,
-              "params": null
+              "order": 2
             },
             {
               "guardType": "APPROVAL_REQUIRED",
@@ -887,6 +893,21 @@
         "required": [
           "guards"
         ],
+        "type": "object"
+      },
+      "ContributionDay": {
+        "properties": {
+          "count": {
+            "description": "Issues resolved on this day",
+            "format": "int64",
+            "type": "integer"
+          },
+          "date": {
+            "description": "The calendar day, cut on the requested zone (UTC by default)",
+            "format": "date",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "CreateAgentRequest": {
@@ -1858,6 +1879,31 @@
         },
         "type": "object"
       },
+      "DurationStats": {
+        "properties": {
+          "avgSeconds": {
+            "description": "Mean duration in seconds (0 when count is 0)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "count": {
+            "description": "Number of resolved issues the stat is computed over",
+            "format": "int64",
+            "type": "integer"
+          },
+          "p50Seconds": {
+            "description": "Median (50th percentile) duration in seconds",
+            "format": "int64",
+            "type": "integer"
+          },
+          "p90Seconds": {
+            "description": "90th percentile duration in seconds",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "EmailVerificationRequest": {
         "properties": {
           "email": {
@@ -1916,6 +1962,26 @@
           },
           "name": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FlowPoint": {
+        "properties": {
+          "created": {
+            "description": "Issues created on this day",
+            "format": "int64",
+            "type": "integer"
+          },
+          "date": {
+            "description": "The calendar day, cut on the requested zone (UTC by default)",
+            "format": "date",
+            "type": "string"
+          },
+          "resolved": {
+            "description": "Issues resolved (entered a COMPLETED state) on this day",
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -2100,6 +2166,45 @@
         },
         "type": "object"
       },
+      "IssueBranchView": {
+        "description": "A VCS branch linked to the issue, with ready-to-open repository links.",
+        "properties": {
+          "branchName": {
+            "description": "Branch name, e.g. feature/PROJ-12-login",
+            "type": "string"
+          },
+          "branchUrl": {
+            "description": "Ready-to-open URL of the branch",
+            "type": "string"
+          },
+          "latestCommitHash": {
+            "description": "Short hash of the latest pushed commit",
+            "type": "string"
+          },
+          "latestCommitMessage": {
+            "description": "Message of the latest pushed commit",
+            "type": "string"
+          },
+          "latestCommitUrl": {
+            "description": "Ready-to-open URL of the latest commit",
+            "type": "string"
+          },
+          "pushedAt": {
+            "description": "When the latest commit was pushed",
+            "format": "date-time",
+            "type": "string"
+          },
+          "pusherName": {
+            "description": "Display name of who pushed last",
+            "type": "string"
+          },
+          "repoUrl": {
+            "description": "Repository URL the branch lives in",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "IssueCommonDetail": {
         "properties": {
           "assignee": {
@@ -2220,6 +2325,12 @@
             },
             "type": "array"
           },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/IssueBranchView"
+            },
+            "type": "array"
+          },
           "children": {
             "items": {
               "$ref": "#/components/schemas/IssueIdentifierResponse"
@@ -2240,6 +2351,12 @@
           },
           "parent": {
             "$ref": "#/components/schemas/IssueIdentifierResponse"
+          },
+          "pullRequests": {
+            "items": {
+              "$ref": "#/components/schemas/IssuePullRequestView"
+            },
+            "type": "array"
           },
           "relations": {
             "$ref": "#/components/schemas/IssueRelationsDetail"
@@ -2314,6 +2431,43 @@
           },
           "issueType": {
             "$ref": "#/components/schemas/IssueTypeInfo"
+          }
+        },
+        "type": "object"
+      },
+      "IssuePullRequestView": {
+        "description": "A pull request linked to the issue, with its current state.",
+        "properties": {
+          "authorName": {
+            "description": "Provider username of the author",
+            "type": "string"
+          },
+          "lastEventAt": {
+            "description": "When the last event for this pull request occurred",
+            "format": "date-time",
+            "type": "string"
+          },
+          "number": {
+            "description": "The provider's pull request number, e.g. 42",
+            "format": "int32",
+            "type": "integer"
+          },
+          "state": {
+            "description": "Whether the pull request is open, closed, or merged",
+            "enum": [
+              "OPEN",
+              "CLOSED",
+              "MERGED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "description": "Pull request title as last seen",
+            "type": "string"
+          },
+          "url": {
+            "description": "Ready-to-open URL of the pull request",
+            "type": "string"
           }
         },
         "type": "object"
@@ -2401,6 +2555,9 @@
             "format": "int64",
             "type": "integer"
           },
+          "assigneeName": {
+            "type": "string"
+          },
           "content": {
             "type": "string"
           },
@@ -2476,6 +2633,11 @@
             "type": "integer"
           },
           "issueTypeName": {
+            "type": "string"
+          },
+          "lastActivityAt": {
+            "description": "The most recent activity Instant on this issue (comments included), `null` when the issue has no activity yet",
+            "format": "date-time",
             "type": "string"
           },
           "myReviewStatus": {
@@ -2970,26 +3132,12 @@
       "MigrateIssuesRequest": {
         "description": "Migrate incomplete issues from a completed sprint to another sprint.",
         "properties": {
-          "issueKeys": {
-            "example": [
-              "PROJ-10",
-              "PROJ-15",
-              "PROJ-23"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 100,
-            "minItems": 0,
-            "type": "array"
-          },
           "newSprintId": {
             "format": "int64",
             "type": "integer"
           }
         },
         "required": [
-          "issueKeys",
           "newSprintId"
         ],
         "type": "object"
@@ -3543,6 +3691,43 @@
         },
         "type": "object"
       },
+      "PageResponseVcsWebhookDeliverySummary": {
+        "description": "Offset-based paginated response.",
+        "properties": {
+          "content": {
+            "description": "Items in this page",
+            "items": {
+              "$ref": "#/components/schemas/VcsWebhookDeliverySummary"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "Whether a next page is available",
+            "type": "boolean"
+          },
+          "page": {
+            "description": "Zero-based index of this page",
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "description": "Requested page size",
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "description": "Total number of matching elements across all pages",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "Total number of pages",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageResponseWikiDocumentSearchResult": {
         "description": "Offset-based paginated response.",
         "properties": {
@@ -3787,6 +3972,110 @@
         },
         "type": "object"
       },
+      "ProjectAgingStats": {
+        "properties": {
+          "aging1to2w": {
+            "description": "Open issues aged 1 to 2 weeks (7 to 14 days)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "aging3to7d": {
+            "description": "Open issues aged 3 to 7 days",
+            "format": "int64",
+            "type": "integer"
+          },
+          "agingOver2w": {
+            "description": "Open issues aged over 2 weeks (14+ days)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "agingUnder3d": {
+            "description": "Open issues aged under 3 days (since work started, or since creation when not started)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "blocked": {
+            "description": "Open issues currently blocked by a BLOCKS relation from another still-open issue",
+            "format": "int64",
+            "type": "integer"
+          },
+          "openTotal": {
+            "description": "Total open issues (INITIAL + ACTIVE); the sum of the age buckets",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectContributionStats": {
+        "properties": {
+          "days": {
+            "description": "One entry per UTC day in the window, oldest first, zero-filled",
+            "items": {
+              "$ref": "#/components/schemas/ContributionDay"
+            },
+            "type": "array"
+          },
+          "from": {
+            "description": "Window start (inclusive), UTC",
+            "format": "date-time",
+            "type": "string"
+          },
+          "maxDaily": {
+            "description": "The busiest day's resolved count; 0 when the window is empty",
+            "format": "int64",
+            "type": "integer"
+          },
+          "memberId": {
+            "description": "The member the heatmap is for",
+            "format": "int64",
+            "type": "integer"
+          },
+          "to": {
+            "description": "Window end (exclusive), UTC",
+            "format": "date-time",
+            "type": "string"
+          },
+          "totalResolved": {
+            "description": "Total issues resolved across the window",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectCycleTimeStats": {
+        "properties": {
+          "cycleTime": {
+            "$ref": "#/components/schemas/DurationStats",
+            "description": "Start-of-work to resolution"
+          },
+          "from": {
+            "description": "Inclusive start of the window",
+            "format": "date-time",
+            "type": "string"
+          },
+          "leadTime": {
+            "$ref": "#/components/schemas/DurationStats",
+            "description": "Creation to resolution"
+          },
+          "to": {
+            "description": "Exclusive end of the window",
+            "format": "date-time",
+            "type": "string"
+          },
+          "window": {
+            "description": "The preset that produced this window",
+            "enum": [
+              "WEEK",
+              "MONTH",
+              "SPRINT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ProjectDetail": {
         "properties": {
           "archived": {
@@ -3821,6 +4110,37 @@
             "enum": [
               "PUBLIC",
               "PRIVATE"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectFlowStats": {
+        "properties": {
+          "from": {
+            "description": "Inclusive start of the window",
+            "format": "date-time",
+            "type": "string"
+          },
+          "points": {
+            "description": "One point per UTC day in the window, in ascending date order",
+            "items": {
+              "$ref": "#/components/schemas/FlowPoint"
+            },
+            "type": "array"
+          },
+          "to": {
+            "description": "Exclusive end of the window",
+            "format": "date-time",
+            "type": "string"
+          },
+          "window": {
+            "description": "The preset that produced this window",
+            "enum": [
+              "WEEK",
+              "MONTH",
+              "SPRINT"
             ],
             "type": "string"
           }
@@ -3914,6 +4234,41 @@
         },
         "type": "object"
       },
+      "ProjectMemberStats": {
+        "properties": {
+          "avgResolveSeconds": {
+            "description": "Average seconds from creation to resolution over the member's resolved issues. `null` when they have none",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completionRate": {
+            "description": "resolvedCount / (resolvedCount + openAssignedCount); 0 when the member has no assigned issues",
+            "format": "double",
+            "type": "number"
+          },
+          "memberId": {
+            "description": "The member these stats are for",
+            "format": "int64",
+            "type": "integer"
+          },
+          "openAssignedCount": {
+            "description": "Issues assigned to the member that are still open (`INITIAL` + `ACTIVE`)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "resolvedCount": {
+            "description": "Issues assigned to the member that reached a `COMPLETED` state (excludes `ABORTED`)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalStoryPoints": {
+            "description": "Sum of story points over the member's resolved issues (unset points count as 0)",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "ProjectMemberSummary": {
         "properties": {
           "active": {
@@ -3933,6 +4288,22 @@
           "memberId": {
             "format": "int64",
             "type": "integer"
+          },
+          "memberType": {
+            "description": "Whether this member is a human or an agent",
+            "enum": [
+              "HUMAN",
+              "AGENT"
+            ],
+            "type": "string"
+          },
+          "ownerName": {
+            "description": "For an agent, the owning member's display name (`null` for a human)",
+            "type": "string"
+          },
+          "ownerUsername": {
+            "description": "For an agent, the owning member's username (`null` for a human)",
+            "type": "string"
           },
           "role": {
             "enum": [
@@ -4033,6 +4404,95 @@
         },
         "type": "object"
       },
+      "ProjectSprintReport": {
+        "properties": {
+          "completedAt": {
+            "description": "When the sprint was completed, if it has been",
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedIssues": {
+            "description": "Issues in a COMPLETED state",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completedStoryPoints": {
+            "description": "Story points of the sprint's completed issues, excluding EPICs",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completionRate": {
+            "description": "Completed over total, in [0,1]; 0 when the sprint has no issues",
+            "format": "double",
+            "type": "number"
+          },
+          "dueAt": {
+            "description": "The sprint's planned due date, if set",
+            "format": "date-time",
+            "type": "string"
+          },
+          "goal": {
+            "description": "Sprint goal (free text, may be empty)",
+            "type": "string"
+          },
+          "openIssues": {
+            "description": "Still-open issues (INITIAL + ACTIVE) - the work that would carry over",
+            "format": "int64",
+            "type": "integer"
+          },
+          "pointsCompletionRate": {
+            "description": "Completed story points over total, in [0,1]; 0 when there are no points",
+            "format": "double",
+            "type": "number"
+          },
+          "sprintId": {
+            "description": "The sprint's id",
+            "format": "int64",
+            "type": "integer"
+          },
+          "sprintKey": {
+            "description": "Human-facing sprint key, e.g. S-1",
+            "type": "string"
+          },
+          "startedAt": {
+            "description": "When the sprint started, if it has",
+            "format": "date-time",
+            "type": "string"
+          },
+          "stateDistribution": {
+            "description": "Issue counts per state category, for categories that have at least one issue",
+            "items": {
+              "$ref": "#/components/schemas/SprintStateCount"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "Sprint lifecycle status",
+            "enum": [
+              "PLANNING",
+              "ACTIVE",
+              "COMPLETED",
+              "CANCELLED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "description": "Sprint title",
+            "type": "string"
+          },
+          "totalIssues": {
+            "description": "Issues currently in the sprint's scope",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalStoryPoints": {
+            "description": "Summed story points over the sprint's issues, excluding EPICs",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "ProjectSummary": {
         "properties": {
           "archived": {
@@ -4079,6 +4539,28 @@
               "PRIVATE"
             ],
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectVelocity": {
+        "properties": {
+          "averageCompletedIssues": {
+            "description": "Mean completed issue count over the returned sprints; 0 when there are none",
+            "format": "double",
+            "type": "number"
+          },
+          "averageStoryPoints": {
+            "description": "Mean completed story points over the returned sprints; 0 when there are none",
+            "format": "double",
+            "type": "number"
+          },
+          "sprints": {
+            "description": "Completed sprints oldest first, one point each",
+            "items": {
+              "$ref": "#/components/schemas/VelocityPoint"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -4667,6 +5149,26 @@
         },
         "type": "object"
       },
+      "SprintStateCount": {
+        "properties": {
+          "category": {
+            "description": "The state category",
+            "enum": [
+              "INITIAL",
+              "ACTIVE",
+              "COMPLETED",
+              "ABORTED"
+            ],
+            "type": "string"
+          },
+          "count": {
+            "description": "Issues in this category within the sprint",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "SprintSummary": {
         "properties": {
           "completedAt": {
@@ -4882,6 +5384,12 @@
           "approved": {
             "description": "`true` to approve, `false` to request changes",
             "type": "boolean"
+          },
+          "comment": {
+            "description": "Optional feedback body. When present it is stored as a comment on the issue, stamped with the verdict this review was submitted with.",
+            "maxLength": 10000,
+            "minLength": 0,
+            "type": "string"
           }
         },
         "required": [
@@ -5476,6 +5984,18 @@
         },
         "type": "object"
       },
+      "UpdateVcsSyncRequest": {
+        "properties": {
+          "syncEnabled": {
+            "description": "Whether inbound webhooks for this project are acted on",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "syncEnabled"
+        ],
+        "type": "object"
+      },
       "UpdateWorkflowRequest": {
         "properties": {
           "color": {
@@ -5532,6 +6052,97 @@
             "type": "string"
           },
           "webhookUrl": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VcsWebhookDeliverySummary": {
+        "description": "An inbound webhook delivery and how it was handled.",
+        "properties": {
+          "attemptCount": {
+            "description": "How many attempts have failed so far",
+            "format": "int32",
+            "type": "integer"
+          },
+          "deliveryId": {
+            "description": "The provider's own delivery id, matching its delivery log",
+            "type": "string"
+          },
+          "eventType": {
+            "description": "Provider event type, e.g. push or pull_request",
+            "type": "string"
+          },
+          "id": {
+            "description": "Internal id of this delivery record",
+            "format": "int64",
+            "type": "integer"
+          },
+          "lastError": {
+            "description": "Failure reason, when the delivery could not be processed",
+            "type": "string"
+          },
+          "nextAttemptAt": {
+            "description": "When the next retry is due, while it is still being retried",
+            "format": "date-time",
+            "type": "string"
+          },
+          "processedAt": {
+            "description": "When it reached a final state",
+            "format": "date-time",
+            "type": "string"
+          },
+          "receivedAt": {
+            "description": "When the delivery arrived",
+            "format": "date-time",
+            "type": "string"
+          },
+          "resultDetail": {
+            "description": "Why it ended that way, e.g. which branch linked or why nothing was done",
+            "type": "string"
+          },
+          "status": {
+            "description": "How the delivery ended, or that it is still being retried",
+            "enum": [
+              "RECEIVED",
+              "PROCESSED",
+              "IGNORED",
+              "FAILED",
+              "DEAD"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VelocityPoint": {
+        "properties": {
+          "completedAt": {
+            "description": "When the sprint was completed, if recorded",
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedIssues": {
+            "description": "Issues of this sprint now in a COMPLETED state",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completedStoryPoints": {
+            "description": "Completed story points, excluding EPICs",
+            "format": "int64",
+            "type": "integer"
+          },
+          "sprintId": {
+            "description": "The sprint's id",
+            "format": "int64",
+            "type": "integer"
+          },
+          "sprintKey": {
+            "description": "Human-facing sprint key, e.g. S-1",
+            "type": "string"
+          },
+          "title": {
+            "description": "Sprint title",
             "type": "string"
           }
         },
@@ -9196,7 +9807,7 @@
     },
     "/api/v1/issues/{issueKey}:submitReview": {
       "post": {
-        "description": "Submit a review decision (approve or reject) for an issue.\n\n**Behavior:**\n- `approved: true` — Sets the reviewer's status to `APPROVED`\n- `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`\n\n**Workflow automation:**\nWhen rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.\n\n**Requirements:**\n- Requires project membership",
+        "description": "Submit a review decision (approve or reject) for an issue.\n\n**Behavior:**\n- `approved: true` — Sets the reviewer's status to `APPROVED`\n- `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`\n- `comment` (optional) — Stored as a comment on the issue, carrying the verdict in its `reviewStatus`, so the feedback appears in the issue's conversation. The verdict on that comment is frozen: submit a new review to change your decision.\n\n**Workflow automation:**\nWhen rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard with `auto_transition_on_reject` enabled, the issue automatically performs transition of the specified `reject_transition_name`.\n\n**`REQUIRED_APPROVAL` guard parameters:**\n- `min_approvals` (number, default: 1) — Minimum number of `APPROVED` reviewers required to pass the guarded transition.\n- `block_on_change_request` (boolean, default: true) — If any reviewer has `CHANGES_REQUESTED` status, the guarded transition is blocked.\n- `auto_transition_on_reject` (boolean, default: false) — Enables automatic state transition when a reviewer rejects.\n- `reject_transition_name` (text, required if auto-reject enabled) — The name of the transition to execute automatically on rejection.\n\n**Requirements:**\n- Requires project membership",
         "operationId": "submitIssueReview",
         "parameters": [
           {
@@ -9282,6 +9893,19 @@
           {
             "in": "query",
             "name": "currentStateIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "issueTypeIds",
             "required": false,
             "schema": {
               "items": {
@@ -10344,6 +10968,34 @@
             }
           },
           {
+            "description": "Filter by notification types (e.g. ISSUE_MENTIONED). Omit for all types.",
+            "in": "query",
+            "name": "types",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "ISSUE_STATUS_CHANGED",
+                  "ISSUE_COMMENT_ADDED",
+                  "ISSUE_COMMENT_UPDATED",
+                  "ISSUE_MENTIONED",
+                  "ISSUE_ASSIGNED",
+                  "ISSUE_UNASSIGNED",
+                  "ISSUE_REVIEWER_ADDED",
+                  "ISSUE_REVIEWER_REMOVED",
+                  "ISSUE_REVIEW_REQUESTED",
+                  "ISSUE_REVIEW_SUBMITTED",
+                  "ISSUE_DELETED",
+                  "SPRINT_STARTED",
+                  "SPRINT_COMPLETED",
+                  "PROJECT_ROLE_CHANGED"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
             "description": "Opaque cursor from the previous page's `nextCursor`. Omit for the first page.",
             "in": "query",
             "name": "cursor",
@@ -10901,6 +11553,101 @@
         "tags": [
           "GitHub Integration"
         ]
+      },
+      "patch": {
+        "description": "Pause or resume acting on this project's GitHub webhooks, without removing the integration.\nWhile disabled, inbound events are ignored: no branches are linked and no workflow\nautomation runs. The webhook secret and URL stay valid, so no re-registration on GitHub is\nneeded to resume.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "operationId": "updateGithubSync",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVcsSyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VcsIntegrationDetail"
+                }
+              }
+            },
+            "description": "Sync setting updated"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `INTEGRATION_NOT_FOUND`: VCS integration not found for project"
+          }
+        },
+        "summary": "Enable or disable GitHub sync",
+        "tags": [
+          "GitHub Integration"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/integrations/github/deliveries": {
+      "get": {
+        "description": "List what GitHub has sent to this project's webhook and how each delivery was handled,\nnewest first. Shows deliveries that were deliberately ignored and why, which is where an\nintegration that \"does nothing\" is usually diagnosed.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "operationId": "listGithubDeliveries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageable",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseVcsWebhookDeliverySummary"
+                }
+              }
+            },
+            "description": "Deliveries retrieved"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+          }
+        },
+        "summary": "List GitHub webhook deliveries",
+        "tags": [
+          "GitHub Integration"
+        ]
       }
     },
     "/api/v1/projects/{projectKey}/integrations/github:regenerateSecret": {
@@ -11198,6 +11945,19 @@
           },
           {
             "in": "query",
+            "name": "issueTypeIds",
+            "required": false,
+            "schema": {
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          {
+            "in": "query",
             "name": "tagIds",
             "required": false,
             "schema": {
@@ -11427,6 +12187,44 @@
         "summary": "List a project's deleted issues",
         "tags": [
           "Issue"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/member-stats": {
+      "get": {
+        "description": "Per-member contribution stats for a project: resolved and open assigned counts, resolved story points, and completion rate. A row is returned only for members that have at least one assigned issue; soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectMemberStats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectMemberStats"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Member stats retrieved"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get per-member contribution stats",
+        "tags": [
+          "Project"
         ]
       }
     },
@@ -11760,7 +12558,7 @@
     },
     "/api/v1/projects/{projectKey}/simple-stats": {
       "get": {
-        "description": "Snapshot statistics for a project's current issues: totals, open and completed counts, unassigned and overdue KPIs, and count breakdowns by state category, hierarchy and priority. Stats are count-based. Soft-deleted issues are excluded.\n\n**Requirements:**\n- Requires authentication",
+        "description": "Snapshot statistics for a project's current issues: totals, open and completed counts, unassigned and overdue KPIs, and count breakdowns by state category, hierarchy and priority. Stats are count-based. Soft-deleted issues are excluded. A PUBLIC project's stats are visible to any member (project discovery); a PRIVATE project's only to its members.\n\n**Requirements:**\n- Requires authentication",
         "operationId": "getProjectSimpleStats",
         "parameters": [
           {
@@ -11900,6 +12698,296 @@
         "summary": "Create sprint",
         "tags": [
           "Sprint"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/aging": {
+      "get": {
+        "description": "Aging and flow-risk snapshot for a project's open issues: how long open work has been sitting, bucketed by age (measured from when an issue started, or its creation when not yet started), plus how many open issues are currently blocked by a still-open blocker. Always computed as of now; soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectAgingStats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAgingStats"
+                }
+              }
+            },
+            "description": "Aging stats retrieved"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get project aging \u0026 blocked stats",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/contributions": {
+      "get": {
+        "description": "A per-member issue-resolution heatmap (\"잔디\"): a dense one-per-day count of issues the member resolved over the last `days` days (default 90, capped at 366), zero-filled. The `zoneId` selects the IANA zone the days are cut on (e.g. `Asia/Seoul`); it defaults to UTC, and an unrecognized zone falls back to UTC rather than failing. Resolution is attributed by an issue's current assignee, counting issues currently in a COMPLETED state by their resolution day. Soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectContributions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "zoneId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectContributionStats"
+                }
+              }
+            },
+            "description": "Contribution heatmap retrieved"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get a member's contribution heatmap",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/cycle-time": {
+      "get": {
+        "description": "Cycle- and lead-time statistics over a time window, computed from issues currently in a COMPLETED state and resolved within the window. Cycle time measures start-of-work to resolution (issues that never started are excluded); lead time measures creation to resolution. Each reports count, average, p50 and p90 in seconds. The `window` selects a preset - `week`, `month` or `sprint` (requires `sprintId`); an unknown value falls back to `month`. Soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectCycleTimeStats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "window",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCycleTimeStats"
+                }
+              }
+            },
+            "description": "Cycle time stats retrieved"
+          },
+          "404": {
+            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get project cycle \u0026 lead time stats",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/flow": {
+      "get": {
+        "description": "Flow statistics over a time window. A dense, one-per-day series of how many issues were created and how many were resolved (entered a COMPLETED state). The `window` selects a preset - `week` (rolling 7 days), `month` (rolling 30 days) or `sprint` (the sprint's active period, requires `sprintId`). An unknown value falls back to `month`. The `zoneId` selects the IANA zone the days are cut on (e.g. `Asia/Seoul`); it defaults to UTC, and an unrecognized zone falls back to UTC rather than failing. Soft-deleted issues are excluded. Reopened issues drop out of the resolved series until resolved again. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectFlowStats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "window",
+            "required": false,
+            "schema": {
+              "default": "month",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "zoneId",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectFlowStats"
+                }
+              }
+            },
+            "description": "Flow stats retrieved"
+          },
+          "404": {
+            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get project flow statistics",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/sprint-report": {
+      "get": {
+        "description": "A snapshot report for one sprint: total, completed and still-open (carried) issue counts, completion rate, story points (excluding EPICs) and the issue distribution by state category. Reflects the sprint's current scope - there is no scope history, so this is a live snapshot (the final tally once the sprint is completed), not a committed-vs-delivered burndown. Requires `sprintId`. Soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectSprintReport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sprintId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSprintReport"
+                }
+              }
+            },
+            "description": "Sprint report retrieved"
+          },
+          "404": {
+            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get a sprint report",
+        "tags": [
+          "Project"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectKey}/stats/velocity": {
+      "get": {
+        "description": "Delivered work per COMPLETED sprint, oldest first: completed story points (excluding EPICs) and completed issue count for each sprint, plus the mean over those sprints. Reflects each issue's current sprint membership and state (there is no scope history), so a sprint whose scope changed after it closed reports its live tally. Soft-deleted issues are excluded. Limited to project members.\n\n**Requirements:**\n- Requires authentication",
+        "operationId": "getProjectVelocity",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectVelocity"
+                }
+              }
+            },
+            "description": "Velocity retrieved"
+          },
+          "404": {
+            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+          }
+        },
+        "summary": "Get project sprint velocity",
+        "tags": [
+          "Project"
         ]
       }
     },

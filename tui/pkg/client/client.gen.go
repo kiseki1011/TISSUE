@@ -106,22 +106,22 @@ func (e ActivityLogResponseType) Valid() bool {
 
 // Defines values for AddIssueRelationRequestRelationType.
 const (
-	BLOCKS     AddIssueRelationRequestRelationType = "BLOCKS"
-	CAUSES     AddIssueRelationRequestRelationType = "CAUSES"
-	DUPLICATES AddIssueRelationRequestRelationType = "DUPLICATES"
-	RELEVANT   AddIssueRelationRequestRelationType = "RELEVANT"
+	AddIssueRelationRequestRelationTypeBLOCKS     AddIssueRelationRequestRelationType = "BLOCKS"
+	AddIssueRelationRequestRelationTypeCAUSES     AddIssueRelationRequestRelationType = "CAUSES"
+	AddIssueRelationRequestRelationTypeDUPLICATES AddIssueRelationRequestRelationType = "DUPLICATES"
+	AddIssueRelationRequestRelationTypeRELEVANT   AddIssueRelationRequestRelationType = "RELEVANT"
 )
 
 // Valid indicates whether the value is a known member of the AddIssueRelationRequestRelationType enum.
 func (e AddIssueRelationRequestRelationType) Valid() bool {
 	switch e {
-	case BLOCKS:
+	case AddIssueRelationRequestRelationTypeBLOCKS:
 		return true
-	case CAUSES:
+	case AddIssueRelationRequestRelationTypeCAUSES:
 		return true
-	case DUPLICATES:
+	case AddIssueRelationRequestRelationTypeDUPLICATES:
 		return true
-	case RELEVANT:
+	case AddIssueRelationRequestRelationTypeRELEVANT:
 		return true
 	default:
 		return false
@@ -587,6 +587,27 @@ func (e ChangeSystemRoleRequestRole) Valid() bool {
 	case ChangeSystemRoleRequestRoleSUPERADMIN:
 		return true
 	case ChangeSystemRoleRequestRoleUSER:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CommentDetailResponseReviewStatus.
+const (
+	CommentDetailResponseReviewStatusAPPROVED         CommentDetailResponseReviewStatus = "APPROVED"
+	CommentDetailResponseReviewStatusCHANGESREQUESTED CommentDetailResponseReviewStatus = "CHANGES_REQUESTED"
+	CommentDetailResponseReviewStatusPENDING          CommentDetailResponseReviewStatus = "PENDING"
+)
+
+// Valid indicates whether the value is a known member of the CommentDetailResponseReviewStatus enum.
+func (e CommentDetailResponseReviewStatus) Valid() bool {
+	switch e {
+	case CommentDetailResponseReviewStatusAPPROVED:
+		return true
+	case CommentDetailResponseReviewStatusCHANGESREQUESTED:
+		return true
+	case CommentDetailResponseReviewStatusPENDING:
 		return true
 	default:
 		return false
@@ -1684,25 +1705,25 @@ func (e GuardDetailGuardType) Valid() bool {
 
 // Defines values for GuardViolationGuardType.
 const (
-	APPROVALREQUIRED             GuardViolationGuardType = "APPROVAL_REQUIRED"
-	ASSIGNEEREQUIRED             GuardViolationGuardType = "ASSIGNEE_REQUIRED"
-	BLOCKINGISSUERESOLVEREQUIRED GuardViolationGuardType = "BLOCKING_ISSUE_RESOLVE_REQUIRED"
-	CHILDISSUESRESOLVEREQUIRED   GuardViolationGuardType = "CHILD_ISSUES_RESOLVE_REQUIRED"
-	LINKEDBRANCHREQUIRED         GuardViolationGuardType = "LINKED_BRANCH_REQUIRED"
+	GuardViolationGuardTypeAPPROVALREQUIRED             GuardViolationGuardType = "APPROVAL_REQUIRED"
+	GuardViolationGuardTypeASSIGNEEREQUIRED             GuardViolationGuardType = "ASSIGNEE_REQUIRED"
+	GuardViolationGuardTypeBLOCKINGISSUERESOLVEREQUIRED GuardViolationGuardType = "BLOCKING_ISSUE_RESOLVE_REQUIRED"
+	GuardViolationGuardTypeCHILDISSUESRESOLVEREQUIRED   GuardViolationGuardType = "CHILD_ISSUES_RESOLVE_REQUIRED"
+	GuardViolationGuardTypeLINKEDBRANCHREQUIRED         GuardViolationGuardType = "LINKED_BRANCH_REQUIRED"
 )
 
 // Valid indicates whether the value is a known member of the GuardViolationGuardType enum.
 func (e GuardViolationGuardType) Valid() bool {
 	switch e {
-	case APPROVALREQUIRED:
+	case GuardViolationGuardTypeAPPROVALREQUIRED:
 		return true
-	case ASSIGNEEREQUIRED:
+	case GuardViolationGuardTypeASSIGNEEREQUIRED:
 		return true
-	case BLOCKINGISSUERESOLVEREQUIRED:
+	case GuardViolationGuardTypeBLOCKINGISSUERESOLVEREQUIRED:
 		return true
-	case CHILDISSUESRESOLVEREQUIRED:
+	case GuardViolationGuardTypeCHILDISSUESRESOLVEREQUIRED:
 		return true
-	case LINKEDBRANCHREQUIRED:
+	case GuardViolationGuardTypeLINKEDBRANCHREQUIRED:
 		return true
 	default:
 		return false
@@ -1789,40 +1810,61 @@ func (e IssueCommonDetailPriority) Valid() bool {
 
 // Defines values for IssueFieldDetailType.
 const (
-	BOOLEAN      IssueFieldDetailType = "BOOLEAN"
-	CHECKLIST    IssueFieldDetailType = "CHECKLIST"
-	DATE         IssueFieldDetailType = "DATE"
-	DECIMAL      IssueFieldDetailType = "DECIMAL"
-	INTEGER      IssueFieldDetailType = "INTEGER"
-	PERCENTAGE   IssueFieldDetailType = "PERCENTAGE"
-	SELECTOPTION IssueFieldDetailType = "SELECT_OPTION"
-	SHORTTEXT    IssueFieldDetailType = "SHORT_TEXT"
-	TEXT         IssueFieldDetailType = "TEXT"
-	TIMESTAMP    IssueFieldDetailType = "TIMESTAMP"
+	IssueFieldDetailTypeBOOLEAN      IssueFieldDetailType = "BOOLEAN"
+	IssueFieldDetailTypeCHECKLIST    IssueFieldDetailType = "CHECKLIST"
+	IssueFieldDetailTypeDATE         IssueFieldDetailType = "DATE"
+	IssueFieldDetailTypeDECIMAL      IssueFieldDetailType = "DECIMAL"
+	IssueFieldDetailTypeINTEGER      IssueFieldDetailType = "INTEGER"
+	IssueFieldDetailTypePERCENTAGE   IssueFieldDetailType = "PERCENTAGE"
+	IssueFieldDetailTypeSELECTOPTION IssueFieldDetailType = "SELECT_OPTION"
+	IssueFieldDetailTypeSHORTTEXT    IssueFieldDetailType = "SHORT_TEXT"
+	IssueFieldDetailTypeTEXT         IssueFieldDetailType = "TEXT"
+	IssueFieldDetailTypeTIMESTAMP    IssueFieldDetailType = "TIMESTAMP"
 )
 
 // Valid indicates whether the value is a known member of the IssueFieldDetailType enum.
 func (e IssueFieldDetailType) Valid() bool {
 	switch e {
-	case BOOLEAN:
+	case IssueFieldDetailTypeBOOLEAN:
 		return true
-	case CHECKLIST:
+	case IssueFieldDetailTypeCHECKLIST:
 		return true
-	case DATE:
+	case IssueFieldDetailTypeDATE:
 		return true
-	case DECIMAL:
+	case IssueFieldDetailTypeDECIMAL:
 		return true
-	case INTEGER:
+	case IssueFieldDetailTypeINTEGER:
 		return true
-	case PERCENTAGE:
+	case IssueFieldDetailTypePERCENTAGE:
 		return true
-	case SELECTOPTION:
+	case IssueFieldDetailTypeSELECTOPTION:
 		return true
-	case SHORTTEXT:
+	case IssueFieldDetailTypeSHORTTEXT:
 		return true
-	case TEXT:
+	case IssueFieldDetailTypeTEXT:
 		return true
-	case TIMESTAMP:
+	case IssueFieldDetailTypeTIMESTAMP:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for IssuePullRequestViewState.
+const (
+	IssuePullRequestViewStateCLOSED IssuePullRequestViewState = "CLOSED"
+	IssuePullRequestViewStateMERGED IssuePullRequestViewState = "MERGED"
+	IssuePullRequestViewStateOPEN   IssuePullRequestViewState = "OPEN"
+)
+
+// Valid indicates whether the value is a known member of the IssuePullRequestViewState enum.
+func (e IssuePullRequestViewState) Valid() bool {
+	switch e {
+	case IssuePullRequestViewStateCLOSED:
+		return true
+	case IssuePullRequestViewStateMERGED:
+		return true
+	case IssuePullRequestViewStateOPEN:
 		return true
 	default:
 		return false
@@ -2909,6 +2951,27 @@ func (e PriorityCountPriority) Valid() bool {
 	}
 }
 
+// Defines values for ProjectCycleTimeStatsWindow.
+const (
+	ProjectCycleTimeStatsWindowMONTH  ProjectCycleTimeStatsWindow = "MONTH"
+	ProjectCycleTimeStatsWindowSPRINT ProjectCycleTimeStatsWindow = "SPRINT"
+	ProjectCycleTimeStatsWindowWEEK   ProjectCycleTimeStatsWindow = "WEEK"
+)
+
+// Valid indicates whether the value is a known member of the ProjectCycleTimeStatsWindow enum.
+func (e ProjectCycleTimeStatsWindow) Valid() bool {
+	switch e {
+	case ProjectCycleTimeStatsWindowMONTH:
+		return true
+	case ProjectCycleTimeStatsWindowSPRINT:
+		return true
+	case ProjectCycleTimeStatsWindowWEEK:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProjectDetailVisibility.
 const (
 	ProjectDetailVisibilityPRIVATE ProjectDetailVisibility = "PRIVATE"
@@ -2921,6 +2984,45 @@ func (e ProjectDetailVisibility) Valid() bool {
 	case ProjectDetailVisibilityPRIVATE:
 		return true
 	case ProjectDetailVisibilityPUBLIC:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectFlowStatsWindow.
+const (
+	ProjectFlowStatsWindowMONTH  ProjectFlowStatsWindow = "MONTH"
+	ProjectFlowStatsWindowSPRINT ProjectFlowStatsWindow = "SPRINT"
+	ProjectFlowStatsWindowWEEK   ProjectFlowStatsWindow = "WEEK"
+)
+
+// Valid indicates whether the value is a known member of the ProjectFlowStatsWindow enum.
+func (e ProjectFlowStatsWindow) Valid() bool {
+	switch e {
+	case ProjectFlowStatsWindowMONTH:
+		return true
+	case ProjectFlowStatsWindowSPRINT:
+		return true
+	case ProjectFlowStatsWindowWEEK:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectMemberSummaryMemberType.
+const (
+	ProjectMemberSummaryMemberTypeAGENT ProjectMemberSummaryMemberType = "AGENT"
+	ProjectMemberSummaryMemberTypeHUMAN ProjectMemberSummaryMemberType = "HUMAN"
+)
+
+// Valid indicates whether the value is a known member of the ProjectMemberSummaryMemberType enum.
+func (e ProjectMemberSummaryMemberType) Valid() bool {
+	switch e {
+	case ProjectMemberSummaryMemberTypeAGENT:
+		return true
+	case ProjectMemberSummaryMemberTypeHUMAN:
 		return true
 	default:
 		return false
@@ -2960,6 +3062,30 @@ func (e ProjectMemberSummarySystemRole) Valid() bool {
 	case ProjectMemberSummarySystemRoleSUPERADMIN:
 		return true
 	case ProjectMemberSummarySystemRoleUSER:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ProjectSprintReportStatus.
+const (
+	ProjectSprintReportStatusACTIVE    ProjectSprintReportStatus = "ACTIVE"
+	ProjectSprintReportStatusCANCELLED ProjectSprintReportStatus = "CANCELLED"
+	ProjectSprintReportStatusCOMPLETED ProjectSprintReportStatus = "COMPLETED"
+	ProjectSprintReportStatusPLANNING  ProjectSprintReportStatus = "PLANNING"
+)
+
+// Valid indicates whether the value is a known member of the ProjectSprintReportStatus enum.
+func (e ProjectSprintReportStatus) Valid() bool {
+	switch e {
+	case ProjectSprintReportStatusACTIVE:
+		return true
+	case ProjectSprintReportStatusCANCELLED:
+		return true
+	case ProjectSprintReportStatusCOMPLETED:
+		return true
+	case ProjectSprintReportStatusPLANNING:
 		return true
 	default:
 		return false
@@ -3194,6 +3320,30 @@ func (e SprintDetailStatus) Valid() bool {
 	case SprintDetailStatusCOMPLETED:
 		return true
 	case SprintDetailStatusPLANNING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SprintStateCountCategory.
+const (
+	SprintStateCountCategoryABORTED   SprintStateCountCategory = "ABORTED"
+	SprintStateCountCategoryACTIVE    SprintStateCountCategory = "ACTIVE"
+	SprintStateCountCategoryCOMPLETED SprintStateCountCategory = "COMPLETED"
+	SprintStateCountCategoryINITIAL   SprintStateCountCategory = "INITIAL"
+)
+
+// Valid indicates whether the value is a known member of the SprintStateCountCategory enum.
+func (e SprintStateCountCategory) Valid() bool {
+	switch e {
+	case SprintStateCountCategoryABORTED:
+		return true
+	case SprintStateCountCategoryACTIVE:
+		return true
+	case SprintStateCountCategoryCOMPLETED:
+		return true
+	case SprintStateCountCategoryINITIAL:
 		return true
 	default:
 		return false
@@ -3601,16 +3751,16 @@ func (e UpdateDocumentContentRequestVersionUpdateType) Valid() bool {
 
 // Defines values for UpdateMemberLanguageRequestLanguage.
 const (
-	EN UpdateMemberLanguageRequestLanguage = "EN"
-	KO UpdateMemberLanguageRequestLanguage = "KO"
+	UpdateMemberLanguageRequestLanguageEN UpdateMemberLanguageRequestLanguage = "EN"
+	UpdateMemberLanguageRequestLanguageKO UpdateMemberLanguageRequestLanguage = "KO"
 )
 
 // Valid indicates whether the value is a known member of the UpdateMemberLanguageRequestLanguage enum.
 func (e UpdateMemberLanguageRequestLanguage) Valid() bool {
 	switch e {
-	case EN:
+	case UpdateMemberLanguageRequestLanguageEN:
 		return true
-	case KO:
+	case UpdateMemberLanguageRequestLanguageKO:
 		return true
 	default:
 		return false
@@ -3686,6 +3836,33 @@ func (e UpdateNotificationPreferenceRequestType) Valid() bool {
 	}
 }
 
+// Defines values for VcsWebhookDeliverySummaryStatus.
+const (
+	VcsWebhookDeliverySummaryStatusDEAD      VcsWebhookDeliverySummaryStatus = "DEAD"
+	VcsWebhookDeliverySummaryStatusFAILED    VcsWebhookDeliverySummaryStatus = "FAILED"
+	VcsWebhookDeliverySummaryStatusIGNORED   VcsWebhookDeliverySummaryStatus = "IGNORED"
+	VcsWebhookDeliverySummaryStatusPROCESSED VcsWebhookDeliverySummaryStatus = "PROCESSED"
+	VcsWebhookDeliverySummaryStatusRECEIVED  VcsWebhookDeliverySummaryStatus = "RECEIVED"
+)
+
+// Valid indicates whether the value is a known member of the VcsWebhookDeliverySummaryStatus enum.
+func (e VcsWebhookDeliverySummaryStatus) Valid() bool {
+	switch e {
+	case VcsWebhookDeliverySummaryStatusDEAD:
+		return true
+	case VcsWebhookDeliverySummaryStatusFAILED:
+		return true
+	case VcsWebhookDeliverySummaryStatusIGNORED:
+		return true
+	case VcsWebhookDeliverySummaryStatusPROCESSED:
+		return true
+	case VcsWebhookDeliverySummaryStatusRECEIVED:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for VerificationStatusStatus.
 const (
 	VerificationStatusStatusPENDING  VerificationStatusStatus = "PENDING"
@@ -3751,19 +3928,19 @@ func (e WikiSnapshotDetailUpdateType) Valid() bool {
 
 // Defines values for WikiSnapshotSummaryUpdateType.
 const (
-	MAJOR WikiSnapshotSummaryUpdateType = "MAJOR"
-	MINOR WikiSnapshotSummaryUpdateType = "MINOR"
-	PATCH WikiSnapshotSummaryUpdateType = "PATCH"
+	WikiSnapshotSummaryUpdateTypeMAJOR WikiSnapshotSummaryUpdateType = "MAJOR"
+	WikiSnapshotSummaryUpdateTypeMINOR WikiSnapshotSummaryUpdateType = "MINOR"
+	WikiSnapshotSummaryUpdateTypePATCH WikiSnapshotSummaryUpdateType = "PATCH"
 )
 
 // Valid indicates whether the value is a known member of the WikiSnapshotSummaryUpdateType enum.
 func (e WikiSnapshotSummaryUpdateType) Valid() bool {
 	switch e {
-	case MAJOR:
+	case WikiSnapshotSummaryUpdateTypeMAJOR:
 		return true
-	case MINOR:
+	case WikiSnapshotSummaryUpdateTypeMINOR:
 		return true
-	case PATCH:
+	case WikiSnapshotSummaryUpdateTypePATCH:
 		return true
 	default:
 		return false
@@ -3976,79 +4153,79 @@ func (e WorkflowSummaryColor) Valid() bool {
 
 // Defines values for AdminListActivitiesParamsActivityType.
 const (
-	ISSUEASSIGNED                     AdminListActivitiesParamsActivityType = "ISSUE_ASSIGNED"
-	ISSUEBRANCHCONNECTED              AdminListActivitiesParamsActivityType = "ISSUE_BRANCH_CONNECTED"
-	ISSUECOMMENTADDED                 AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_ADDED"
-	ISSUECOMMENTDELETED               AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_DELETED"
-	ISSUECOMMENTUPDATED               AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_UPDATED"
-	ISSUECREATED                      AdminListActivitiesParamsActivityType = "ISSUE_CREATED"
-	ISSUEDELETED                      AdminListActivitiesParamsActivityType = "ISSUE_DELETED"
-	ISSUEPARENTCHANGED                AdminListActivitiesParamsActivityType = "ISSUE_PARENT_CHANGED"
-	ISSUERELATIONADDED                AdminListActivitiesParamsActivityType = "ISSUE_RELATION_ADDED"
-	ISSUERELATIONREMOVED              AdminListActivitiesParamsActivityType = "ISSUE_RELATION_REMOVED"
-	ISSUERESTORED                     AdminListActivitiesParamsActivityType = "ISSUE_RESTORED"
-	ISSUEREVIEWERADDED                AdminListActivitiesParamsActivityType = "ISSUE_REVIEWER_ADDED"
-	ISSUEREVIEWERREMOVED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEWER_REMOVED"
-	ISSUEREVIEWREQUESTED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEW_REQUESTED"
-	ISSUEREVIEWSUBMITTED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEW_SUBMITTED"
-	ISSUESTORYPOINTCHANGED            AdminListActivitiesParamsActivityType = "ISSUE_STORY_POINT_CHANGED"
-	ISSUEUNASSIGNED                   AdminListActivitiesParamsActivityType = "ISSUE_UNASSIGNED"
-	ISSUEUPDATED                      AdminListActivitiesParamsActivityType = "ISSUE_UPDATED"
-	ISSUEVCSCONNECTIONLINKED          AdminListActivitiesParamsActivityType = "ISSUE_VCS_CONNECTION_LINKED"
-	ISSUEWORKFLOWTRANSITIONED         AdminListActivitiesParamsActivityType = "ISSUE_WORKFLOW_TRANSITIONED"
-	ISSUEWORKFLOWTRANSITIONEDBYSYSTEM AdminListActivitiesParamsActivityType = "ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM"
-	SPRINTCOMPLETED                   AdminListActivitiesParamsActivityType = "SPRINT_COMPLETED"
-	SPRINTSTARTED                     AdminListActivitiesParamsActivityType = "SPRINT_STARTED"
+	AdminListActivitiesParamsActivityTypeISSUEASSIGNED                     AdminListActivitiesParamsActivityType = "ISSUE_ASSIGNED"
+	AdminListActivitiesParamsActivityTypeISSUEBRANCHCONNECTED              AdminListActivitiesParamsActivityType = "ISSUE_BRANCH_CONNECTED"
+	AdminListActivitiesParamsActivityTypeISSUECOMMENTADDED                 AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_ADDED"
+	AdminListActivitiesParamsActivityTypeISSUECOMMENTDELETED               AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_DELETED"
+	AdminListActivitiesParamsActivityTypeISSUECOMMENTUPDATED               AdminListActivitiesParamsActivityType = "ISSUE_COMMENT_UPDATED"
+	AdminListActivitiesParamsActivityTypeISSUECREATED                      AdminListActivitiesParamsActivityType = "ISSUE_CREATED"
+	AdminListActivitiesParamsActivityTypeISSUEDELETED                      AdminListActivitiesParamsActivityType = "ISSUE_DELETED"
+	AdminListActivitiesParamsActivityTypeISSUEPARENTCHANGED                AdminListActivitiesParamsActivityType = "ISSUE_PARENT_CHANGED"
+	AdminListActivitiesParamsActivityTypeISSUERELATIONADDED                AdminListActivitiesParamsActivityType = "ISSUE_RELATION_ADDED"
+	AdminListActivitiesParamsActivityTypeISSUERELATIONREMOVED              AdminListActivitiesParamsActivityType = "ISSUE_RELATION_REMOVED"
+	AdminListActivitiesParamsActivityTypeISSUERESTORED                     AdminListActivitiesParamsActivityType = "ISSUE_RESTORED"
+	AdminListActivitiesParamsActivityTypeISSUEREVIEWERADDED                AdminListActivitiesParamsActivityType = "ISSUE_REVIEWER_ADDED"
+	AdminListActivitiesParamsActivityTypeISSUEREVIEWERREMOVED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEWER_REMOVED"
+	AdminListActivitiesParamsActivityTypeISSUEREVIEWREQUESTED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEW_REQUESTED"
+	AdminListActivitiesParamsActivityTypeISSUEREVIEWSUBMITTED              AdminListActivitiesParamsActivityType = "ISSUE_REVIEW_SUBMITTED"
+	AdminListActivitiesParamsActivityTypeISSUESTORYPOINTCHANGED            AdminListActivitiesParamsActivityType = "ISSUE_STORY_POINT_CHANGED"
+	AdminListActivitiesParamsActivityTypeISSUEUNASSIGNED                   AdminListActivitiesParamsActivityType = "ISSUE_UNASSIGNED"
+	AdminListActivitiesParamsActivityTypeISSUEUPDATED                      AdminListActivitiesParamsActivityType = "ISSUE_UPDATED"
+	AdminListActivitiesParamsActivityTypeISSUEVCSCONNECTIONLINKED          AdminListActivitiesParamsActivityType = "ISSUE_VCS_CONNECTION_LINKED"
+	AdminListActivitiesParamsActivityTypeISSUEWORKFLOWTRANSITIONED         AdminListActivitiesParamsActivityType = "ISSUE_WORKFLOW_TRANSITIONED"
+	AdminListActivitiesParamsActivityTypeISSUEWORKFLOWTRANSITIONEDBYSYSTEM AdminListActivitiesParamsActivityType = "ISSUE_WORKFLOW_TRANSITIONED_BY_SYSTEM"
+	AdminListActivitiesParamsActivityTypeSPRINTCOMPLETED                   AdminListActivitiesParamsActivityType = "SPRINT_COMPLETED"
+	AdminListActivitiesParamsActivityTypeSPRINTSTARTED                     AdminListActivitiesParamsActivityType = "SPRINT_STARTED"
 )
 
 // Valid indicates whether the value is a known member of the AdminListActivitiesParamsActivityType enum.
 func (e AdminListActivitiesParamsActivityType) Valid() bool {
 	switch e {
-	case ISSUEASSIGNED:
+	case AdminListActivitiesParamsActivityTypeISSUEASSIGNED:
 		return true
-	case ISSUEBRANCHCONNECTED:
+	case AdminListActivitiesParamsActivityTypeISSUEBRANCHCONNECTED:
 		return true
-	case ISSUECOMMENTADDED:
+	case AdminListActivitiesParamsActivityTypeISSUECOMMENTADDED:
 		return true
-	case ISSUECOMMENTDELETED:
+	case AdminListActivitiesParamsActivityTypeISSUECOMMENTDELETED:
 		return true
-	case ISSUECOMMENTUPDATED:
+	case AdminListActivitiesParamsActivityTypeISSUECOMMENTUPDATED:
 		return true
-	case ISSUECREATED:
+	case AdminListActivitiesParamsActivityTypeISSUECREATED:
 		return true
-	case ISSUEDELETED:
+	case AdminListActivitiesParamsActivityTypeISSUEDELETED:
 		return true
-	case ISSUEPARENTCHANGED:
+	case AdminListActivitiesParamsActivityTypeISSUEPARENTCHANGED:
 		return true
-	case ISSUERELATIONADDED:
+	case AdminListActivitiesParamsActivityTypeISSUERELATIONADDED:
 		return true
-	case ISSUERELATIONREMOVED:
+	case AdminListActivitiesParamsActivityTypeISSUERELATIONREMOVED:
 		return true
-	case ISSUERESTORED:
+	case AdminListActivitiesParamsActivityTypeISSUERESTORED:
 		return true
-	case ISSUEREVIEWERADDED:
+	case AdminListActivitiesParamsActivityTypeISSUEREVIEWERADDED:
 		return true
-	case ISSUEREVIEWERREMOVED:
+	case AdminListActivitiesParamsActivityTypeISSUEREVIEWERREMOVED:
 		return true
-	case ISSUEREVIEWREQUESTED:
+	case AdminListActivitiesParamsActivityTypeISSUEREVIEWREQUESTED:
 		return true
-	case ISSUEREVIEWSUBMITTED:
+	case AdminListActivitiesParamsActivityTypeISSUEREVIEWSUBMITTED:
 		return true
-	case ISSUESTORYPOINTCHANGED:
+	case AdminListActivitiesParamsActivityTypeISSUESTORYPOINTCHANGED:
 		return true
-	case ISSUEUNASSIGNED:
+	case AdminListActivitiesParamsActivityTypeISSUEUNASSIGNED:
 		return true
-	case ISSUEUPDATED:
+	case AdminListActivitiesParamsActivityTypeISSUEUPDATED:
 		return true
-	case ISSUEVCSCONNECTIONLINKED:
+	case AdminListActivitiesParamsActivityTypeISSUEVCSCONNECTIONLINKED:
 		return true
-	case ISSUEWORKFLOWTRANSITIONED:
+	case AdminListActivitiesParamsActivityTypeISSUEWORKFLOWTRANSITIONED:
 		return true
-	case ISSUEWORKFLOWTRANSITIONEDBYSYSTEM:
+	case AdminListActivitiesParamsActivityTypeISSUEWORKFLOWTRANSITIONEDBYSYSTEM:
 		return true
-	case SPRINTCOMPLETED:
+	case AdminListActivitiesParamsActivityTypeSPRINTCOMPLETED:
 		return true
-	case SPRINTSTARTED:
+	case AdminListActivitiesParamsActivityTypeSPRINTSTARTED:
 		return true
 	default:
 		return false
@@ -4229,6 +4406,60 @@ func (e SearchAllIssuesParamsReviewerStatuses) Valid() bool {
 	}
 }
 
+// Defines values for ListNotificationsParamsTypes.
+const (
+	ListNotificationsParamsTypesISSUEASSIGNED        ListNotificationsParamsTypes = "ISSUE_ASSIGNED"
+	ListNotificationsParamsTypesISSUECOMMENTADDED    ListNotificationsParamsTypes = "ISSUE_COMMENT_ADDED"
+	ListNotificationsParamsTypesISSUECOMMENTUPDATED  ListNotificationsParamsTypes = "ISSUE_COMMENT_UPDATED"
+	ListNotificationsParamsTypesISSUEDELETED         ListNotificationsParamsTypes = "ISSUE_DELETED"
+	ListNotificationsParamsTypesISSUEMENTIONED       ListNotificationsParamsTypes = "ISSUE_MENTIONED"
+	ListNotificationsParamsTypesISSUEREVIEWERADDED   ListNotificationsParamsTypes = "ISSUE_REVIEWER_ADDED"
+	ListNotificationsParamsTypesISSUEREVIEWERREMOVED ListNotificationsParamsTypes = "ISSUE_REVIEWER_REMOVED"
+	ListNotificationsParamsTypesISSUEREVIEWREQUESTED ListNotificationsParamsTypes = "ISSUE_REVIEW_REQUESTED"
+	ListNotificationsParamsTypesISSUEREVIEWSUBMITTED ListNotificationsParamsTypes = "ISSUE_REVIEW_SUBMITTED"
+	ListNotificationsParamsTypesISSUESTATUSCHANGED   ListNotificationsParamsTypes = "ISSUE_STATUS_CHANGED"
+	ListNotificationsParamsTypesISSUEUNASSIGNED      ListNotificationsParamsTypes = "ISSUE_UNASSIGNED"
+	ListNotificationsParamsTypesPROJECTROLECHANGED   ListNotificationsParamsTypes = "PROJECT_ROLE_CHANGED"
+	ListNotificationsParamsTypesSPRINTCOMPLETED      ListNotificationsParamsTypes = "SPRINT_COMPLETED"
+	ListNotificationsParamsTypesSPRINTSTARTED        ListNotificationsParamsTypes = "SPRINT_STARTED"
+)
+
+// Valid indicates whether the value is a known member of the ListNotificationsParamsTypes enum.
+func (e ListNotificationsParamsTypes) Valid() bool {
+	switch e {
+	case ListNotificationsParamsTypesISSUEASSIGNED:
+		return true
+	case ListNotificationsParamsTypesISSUECOMMENTADDED:
+		return true
+	case ListNotificationsParamsTypesISSUECOMMENTUPDATED:
+		return true
+	case ListNotificationsParamsTypesISSUEDELETED:
+		return true
+	case ListNotificationsParamsTypesISSUEMENTIONED:
+		return true
+	case ListNotificationsParamsTypesISSUEREVIEWERADDED:
+		return true
+	case ListNotificationsParamsTypesISSUEREVIEWERREMOVED:
+		return true
+	case ListNotificationsParamsTypesISSUEREVIEWREQUESTED:
+		return true
+	case ListNotificationsParamsTypesISSUEREVIEWSUBMITTED:
+		return true
+	case ListNotificationsParamsTypesISSUESTATUSCHANGED:
+		return true
+	case ListNotificationsParamsTypesISSUEUNASSIGNED:
+		return true
+	case ListNotificationsParamsTypesPROJECTROLECHANGED:
+		return true
+	case ListNotificationsParamsTypesSPRINTCOMPLETED:
+		return true
+	case ListNotificationsParamsTypesSPRINTSTARTED:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SearchProjectIssuesParamsPriorities.
 const (
 	SearchProjectIssuesParamsPrioritiesP0 SearchProjectIssuesParamsPriorities = "P0"
@@ -4282,19 +4513,19 @@ func (e SearchProjectIssuesParamsStateCategories) Valid() bool {
 
 // Defines values for SearchProjectIssuesParamsReviewerStatuses.
 const (
-	APPROVED         SearchProjectIssuesParamsReviewerStatuses = "APPROVED"
-	CHANGESREQUESTED SearchProjectIssuesParamsReviewerStatuses = "CHANGES_REQUESTED"
-	PENDING          SearchProjectIssuesParamsReviewerStatuses = "PENDING"
+	SearchProjectIssuesParamsReviewerStatusesAPPROVED         SearchProjectIssuesParamsReviewerStatuses = "APPROVED"
+	SearchProjectIssuesParamsReviewerStatusesCHANGESREQUESTED SearchProjectIssuesParamsReviewerStatuses = "CHANGES_REQUESTED"
+	SearchProjectIssuesParamsReviewerStatusesPENDING          SearchProjectIssuesParamsReviewerStatuses = "PENDING"
 )
 
 // Valid indicates whether the value is a known member of the SearchProjectIssuesParamsReviewerStatuses enum.
 func (e SearchProjectIssuesParamsReviewerStatuses) Valid() bool {
 	switch e {
-	case APPROVED:
+	case SearchProjectIssuesParamsReviewerStatusesAPPROVED:
 		return true
-	case CHANGESREQUESTED:
+	case SearchProjectIssuesParamsReviewerStatusesCHANGESREQUESTED:
 		return true
-	case PENDING:
+	case SearchProjectIssuesParamsReviewerStatusesPENDING:
 		return true
 	default:
 		return false
@@ -4303,16 +4534,16 @@ func (e SearchProjectIssuesParamsReviewerStatuses) Valid() bool {
 
 // Defines values for ListProjectMembersParamsRole.
 const (
-	MANAGER ListProjectMembersParamsRole = "MANAGER"
-	MEMBER  ListProjectMembersParamsRole = "MEMBER"
+	ListProjectMembersParamsRoleMANAGER ListProjectMembersParamsRole = "MANAGER"
+	ListProjectMembersParamsRoleMEMBER  ListProjectMembersParamsRole = "MEMBER"
 )
 
 // Valid indicates whether the value is a known member of the ListProjectMembersParamsRole enum.
 func (e ListProjectMembersParamsRole) Valid() bool {
 	switch e {
-	case MANAGER:
+	case ListProjectMembersParamsRoleMANAGER:
 		return true
-	case MEMBER:
+	case ListProjectMembersParamsRoleMEMBER:
 		return true
 	default:
 		return false
@@ -4638,21 +4869,34 @@ type CommentCreateResponse struct {
 	IssueKey  *string `json:"issueKey,omitempty"`
 }
 
-// CommentDetailResponse A comment on an issue with author info and nested replies. Only deleted comments contents are `null` to preserve structure.
+// CommentDetailResponse A comment on an issue with author info and nested replies. Only deleted comments contents are `null` to preserve structure. `reviewStatus` is set only when the comment is the feedback body of a submitted review, and holds the verdict it was submitted with.
 type CommentDetailResponse struct {
-	Author        *CommentAuthorInfo       `json:"author,omitempty"`
-	CommentId     *int64                   `json:"commentId,omitempty"`
-	Content       *string                  `json:"content,omitempty"`
-	CreatedAt     *time.Time               `json:"createdAt,omitempty"`
-	IsDeleted     *bool                    `json:"isDeleted,omitempty"`
-	IsEdited      *bool                    `json:"isEdited,omitempty"`
-	LastUpdatedAt *time.Time               `json:"lastUpdatedAt,omitempty"`
-	Replies       *[]CommentDetailResponse `json:"replies,omitempty"`
+	Author        *CommentAuthorInfo                 `json:"author,omitempty"`
+	CommentId     *int64                             `json:"commentId,omitempty"`
+	Content       *string                            `json:"content,omitempty"`
+	CreatedAt     *time.Time                         `json:"createdAt,omitempty"`
+	IsDeleted     *bool                              `json:"isDeleted,omitempty"`
+	IsEdited      *bool                              `json:"isEdited,omitempty"`
+	LastUpdatedAt *time.Time                         `json:"lastUpdatedAt,omitempty"`
+	Replies       *[]CommentDetailResponse           `json:"replies,omitempty"`
+	ReviewStatus  *CommentDetailResponseReviewStatus `json:"reviewStatus,omitempty"`
 }
+
+// CommentDetailResponseReviewStatus defines model for CommentDetailResponse.ReviewStatus.
+type CommentDetailResponseReviewStatus string
 
 // ConfigureTransitionGuardsRequest Request to configure guards (preconditions) for a workflow transition. Guards are evaluated in the specified order before allowing the transition.
 type ConfigureTransitionGuardsRequest struct {
 	Guards []GuardConfigData `json:"guards"`
+}
+
+// ContributionDay defines model for ContributionDay.
+type ContributionDay struct {
+	// Count Issues resolved on this day
+	Count *int64 `json:"count,omitempty"`
+
+	// Date The calendar day, cut on the requested zone (UTC by default)
+	Date *openapi_types.Date `json:"date,omitempty"`
 }
 
 // CreateAgentRequest defines model for CreateAgentRequest.
@@ -4940,6 +5184,21 @@ type DocumentResponse struct {
 	Title *string `json:"title,omitempty"`
 }
 
+// DurationStats defines model for DurationStats.
+type DurationStats struct {
+	// AvgSeconds Mean duration in seconds (0 when count is 0)
+	AvgSeconds *int64 `json:"avgSeconds,omitempty"`
+
+	// Count Number of resolved issues the stat is computed over
+	Count *int64 `json:"count,omitempty"`
+
+	// P50Seconds Median (50th percentile) duration in seconds
+	P50Seconds *int64 `json:"p50Seconds,omitempty"`
+
+	// P90Seconds 90th percentile duration in seconds
+	P90Seconds *int64 `json:"p90Seconds,omitempty"`
+}
+
 // EmailVerificationRequest defines model for EmailVerificationRequest.
 type EmailVerificationRequest struct {
 	Email openapi_types.Email `json:"email"`
@@ -4967,6 +5226,18 @@ type FieldChange struct {
 type FieldOptionDetail struct {
 	Id   *int64  `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
+}
+
+// FlowPoint defines model for FlowPoint.
+type FlowPoint struct {
+	// Created Issues created on this day
+	Created *int64 `json:"created,omitempty"`
+
+	// Date The calendar day, cut on the requested zone (UTC by default)
+	Date *openapi_types.Date `json:"date,omitempty"`
+
+	// Resolved Issues resolved (entered a COMPLETED state) on this day
+	Resolved *int64 `json:"resolved,omitempty"`
 }
 
 // GuardConfigData defines model for GuardConfigData.
@@ -5046,6 +5317,33 @@ type IssueBasicInfo struct {
 // IssueBasicInfoPriority Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)
 type IssueBasicInfoPriority string
 
+// IssueBranchView A VCS branch linked to the issue, with ready-to-open repository links.
+type IssueBranchView struct {
+	// BranchName Branch name, e.g. feature/PROJ-12-login
+	BranchName *string `json:"branchName,omitempty"`
+
+	// BranchUrl Ready-to-open URL of the branch
+	BranchUrl *string `json:"branchUrl,omitempty"`
+
+	// LatestCommitHash Short hash of the latest pushed commit
+	LatestCommitHash *string `json:"latestCommitHash,omitempty"`
+
+	// LatestCommitMessage Message of the latest pushed commit
+	LatestCommitMessage *string `json:"latestCommitMessage,omitempty"`
+
+	// LatestCommitUrl Ready-to-open URL of the latest commit
+	LatestCommitUrl *string `json:"latestCommitUrl,omitempty"`
+
+	// PushedAt When the latest commit was pushed
+	PushedAt *time.Time `json:"pushedAt,omitempty"`
+
+	// PusherName Display name of who pushed last
+	PusherName *string `json:"pusherName,omitempty"`
+
+	// RepoUrl Repository URL the branch lives in
+	RepoUrl *string `json:"repoUrl,omitempty"`
+}
+
 // IssueCommonDetail defines model for IssueCommonDetail.
 type IssueCommonDetail struct {
 	Assignee           *ProjectMemberInfo `json:"assignee,omitempty"`
@@ -5090,6 +5388,7 @@ type IssueCustomDetail struct {
 // IssueDetailView Aggregated issue detail view.
 type IssueDetailView struct {
 	AvailableTransitions *[]AvailableTransition     `json:"availableTransitions,omitempty"`
+	Branches             *[]IssueBranchView         `json:"branches,omitempty"`
 	Children             *[]IssueIdentifierResponse `json:"children,omitempty"`
 
 	// Comments Offset-based paginated response.
@@ -5097,6 +5396,7 @@ type IssueDetailView struct {
 	Common       *IssueCommonDetail                 `json:"common,omitempty"`
 	CustomFields *[]CustomFieldValueInfo            `json:"customFields,omitempty"`
 	Parent       *IssueIdentifierResponse           `json:"parent,omitempty"`
+	PullRequests *[]IssuePullRequestView            `json:"pullRequests,omitempty"`
 	Relations    *IssueRelationsDetail              `json:"relations,omitempty"`
 }
 
@@ -5129,6 +5429,30 @@ type IssueIdentifierResponse struct {
 	IssueType    *IssueTypeInfo `json:"issueType,omitempty"`
 }
 
+// IssuePullRequestView A pull request linked to the issue, with its current state.
+type IssuePullRequestView struct {
+	// AuthorName Provider username of the author
+	AuthorName *string `json:"authorName,omitempty"`
+
+	// LastEventAt When the last event for this pull request occurred
+	LastEventAt *time.Time `json:"lastEventAt,omitempty"`
+
+	// Number The provider's pull request number, e.g. 42
+	Number *int32 `json:"number,omitempty"`
+
+	// State Whether the pull request is open, closed, or merged
+	State *IssuePullRequestViewState `json:"state,omitempty"`
+
+	// Title Pull request title as last seen
+	Title *string `json:"title,omitempty"`
+
+	// Url Ready-to-open URL of the pull request
+	Url *string `json:"url,omitempty"`
+}
+
+// IssuePullRequestViewState Whether the pull request is open, closed, or merged
+type IssuePullRequestViewState string
+
 // IssueRelationsDetail defines model for IssueRelationsDetail.
 type IssueRelationsDetail struct {
 	BlockedBy    *[]RelatedIssueInfo `json:"blockedBy,omitempty"`
@@ -5155,6 +5479,7 @@ type IssueSubscribersDetail struct {
 // IssueSummary defines model for IssueSummary.
 type IssueSummary struct {
 	AssigneeMemberId   *int64  `json:"assigneeMemberId,omitempty"`
+	AssigneeName       *string `json:"assigneeName,omitempty"`
 	Content            *string `json:"content,omitempty"`
 	CountBasedProgress *int32  `json:"countBasedProgress,omitempty"`
 
@@ -5168,7 +5493,10 @@ type IssueSummary struct {
 	IssueTypeColor       *IssueSummaryIssueTypeColor       `json:"issueTypeColor,omitempty"`
 	IssueTypeId          *int64                            `json:"issueTypeId,omitempty"`
 	IssueTypeName        *string                           `json:"issueTypeName,omitempty"`
-	MyReviewStatus       *IssueSummaryMyReviewStatus       `json:"myReviewStatus,omitempty"`
+
+	// LastActivityAt The most recent activity Instant on this issue (comments included), `null` when the issue has no activity yet
+	LastActivityAt *time.Time                  `json:"lastActivityAt,omitempty"`
+	MyReviewStatus *IssueSummaryMyReviewStatus `json:"myReviewStatus,omitempty"`
 
 	// Priority Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)
 	Priority   *IssueSummaryPriority `json:"priority,omitempty"`
@@ -5327,8 +5655,7 @@ type MemberStats struct {
 
 // MigrateIssuesRequest Migrate incomplete issues from a completed sprint to another sprint.
 type MigrateIssuesRequest struct {
-	IssueKeys   []string `json:"issueKeys"`
-	NewSprintId int64    `json:"newSprintId"`
+	NewSprintId int64 `json:"newSprintId"`
 }
 
 // MyCommentResponse defines model for MyCommentResponse.
@@ -5615,6 +5942,27 @@ type PageResponseTagDetail struct {
 	TotalPages *int32 `json:"totalPages,omitempty"`
 }
 
+// PageResponseVcsWebhookDeliverySummary Offset-based paginated response.
+type PageResponseVcsWebhookDeliverySummary struct {
+	// Content Items in this page
+	Content *[]VcsWebhookDeliverySummary `json:"content,omitempty"`
+
+	// HasNext Whether a next page is available
+	HasNext *bool `json:"hasNext,omitempty"`
+
+	// Page Zero-based index of this page
+	Page *int32 `json:"page,omitempty"`
+
+	// Size Requested page size
+	Size *int32 `json:"size,omitempty"`
+
+	// TotalElements Total number of matching elements across all pages
+	TotalElements *int64 `json:"totalElements,omitempty"`
+
+	// TotalPages Total number of pages
+	TotalPages *int32 `json:"totalPages,omitempty"`
+}
+
 // PageResponseWikiDocumentSearchResult Offset-based paginated response.
 type PageResponseWikiDocumentSearchResult struct {
 	// Content Items in this page
@@ -5722,6 +6070,66 @@ type PriorityCount struct {
 // PriorityCountPriority Issue priority level, from highest to lowest: P0 (blocker), P1 (critical), P2 (major), P3 (minor), P4 (trivial)
 type PriorityCountPriority string
 
+// ProjectAgingStats defines model for ProjectAgingStats.
+type ProjectAgingStats struct {
+	// Aging1to2w Open issues aged 1 to 2 weeks (7 to 14 days)
+	Aging1to2w *int64 `json:"aging1to2w,omitempty"`
+
+	// Aging3to7d Open issues aged 3 to 7 days
+	Aging3to7d *int64 `json:"aging3to7d,omitempty"`
+
+	// AgingOver2w Open issues aged over 2 weeks (14+ days)
+	AgingOver2w *int64 `json:"agingOver2w,omitempty"`
+
+	// AgingUnder3d Open issues aged under 3 days (since work started, or since creation when not started)
+	AgingUnder3d *int64 `json:"agingUnder3d,omitempty"`
+
+	// Blocked Open issues currently blocked by a BLOCKS relation from another still-open issue
+	Blocked *int64 `json:"blocked,omitempty"`
+
+	// OpenTotal Total open issues (INITIAL + ACTIVE); the sum of the age buckets
+	OpenTotal *int64 `json:"openTotal,omitempty"`
+}
+
+// ProjectContributionStats defines model for ProjectContributionStats.
+type ProjectContributionStats struct {
+	// Days One entry per UTC day in the window, oldest first, zero-filled
+	Days *[]ContributionDay `json:"days,omitempty"`
+
+	// From Window start (inclusive), UTC
+	From *time.Time `json:"from,omitempty"`
+
+	// MaxDaily The busiest day's resolved count; 0 when the window is empty
+	MaxDaily *int64 `json:"maxDaily,omitempty"`
+
+	// MemberId The member the heatmap is for
+	MemberId *int64 `json:"memberId,omitempty"`
+
+	// To Window end (exclusive), UTC
+	To *time.Time `json:"to,omitempty"`
+
+	// TotalResolved Total issues resolved across the window
+	TotalResolved *int64 `json:"totalResolved,omitempty"`
+}
+
+// ProjectCycleTimeStats defines model for ProjectCycleTimeStats.
+type ProjectCycleTimeStats struct {
+	CycleTime *DurationStats `json:"cycleTime,omitempty"`
+
+	// From Inclusive start of the window
+	From     *time.Time     `json:"from,omitempty"`
+	LeadTime *DurationStats `json:"leadTime,omitempty"`
+
+	// To Exclusive end of the window
+	To *time.Time `json:"to,omitempty"`
+
+	// Window The preset that produced this window
+	Window *ProjectCycleTimeStatsWindow `json:"window,omitempty"`
+}
+
+// ProjectCycleTimeStatsWindow The preset that produced this window
+type ProjectCycleTimeStatsWindow string
+
 // ProjectDetail defines model for ProjectDetail.
 type ProjectDetail struct {
 	Archived       *bool                    `json:"archived,omitempty"`
@@ -5737,6 +6145,24 @@ type ProjectDetail struct {
 
 // ProjectDetailVisibility defines model for ProjectDetail.Visibility.
 type ProjectDetailVisibility string
+
+// ProjectFlowStats defines model for ProjectFlowStats.
+type ProjectFlowStats struct {
+	// From Inclusive start of the window
+	From *time.Time `json:"from,omitempty"`
+
+	// Points One point per UTC day in the window, in ascending date order
+	Points *[]FlowPoint `json:"points,omitempty"`
+
+	// To Exclusive end of the window
+	To *time.Time `json:"to,omitempty"`
+
+	// Window The preset that produced this window
+	Window *ProjectFlowStatsWindow `json:"window,omitempty"`
+}
+
+// ProjectFlowStatsWindow The preset that produced this window
+type ProjectFlowStatsWindow string
 
 // ProjectHardDeletePreview Counts of resources that a project hard-delete removes
 type ProjectHardDeletePreview struct {
@@ -5770,19 +6196,52 @@ type ProjectMemberResponse struct {
 	ProjectKey *string `json:"projectKey,omitempty"`
 }
 
+// ProjectMemberStats defines model for ProjectMemberStats.
+type ProjectMemberStats struct {
+	// AvgResolveSeconds Average seconds from creation to resolution over the member's resolved issues. `null` when they have none
+	AvgResolveSeconds *int64 `json:"avgResolveSeconds,omitempty"`
+
+	// CompletionRate resolvedCount / (resolvedCount + openAssignedCount); 0 when the member has no assigned issues
+	CompletionRate *float64 `json:"completionRate,omitempty"`
+
+	// MemberId The member these stats are for
+	MemberId *int64 `json:"memberId,omitempty"`
+
+	// OpenAssignedCount Issues assigned to the member that are still open (`INITIAL` + `ACTIVE`)
+	OpenAssignedCount *int64 `json:"openAssignedCount,omitempty"`
+
+	// ResolvedCount Issues assigned to the member that reached a `COMPLETED` state (excludes `ABORTED`)
+	ResolvedCount *int64 `json:"resolvedCount,omitempty"`
+
+	// TotalStoryPoints Sum of story points over the member's resolved issues (unset points count as 0)
+	TotalStoryPoints *int64 `json:"totalStoryPoints,omitempty"`
+}
+
 // ProjectMemberSummary defines model for ProjectMemberSummary.
 type ProjectMemberSummary struct {
 	Active      *bool   `json:"active,omitempty"`
 	DisplayName *string `json:"displayName,omitempty"`
 
 	// Email Email address (`null` if `email-required` is disabled)
-	Email      *string                         `json:"email,omitempty"`
-	JoinedAt   *time.Time                      `json:"joinedAt,omitempty"`
-	MemberId   *int64                          `json:"memberId,omitempty"`
-	Role       *ProjectMemberSummaryRole       `json:"role,omitempty"`
-	SystemRole *ProjectMemberSummarySystemRole `json:"systemRole,omitempty"`
-	Username   *string                         `json:"username,omitempty"`
+	Email    *string    `json:"email,omitempty"`
+	JoinedAt *time.Time `json:"joinedAt,omitempty"`
+	MemberId *int64     `json:"memberId,omitempty"`
+
+	// MemberType Whether this member is a human or an agent
+	MemberType *ProjectMemberSummaryMemberType `json:"memberType,omitempty"`
+
+	// OwnerName For an agent, the owning member's display name (`null` for a human)
+	OwnerName *string `json:"ownerName,omitempty"`
+
+	// OwnerUsername For an agent, the owning member's username (`null` for a human)
+	OwnerUsername *string                         `json:"ownerUsername,omitempty"`
+	Role          *ProjectMemberSummaryRole       `json:"role,omitempty"`
+	SystemRole    *ProjectMemberSummarySystemRole `json:"systemRole,omitempty"`
+	Username      *string                         `json:"username,omitempty"`
 }
+
+// ProjectMemberSummaryMemberType Whether this member is a human or an agent
+type ProjectMemberSummaryMemberType string
 
 // ProjectMemberSummaryRole defines model for ProjectMemberSummary.Role.
 type ProjectMemberSummaryRole string
@@ -5829,6 +6288,60 @@ type ProjectSimpleStats struct {
 	Unassigned *int64 `json:"unassigned,omitempty"`
 }
 
+// ProjectSprintReport defines model for ProjectSprintReport.
+type ProjectSprintReport struct {
+	// CompletedAt When the sprint was completed, if it has been
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// CompletedIssues Issues in a COMPLETED state
+	CompletedIssues *int64 `json:"completedIssues,omitempty"`
+
+	// CompletedStoryPoints Story points of the sprint's completed issues, excluding EPICs
+	CompletedStoryPoints *int64 `json:"completedStoryPoints,omitempty"`
+
+	// CompletionRate Completed over total, in [0,1]; 0 when the sprint has no issues
+	CompletionRate *float64 `json:"completionRate,omitempty"`
+
+	// DueAt The sprint's planned due date, if set
+	DueAt *time.Time `json:"dueAt,omitempty"`
+
+	// Goal Sprint goal (free text, may be empty)
+	Goal *string `json:"goal,omitempty"`
+
+	// OpenIssues Still-open issues (INITIAL + ACTIVE) - the work that would carry over
+	OpenIssues *int64 `json:"openIssues,omitempty"`
+
+	// PointsCompletionRate Completed story points over total, in [0,1]; 0 when there are no points
+	PointsCompletionRate *float64 `json:"pointsCompletionRate,omitempty"`
+
+	// SprintId The sprint's id
+	SprintId *int64 `json:"sprintId,omitempty"`
+
+	// SprintKey Human-facing sprint key, e.g. S-1
+	SprintKey *string `json:"sprintKey,omitempty"`
+
+	// StartedAt When the sprint started, if it has
+	StartedAt *time.Time `json:"startedAt,omitempty"`
+
+	// StateDistribution Issue counts per state category, for categories that have at least one issue
+	StateDistribution *[]SprintStateCount `json:"stateDistribution,omitempty"`
+
+	// Status Sprint lifecycle status
+	Status *ProjectSprintReportStatus `json:"status,omitempty"`
+
+	// Title Sprint title
+	Title *string `json:"title,omitempty"`
+
+	// TotalIssues Issues currently in the sprint's scope
+	TotalIssues *int64 `json:"totalIssues,omitempty"`
+
+	// TotalStoryPoints Summed story points over the sprint's issues, excluding EPICs
+	TotalStoryPoints *int64 `json:"totalStoryPoints,omitempty"`
+}
+
+// ProjectSprintReportStatus Sprint lifecycle status
+type ProjectSprintReportStatus string
+
 // ProjectSummary defines model for ProjectSummary.
 type ProjectSummary struct {
 	Archived    *bool      `json:"archived,omitempty"`
@@ -5854,6 +6367,18 @@ type ProjectSummaryMyRole string
 
 // ProjectSummaryVisibility defines model for ProjectSummary.Visibility.
 type ProjectSummaryVisibility string
+
+// ProjectVelocity defines model for ProjectVelocity.
+type ProjectVelocity struct {
+	// AverageCompletedIssues Mean completed issue count over the returned sprints; 0 when there are none
+	AverageCompletedIssues *float64 `json:"averageCompletedIssues,omitempty"`
+
+	// AverageStoryPoints Mean completed story points over the returned sprints; 0 when there are none
+	AverageStoryPoints *float64 `json:"averageStoryPoints,omitempty"`
+
+	// Sprints Completed sprints oldest first, one point each
+	Sprints *[]VelocityPoint `json:"sprints,omitempty"`
+}
 
 // Ref defines model for Ref.
 type Ref struct {
@@ -6046,6 +6571,18 @@ type SprintIssueKeys struct {
 	IssueKeys *[]string `json:"issueKeys,omitempty"`
 }
 
+// SprintStateCount defines model for SprintStateCount.
+type SprintStateCount struct {
+	// Category The state category
+	Category *SprintStateCountCategory `json:"category,omitempty"`
+
+	// Count Issues in this category within the sprint
+	Count *int64 `json:"count,omitempty"`
+}
+
+// SprintStateCountCategory The state category
+type SprintStateCountCategory string
+
 // SprintSummary defines model for SprintSummary.
 type SprintSummary struct {
 	CompletedAt *time.Time           `json:"completedAt,omitempty"`
@@ -6120,6 +6657,9 @@ type StateMigrationRequest struct {
 type SubmitReviewRequest struct {
 	// Approved `true` to approve, `false` to request changes
 	Approved bool `json:"approved"`
+
+	// Comment Optional feedback body. When present it is stored as a comment on the issue, stamped with the verdict this review was submitted with.
+	Comment *string `json:"comment,omitempty"`
 }
 
 // SystemInfoDetails Server system information
@@ -6355,6 +6895,12 @@ type UpdateTransitionRequest struct {
 	Name        nullable.Nullable[string] `json:"name,omitempty"`
 }
 
+// UpdateVcsSyncRequest defines model for UpdateVcsSyncRequest.
+type UpdateVcsSyncRequest struct {
+	// SyncEnabled Whether inbound webhooks for this project are acted on
+	SyncEnabled bool `json:"syncEnabled"`
+}
+
 // UpdateWorkflowRequest defines model for UpdateWorkflowRequest.
 type UpdateWorkflowRequest struct {
 	Color       nullable.Nullable[string] `json:"color,omitempty"`
@@ -6383,6 +6929,63 @@ type VcsIntegrationDetail struct {
 type VcsSecretResponse struct {
 	Secret     *string `json:"secret,omitempty"`
 	WebhookUrl *string `json:"webhookUrl,omitempty"`
+}
+
+// VcsWebhookDeliverySummary An inbound webhook delivery and how it was handled.
+type VcsWebhookDeliverySummary struct {
+	// AttemptCount How many attempts have failed so far
+	AttemptCount *int32 `json:"attemptCount,omitempty"`
+
+	// DeliveryId The provider's own delivery id, matching its delivery log
+	DeliveryId *string `json:"deliveryId,omitempty"`
+
+	// EventType Provider event type, e.g. push or pull_request
+	EventType *string `json:"eventType,omitempty"`
+
+	// Id Internal id of this delivery record
+	Id *int64 `json:"id,omitempty"`
+
+	// LastError Failure reason, when the delivery could not be processed
+	LastError *string `json:"lastError,omitempty"`
+
+	// NextAttemptAt When the next retry is due, while it is still being retried
+	NextAttemptAt *time.Time `json:"nextAttemptAt,omitempty"`
+
+	// ProcessedAt When it reached a final state
+	ProcessedAt *time.Time `json:"processedAt,omitempty"`
+
+	// ReceivedAt When the delivery arrived
+	ReceivedAt *time.Time `json:"receivedAt,omitempty"`
+
+	// ResultDetail Why it ended that way, e.g. which branch linked or why nothing was done
+	ResultDetail *string `json:"resultDetail,omitempty"`
+
+	// Status How the delivery ended, or that it is still being retried
+	Status *VcsWebhookDeliverySummaryStatus `json:"status,omitempty"`
+}
+
+// VcsWebhookDeliverySummaryStatus How the delivery ended, or that it is still being retried
+type VcsWebhookDeliverySummaryStatus string
+
+// VelocityPoint defines model for VelocityPoint.
+type VelocityPoint struct {
+	// CompletedAt When the sprint was completed, if recorded
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// CompletedIssues Issues of this sprint now in a COMPLETED state
+	CompletedIssues *int64 `json:"completedIssues,omitempty"`
+
+	// CompletedStoryPoints Completed story points, excluding EPICs
+	CompletedStoryPoints *int64 `json:"completedStoryPoints,omitempty"`
+
+	// SprintId The sprint's id
+	SprintId *int64 `json:"sprintId,omitempty"`
+
+	// SprintKey Human-facing sprint key, e.g. S-1
+	SprintKey *string `json:"sprintKey,omitempty"`
+
+	// Title Sprint title
+	Title *string `json:"title,omitempty"`
 }
 
 // VerificationStatus defines model for VerificationStatus.
@@ -6647,6 +7250,7 @@ type SearchAllIssuesParams struct {
 	Priorities          *[]SearchAllIssuesParamsPriorities       `form:"priorities,omitempty" json:"priorities,omitempty"`
 	StateCategories     *[]SearchAllIssuesParamsStateCategories  `form:"stateCategories,omitempty" json:"stateCategories,omitempty"`
 	CurrentStateIds     *[]int64                                 `form:"currentStateIds,omitempty" json:"currentStateIds,omitempty"`
+	IssueTypeIds        *[]int64                                 `form:"issueTypeIds,omitempty" json:"issueTypeIds,omitempty"`
 	TagIds              *[]int64                                 `form:"tagIds,omitempty" json:"tagIds,omitempty"`
 	AuthorMemberIds     *[]string                                `form:"authorMemberIds,omitempty" json:"authorMemberIds,omitempty"`
 	AssigneeMemberIds   *[]string                                `form:"assigneeMemberIds,omitempty" json:"assigneeMemberIds,omitempty"`
@@ -6693,12 +7297,18 @@ type ListNotificationsParams struct {
 	// UnreadOnly Filter by unread notifications only
 	UnreadOnly *bool `form:"unreadOnly,omitempty" json:"unreadOnly,omitempty"`
 
+	// Types Filter by notification types (e.g. ISSUE_MENTIONED). Omit for all types.
+	Types *[]ListNotificationsParamsTypes `form:"types,omitempty" json:"types,omitempty"`
+
 	// Cursor Opaque cursor from the previous page's `nextCursor`. Omit for the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
 	// Limit Number of items per page
 	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// ListNotificationsParamsTypes defines parameters for ListNotifications.
+type ListNotificationsParamsTypes string
 
 // ListProjectsParams defines parameters for ListProjects.
 type ListProjectsParams struct {
@@ -6707,11 +7317,17 @@ type ListProjectsParams struct {
 	Pageable        Pageable `form:"pageable" json:"pageable"`
 }
 
+// ListGithubDeliveriesParams defines parameters for ListGithubDeliveries.
+type ListGithubDeliveriesParams struct {
+	Pageable Pageable `form:"pageable" json:"pageable"`
+}
+
 // SearchProjectIssuesParams defines parameters for SearchProjectIssues.
 type SearchProjectIssuesParams struct {
 	Priorities          *[]SearchProjectIssuesParamsPriorities       `form:"priorities,omitempty" json:"priorities,omitempty"`
 	StateCategories     *[]SearchProjectIssuesParamsStateCategories  `form:"stateCategories,omitempty" json:"stateCategories,omitempty"`
 	CurrentStateIds     *[]int64                                     `form:"currentStateIds,omitempty" json:"currentStateIds,omitempty"`
+	IssueTypeIds        *[]int64                                     `form:"issueTypeIds,omitempty" json:"issueTypeIds,omitempty"`
 	TagIds              *[]int64                                     `form:"tagIds,omitempty" json:"tagIds,omitempty"`
 	AuthorMemberIds     *[]string                                    `form:"authorMemberIds,omitempty" json:"authorMemberIds,omitempty"`
 	AssigneeMemberIds   *[]string                                    `form:"assigneeMemberIds,omitempty" json:"assigneeMemberIds,omitempty"`
@@ -6767,6 +7383,31 @@ type ListProjectSprintsParams struct {
 
 // ListProjectSprintsParamsStatuses defines parameters for ListProjectSprints.
 type ListProjectSprintsParamsStatuses string
+
+// GetProjectContributionsParams defines parameters for GetProjectContributions.
+type GetProjectContributionsParams struct {
+	MemberId int64   `form:"memberId" json:"memberId"`
+	Days     *int32  `form:"days,omitempty" json:"days,omitempty"`
+	ZoneId   *string `form:"zoneId,omitempty" json:"zoneId,omitempty"`
+}
+
+// GetProjectCycleTimeStatsParams defines parameters for GetProjectCycleTimeStats.
+type GetProjectCycleTimeStatsParams struct {
+	Window   *string `form:"window,omitempty" json:"window,omitempty"`
+	SprintId *int64  `form:"sprintId,omitempty" json:"sprintId,omitempty"`
+}
+
+// GetProjectFlowStatsParams defines parameters for GetProjectFlowStats.
+type GetProjectFlowStatsParams struct {
+	Window   *string `form:"window,omitempty" json:"window,omitempty"`
+	SprintId *int64  `form:"sprintId,omitempty" json:"sprintId,omitempty"`
+	ZoneId   *string `form:"zoneId,omitempty" json:"zoneId,omitempty"`
+}
+
+// GetProjectSprintReportParams defines parameters for GetProjectSprintReport.
+type GetProjectSprintReportParams struct {
+	SprintId int64 `form:"sprintId" json:"sprintId"`
+}
 
 // SearchProjectTagsParams defines parameters for SearchProjectTags.
 type SearchProjectTagsParams struct {
@@ -6958,6 +7599,9 @@ type CreateProjectJSONRequestBody = CreateProjectRequest
 
 // UpdateProjectJSONRequestBody defines body for UpdateProject for application/json ContentType.
 type UpdateProjectJSONRequestBody = UpdateProjectRequest
+
+// UpdateGithubSyncJSONRequestBody defines body for UpdateGithubSync for application/json ContentType.
+type UpdateGithubSyncJSONRequestBody = UpdateVcsSyncRequest
 
 // CreateIssueJSONRequestBody defines body for CreateIssue for application/json ContentType.
 type CreateIssueJSONRequestBody = CreateIssueRequest
@@ -7587,6 +8231,14 @@ type ClientInterface interface {
 	// GetGithubIntegration request
 	GetGithubIntegration(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateGithubSyncWithBody request with any body
+	UpdateGithubSyncWithBody(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateGithubSync(ctx context.Context, projectKey string, body UpdateGithubSyncJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListGithubDeliveries request
+	ListGithubDeliveries(ctx context.Context, projectKey string, params *ListGithubDeliveriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RegenerateGithubSecret request
 	RegenerateGithubSecret(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -7615,6 +8267,9 @@ type ClientInterface interface {
 
 	// ListProjectTrash request
 	ListProjectTrash(ctx context.Context, projectKey string, params *ListProjectTrashParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectMemberStats request
+	GetProjectMemberStats(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// LeaveProject request
 	LeaveProject(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -7651,6 +8306,24 @@ type ClientInterface interface {
 	CreateSprintWithBody(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateSprint(ctx context.Context, projectKey string, body CreateSprintJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectAgingStats request
+	GetProjectAgingStats(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectContributions request
+	GetProjectContributions(ctx context.Context, projectKey string, params *GetProjectContributionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectCycleTimeStats request
+	GetProjectCycleTimeStats(ctx context.Context, projectKey string, params *GetProjectCycleTimeStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectFlowStats request
+	GetProjectFlowStats(ctx context.Context, projectKey string, params *GetProjectFlowStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectSprintReport request
+	GetProjectSprintReport(ctx context.Context, projectKey string, params *GetProjectSprintReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectVelocity request
+	GetProjectVelocity(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SearchProjectTags request
 	SearchProjectTags(ctx context.Context, projectKey string, params *SearchProjectTagsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -9946,6 +10619,42 @@ func (c *Client) GetGithubIntegration(ctx context.Context, projectKey string, re
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpdateGithubSyncWithBody(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGithubSyncRequestWithBody(c.Server, projectKey, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateGithubSync(ctx context.Context, projectKey string, body UpdateGithubSyncJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGithubSyncRequest(c.Server, projectKey, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListGithubDeliveries(ctx context.Context, projectKey string, params *ListGithubDeliveriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGithubDeliveriesRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) RegenerateGithubSecret(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRegenerateGithubSecretRequest(c.Server, projectKey)
 	if err != nil {
@@ -10068,6 +10777,18 @@ func (c *Client) SearchProjectIssues(ctx context.Context, projectKey string, par
 
 func (c *Client) ListProjectTrash(ctx context.Context, projectKey string, params *ListProjectTrashParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListProjectTrashRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectMemberStats(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectMemberStatsRequest(c.Server, projectKey)
 	if err != nil {
 		return nil, err
 	}
@@ -10224,6 +10945,78 @@ func (c *Client) CreateSprintWithBody(ctx context.Context, projectKey string, co
 
 func (c *Client) CreateSprint(ctx context.Context, projectKey string, body CreateSprintJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSprintRequest(c.Server, projectKey, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectAgingStats(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectAgingStatsRequest(c.Server, projectKey)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectContributions(ctx context.Context, projectKey string, params *GetProjectContributionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectContributionsRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectCycleTimeStats(ctx context.Context, projectKey string, params *GetProjectCycleTimeStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectCycleTimeStatsRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectFlowStats(ctx context.Context, projectKey string, params *GetProjectFlowStatsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectFlowStatsRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectSprintReport(ctx context.Context, projectKey string, params *GetProjectSprintReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectSprintReportRequest(c.Server, projectKey, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectVelocity(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectVelocityRequest(c.Server, projectKey)
 	if err != nil {
 		return nil, err
 	}
@@ -14699,6 +15492,18 @@ func NewSearchAllIssuesRequest(server string, params *SearchAllIssuesParams) (*h
 
 		}
 
+		if params.IssueTypeIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "issueTypeIds", *params.IssueTypeIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.TagIds != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tagIds", *params.TagIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
@@ -15909,6 +16714,18 @@ func NewListNotificationsRequest(server string, params *ListNotificationsParams)
 
 		}
 
+		if params.Types != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "types", *params.Types, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -16547,6 +17364,110 @@ func NewGetGithubIntegrationRequest(server string, projectKey string) (*http.Req
 	return req, nil
 }
 
+// NewUpdateGithubSyncRequest calls the generic UpdateGithubSync builder with application/json body
+func NewUpdateGithubSyncRequest(server string, projectKey string, body UpdateGithubSyncJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateGithubSyncRequestWithBody(server, projectKey, "application/json", bodyReader)
+}
+
+// NewUpdateGithubSyncRequestWithBody generates requests for UpdateGithubSync with any type of body
+func NewUpdateGithubSyncRequestWithBody(server string, projectKey string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/integrations/github", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListGithubDeliveriesRequest generates requests for ListGithubDeliveries
+func NewListGithubDeliveriesRequest(server string, projectKey string, params *ListGithubDeliveriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/integrations/github/deliveries", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageable", params.Pageable, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "object", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewRegenerateGithubSecretRequest generates requests for RegenerateGithubSecret
 func NewRegenerateGithubSecretRequest(server string, projectKey string) (*http.Request, error) {
 	var err error
@@ -16840,6 +17761,18 @@ func NewSearchProjectIssuesRequest(server string, projectKey string, params *Sea
 
 		}
 
+		if params.IssueTypeIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "issueTypeIds", *params.IssueTypeIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.TagIds != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "tagIds", *params.TagIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "array", Format: ""}); err != nil {
@@ -17085,6 +18018,40 @@ func NewListProjectTrashRequest(server string, projectKey string, params *ListPr
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
 		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectMemberStatsRequest generates requests for GetProjectMemberStats
+func NewGetProjectMemberStatsRequest(server string, projectKey string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/member-stats", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -17601,6 +18568,370 @@ func NewCreateSprintRequestWithBody(server string, projectKey string, contentTyp
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetProjectAgingStatsRequest generates requests for GetProjectAgingStats
+func NewGetProjectAgingStatsRequest(server string, projectKey string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/aging", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectContributionsRequest generates requests for GetProjectContributions
+func NewGetProjectContributionsRequest(server string, projectKey string, params *GetProjectContributionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/contributions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "memberId", params.MemberId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Days != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "days", *params.Days, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int32"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ZoneId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "zoneId", *params.ZoneId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectCycleTimeStatsRequest generates requests for GetProjectCycleTimeStats
+func NewGetProjectCycleTimeStatsRequest(server string, projectKey string, params *GetProjectCycleTimeStatsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/cycle-time", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Window != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "window", *params.Window, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.SprintId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sprintId", *params.SprintId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectFlowStatsRequest generates requests for GetProjectFlowStats
+func NewGetProjectFlowStatsRequest(server string, projectKey string, params *GetProjectFlowStatsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/flow", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Window != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "window", *params.Window, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.SprintId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sprintId", *params.SprintId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ZoneId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "zoneId", *params.ZoneId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectSprintReportRequest generates requests for GetProjectSprintReport
+func NewGetProjectSprintReportRequest(server string, projectKey string, params *GetProjectSprintReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/sprint-report", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sprintId", params.SprintId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectVelocityRequest generates requests for GetProjectVelocity
+func NewGetProjectVelocityRequest(server string, projectKey string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "projectKey", projectKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/projects/%s/stats/velocity", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -20789,6 +22120,14 @@ type ClientWithResponsesInterface interface {
 	// GetGithubIntegrationWithResponse request
 	GetGithubIntegrationWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetGithubIntegrationResp, error)
 
+	// UpdateGithubSyncWithBodyWithResponse request with any body
+	UpdateGithubSyncWithBodyWithResponse(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGithubSyncResp, error)
+
+	UpdateGithubSyncWithResponse(ctx context.Context, projectKey string, body UpdateGithubSyncJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGithubSyncResp, error)
+
+	// ListGithubDeliveriesWithResponse request
+	ListGithubDeliveriesWithResponse(ctx context.Context, projectKey string, params *ListGithubDeliveriesParams, reqEditors ...RequestEditorFn) (*ListGithubDeliveriesResp, error)
+
 	// RegenerateGithubSecretWithResponse request
 	RegenerateGithubSecretWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*RegenerateGithubSecretResp, error)
 
@@ -20817,6 +22156,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListProjectTrashWithResponse request
 	ListProjectTrashWithResponse(ctx context.Context, projectKey string, params *ListProjectTrashParams, reqEditors ...RequestEditorFn) (*ListProjectTrashResp, error)
+
+	// GetProjectMemberStatsWithResponse request
+	GetProjectMemberStatsWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectMemberStatsResp, error)
 
 	// LeaveProjectWithResponse request
 	LeaveProjectWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*LeaveProjectResp, error)
@@ -20853,6 +22195,24 @@ type ClientWithResponsesInterface interface {
 	CreateSprintWithBodyWithResponse(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSprintResp, error)
 
 	CreateSprintWithResponse(ctx context.Context, projectKey string, body CreateSprintJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSprintResp, error)
+
+	// GetProjectAgingStatsWithResponse request
+	GetProjectAgingStatsWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectAgingStatsResp, error)
+
+	// GetProjectContributionsWithResponse request
+	GetProjectContributionsWithResponse(ctx context.Context, projectKey string, params *GetProjectContributionsParams, reqEditors ...RequestEditorFn) (*GetProjectContributionsResp, error)
+
+	// GetProjectCycleTimeStatsWithResponse request
+	GetProjectCycleTimeStatsWithResponse(ctx context.Context, projectKey string, params *GetProjectCycleTimeStatsParams, reqEditors ...RequestEditorFn) (*GetProjectCycleTimeStatsResp, error)
+
+	// GetProjectFlowStatsWithResponse request
+	GetProjectFlowStatsWithResponse(ctx context.Context, projectKey string, params *GetProjectFlowStatsParams, reqEditors ...RequestEditorFn) (*GetProjectFlowStatsResp, error)
+
+	// GetProjectSprintReportWithResponse request
+	GetProjectSprintReportWithResponse(ctx context.Context, projectKey string, params *GetProjectSprintReportParams, reqEditors ...RequestEditorFn) (*GetProjectSprintReportResp, error)
+
+	// GetProjectVelocityWithResponse request
+	GetProjectVelocityWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectVelocityResp, error)
 
 	// SearchProjectTagsWithResponse request
 	SearchProjectTagsWithResponse(ctx context.Context, projectKey string, params *SearchProjectTagsParams, reqEditors ...RequestEditorFn) (*SearchProjectTagsResp, error)
@@ -24719,6 +26079,66 @@ func (r GetGithubIntegrationResp) ContentType() string {
 	return ""
 }
 
+type UpdateGithubSyncResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VcsIntegrationDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateGithubSyncResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateGithubSyncResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateGithubSyncResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListGithubDeliveriesResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PageResponseVcsWebhookDeliverySummary
+}
+
+// Status returns HTTPResponse.Status
+func (r ListGithubDeliveriesResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListGithubDeliveriesResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListGithubDeliveriesResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type RegenerateGithubSecretResp struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -24923,6 +26343,36 @@ func (r ListProjectTrashResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListProjectTrashResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectMemberStatsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ProjectMemberStats
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectMemberStatsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectMemberStatsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectMemberStatsResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -25220,6 +26670,186 @@ func (r CreateSprintResp) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateSprintResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectAgingStatsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectAgingStats
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectAgingStatsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectAgingStatsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectAgingStatsResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectContributionsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectContributionStats
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectContributionsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectContributionsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectContributionsResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectCycleTimeStatsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectCycleTimeStats
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectCycleTimeStatsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectCycleTimeStatsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectCycleTimeStatsResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectFlowStatsResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectFlowStats
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectFlowStatsResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectFlowStatsResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectFlowStatsResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectSprintReportResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectSprintReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectSprintReportResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectSprintReportResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectSprintReportResp) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetProjectVelocityResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectVelocity
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectVelocityResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectVelocityResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetProjectVelocityResp) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -28628,6 +30258,32 @@ func (c *ClientWithResponses) GetGithubIntegrationWithResponse(ctx context.Conte
 	return ParseGetGithubIntegrationResp(rsp)
 }
 
+// UpdateGithubSyncWithBodyWithResponse request with arbitrary body returning *UpdateGithubSyncResp
+func (c *ClientWithResponses) UpdateGithubSyncWithBodyWithResponse(ctx context.Context, projectKey string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGithubSyncResp, error) {
+	rsp, err := c.UpdateGithubSyncWithBody(ctx, projectKey, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGithubSyncResp(rsp)
+}
+
+func (c *ClientWithResponses) UpdateGithubSyncWithResponse(ctx context.Context, projectKey string, body UpdateGithubSyncJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGithubSyncResp, error) {
+	rsp, err := c.UpdateGithubSync(ctx, projectKey, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGithubSyncResp(rsp)
+}
+
+// ListGithubDeliveriesWithResponse request returning *ListGithubDeliveriesResp
+func (c *ClientWithResponses) ListGithubDeliveriesWithResponse(ctx context.Context, projectKey string, params *ListGithubDeliveriesParams, reqEditors ...RequestEditorFn) (*ListGithubDeliveriesResp, error) {
+	rsp, err := c.ListGithubDeliveries(ctx, projectKey, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListGithubDeliveriesResp(rsp)
+}
+
 // RegenerateGithubSecretWithResponse request returning *RegenerateGithubSecretResp
 func (c *ClientWithResponses) RegenerateGithubSecretWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*RegenerateGithubSecretResp, error) {
 	rsp, err := c.RegenerateGithubSecret(ctx, projectKey, reqEditors...)
@@ -28721,6 +30377,15 @@ func (c *ClientWithResponses) ListProjectTrashWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListProjectTrashResp(rsp)
+}
+
+// GetProjectMemberStatsWithResponse request returning *GetProjectMemberStatsResp
+func (c *ClientWithResponses) GetProjectMemberStatsWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectMemberStatsResp, error) {
+	rsp, err := c.GetProjectMemberStats(ctx, projectKey, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectMemberStatsResp(rsp)
 }
 
 // LeaveProjectWithResponse request returning *LeaveProjectResp
@@ -28835,6 +30500,60 @@ func (c *ClientWithResponses) CreateSprintWithResponse(ctx context.Context, proj
 		return nil, err
 	}
 	return ParseCreateSprintResp(rsp)
+}
+
+// GetProjectAgingStatsWithResponse request returning *GetProjectAgingStatsResp
+func (c *ClientWithResponses) GetProjectAgingStatsWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectAgingStatsResp, error) {
+	rsp, err := c.GetProjectAgingStats(ctx, projectKey, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectAgingStatsResp(rsp)
+}
+
+// GetProjectContributionsWithResponse request returning *GetProjectContributionsResp
+func (c *ClientWithResponses) GetProjectContributionsWithResponse(ctx context.Context, projectKey string, params *GetProjectContributionsParams, reqEditors ...RequestEditorFn) (*GetProjectContributionsResp, error) {
+	rsp, err := c.GetProjectContributions(ctx, projectKey, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectContributionsResp(rsp)
+}
+
+// GetProjectCycleTimeStatsWithResponse request returning *GetProjectCycleTimeStatsResp
+func (c *ClientWithResponses) GetProjectCycleTimeStatsWithResponse(ctx context.Context, projectKey string, params *GetProjectCycleTimeStatsParams, reqEditors ...RequestEditorFn) (*GetProjectCycleTimeStatsResp, error) {
+	rsp, err := c.GetProjectCycleTimeStats(ctx, projectKey, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectCycleTimeStatsResp(rsp)
+}
+
+// GetProjectFlowStatsWithResponse request returning *GetProjectFlowStatsResp
+func (c *ClientWithResponses) GetProjectFlowStatsWithResponse(ctx context.Context, projectKey string, params *GetProjectFlowStatsParams, reqEditors ...RequestEditorFn) (*GetProjectFlowStatsResp, error) {
+	rsp, err := c.GetProjectFlowStats(ctx, projectKey, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectFlowStatsResp(rsp)
+}
+
+// GetProjectSprintReportWithResponse request returning *GetProjectSprintReportResp
+func (c *ClientWithResponses) GetProjectSprintReportWithResponse(ctx context.Context, projectKey string, params *GetProjectSprintReportParams, reqEditors ...RequestEditorFn) (*GetProjectSprintReportResp, error) {
+	rsp, err := c.GetProjectSprintReport(ctx, projectKey, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectSprintReportResp(rsp)
+}
+
+// GetProjectVelocityWithResponse request returning *GetProjectVelocityResp
+func (c *ClientWithResponses) GetProjectVelocityWithResponse(ctx context.Context, projectKey string, reqEditors ...RequestEditorFn) (*GetProjectVelocityResp, error) {
+	rsp, err := c.GetProjectVelocity(ctx, projectKey, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectVelocityResp(rsp)
 }
 
 // SearchProjectTagsWithResponse request returning *SearchProjectTagsResp
@@ -32134,6 +33853,58 @@ func ParseGetGithubIntegrationResp(rsp *http.Response) (*GetGithubIntegrationRes
 	return response, nil
 }
 
+// ParseUpdateGithubSyncResp parses an HTTP response from a UpdateGithubSyncWithResponse call
+func ParseUpdateGithubSyncResp(rsp *http.Response) (*UpdateGithubSyncResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateGithubSyncResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VcsIntegrationDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListGithubDeliveriesResp parses an HTTP response from a ListGithubDeliveriesWithResponse call
+func ParseListGithubDeliveriesResp(rsp *http.Response) (*ListGithubDeliveriesResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListGithubDeliveriesResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PageResponseVcsWebhookDeliverySummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseRegenerateGithubSecretResp parses an HTTP response from a RegenerateGithubSecretWithResponse call
 func ParseRegenerateGithubSecretResp(rsp *http.Response) (*RegenerateGithubSecretResp, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -32306,6 +34077,32 @@ func ParseListProjectTrashResp(rsp *http.Response) (*ListProjectTrashResp, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PageResponseIssueSummary
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectMemberStatsResp parses an HTTP response from a GetProjectMemberStatsWithResponse call
+func ParseGetProjectMemberStatsResp(rsp *http.Response) (*GetProjectMemberStatsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectMemberStatsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ProjectMemberStats
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -32540,6 +34337,162 @@ func ParseCreateSprintResp(rsp *http.Response) (*CreateSprintResp, error) {
 			return nil, err
 		}
 		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectAgingStatsResp parses an HTTP response from a GetProjectAgingStatsWithResponse call
+func ParseGetProjectAgingStatsResp(rsp *http.Response) (*GetProjectAgingStatsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectAgingStatsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectAgingStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectContributionsResp parses an HTTP response from a GetProjectContributionsWithResponse call
+func ParseGetProjectContributionsResp(rsp *http.Response) (*GetProjectContributionsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectContributionsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectContributionStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectCycleTimeStatsResp parses an HTTP response from a GetProjectCycleTimeStatsWithResponse call
+func ParseGetProjectCycleTimeStatsResp(rsp *http.Response) (*GetProjectCycleTimeStatsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectCycleTimeStatsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectCycleTimeStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectFlowStatsResp parses an HTTP response from a GetProjectFlowStatsWithResponse call
+func ParseGetProjectFlowStatsResp(rsp *http.Response) (*GetProjectFlowStatsResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectFlowStatsResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectFlowStats
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectSprintReportResp parses an HTTP response from a GetProjectSprintReportWithResponse call
+func ParseGetProjectSprintReportResp(rsp *http.Response) (*GetProjectSprintReportResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectSprintReportResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectSprintReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectVelocityResp parses an HTTP response from a GetProjectVelocityWithResponse call
+func ParseGetProjectVelocityResp(rsp *http.Response) (*GetProjectVelocityResp, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectVelocityResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectVelocity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

@@ -12,9 +12,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// Retheme must rebuild the table rows, not only its styles: project rows embed theme colors (key,
-// pin, visibility, archived) into the cell strings at build time, so a plain SetStyles would leave
-// the visible rows painted in the old palette.
+// Rows embed theme colors into their cell strings at build time, so a plain SetStyles would leave
+// them painted in the old palette.
 func TestRethemeReembedsRowColors(t *testing.T) {
 	m := testModel(t)
 	var cmd tea.Cmd

@@ -8,8 +8,6 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// The lists render Projects-style column headers: Issue Types carries Name/Hierarchy/Workflow/
-// System, Workflows carries Name/Description/System.
 func TestListShowsColumnHeaders(t *testing.T) {
 	m := mk(120, 25, 4, 3, false)
 	col := plain(m.leftColumn())
@@ -20,8 +18,7 @@ func TestListShowsColumnHeaders(t *testing.T) {
 	}
 }
 
-// Narrow panels shed the lowest-priority columns (like the Projects table drops Repository)
-// rather than crushing the flex name column below its minimum.
+// A narrow panel drops low-priority columns rather than crushing the flex name column.
 func TestListDropsColumnsWhenNarrow(t *testing.T) {
 	wide := typeCols(55)
 	if len(wide) != 4 {
@@ -39,8 +36,7 @@ func TestListDropsColumnsWhenNarrow(t *testing.T) {
 	}
 }
 
-// On a wide panel the Name column is capped and the surplus widens Workflow, so the flex name
-// column never balloons past a readable width.
+// A wide panel caps Name and hands the surplus to Workflow.
 func TestTypeNameColumnCapped(t *testing.T) {
 	const contentW = 80 // wide enough that an uncapped Name flex would far exceed its cap
 	cols := typeCols(contentW)
@@ -70,7 +66,7 @@ func TestTypeNameColumnCapped(t *testing.T) {
 	}
 }
 
-// Hovering a non-selected row tracks it and repaints the row; moving off the list clears it.
+// Hovering a row tracks and repaints it. Moving off the list clears it.
 func TestListHoverHighlightsRow(t *testing.T) {
 	m := mk(120, 25, 6, 3, false)
 	_ = scanView(t, m.View(), "schema.types")
@@ -104,7 +100,6 @@ func TestListKeyClearsHover(t *testing.T) {
 	}
 }
 
-// The selected row of the active list is painted with the Selection background band.
 func TestListSelectedRowBanded(t *testing.T) {
 	m := mk(120, 25, 6, 3, false) // focus defaults to paneTypes, so its cursor row is active
 	m.typeCursor = 2

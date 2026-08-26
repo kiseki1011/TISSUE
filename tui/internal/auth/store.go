@@ -1,5 +1,4 @@
-// Package auth stores credentials and injects them into API requests, keeping
-// authentication out of the UI.
+// Package auth stores credentials and injects them into API requests.
 package auth
 
 import (
@@ -24,8 +23,7 @@ type TokenStore interface {
 	Clear(server string) error
 }
 
-// NewTokenStore returns an OS-keyring store, falling back to a 0600 file when
-// no keyring is available (headless SSH, containers, CI).
+// NewTokenStore returns an OS-keyring store, or a 0600 file when no keyring is available (headless SSH, CI).
 func NewTokenStore() (TokenStore, error) {
 	if keyringAvailable() {
 		return keyringStore{}, nil
@@ -53,8 +51,7 @@ func credentialsPath() (string, error) {
 
 type keyringStore struct{}
 
-// Access and refresh tokens go in separate entries: their combined size can
-// exceed the macOS keychain's per-item limit.
+// Separate entries: the combined size can exceed the macOS keychain's per-item limit.
 func accessKey(server string) string  { return server + " (access)" }
 func refreshKey(server string) string { return server + " (refresh)" }
 

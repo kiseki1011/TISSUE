@@ -39,6 +39,9 @@ public final class IssueSearchSpecs {
     private static final String STATE_ID = "id";
     private static final String STATE_CATEGORY = "category";
 
+    private static final String ISSUE_TYPE = "issueType";
+    private static final String ISSUE_TYPE_ID = "id";
+
     private static final String PARTICIPANTS = "participants";
     private static final String ASSIGNEE = "assignee";
     private static final String MEMBER = "member";
@@ -91,6 +94,13 @@ public final class IssueSearchSpecs {
             return null;
         }
         return (root, query, cb) -> root.get(CURRENT_STATE).get(STATE_ID).in(stateIds);
+    }
+
+    public static @Nullable Specification<Issue> hasIssueTypes(@Nullable Set<Long> issueTypeIds) {
+        if (issueTypeIds == null || issueTypeIds.isEmpty()) {
+            return null;
+        }
+        return (root, query, cb) -> root.get(ISSUE_TYPE).get(ISSUE_TYPE_ID).in(issueTypeIds);
     }
 
     public static @Nullable Specification<Issue> hasAssignees(@Nullable Set<Long> assigneeMemberIds) {

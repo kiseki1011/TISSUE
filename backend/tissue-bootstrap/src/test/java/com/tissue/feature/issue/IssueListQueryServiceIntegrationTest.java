@@ -172,6 +172,20 @@ class IssueListQueryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @DisplayName("carries each issue's last activity (the synchronous ISSUE_CREATED log)")
+    void getMyWork_carriesLastActivity() {
+        // given - creating an issue logs ISSUE_CREATED synchronously in the same transaction
+        createIssue(PROJ, "mine", actor.getId());
+
+        // when
+        CursorPage<IssueSummary> page = sut.getMyWork(PROJ, actor.getId(), null, 20);
+
+        // then
+        assertThat(page.content()).hasSize(1);
+        assertThat(page.content().getFirst().lastActivityAt()).isNotNull();
+    }
+
+    @Test
     @DisplayName("returns no-sprint issues and excludes issues already in a sprint")
     void getBacklog_excludesSprintIssues() {
         // given

@@ -47,8 +47,7 @@ const (
 	selWorkflow
 )
 
-// wfElem identifies a selectable element in a workflow graph — a state or a transition, by
-// its backend id. The zero value (elemNone) is "nothing selected".
+// Kinds of selectable Details element, each paired with a backend id. elemNone = nothing selected.
 const (
 	elemNone = iota
 	elemState
@@ -62,9 +61,8 @@ const (
 	elemAddField // the "+ Field" affordance beneath the fields list
 )
 
-// detailActions are the workflow Details section "Edit" buttons, navigable as keyboard focus
-// stops that sit above the graph. They are present exactly when the graph is loaded, so the
-// first graph element always follows them at index len(detailActions).
+// detailActions are the workflow Details "Edit" buttons, focus stops above the graph. They exist
+// exactly when the graph is loaded, so the first graph element always follows them.
 var detailActions = []wfElem{{elemVcsEdit, 0}, {elemFlowEdit, 0}}
 
 type wfElem struct {
@@ -123,8 +121,8 @@ type Model struct {
 	optionsEditing bool
 	options        optionsForm
 
-	// a just-created select/checklist field whose options editor should auto-open once its type's
-	// detail reloads (the create call returns no id, so the field is matched by name)
+	// a just-created select/checklist field whose options editor auto-opens on the next detail load
+	// (the create call returns no id, so it is matched by name)
 	pendingOptionsType int
 	pendingOptionsName string
 
@@ -143,8 +141,7 @@ type Model struct {
 	flowEditing bool
 	flow        flowForm
 
-	// wheel scroll offset for a modal that overflows the terminal, so a too-short terminal windows
-	// the modal with a scrollbar instead of clipping it. Reset whenever no modal is open.
+	// wheel offset for a modal taller than the terminal. Reset whenever no modal is open.
 	modalScroll int
 
 	width  int
@@ -222,9 +219,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.clampDetailScroll()
 		return m, nil
 	}
-	// while a modal floats, the wheel drives its window when it overflows the terminal — otherwise the
-	// event falls through to the modal's own handler below (checked only for wheel events, so a
-	// keystroke never pays for rendering the modal)
+	// while a modal floats, the wheel drives its window when it overflows the terminal. Checked only
+	// for wheel events, so a keystroke never pays for rendering the modal.
 	if wheel, isWheel := msg.(tea.MouseWheelMsg); isWheel {
 		if view, ok := m.activeModalView(); ok && lipgloss.Height(view) > m.height {
 			switch wheel.Button {
@@ -256,8 +252,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// A successful save invalidates the workflow's cached graph and refetches it so the diagram
-// reflects the change.
 func (m Model) updateGuards(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case guardsSavedMsg:
@@ -289,8 +283,7 @@ func (m Model) openGuards() (Model, tea.Cmd, bool) {
 	return m.openGuardsFor(e.id, false)
 }
 
-// When add is true the add-guard dropdown opens immediately, so the graph's "+ Guard" affordance
-// goes straight to picking a type.
+// openGuardsFor opens the guard editor. add lands straight on the add-guard dropdown.
 func (m Model) openGuardsFor(transID int, add bool) (Model, tea.Cmd, bool) {
 	if m.kind != selWorkflow {
 		return m, nil, false
@@ -317,8 +310,6 @@ func (m Model) openGuardsFor(transID int, add bool) (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// A successful save invalidates the workflow's cached graph and refetches it so the Details
-// reflect the new mapping.
 func (m Model) updateVcs(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case vcsSavedMsg:
@@ -359,8 +350,6 @@ func (m Model) openVcs() (Model, tea.Cmd, bool) {
 	return m, m.vcs.Init(), true
 }
 
-// A successful save invalidates the workflow's cached graph and refetches it so the diagram
-// reflects the new topology.
 func (m Model) updateFlow(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case flowSavedMsg:
@@ -379,8 +368,7 @@ func (m Model) updateFlow(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		}
 	case tea.MouseClickMsg:
-		// a click on a diagram node/edge selects it — the action bar and empty space fall through
-		// to the editor's own click routing below
+		// a click on a diagram node/edge selects it. The action bar and empty space fall through below.
 		if !m.flow.hasOverlay() && msg.Button == tea.MouseLeft {
 			if e, ok := m.hitElem(msg); ok {
 				if fi, ok := m.flow.focusForElem(e); ok {
@@ -440,16 +428,13 @@ func (m Model) actionFocused(kind int) bool {
 	return ok && e.kind == kind
 }
 
-// A successful save invalidates the workflow's cached graph and refetches it so the diagram
-// reflects the change.
 func (m Model) updateEdit(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case editSavedMsg:
 		m.editing = false
 		if m.edit.kind == editIssueType || m.edit.kind == editWorkflow {
-			// the summary's name/color/description are shown from the catalog list (and the workflow
-			// header), so refetch it to reflect the edit. The graph/fields caches are untouched by a
-			// metadata edit
+			// name/color/description come from the catalog list, so refetch to reflect the edit. A
+			// metadata edit leaves the graph/fields caches untouched.
 			return m, load(m.deps)
 		}
 		delete(m.wfDetail, msg.wfID)
@@ -471,7 +456,7 @@ func (m Model) updateEdit(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-// Hierarchy and workflow are fixed at creation, so they are not offered.
+// openTypeEdit edits issue type metadata. Hierarchy and workflow are fixed at creation.
 func (m Model) openTypeEdit() (Model, tea.Cmd, bool) {
 	if m.kind != selType {
 		return m, nil, false
@@ -485,8 +470,8 @@ func (m Model) openTypeEdit() (Model, tea.Cmd, bool) {
 	return m, m.edit.Init(), true
 }
 
-// The workflow's own color is being retired from the UI, so no color field is shown and the save
-// omits color (UpdateWorkflow leaves an empty color out of the PATCH), keeping it unchanged.
+// openWorkflowEdit edits workflow metadata. Workflow color is being retired, so no color field is
+// shown and the save omits it (UpdateWorkflow drops an empty color from the PATCH).
 func (m Model) openWorkflowEdit() (Model, tea.Cmd, bool) {
 	if m.kind != selWorkflow {
 		return m, nil, false
@@ -510,8 +495,6 @@ func (m Model) openMetaForPane() (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// A successful save invalidates the owning issue type's cached detail and refetches it so the
-// field list reflects the change.
 func (m Model) updateField(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case fieldSavedMsg:
@@ -556,9 +539,8 @@ func (m Model) openFieldEdit(fieldID int) (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// typeElems is the selected issue type's selectable elements: its metadata block, then one per
-// custom field in display order, then the "+ Field" affordance. Fields and the add handle appear
-// only once the detail is loaded, so navigation never lands on a stop that is not yet drawn.
+// typeElems is the selected type's focus stops: metadata, each field in display order, then
+// "+ Field". They appear only once the detail is loaded, so navigation never lands undrawn.
 func (m Model) typeElems() []wfElem {
 	elems := []wfElem{{elemTypeMeta, 0}}
 	if t, ok := m.selectedType(); ok {
@@ -657,8 +639,7 @@ func (m Model) openEdit() (Model, tea.Cmd, bool) {
 		return m, nil, false
 	}
 	if e.kind == elemWfMeta {
-		// the workflow's own metadata is editable before the graph loads, so handle it before the
-		// graph lookup below
+		// metadata is editable before the graph loads, so handle it before the graph lookup
 		return m.openWorkflowEdit()
 	}
 	w, ok := m.selectedWorkflow()
@@ -702,9 +683,8 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	}
 	switch m.focus {
 	case paneTypes, paneWorkflows:
-		// item-level editors run straight from the list, so the common actions (metadata, add
-		// field, VCS, flow) need no trip into the Details pane. →/l/enter drill into Details for
-		// the per-field / per-state work that does need an element cursor.
+		// common actions run straight from the list. →/l/enter drill into Details for the per-field
+		// / per-state work that needs an element cursor.
 		switch msg.String() {
 		case "n":
 			if mm, cmd, ok := m.openCreateForPane(); ok {
@@ -749,12 +729,11 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	case paneDetail:
 		switch msg.String() {
 		case "left", "h", "esc":
-			// back out to the list this detail belongs to
 			if m.kind == selType {
 				return m.setFocus(paneTypes)
 			}
 			return m.setFocus(paneWorkflows)
-		case "enter", " ":
+		case "enter", "space":
 			if mm, cmd, ok := m.activateDetailAction(); ok {
 				return mm, cmd
 			}
@@ -814,8 +793,7 @@ func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// CapturingInput reports that the screen owns the keyboard while a modal is open, so the app
-// shell suppresses its global tab-switch keys.
+// CapturingInput reports that a modal owns the keyboard, so the shell drops its tab-switch keys.
 func (m Model) CapturingInput() bool {
 	return m.editing || m.fieldEditing || m.creatingField || m.confirming || m.optionsEditing ||
 		m.creatingWorkflow || m.creatingType || m.guardsEditing || m.vcsEditing || m.flowEditing
@@ -849,9 +827,6 @@ func (m Model) moveList(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) scrollKey(msg tea.KeyPressMsg) Model {
-	// a loaded workflow graph is navigated by element (states then transitions). An issue type is
-	// navigated by its metadata block and fields. Moving the selection scrolls it into view. Other
-	// detail content just scrolls.
 	if m.kind == selWorkflow && len(m.workflowElems()) > 0 {
 		return m.moveElem(msg)
 	}
@@ -903,15 +878,13 @@ func (m Model) moveElem(msg tea.KeyPressMsg) Model {
 	return m
 }
 
-// workflowElems is the current workflow's selectable elements ordered by their row in the
-// diagram, so ↑/↓ walks the graph visually top-to-bottom (states and transitions interleaved).
+// workflowElems orders the workflow's focus stops by diagram row, so ↑/↓ walks it top-to-bottom.
 func (m Model) workflowElems() []wfElem {
 	w, ok := m.selectedWorkflow()
 	if !ok {
 		return nil
 	}
-	// the title's Edit pen is selectable from the moment a workflow is picked, before its graph
-	// loads, so metadata can be edited without waiting on the diagram
+	// the title's Edit pen is selectable before the graph loads, so metadata needs no wait
 	elems := []wfElem{{elemWfMeta, 0}}
 	d, ok := m.wfDetail[w.ID]
 	if !ok {
@@ -929,8 +902,7 @@ func (m Model) workflowElems() []wfElem {
 	return elems
 }
 
-// elemNavRow orders elements for top-to-bottom keyboard navigation: the section action buttons
-// render above the graph, then graph elements follow by their diagram row.
+// elemNavRow orders navigation: the section buttons render above the graph, then graph rows.
 func elemNavRow(e wfElem, rows map[wfElem]int) int {
 	switch e.kind {
 	case elemWfMeta:
@@ -987,8 +959,7 @@ func (m *Model) syncSelection() tea.Cmd {
 	if key := m.selectionKey(); key != m.detailFor {
 		m.detailFor = key
 		m.detailScroll = 0
-		// default to the first graph element: the title's Edit pen and the two section action
-		// buttons precede it, so a state is selected on entry rather than a button (prior behavior)
+		// default to the first graph element: the title pen and two section buttons precede it
 		m.wfSel = len(detailActions) + 1
 		// default an issue type's selection to its metadata block, so e edits the type on entry
 		m.typeSel = 0
@@ -1006,8 +977,8 @@ func (m *Model) syncSelection() tea.Cmd {
 	return nil
 }
 
-// prefetchAll loads every type's fields and workflow's graph up front so the Details panel never
-// flashes empty on first visit. The per-id pending/failed guards dedupe the selected item's own fetch.
+// prefetchAll loads every type's fields and workflow graph up front so Details never flashes
+// empty. The per-id pending/failed guards dedupe the selected item's own fetch.
 func (m *Model) prefetchAll() tea.Cmd {
 	var cmds []tea.Cmd
 	for _, t := range m.types {
@@ -1067,42 +1038,36 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 		return m.setFocus(paneWorkflows)
 	case zone.Get("schema.detail").InBounds(msg):
 		m.focus = paneDetail
-		// the pen on an issue type's title opens its metadata editor
 		if z := zone.Get("schema.type.edit"); z != nil && z.InBounds(msg) {
 			if mm, cmd, ok := m.openTypeEdit(); ok {
 				return mm, cmd
 			}
 			return m, nil
 		}
-		// the pen on a workflow's title opens its metadata editor
 		if z := zone.Get("schema.wf.edit"); z != nil && z.InBounds(msg) {
 			if mm, cmd, ok := m.openWorkflowEdit(); ok {
 				return mm, cmd
 			}
 			return m, nil
 		}
-		// a per-field pen opens that field's editor
 		if fid, ok := m.hitFieldPen(msg); ok {
 			if mm, cmd, opened := m.openFieldEdit(fid); opened {
 				return mm, cmd
 			}
 			return m, nil
 		}
-		// the "+ Field" handle opens the new-field modal
 		if z := zone.Get("schema.field.new"); z != nil && z.InBounds(msg) {
 			if mm, cmd, ok := m.openFieldCreate(); ok {
 				return mm, cmd
 			}
 			return m, nil
 		}
-		// the "Edit" button in the VCS Automation rule opens the VCS editor
 		if z := zone.Get("schema.vcs.edit"); z != nil && z.InBounds(msg) {
 			if mm, cmd, ok := m.openVcs(); ok {
 				return mm, cmd
 			}
 			return m, nil
 		}
-		// the "Edit" button in the Flow rule opens the graph-structure editor
 		if z := zone.Get("schema.flow.edit"); z != nil && z.InBounds(msg) {
 			if mm, cmd, ok := m.openFlow(); ok {
 				return mm, cmd
@@ -1112,13 +1077,11 @@ func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
 		if e, ok := m.hitElem(msg); ok {
 			m.wfHover = wfElem{}
 			if e.kind == elemAddGuard {
-				// the "+ Guard" affordance opens the guard editor straight on its add step
 				if mm, cmd, opened := m.openGuardsFor(e.id, true); opened {
 					return mm, cmd
 				}
 				return m, nil
 			}
-			// clicking a state or transition selects it and opens its metadata editor
 			m.selectElemByRef(e)
 			if mm, cmd, opened := m.openEdit(); opened {
 				return mm, cmd
@@ -1158,7 +1121,7 @@ func (m Model) onMotion(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 			break
 		}
 	}
-	// a hovered per-field pen tints Secondary the same way the section-rule buttons do
+	// a hovered per-field pen tints Secondary like the section-rule buttons
 	if m.hoverAction == "" {
 		if fid, ok := m.hitFieldPen(msg); ok {
 			m.hoverAction = fieldEditZone(fid)
@@ -1185,8 +1148,7 @@ func (m Model) onMotion(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// hoverRowFor is the hovered row index within the given list pane, or -1 when the cursor is
-// elsewhere.
+// hoverRowFor is the hovered row index in pane, or -1.
 func (m Model) hoverRowFor(pane int) int {
 	if m.listHoverPane == pane {
 		return m.listHoverRow
@@ -1194,12 +1156,10 @@ func (m Model) hoverRowFor(pane int) int {
 	return -1
 }
 
-// sectionActionZones are the clickable "Edit" buttons spliced into Details section rules, in
-// the order they are hit-tested for hover.
+// sectionActionZones are the Details "Edit" buttons, in hover hit-test order.
 var sectionActionZones = []string{"schema.type.edit", "schema.wf.edit", "schema.field.new", "schema.vcs.edit", "schema.flow.edit"}
 
-// hitElem maps a mouse position within the Details panel to the workflow element under it,
-// translating the panel-local point through the scroll offset into the graph's own cell grid.
+// hitElem maps a Details mouse position through the scroll offset into the graph's cell grid.
 func (m Model) hitElem(msg tea.MouseMsg) (wfElem, bool) {
 	if m.kind != selWorkflow {
 		return wfElem{}, false
@@ -1237,8 +1197,7 @@ func (m Model) hitElem(msg tea.MouseMsg) (wfElem, bool) {
 }
 
 // flowGraphGeometry is workflowGraphGeometry for the in-place editor: it hit-tests the live draft
-// diagram (draftDetail) against the editor's panel layout, so clicks land on the element being
-// edited rather than the last-saved graph.
+// diagram, so clicks land on the element being edited rather than the last-saved graph.
 func (m Model) flowGraphGeometry() (map[wfElem]grect, int, bool) {
 	w, ok := m.selectedWorkflow()
 	if !ok {
@@ -1257,9 +1216,8 @@ func (m Model) flowGraphGeometry() (map[wfElem]grect, int, bool) {
 	return nil, 0, false
 }
 
-// workflowGraphGeometry returns the selected workflow's element hit rectangles (graph-local)
-// and the Details content line where graph row 0 sits, for translating mouse positions. The
-// start line is derived from the actual element mapping so it stays in step with the renderer.
+// workflowGraphGeometry returns the element hit rectangles (graph-local) and the Details line
+// holding graph row 0, derived from the element mapping so it stays in step with the renderer.
 func (m Model) workflowGraphGeometry() (map[wfElem]grect, int, bool) {
 	w, ok := m.selectedWorkflow()
 	if !ok {
@@ -1282,7 +1240,6 @@ func (m Model) workflowGraphGeometry() (map[wfElem]grect, int, bool) {
 	return nil, 0, false
 }
 
-// selectElemByRef points the workflow element selection at e, if it is a current element.
 func (m *Model) selectElemByRef(e wfElem) {
 	for i, el := range m.workflowElems() {
 		if el == e {
@@ -1308,9 +1265,8 @@ func (m Model) onWheel(msg tea.MouseWheelMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// rowAt maps a list-box-local Y to a data-row index. Y 0 is the top border. Below the padding
-// and the header, each data row spans rowHeight lines (a blank separator above its content), so
-// a click on either line of a row resolves to it.
+// rowAt maps a list-box-local Y to a data-row index. Y 0 is the top border, and each data row
+// spans rowHeight lines, so a click on either line resolves to it.
 func rowAt(localY, top, n, vis int) (int, bool) {
 	bodyY := localY - 1 - listPadY // 0 = header row
 	dataY := bodyY - 1             // 0 = first data row's blank separator
@@ -1355,8 +1311,7 @@ func (m Model) selectionKey() string {
 	return ""
 }
 
-// activePane is the list whose selection feeds the Details panel (the focused list, or
-// while the Details pane is focused, the list the selection came from).
+// activePane is the list feeding Details: the focused list, or the one the selection came from.
 func (m Model) activePane() int {
 	if m.focus == paneDetail {
 		if m.kind == selWorkflow {
@@ -1405,15 +1360,13 @@ func (m Model) View() string {
 	case m.vcsEditing:
 		return m.overlayModal(view, m.vcs.View())
 	case m.flowEditing && m.flow.hasOverlay():
-		// the structure editor lives in the Details panel — only its sub-forms and preview
-		// float as centered modals over it
+		// the structure editor lives in the Details panel — only its sub-forms float over it
 		return m.overlayModal(view, m.flow.View())
 	}
 	return view
 }
 
-// dashboard arranges the catalog lists and the Details panel: side by side, or stacked (Details above
-// the lists) on a narrow-and-tall terminal.
+// dashboard lays the lists and Details side by side, or stacked on a narrow-and-tall terminal.
 func (m Model) dashboard() string {
 	if m.stacked() {
 		stack := lipgloss.JoinVertical(lipgloss.Left, m.detailPanel(), m.leftColumn())
@@ -1423,9 +1376,8 @@ func (m Model) dashboard() string {
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, dash)
 }
 
-// overlayModal centers a modal over a dimmed copy of the dashboard, splicing it in by hand so
-// the modal's click zones survive. A modal taller than the terminal is windowed with a scrollbar
-// (ScrollBox) rather than clipped.
+// overlayModal centers a modal over a dimmed dashboard, splicing it in by hand so the modal's
+// click zones survive. A modal taller than the terminal is windowed with a scrollbar.
 func (m Model) overlayModal(backdrop, modal string) string {
 	bd := stripANSI(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, backdrop))
 	t := m.deps.Styles.Theme
@@ -1435,9 +1387,8 @@ func (m Model) overlayModal(backdrop, modal string) string {
 	return overlayDim(bd, modal, mx, my, m.deps.Styles.Theme.Muted)
 }
 
-// activeModalView returns the open modal's rendered view and true, mirroring View's dispatch (a
-// flow sub-form only floats as a modal while it has an overlay). It reports false when no modal is
-// floating, so the wheel handler knows whether to drive a modal window or the dashboard.
+// activeModalView mirrors View's dispatch (a flow sub-form only floats while it has an overlay).
+// false lets the wheel handler drive the dashboard instead of a modal window.
 func (m Model) activeModalView() (string, bool) {
 	switch {
 	case m.editing:
@@ -1464,16 +1415,15 @@ func (m Model) activeModalView() (string, bool) {
 	return "", false
 }
 
-// scrollModalBy moves the overflowing-modal window offset, clamped to its scrollable range.
+// scrollModalBy moves the modal window offset, clamped to its scrollable range.
 func (m Model) scrollModalBy(view string, delta int) Model {
 	maxOff := max(0, lipgloss.Height(view)-m.height)
 	m.modalScroll = min(max(m.modalScroll+delta, 0), maxOff)
 	return m
 }
 
-// routeModal forwards a message to whichever modal is open, mirroring View's dispatch order, and
-// reports handled=true so the caller can post-process (for example, follow the focus). handled=false means
-// no modal is floating and the event belongs to the dashboard.
+// routeModal forwards a message to whichever modal is open, mirroring View's dispatch order.
+// handled=false means no modal is floating and the event belongs to the dashboard.
 func (m Model) routeModal(msg tea.Msg) (Model, tea.Cmd, bool) {
 	switch {
 	case m.editing:
@@ -1510,14 +1460,12 @@ func (m Model) routeModal(msg tea.Msg) (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// modalFocusRower is implemented by the tall form modals that can report the row (in their own
-// View coordinates) and height of the currently-focused control, so a windowed modal can scroll to
-// keep it in view. Short modals leave it unimplemented and get wheel-only scrolling.
+// modalFocusRower is implemented by tall form modals that can report their focused control's row
+// and height, so a windowed modal can scroll to it. Short modals get wheel-only scrolling.
 type modalFocusRower interface {
 	FocusRow() (row, height int, ok bool)
 }
 
-// activeModalFocus returns the focused-control row/height of the open modal, when it reports one.
 func (m Model) activeModalFocus() (row, height int, ok bool) {
 	var f modalFocusRower
 	switch {
@@ -1537,9 +1485,8 @@ func (m Model) activeModalFocus() (row, height int, ok bool) {
 	return f.FocusRow()
 }
 
-// followModalFocus scrolls a windowed modal's viewport so the focused control [row, row+height) sits
-// inside the visible window. It is a no-op when no modal reports a focus row or the modal already
-// fits the terminal (ScrollBox leaves it unwindowed).
+// followModalFocus scrolls a windowed modal so the focused control sits inside the window. No-op
+// when no modal reports a focus row or the modal already fits.
 func (m Model) followModalFocus() Model {
 	row, height, ok := m.activeModalFocus()
 	if !ok {
@@ -1566,8 +1513,7 @@ func (m Model) followModalFocus() Model {
 	return m
 }
 
-// panelWidths splits the dashboard 3:2 — the two catalog lists on the left, the Details panel
-// on the right — matching the Projects tab's list/detail ratio for a consistent look.
+// panelWidths splits the dashboard 3:2, lists left and Details right, matching the Projects tab.
 func (m Model) panelWidths() (left, right int) {
 	if m.stacked() {
 		full := m.width - 2*hInset
@@ -1580,21 +1526,19 @@ func (m Model) panelWidths() (left, right int) {
 }
 
 const (
-	// below this width, a tall-enough terminal stacks the Details above the lists instead of beside them
+	// below this width, a tall-enough terminal stacks Details above the lists
 	stackBelowW = 100
 	stackMinH   = 24
 )
 
-// stacked reports whether the narrow-and-tall terminal should stack the Details above the lists.
 func (m Model) stacked() bool {
 	return components.StackVertically(m.width, m.height, stackBelowW, stackMinH)
 }
 
-// stackDetailH is the Details' top slice when stacked; the lists take the rest.
+// stackDetailH is the Details' top slice when stacked.
 func (m Model) stackDetailH() int { return min(max(m.height*9/20, 8), m.height-8) }
 
-// colHeight is the height the catalog lists occupy: the full height side by side, or the bottom
-// slice beneath the Details when stacked.
+// colHeight is the lists' height: full, or the bottom slice when stacked.
 func (m Model) colHeight() int {
 	if m.stacked() {
 		return m.height - m.stackDetailH()
@@ -1602,7 +1546,7 @@ func (m Model) colHeight() int {
 	return m.height
 }
 
-// detailHeight is the Details panel's height: the full height side by side, or the top slice when stacked.
+// detailHeight is the full height side by side, or the top slice when stacked.
 func (m Model) detailHeight() int {
 	if m.stacked() {
 		return m.stackDetailH()
@@ -1610,27 +1554,23 @@ func (m Model) detailHeight() int {
 	return m.height
 }
 
-// typesHeight/workflowsHeight split the catalog-list column 1:1.
+// typesHeight/workflowHeight split the catalog-list column 1:1.
 func (m Model) typesHeight() int    { return m.colHeight() / 2 }
 func (m Model) workflowHeight() int { return m.colHeight() - m.typesHeight() }
 
-// typesInnerH / wfInnerH are the number of visible two-line data rows in each list box: the
-// box height less its borders, vertical padding, and the one header row, floored to whole
-// rows. They differ by one whenever m.height is odd, so rendering and click hit-testing must
-// use the same one per box or clicks resolve to the wrong row.
+// typesInnerH / wfInnerH are the visible two-line data rows in each list box. They differ by one
+// when m.height is odd, so rendering and hit-testing must use the same one or clicks misresolve.
 func (m Model) typesInnerH() int { return listVis(m.typesHeight()) }
 
 func (m Model) wfInnerH() int { return listVis(m.workflowHeight()) }
 
-// listBodyH is a list box's inner content height: the box height less its two borders and the
-// vertical padding padBody frames it with. The header row and the airy data rows fill it.
+// listBodyH is the box height less its two borders and padBody's vertical padding.
 func listBodyH(boxH int) int { return max(1, boxH-2-2*listPadY) }
 
 // listVis is how many two-line data rows fit under the header inside listBodyH.
 func listVis(boxH int) int { return max(0, (listBodyH(boxH)-1)/rowHeight) }
 
-// listContentW is the usable width of a list row: the box less its borders, TitledBox's
-// own inset, and the horizontal padding.
+// listContentW is the row width: the box less borders, TitledBox's inset, and padding.
 func (m Model) listContentW() int {
 	leftW, _ := m.panelWidths()
 	return max(1, leftW-4-2*listPadX)
@@ -1679,9 +1619,8 @@ func (m Model) leftColumn() string {
 	return lipgloss.JoinVertical(lipgloss.Left, typesBox, wfBox)
 }
 
-// tcol is a table column: a header title and a fixed content width. width 0 marks the single
-// flex column, which absorbs the leftover space — max caps that flex column and hands the
-// surplus to the grow column, so a wide panel widens Workflow rather than stretching Name.
+// tcol is a table column. width 0 marks the single flex column, capped by max, with the surplus
+// handed to the grow column so a wide panel widens Workflow rather than stretching Name.
 type tcol struct {
 	title string
 	width int
@@ -1689,8 +1628,7 @@ type tcol struct {
 	grow  bool // absorbs the capped flex column's surplus
 }
 
-// cell kinds: plain styled text, a name with an optional leading color swatch, or a hierarchy
-// badge. A banded (selected/hovered) row renders every cell plain so its background stays solid.
+// cell kinds: styled text, a name with an optional color swatch, or a hierarchy badge.
 const (
 	cellText = iota
 	cellName
@@ -1752,8 +1690,7 @@ func (m Model) workflowRow(i int) []tcell {
 	}
 }
 
-// flexWidth is the width left for the single flex (width 0) column after the fixed columns and
-// the two-space gutters between all columns.
+// flexWidth is what is left for the flex column after the fixed columns and the gutters.
 func flexWidth(cols []tcol, contentW int) int {
 	fixed := 0
 	for _, c := range cols {
@@ -1766,9 +1703,8 @@ func flexWidth(cols []tcol, contentW int) int {
 	return w
 }
 
-// fitColumns drops trailing fixed columns (never the first, never the flex) until the flex
-// column has at least nameMinW cells, so a narrow panel sheds columns like the Projects table
-// drops Repository rather than crushing the name.
+// fitColumns drops trailing fixed columns (never the first, never the flex) until the flex column
+// has at least nameMinW cells, so a narrow panel sheds columns rather than crushing the name.
 func fitColumns(cols []tcol, contentW int) []tcol {
 	for flexWidth(cols, contentW) < nameMinW {
 		drop := -1
@@ -1802,8 +1738,7 @@ func colWidths(cols []tcol, contentW int) []int {
 			continue
 		}
 		w := flex
-		// cap the flex column and give the surplus to the grow column. If the grow column was
-		// dropped for width, the flex column keeps the leftover rather than leaving dead space
+		// cap the flex column and give the surplus to grow. Without a grow column the flex keeps it.
 		if c.max > 0 && grow >= 0 && w > c.max {
 			surplus = w - c.max
 			w = c.max
@@ -1825,8 +1760,8 @@ func padTo(s string, w int) string {
 	return s + strings.Repeat(" ", gap)
 }
 
-// renderCell renders one cell clipped and padded to its column width. A banded row draws every
-// cell as plain text so the row's background band is not punched through by inner color resets.
+// renderCell clips a cell to its column. A banded row draws plain text so the band survives
+// inner color resets.
 func renderCell(c tcell, w int, banded bool) string {
 	switch c.kind {
 	case cellChip:
@@ -1857,8 +1792,7 @@ func renderCell(c tcell, w int, banded bool) string {
 	}
 }
 
-// renderRow lays the cells into their columns with a two-space gutter. A banded row is wrapped
-// whole in the band style so the highlight fills the line.
+// renderRow lays cells into columns with a two-space gutter. A banded row is wrapped whole.
 func (m Model) renderRow(cells []tcell, cols []tcol, contentW int, banded bool, band lipgloss.Style) string {
 	widths := colWidths(cols, contentW)
 	parts := make([]string, len(cols))
@@ -1887,8 +1821,7 @@ func (m Model) selBand() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(t.Text).Background(t.Selection).Bold(true)
 }
 
-// hoverBand is the dimmer highlight for a hovered (non-selected) row. The ANSI theme has no real
-// background to blend, so it tints the text instead (matching the graph's hover).
+// hoverBand highlights a hovered row. The ANSI theme has no background, so it tints the text.
 func (m Model) hoverBand() lipgloss.Style {
 	t := m.deps.Styles.Theme
 	bg, ok := hoverBg(t)
@@ -1898,9 +1831,7 @@ func (m Model) hoverBand() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(t.Text).Background(bg)
 }
 
-// tableView renders a Projects-style list: a bold header row, then a window of airy (blank-line-
-// above) data rows, with the selected row and the hovered row each getting a solid background
-// band on their content line. The whole thing is framed by the box's padding.
+// tableView renders a header row, then a window of airy data rows, selected/hovered rows banded.
 func (m Model) tableView(cols []tcol, build func(int) []tcell, cursor, hoverRow, n, boxH, contentW int, highlight bool) string {
 	s := m.deps.Styles
 	if contentW < 1 {
@@ -1940,8 +1871,7 @@ func (m Model) tableView(cols []tcol, build func(int) []tcell, cursor, hoverRow,
 	return padBody(lines[:bodyH], contentW)
 }
 
-// padBody frames the list rows with listPadX columns on each side and listPadY blank rows
-// above and below, so the box has breathing room inside its border.
+// padBody frames the rows with listPadX columns and listPadY blank rows.
 func padBody(lines []string, contentW int) string {
 	padX := strings.Repeat(" ", listPadX)
 	blank := strings.Repeat(" ", contentW+2*listPadX)
@@ -1995,9 +1925,8 @@ func (m Model) detailPanel() string {
 	return zone.Mark("schema.detail", panel)
 }
 
-// detailContent is the Details body split into lines, each wrapped and padded to exactly
-// contentW so the panel border and scrollbar stay aligned. The workflow graph flows into it
-// like any other content, scrolling vertically with the panel.
+// detailContent is the Details body as lines, each padded to exactly contentW so the border and
+// scrollbar stay aligned.
 func (m Model) detailContent() []string {
 	contentW := m.detailContentW()
 	return strings.Split(lipgloss.NewStyle().Width(contentW).Render(m.detailBody()), "\n")
@@ -2044,9 +1973,8 @@ func (m Model) issueTypeDetail(t domain.IssueTypeSummary) string {
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-// issueTypeDetailLines builds the issue type Details as individual lines plus the panel row where
-// each selectable element (the metadata block, then each field) starts, for scroll-into-view and
-// keyboard/mouse targeting. Rows are offset by one for detailBody's leading blank line.
+// issueTypeDetailLines builds the issue type Details as lines plus the panel row each selectable
+// element starts on. Rows are offset by one for detailBody's leading blank line.
 func (m Model) issueTypeDetailLines(t domain.IssueTypeSummary) ([]string, map[wfElem]int) {
 	s := m.deps.Styles
 	g := m.deps.Glyphs
@@ -2070,13 +1998,13 @@ func (m Model) issueTypeDetailLines(t domain.IssueTypeSummary) ([]string, map[wf
 	}
 	lines = append(lines, "", sectionRule(s, "Fields", contentW), "")
 	lines = append(lines, m.fieldLines(t.ID, contentW, rows, len(lines))...)
-	// the "+ Field" add handle follows the fields once the detail is loaded, matching typeElems
+	// the "+ Field" handle follows the fields once loaded, matching typeElems
 	if _, loaded := m.typeDetail[t.ID]; loaded {
 		lines = append(lines, "")
 		rows[wfElem{elemAddField, 0}] = len(lines) + 1 // +1 for detailBody's leading blank line
 		lines = append(lines, m.addFieldAffordance())
 	}
-	// close the fields area with a rule before the description, as home's stats block does
+	// close the fields area with a rule before the description
 	lines = append(lines, "", closingRule(s, contentW), "")
 	if t.Description != "" {
 		lines = append(lines, t.Description)
@@ -2086,8 +2014,7 @@ func (m Model) issueTypeDetailLines(t domain.IssueTypeSummary) ([]string, map[wf
 	return lines, rows
 }
 
-// titleWithEdit lays the issue type title on the left and its metadata-edit pen on the right. The
-// title takes the accent color while its block is the selected element.
+// titleWithEdit puts the title left and its edit pen right, accented while the block is selected.
 func (m Model) titleWithEdit(name string, focused bool, contentW int) string {
 	s := m.deps.Styles
 	style := s.Title
@@ -2101,15 +2028,12 @@ func (m Model) titleWithEdit(name string, focused bool, contentW int) string {
 	return rightAlignAction(title, m.typeEditButton(focused), contentW)
 }
 
-// typeEditButton is the pen affordance that opens the issue type metadata editor: Accent while its
-// block is selected, Secondary while hovered, Primary otherwise.
 func (m Model) typeEditButton(focused bool) string {
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "Edit")
 	return zone.Mark("schema.type.edit", m.penStyle("schema.type.edit", focused).Render(" "+pen+" "))
 }
 
-// workflowTitleWithEdit lays the workflow title on the left and its metadata-edit pen on the right,
-// mirroring the issue type header so name/description are edited from the title, not a section rule.
+// workflowTitleWithEdit mirrors the issue type header: name/description are edited from the title.
 func (m Model) workflowTitleWithEdit(name string, focused bool, contentW int) string {
 	s := m.deps.Styles
 	style := s.Title
@@ -2123,15 +2047,12 @@ func (m Model) workflowTitleWithEdit(name string, focused bool, contentW int) st
 	return rightAlignAction(title, m.wfEditButton(focused), contentW)
 }
 
-// wfEditButton is the pen affordance that opens the workflow metadata editor: Accent while its
-// block is selected, Secondary while hovered, Primary otherwise.
 func (m Model) wfEditButton(focused bool) string {
 	pen := m.deps.Glyphs.Or(m.deps.Glyphs.PenSquare, "Edit")
 	return zone.Mark("schema.wf.edit", m.penStyle("schema.wf.edit", focused).Render(" "+pen+" "))
 }
 
-// typeElemSelected reports whether e is the issue type element the keyboard selection points at
-// while the Details pane is focused.
+// typeElemSelected reports whether e is the selected element while Details is focused.
 func (m Model) typeElemSelected(e wfElem) bool {
 	if m.focus != paneDetail || m.kind != selType {
 		return false
@@ -2140,8 +2061,7 @@ func (m Model) typeElemSelected(e wfElem) bool {
 	return ok && cur == e
 }
 
-// penStyle colors a pen affordance by state: Accent when it is the selected element, Secondary
-// while hovered, Primary at rest.
+// penStyle colors a pen: Accent when selected, Secondary while hovered, Primary at rest.
 func (m Model) penStyle(zoneID string, focused bool) lipgloss.Style {
 	t := m.deps.Styles.Theme
 	col := t.Primary
@@ -2154,8 +2074,7 @@ func (m Model) penStyle(zoneID string, focused bool) lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(col).Bold(true)
 }
 
-// rightAlignAction lays left text and a right-anchored action in contentW cells, built by hand
-// (not alignRow) so the action's click zone survives to the panel unclipped.
+// rightAlignAction is built by hand (not alignRow) so the action's click zone survives unclipped.
 func rightAlignAction(left, action string, contentW int) string {
 	aw := lipgloss.Width(action)
 	left = trunc(left, max(1, contentW-aw-1))
@@ -2163,8 +2082,7 @@ func rightAlignAction(left, action string, contentW int) string {
 	return left + strings.Repeat(" ", gap) + action
 }
 
-// colorValue renders a color swatch followed by the human-readable color name, or a dash
-// when the issue type has no color.
+// colorValue is a swatch plus the color name, or a dash when unset.
 func (m Model) colorValue(colorName string) string {
 	swatch := components.ColorSwatch(colorName)
 	if swatch == "" {
@@ -2173,14 +2091,12 @@ func (m Model) colorValue(colorName string) string {
 	return swatch + " " + m.deps.Styles.Muted.Render(components.ColorLabel(colorName))
 }
 
-// fieldGlyph maps a field type to its glyph. The fallback is empty, so plain terminals
-// show the bare type tag.
+// fieldGlyph is empty on plain terminals, so they show the bare type tag.
 func (m Model) fieldGlyph(fieldType string) string {
 	return fieldTypeGlyph(m.deps.Glyphs, fieldType)
 }
 
-// fieldTags renders each field's "<glyph> TYPE" label, padded to a common width so the
-// names line up. The padding is dropped when the panel is too narrow to spare it.
+// fieldTags renders "<glyph> TYPE" padded to a common width, dropping the padding when narrow.
 func (m Model) fieldTags(fields []domain.IssueField, contentW int) []string {
 	tags := make([]string, len(fields))
 	widest := 0
@@ -2205,11 +2121,8 @@ func (m Model) fieldTags(fields []domain.IssueField, contentW int) []string {
 	return tags
 }
 
-// fieldLines renders each custom field: a header row carrying the type tag, name, required flag,
-// and a right-anchored edit pen, with the description and options on their own indented lines
-// below. The selected field's name and pen take the accent color, and each field's header row is
-// recorded in rows (offset by base + detailBody's leading blank) for scroll-into-view. Non-field
-// states (loading/empty) render a single muted line.
+// fieldLines renders each field as a header row (type tag, name, required, pen) with its
+// description and options indented below. Header rows are recorded in rows for scroll-into-view.
 func (m Model) fieldLines(typeID, contentW int, rows map[wfElem]int, base int) []string {
 	s := m.deps.Styles
 	if m.detailPending[typeID] {
@@ -2231,7 +2144,7 @@ func (m Model) fieldLines(typeID, contentW int, rows map[wfElem]int, base int) [
 	var out []string
 	for i, f := range d.Fields {
 		if i > 0 {
-			out = append(out, "") // blank line between fields
+			out = append(out, "")
 		}
 		sel := m.typeElemSelected(wfElem{elemField, f.ID})
 		nameStyle := name
@@ -2249,9 +2162,8 @@ func (m Model) fieldLines(typeID, contentW int, rows map[wfElem]int, base int) [
 		}
 		rows[wfElem{elemField, f.ID}] = base + len(out) + 1 // +1 for detailBody's leading blank
 		out = append(out, rightAlignAction(head, m.fieldEditButton(f.ID, sel), contentW))
-		// the description and options hang under the field name. A long description wraps with every
-		// line kept at the name's column. Each emitted line already fits contentW, so the panel's
-		// own Width wrap (which would shift the rows below) never triggers.
+		// description and options hang under the name. Each emitted line already fits contentW, so
+		// the panel's own Width wrap (which would shift the rows below) never triggers.
 		if f.Description != "" {
 			out = append(out, indentedWrap(s.Muted, f.Description, nameIndent, contentW)...)
 		}
@@ -2262,9 +2174,8 @@ func (m Model) fieldLines(typeID, contentW int, rows map[wfElem]int, base int) [
 	return out
 }
 
-// indentedWrap renders text wrapped to fit within contentW after an indent, so it hangs under a
-// label with every wrapped continuation line starting at the same indent column. Every returned
-// line is at most contentW cells, so the Details panel never re-wraps it.
+// indentedWrap wraps text to hang under a label, every continuation at the same indent. Each line
+// is at most contentW cells, so the Details panel never re-wraps it.
 func indentedWrap(style lipgloss.Style, text string, indent, contentW int) []string {
 	if indent > contentW-1 {
 		indent = max(0, contentW-1)
@@ -2291,9 +2202,7 @@ func (m Model) fieldEditButton(fieldID int, focused bool) string {
 
 func fieldEditZone(id int) string { return "schema.field.edit." + itoa(id) }
 
-// addFieldAffordance renders the "+ Field" handle beneath the fields list: Secondary at rest,
-// Accent while it is the selected element, and Accent while hovered, mirroring the flow editor's
-// add handles. It carries the plain "+" text (no glyph) so its width is terminal-independent.
+// addFieldAffordance uses a plain "+" (no glyph) so its width is terminal-independent.
 func (m Model) addFieldAffordance() string {
 	sel := m.typeElemSelected(wfElem{elemAddField, 0})
 	t := m.deps.Styles.Theme
@@ -2333,8 +2242,7 @@ func (m Model) workflowHeader(w domain.WorkflowSummary, contentW int) []string {
 	return rows
 }
 
-// vcsLines renders the workflow's VCS automation: which transition auto-fires when a linked
-// PR is opened or merged, resolved from the stored transition ids to their names.
+// vcsLines shows which transition auto-fires when a linked PR is opened or merged.
 func (m Model) vcsLines(d domain.WorkflowDetail, contentW int) []string {
 	s := m.deps.Styles
 	pr := m.deps.Glyphs.Or(m.deps.Glyphs.PullRequest, "")
@@ -2345,8 +2253,7 @@ func (m Model) vcsLines(d domain.WorkflowDetail, contentW int) []string {
 	}
 }
 
-// transitionLabel resolves a transition id within the workflow to its name (clipped to width),
-// or a muted dash when the mapping is unset.
+// transitionLabel resolves a transition id to its name, or a muted dash when unset.
 func (m Model) transitionLabel(d domain.WorkflowDetail, id, width int) string {
 	if id != 0 {
 		for _, tr := range d.Transitions {
@@ -2358,25 +2265,21 @@ func (m Model) transitionLabel(d domain.WorkflowDetail, id, width int) string {
 	return m.deps.Styles.Muted.Render("-")
 }
 
-// workflowDetail is the header, a Flow rule, and the top-to-bottom diagram (or a fallback
-// while it loads). The whole thing flows through the Details wrapper, scrolling vertically.
+// workflowDetail is the header, a Flow rule, and the diagram (or a fallback while it loads).
 func (m Model) workflowDetail(w domain.WorkflowSummary) string {
 	lines, _ := m.workflowDetailLines(w)
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-// workflowDetailLines builds the workflow Details content as individual lines (the header is
-// pre-wrapped so the outer render never re-wraps and shifts row indices) plus the panel row
-// where each graph element starts, for scroll-into-view. The selected element is highlighted
-// only while the Details pane is focused.
+// workflowDetailLines builds the workflow Details as lines (the header is pre-wrapped so the outer
+// render never re-wraps and shifts row indices) plus each graph element's panel row.
 func (m Model) workflowDetailLines(w domain.WorkflowSummary) ([]string, map[wfElem]int) {
 	if m.flowEditing {
 		return m.flowEditorLines(w, m.detailContentW())
 	}
 	s := m.deps.Styles
 	contentW := m.detailContentW()
-	// the VCS/Flow section rules carry a plain-text "Edit" action. The workflow's own name and
-	// description are edited from the pen at the end of the title (see workflowHeader).
+	// name/description are edited from the title pen, not these section rules
 	const editLabel = "Edit"
 	header := strings.Split(lipgloss.NewStyle().Width(contentW).Render(
 		strings.Join(m.workflowHeader(w, contentW), "\n")), "\n")
@@ -2384,8 +2287,7 @@ func (m Model) workflowDetailLines(w domain.WorkflowSummary) ([]string, map[wfEl
 	rows := map[wfElem]int{}
 	// the title (with its Edit pen) sits at the top, so selecting it scrolls the panel back up
 	rows[wfElem{elemWfMeta, 0}] = 1 // +1 for detailBody's leading blank line
-	// VCS automation is workflow-level config — show it once the graph is loaded, so the
-	// transition ids can be resolved to names.
+	// show VCS once the graph is loaded, so transition ids resolve to names
 	if d, ok := m.wfDetail[w.ID]; ok {
 		lines = append(lines, "")
 		rows[wfElem{elemVcsEdit, 0}] = len(lines) + 1 // +1 for detailBody's leading blank line
@@ -2426,10 +2328,8 @@ func (m Model) workflowDetailLines(w domain.WorkflowSummary) ([]string, map[wfEl
 	return lines, rows
 }
 
-// flowEditorLines renders the in-place structure editor into the Details panel: the workflow
-// title with an editing indicator, the live draft diagram with the selection cursor tracking the
-// editor's focus, then the action bar and status the editor owns. The returned map gives each
-// draft element's panel row so the selected node/edge can be scrolled into view.
+// flowEditorLines renders the in-place structure editor into the Details panel: title, live draft
+// diagram, action bar, status. The map gives each draft element's panel row for scroll-into-view.
 func (m Model) flowEditorLines(w domain.WorkflowSummary, contentW int) ([]string, map[wfElem]int) {
 	s := m.deps.Styles
 	f := m.flow
@@ -2439,8 +2339,7 @@ func (m Model) flowEditorLines(w domain.WorkflowSummary, contentW int) ([]string
 		lipgloss.NewStyle().Foreground(s.Theme.Accent).Bold(true).Render("Editing structure"),
 	)), "\n")
 	lines := append([]string{}, head...)
-	// the action bar sits above the diagram so Save/Cancel and the add handles are visible the
-	// moment the editor opens, before the (often tall) graph scrolls them off
+	// the action bar sits above the diagram so it is visible before the tall graph scrolls it off
 	lines = append(lines, "")
 	lines = append(lines, f.actionBar(contentW)...)
 	lines = append(lines, f.statusBlock(contentW)...)
@@ -2455,8 +2354,7 @@ func (m Model) flowEditorLines(w domain.WorkflowSummary, contentW int) ([]string
 	return lines, rows
 }
 
-// revealFlowSel nudges the Details scroll so the draft element the editor's cursor points at
-// stays visible as the selection walks the diagram.
+// revealFlowSel keeps the editor's selected draft element scrolled into view.
 func (m *Model) revealFlowSel() {
 	w, ok := m.selectedWorkflow()
 	if !ok {
@@ -2464,8 +2362,7 @@ func (m *Model) revealFlowSel() {
 	}
 	sel, ok := m.flow.selElem()
 	if !ok {
-		// a command (add/preview/save/cancel) is focused — the action bar sits at the top, so
-		// bring it back into view
+		// a command is focused — the action bar sits at the top
 		m.detailScroll = 0
 		return
 	}
@@ -2485,8 +2382,7 @@ func (m *Model) revealFlowSel() {
 	m.clampDetailScroll()
 }
 
-// elemPanelRow is the Details panel row where a graph element starts, so it can be scrolled
-// into view.
+// elemPanelRow is the Details row a graph element starts on, for scroll-into-view.
 func (m Model) elemPanelRow(e wfElem) (int, bool) {
 	w, ok := m.selectedWorkflow()
 	if !ok {
@@ -2497,8 +2393,8 @@ func (m Model) elemPanelRow(e wfElem) (int, bool) {
 	return r, ok
 }
 
-// LoadedMsg carries the catalog list fetch result. The app shell routes it to this
-// screen even while another tab is active, so a background load never gets lost.
+// LoadedMsg carries the catalog fetch result. The shell routes it here even while another tab is
+// active, so a background load is never lost.
 type LoadedMsg struct {
 	Types     []domain.IssueTypeSummary
 	Workflows []domain.WorkflowSummary
@@ -2534,14 +2430,13 @@ func load(d deps.Deps) tea.Cmd {
 	}
 }
 
-// Retheme swaps in new deps on a live theme change. The screen reads the theme fresh each render, so
-// updating deps is enough (no cached widget styles to rebuild).
+// Retheme swaps in new deps. The screen reads the theme fresh each render, so that is enough.
 func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
 	return m
 }
 
-// ThemeName is the active theme's name, so the shell can verify a live theme switch propagated here.
+// ThemeName lets the shell verify a live theme switch propagated here.
 func (m Model) ThemeName() string { return m.deps.Styles.Theme.Name }
 
 // HelpTitle / HelpAbout describe this screen in the app-level help modal.

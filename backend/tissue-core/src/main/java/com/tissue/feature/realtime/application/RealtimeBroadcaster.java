@@ -27,20 +27,47 @@ public class RealtimeBroadcaster {
             UUID eventId,
             String projectKey,
             @Nullable String issueKey,
-            Long actorMemberId,
+            @Nullable Long actorMemberId,
             Instant occurredAt,
             String type,
             Map<String, Object> data) {
         Set<Long> memberIds = projectMemberQueryRepository.findMemberIdsByProjectKey(projectKey);
+        sendToMembers(memberIds, category, eventId, projectKey, issueKey, actorMemberId, occurredAt, type, data);
+    }
+
+    public void broadcastToMembers(
+            Set<Long> memberIds,
+            String category,
+            UUID eventId,
+            @Nullable String projectKey,
+            @Nullable String issueKey,
+            @Nullable Long actorMemberId,
+            Instant occurredAt,
+            String type,
+            Map<String, Object> data) {
+        sendToMembers(memberIds, category, eventId, projectKey, issueKey, actorMemberId, occurredAt, type, data);
+    }
+
+    private void sendToMembers(
+            Set<Long> memberIds,
+            String category,
+            UUID eventId,
+            @Nullable String projectKey,
+            @Nullable String issueKey,
+            @Nullable Long actorMemberId,
+            Instant occurredAt,
+            String type,
+            Map<String, Object> data) {
         if (memberIds.isEmpty()) {
             return;
         }
-        RealtimeMessage message = new RealtimeMessage(type, projectKey, issueKey, actorMemberId, occurredAt, data);
+        RealtimeMessage message = new RealtimeMessage(
+                type, projectKey != null ? projectKey : "", issueKey, actorMemberId, occurredAt, data);
         String json;
         try {
             json = objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
-            log.warn("Realtime: failed to serialize {} for project {}", type, projectKey, e);
+            log.warn("Realtime: failed to serialize {} for members {}", type, memberIds, e);
             return;
         }
         registry.send(memberIds, category, eventId.toString(), json);

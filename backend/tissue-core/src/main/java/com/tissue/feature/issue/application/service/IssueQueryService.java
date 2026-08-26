@@ -1,8 +1,10 @@
 package com.tissue.feature.issue.application.service;
 
+import com.tissue.feature.issue.application.dto.response.IssueBranchView;
 import com.tissue.feature.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.feature.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.feature.issue.application.dto.response.IssueDetail;
+import com.tissue.feature.issue.application.dto.response.IssuePullRequestView;
 import com.tissue.feature.issue.application.dto.response.IssueRelationsDetail;
 import com.tissue.feature.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.feature.issue.application.dto.response.IssueSubscribersDetail;
@@ -145,6 +147,28 @@ public class IssueQueryService implements IssueQueryUseCase {
         List<IssueRelation> incoming = issueRelationQueryRepository.findByTargetIssueKey(iid.issueKey());
 
         return IssueRelationsDetail.from(outgoing, incoming);
+    }
+
+    @Override
+    public List<IssueBranchView> getBranches(IssueIdentifier iid, Long actorMemberId) {
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+
+        projectMemberFinder.getBy(issue.getProject(), actorMemberId);
+
+        return issueQueryRepository.findBranchesByIssueKey(iid.issueKey()).stream()
+                .map(IssueBranchView::from)
+                .toList();
+    }
+
+    @Override
+    public List<IssuePullRequestView> getPullRequests(IssueIdentifier iid, Long actorMemberId) {
+        Issue issue = issueFinder.getWithProjectByIssueKey(iid.issueKey());
+
+        projectMemberFinder.getBy(issue.getProject(), actorMemberId);
+
+        return issueQueryRepository.findPullRequestsByIssueKey(iid.issueKey()).stream()
+                .map(IssuePullRequestView::from)
+                .toList();
     }
 
     @Override

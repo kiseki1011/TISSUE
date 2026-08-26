@@ -15,6 +15,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 const (
@@ -26,8 +27,7 @@ const (
 
 const vcsRowW = 44
 
-// vcsForm edits a workflow's VCS automation: the transition auto-fired when a linked PR is
-// opened or merged, written back in one PATCH.
+// vcsForm edits which transition auto-fires on a linked PR opened/merged, saved in one PATCH.
 type vcsForm struct {
 	deps        deps.Deps
 	wfID        int
@@ -98,7 +98,7 @@ func (f vcsForm) onKey(msg tea.KeyPressMsg) (vcsForm, tea.Cmd) {
 		f.focus = (f.focus + 1) % (vfCancel + 1)
 	case "shift+tab":
 		f.focus = (f.focus - 1 + vfCancel + 1) % (vfCancel + 1)
-	case "enter", " ":
+	case "enter", "space":
 		switch f.focus {
 		case vfOpened, vfMerged:
 			return f.openPicker(f.focus), nil
@@ -117,7 +117,7 @@ func (f vcsForm) pickKey(msg tea.KeyPressMsg) vcsForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false
@@ -132,7 +132,7 @@ func (f vcsForm) fieldID(field int) int {
 	return f.openedID
 }
 
-// Each transition shows its source → target flow in parentheses so the direction is clear at a glance.
+// openPicker annotates each transition with its source → target flow.
 func (f vcsForm) openPicker(field int) vcsForm {
 	opts := []pickerOption{{value: "0", label: "None"}}
 	for _, tr := range f.transitions {
@@ -204,8 +204,7 @@ func (f vcsForm) View() string {
 		return f.pick.View(f.deps.Styles)
 	}
 	t := f.deps.Styles.Theme
-	// the description is the widest fixed element, so it sets the modal's content width. The
-	// field values and buttons right-align to it, landing flush at the modal's right edge
+	// the description is the widest fixed element, so it sets the modal's content width
 	desc := f.deps.Styles.Muted.Render("Run a transition automatically on a linked PR event.")
 	w := lipgloss.Width(desc)
 	rows := []string{
@@ -329,6 +328,9 @@ func saveVcs(d deps.Deps, wfID, openedID, mergedID int) tea.Cmd {
 }
 
 func vcsErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -337,6 +339,9 @@ func vcsErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not save VCS settings. Try again."
 }

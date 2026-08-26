@@ -18,8 +18,7 @@ func guardsDeps() deps.Deps {
 	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
 
-// Pressing g on a selected transition opens the guard editor seeded with its guards; on a
-// state it does not open.
+// g on a transition opens the guard editor seeded with its guards. On a state it does nothing.
 func TestOpenGuardsOnlyForTransition(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemTransition, 12}) // Approve, has APPROVAL_REQUIRED min 2
 	m, _ = m.Update(keyRune('g'))
@@ -40,8 +39,7 @@ func TestOpenGuardsOnlyForTransition(t *testing.T) {
 	}
 }
 
-// The Add dropdown only offers guard types not already present, so a transition never gets
-// two guards of the same type; once all five exist, opening it is refused with a message.
+// The Add dropdown offers only unused types, and refuses to open once all five exist.
 func TestGuardsAddPickerUniqueTypes(t *testing.T) {
 	f := newGuardsForm(guardsDeps(), 1, 12, "Approve", []domain.WorkflowGuard{
 		{Type: guardApproval, Params: map[string]any{"min_approvals": 2.0}},
@@ -69,19 +67,17 @@ func TestGuardsAddPickerUniqueTypes(t *testing.T) {
 	}
 }
 
-// Retyping an existing row via the dropdown keeps the row's own type selectable and applies
-// the chosen one.
+// Retyping a row keeps its own type selectable and applies the chosen one.
 func TestGuardsRetypeViaPicker(t *testing.T) {
 	f := newGuardsForm(guardsDeps(), 1, 12, "Approve", []domain.WorkflowGuard{
 		{Type: "ASSIGNEE_REQUIRED"},
 		{Type: guardApproval, Params: map[string]any{"min_approvals": 2.0}},
 	})
 	f.focus = 0
-	f, _ = f.onKey(keyEnter()) // open the type dropdown for row 0
+	f, _ = f.onKey(keyEnter())
 	if !f.pickOpen {
 		t.Fatal("enter on a guard row did not open the type dropdown")
 	}
-	// the used APPROVAL_REQUIRED (row 1) must not be offered; the row's own type must be
 	offered := map[string]bool{}
 	for _, o := range f.pick.options {
 		offered[o.value] = true
@@ -141,7 +137,6 @@ func TestGuardsSubmitEmptyRefused(t *testing.T) {
 	}
 }
 
-// A non-empty save enters the submitting state and issues a command.
 func TestGuardsSubmitIssuesSave(t *testing.T) {
 	f := newGuardsForm(guardsDeps(), 1, 12, "Approve", []domain.WorkflowGuard{{Type: "ASSIGNEE_REQUIRED"}})
 	f, cmd := f.submit()

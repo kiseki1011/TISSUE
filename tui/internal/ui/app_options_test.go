@@ -48,8 +48,7 @@ func optionsApp(store auth.TokenStore) App {
 	return a
 }
 
-// comma (,) opens the options modal; the Info section shows the server and the Account section shows the
-// caller's identity.
+// comma opens the options modal. Info shows the server, Account the caller's identity.
 func TestCommaOpensOptions(t *testing.T) {
 	a := optionsApp(nil)
 	m, _ := a.Update(keyComma())
@@ -70,7 +69,6 @@ func TestCommaOpensOptions(t *testing.T) {
 	}
 }
 
-// Picking a theme from the popup applies it app-wide (deps restyled) and repaints the modal.
 func TestOptionsThemeSwitchApplies(t *testing.T) {
 	a := optionsApp(nil)
 	m, _ := a.Update(keyComma())
@@ -96,7 +94,6 @@ func TestOptionsThemeSwitchApplies(t *testing.T) {
 	}
 }
 
-// A theme switch is written to the config file so it survives a restart.
 func TestOptionsThemeSwitchPersists(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)            // os.UserConfigDir on darwin
@@ -131,7 +128,6 @@ func TestOptionsThemeSwitchPersists(t *testing.T) {
 	}
 }
 
-// Picking an icon set from the Settings popup swaps the glyph set app-wide and repaints the modal.
 func TestOptionsIconsSwitchApplies(t *testing.T) {
 	a := optionsApp(nil) // deps.Icons "" -> Auto
 	m, _ := a.Update(keyComma())
@@ -159,7 +155,6 @@ func TestOptionsIconsSwitchApplies(t *testing.T) {
 	}
 }
 
-// An icon-set switch is written to the config file so it survives a restart.
 func TestOptionsIconsSwitchPersists(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
@@ -195,8 +190,6 @@ func TestOptionsIconsSwitchPersists(t *testing.T) {
 	}
 }
 
-// Toggling the mouse control turns capture off app-wide (a.mouse + deps.Mouse) and repaints the
-// modal checkbox.
 func TestOptionsMouseToggleApplies(t *testing.T) {
 	zone.NewGlobal()
 	d := deps.Deps{
@@ -229,7 +222,6 @@ func TestOptionsMouseToggleApplies(t *testing.T) {
 	}
 }
 
-// A mouse toggle is written to the config file so it survives a restart.
 func TestOptionsMouseTogglePersists(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
@@ -264,8 +256,7 @@ func TestOptionsMouseTogglePersists(t *testing.T) {
 	}
 }
 
-// Mouse clicks on the theme control (Settings) open its list popup, and on the logout button (Account)
-// drop the session — the same effects as the keyboard.
+// Clicks land the same effects as the keyboard: the theme popup, and logout.
 func TestOptionsClickZones(t *testing.T) {
 	a := optionsApp(nil)
 	m, _ := a.Update(keyComma())
@@ -292,8 +283,7 @@ func TestOptionsClickZones(t *testing.T) {
 	}
 }
 
-// In the Account section, Down moves focus from the position picker to the logout button; Enter drops
-// the session and returns to the connecting screen, clearing the stored tokens.
+// Down moves focus to the logout button. Enter drops the session and clears the stored tokens.
 func TestOptionsLogout(t *testing.T) {
 	fs := &fakeStore{}
 	a := optionsApp(fs)
@@ -316,7 +306,6 @@ func TestOptionsLogout(t *testing.T) {
 	if app.user.Username != "" {
 		t.Error("logout did not clear the cached profile")
 	}
-	// running the async logout command revokes + clears the stored tokens
 	if cmd == nil {
 		t.Fatal("logout did not run a revoke/clear command")
 	}

@@ -17,7 +17,6 @@ func TestListEditOpensTypeMeta(t *testing.T) {
 	}
 }
 
-// e on the Workflows list opens the workflow metadata editor directly.
 func TestListEditOpensWorkflowMeta(t *testing.T) {
 	m := mk(120, 30, 3, 2, false)
 	m, _ = m.setFocus(paneWorkflows)
@@ -27,10 +26,10 @@ func TestListEditOpensWorkflowMeta(t *testing.T) {
 	}
 }
 
-// a on the Issue Types list opens the new-field modal (the type detail is already loaded).
+// a on the types list opens the new-field modal.
 func TestListAddFieldFromTypes(t *testing.T) {
-	m := typeFieldsModel(t)      // detail loaded, Details focused
-	m, _ = m.setFocus(paneTypes) // move focus back to the list
+	m := typeFieldsModel(t) // detail loaded, Details focused
+	m, _ = m.setFocus(paneTypes)
 	m, _ = m.onKey(keyRune('a'))
 	if !m.creatingField {
 		t.Fatal("a on the types list did not open the new-field modal")
@@ -64,7 +63,6 @@ func TestListDrillIntoDetails(t *testing.T) {
 	if m.typeCursor != before {
 		t.Errorf("drill-in changed the selected item (%d -> %d)", before, m.typeCursor)
 	}
-	// enter also drills in
 	m2 := mk(120, 30, 3, 2, false)
 	m2, _ = m2.setFocus(paneWorkflows)
 	m2, _ = m2.onKey(keyEnter())

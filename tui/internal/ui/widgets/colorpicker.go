@@ -17,9 +17,8 @@ import (
 // ColorGridCols is eight wide so the sixteen ANSI colors fill the first two rows (normal then bright).
 const ColorGridCols = 8
 
-// ColorPicker is a 2D swatch-grid dropdown for choosing one ColorType. Swatches are painted with
-// spaces, not block glyphs, so they are immune to ambiguous glyph widths. Cursor is exported so a
-// form's motion/click handler can set it directly after a HitCell.
+// ColorPicker is a 2D swatch-grid dropdown for one ColorType. Swatches are painted with spaces, not
+// block glyphs, so ambiguous glyph widths cannot skew them. Cursor is exported for a host's click handler.
 type ColorPicker struct {
 	title  string
 	names  []string // ColorType names in palette order

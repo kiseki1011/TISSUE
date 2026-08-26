@@ -2,6 +2,9 @@ package com.tissue.feature.issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tissue.feature.activitylog.application.port.repository.ActivityLogCommandRepository;
+import com.tissue.feature.activitylog.domain.ActivityLog;
+import com.tissue.feature.activitylog.domain.ActivityType;
 import com.tissue.feature.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.application.dto.response.IssueSummary;
@@ -34,6 +37,7 @@ import com.tissue.shared.enums.IconType;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
+import com.tissue.shared.vo.EntityReference;
 import com.tissue.shared.vo.Name;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Instant;
@@ -41,6 +45,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,6 +95,9 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueReviewService reviewService;
+
+    @Autowired
+    private ActivityLogCommandRepository activityLogCommandRepository;
 
     private Member actor;
     private Member other;
@@ -292,6 +300,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
                     null,
                     null,
                     null,
+                    null,
                     Set.of(actor.getId()),
                     null,
                     null,
@@ -353,6 +362,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             createIssue("Random note", "body", other.getId());
 
             IssueSearchCondition condition = new IssueSearchCondition(
+                    null,
                     null,
                     null,
                     null,
@@ -496,7 +506,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             IssueIdentifier iid = IssueIdentifier.ofIssueKey(issueKey);
             participantService.addReviewer(iid, actor.getId(), actor.getId());
             if (approved) {
-                reviewService.submitReview(iid, true, actor.getId());
+                reviewService.submitReview(iid, true, null, actor.getId());
             }
             em.flush();
             em.clear();
@@ -504,7 +514,21 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
 
         private IssueSearchCondition reviewerCondition(Set<Long> reviewerIds, Set<ReviewStatus> statuses) {
             return new IssueSearchCondition(
-                    null, null, null, null, null, null, reviewerIds, statuses, null, null, null, null, null, null);
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    reviewerIds,
+                    statuses,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
         }
     }
 
@@ -527,6 +551,45 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             assertThat(summary.issueTypeId()).isEqualTo(issueTypeId);
             assertThat(summary.issueTypeName()).isEqualTo("Story");
             assertThat(summary.issueTypeColor()).isEqualTo(ColorType.ANSI_RED);
+            assertThat(summary.assigneeName()).isEqualTo("Actor");
+        }
+    }
+
+    @Nested
+    @DisplayName("issue type filter")
+    class IssueTypeFilter {
+
+        @Test
+        @DisplayName("success: filtering by issueTypeIds returns only issues of those types")
+        void filtersByIssueType() {
+            // given - a second issue type (Bug) alongside the default Story
+            Long bugTypeId = createIssueType("Bug");
+            String story = createIssue("a story issue", "body", actor.getId());
+            String bug = createIssueOfType("a bug issue", "body", actor.getId(), bugTypeId);
+
+            // when - a keyword-less search filtered to the Bug type (also proves issueTypeIds counts as
+            // an active filter, so the keyword-less query runs instead of returning empty)
+            IssueSearchCondition condition = new IssueSearchCondition(
+                    null,
+                    null,
+                    null,
+                    Set.of(bugTypeId),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+            Page<IssueSummary> page = sut.ftsByProjectRanked(PROJ, condition, 0, 20, actor.getId());
+
+            // then
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).containsExactly(bug);
+            assertThat(page.getContent()).extracting(IssueSummary::issueKey).doesNotContain(story);
         }
     }
 
@@ -558,7 +621,7 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
             String key = createIssue("Login flow", "body", other.getId());
             IssueIdentifier iid = IssueIdentifier.ofIssueKey(key);
             participantService.addReviewer(iid, actor.getId(), actor.getId());
-            reviewService.submitReview(iid, true, actor.getId());
+            reviewService.submitReview(iid, true, null, actor.getId());
             em.flush();
             em.clear();
 
@@ -602,13 +665,63 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
         }
     }
 
+    @Nested
+    @DisplayName("last activity projection")
+    class LastActivityProjection {
+
+        @Test
+        @DisplayName("success: a summary carries the issue's most recent activity Instant")
+        void carriesLastActivity() {
+            // given - a fresh issue already carries a synchronous ISSUE_CREATED log; a later activity we seed
+            // becomes the most recent, so the summary must reflect that latest Instant
+            String key = createIssue("Deployment guide", "body", actor.getId());
+            ActivityLog activity = saveActivity(ActivityType.ISSUE_UPDATED, EntityReference.forIssue("PROJ", key));
+
+            // when
+            Page<IssueSummary> page = search("deployment");
+
+            // then
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().lastActivityAt())
+                    .isEqualTo(activity.getCreatedAt().truncatedTo(ChronoUnit.MICROS));
+        }
+
+        @Test
+        @DisplayName("success: a freshly created issue surfaces its ISSUE_CREATED activity (no manual seeding)")
+        void surfacesCreatedActivity() {
+            // given - issue creation logs ISSUE_CREATED synchronously in the same transaction
+            createIssue("Deployment guide", "body", actor.getId());
+
+            // when
+            Page<IssueSummary> page = search("deployment");
+
+            // then - the real create->log->summary flow surfaces a non-null last activity
+            assertThat(page.getContent()).hasSize(1);
+            assertThat(page.getContent().getFirst().lastActivityAt()).isNotNull();
+        }
+
+        private ActivityLog saveActivity(ActivityType type, EntityReference reference) {
+            ActivityLog log = ActivityLog.builder()
+                    .eventId(UUID.randomUUID())
+                    .activityType(type)
+                    .entityReference(reference)
+                    .actorMemberId(actor.getId())
+                    .data(Map.of())
+                    .build();
+            ActivityLog saved = activityLogCommandRepository.save(log);
+            em.flush();
+            em.clear();
+            return saved;
+        }
+    }
+
     private Page<IssueSummary> search(String keyword) {
         return sut.ftsByProjectRanked(PROJ, condition(keyword), 0, 20, actor.getId());
     }
 
     private IssueSearchCondition condition(String keyword) {
         return new IssueSearchCondition(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, keyword);
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, keyword);
     }
 
     private void createProject(String key, Member manager) {
@@ -658,6 +771,41 @@ class IssueFullTextSearchIntegrationTest extends IntegrationTestSupport {
                 .storyPoint(3)
                 .issueTypeId(issueTypeId)
                 .customFields(Map.of(fieldId, "v"))
+                .assigneeMemberId(assigneeMemberId)
+                .build();
+        String issueKey = issueLifecycleService.create(PROJ, cmd, actor.getId()).issueKey();
+        em.flush();
+        em.clear();
+        return issueKey;
+    }
+
+    /** Creates a second issue type (its own minimal workflow, no required fields) and returns its id. */
+    private Long createIssueType(String name) {
+        Workflow workflow = Workflow.create(Name.of(name + "-wf"), null, ColorType.ANSI_YELLOW);
+        workflow.addState(Name.of("TODO"), null, ColorType.ANSI_GREEN, StateCategory.INITIAL);
+        workflowRepository.save(workflow);
+        IssueType type = IssueType.create(
+                Name.of(name), null, ColorType.ANSI_BLUE, IconType.CIRCLE_FILLED, IssueHierarchy.STANDARD, workflow);
+        issueTypeRepository.save(type);
+        em.flush();
+        Long id = type.getId();
+        em.clear();
+        return id;
+    }
+
+    private String createIssueOfType(String title, String content, Long assigneeMemberId, Long typeId) {
+        CreateIssueCommand cmd = CreateIssueCommand.builder()
+                .sprintId(null)
+                .parentProjectKey(null)
+                .parentKey(null)
+                .title(title)
+                .content(content)
+                .summary("s")
+                .priority(IssuePriority.P3)
+                .dueAt(Instant.now().plus(1, ChronoUnit.DAYS))
+                .storyPoint(3)
+                .issueTypeId(typeId)
+                .customFields(Map.of())
                 .assigneeMemberId(assigneeMemberId)
                 .build();
         String issueKey = issueLifecycleService.create(PROJ, cmd, actor.getId()).issueKey();

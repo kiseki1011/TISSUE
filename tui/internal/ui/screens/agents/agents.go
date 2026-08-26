@@ -42,8 +42,7 @@ const (
 	stackMinH   = 20
 )
 
-// confirmKind records what an open confirm dialog will do when accepted, so one shared ConfirmForm
-// serves both destructive actions.
+// confirmKind is what an open confirm dialog does when accepted, so one ConfirmForm serves both.
 type confirmKind int
 
 const (
@@ -104,8 +103,7 @@ func (m Model) Retheme(d deps.Deps) Model {
 	return m
 }
 
-// CapturingInput reports that a modal owns the keyboard, so the app shell suppresses its global
-// tab-switch keys while the user types.
+// CapturingInput reports that a modal owns the keyboard, so the shell suppresses its tab-switch keys.
 func (m Model) CapturingInput() bool {
 	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
@@ -144,10 +142,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.tokenCache == nil {
 				m.tokenCache = map[int64][]domain.Token{}
 			}
-			m.tokenCache[msg.AgentID] = msg.Tokens // cache every load, including prefetches for non-selected agents
+			m.tokenCache[msg.AgentID] = msg.Tokens // cache prefetches too, not only the selected agent
 		}
 		if msg.AgentID != m.selectedAgentID() {
-			return m, nil // a prefetch or stale load for an agent that is not currently selected
+			return m, nil // a prefetch or a stale load for a non-selected agent
 		}
 		m.tokensLoading, m.tokensErr = false, msg.Err
 		m.tokens = msg.Tokens
@@ -256,7 +254,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-// onHover records the row or button under the cursor so it can be highlighted.
 func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 	m.hover = ""
 	switch {
@@ -284,7 +281,7 @@ func (m Model) onHover(msg tea.MouseMotionMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) onKey(msg tea.KeyPressMsg) (Model, tea.Cmd) {
-	m.hover = "" // the keyboard is driving now, so drop any stale mouse-hover highlight
+	m.hover = "" // the keyboard is driving, so drop the stale hover highlight
 	switch msg.String() {
 	case "tab":
 		return m.togglePane(), nil
@@ -350,8 +347,7 @@ func (m Model) openEdit() (Model, tea.Cmd) {
 	return m, tea.Batch(m.edit.Init(), m.ensureModels())
 }
 
-// ensureModels re-fetches the catalog when opening a form found it empty, so a failed or still-pending
-// boot prefetch recovers on the next open instead of stranding the picker on "None".
+// ensureModels refetches the catalog when a form opens with none, so a failed boot prefetch recovers.
 func (m Model) ensureModels() tea.Cmd {
 	if len(m.models) == 0 {
 		return loadModels(m.deps)
@@ -369,8 +365,7 @@ func (m Model) openIssueToken() (Model, tea.Cmd) {
 	return m, m.issue.Init()
 }
 
-// openDelete opens a confirm dialog for the focused pane's destructive action: deactivate the
-// selected agent, or revoke the selected token.
+// openDelete confirms the focused pane's action: deactivate the agent, or revoke the token.
 func (m Model) openDelete() (Model, tea.Cmd) {
 	s := m.deps.Styles
 	m.modalScroll = 0
@@ -496,6 +491,13 @@ func (m *Model) reloadTokens() tea.Cmd {
 	return loadTokens(m.deps, id)
 }
 
+func (m Model) HelpTitle() string { return "Agents" }
+
+func (m Model) HelpAbout() string {
+	return "Manage the AI agents that connect over MCP. Create an agent, issue and revoke its access " +
+		"tokens, and edit its metadata."
+}
+
 func (m Model) HelpKeys() []key.Binding {
 	if m.creating {
 		return m.create.HelpKeys()
@@ -526,8 +528,7 @@ func (m Model) anyModalOpen() bool {
 	return m.creating || m.editing || m.issuing || m.revealing || m.confirming
 }
 
-// activeModalView renders the open modal, mirroring View's dispatch, so the host can measure and
-// window it.
+// activeModalView renders the open modal so the host can measure and window it.
 func (m Model) activeModalView() string {
 	switch {
 	case m.creating:
@@ -552,7 +553,7 @@ func (m Model) clampModalScroll(off int) int {
 	return clamp(off, 0, max(0, maxOff))
 }
 
-// overlayModal mirrors the schema tab's modal overlay: dimmed backdrop, centered, scrollbar-windowed when too tall.
+// overlayModal centers the modal over a dimmed backdrop, scrollbar-windowed when it is taller than the terminal.
 func (m Model) overlayModal(backdrop, modal string) string {
 	t := m.deps.Styles.Theme
 	bd := components.StripANSI(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, backdrop))
@@ -575,8 +576,7 @@ func clamp(v, lo, hi int) int {
 	return v
 }
 
-// AgentsLoadedMsg carries the caller's agents (or an error flag). Exported so the app shell can route
-// a background prefetch to this screen while another tab is active.
+// AgentsLoadedMsg carries the caller's agents. Exported so the shell can route a prefetch here.
 type AgentsLoadedMsg struct {
 	Agents []domain.Agent
 	Err    bool

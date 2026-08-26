@@ -92,6 +92,13 @@ public interface ProjectPurgeRepository extends Repository<Project, Long> {
 
     @Modifying(clearAutomatically = true)
     @Query(
+            value = "DELETE FROM issue_pull_request "
+                    + "WHERE issue_id IN (SELECT id FROM issue WHERE project_id = :projectId)",
+            nativeQuery = true)
+    void deleteIssuePullRequests(@Param("projectId") Long projectId);
+
+    @Modifying(clearAutomatically = true)
+    @Query(
             value = "DELETE FROM issue_reviewer "
                     + "WHERE issue_id IN (SELECT id FROM issue WHERE project_id = :projectId)",
             nativeQuery = true)

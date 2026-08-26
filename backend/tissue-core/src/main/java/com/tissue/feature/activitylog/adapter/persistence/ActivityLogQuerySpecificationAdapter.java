@@ -44,6 +44,15 @@ public class ActivityLogQuerySpecificationAdapter implements ActivityLogQueryRep
     }
 
     @Override
+    public Map<String, Instant> findLastActivityAtByIssueKeys(Collection<String> issueKeys) {
+        if (issueKeys.isEmpty()) {
+            return Map.of();
+        }
+        return jpaRepository.findLastActivityByIssueKeys(issueKeys).stream()
+                .collect(Collectors.toMap(IssueLastActivityRow::getIssueKey, IssueLastActivityRow::getLastActivityAt));
+    }
+
+    @Override
     public List<ActivityLog> findAllByIssueKey(String issueKey, @Nullable Long keysetId, int limit) {
         Specification<ActivityLog> spec = Specification.where(ActivityLogSpecs.hasResourceType(ResourceType.ISSUE))
                 .and(ActivityLogSpecs.hasIssueKey(issueKey))

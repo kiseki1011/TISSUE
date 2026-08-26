@@ -7,9 +7,8 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// The backend ColorType enum tells us which color a caller picked, not how to draw it. We map
-// the sixteen ANSI_* names to real ANSI indexes so swatches follow the terminal's own palette,
-// and give the extended names their hex.
+// The backend ColorType enum names a color but not how to draw it. ANSI_* map to real ANSI indexes
+// so swatches follow the terminal's own palette. The extended names get their hex below.
 var ansiColorIndex = map[string]int{
 	"ANSI_BLACK": 0, "ANSI_RED": 1, "ANSI_GREEN": 2, "ANSI_YELLOW": 3,
 	"ANSI_BLUE": 4, "ANSI_MAGENTA": 5, "ANSI_CYAN": 6, "ANSI_WHITE": 7,
@@ -25,7 +24,7 @@ var extendedColorHex = map[string]string{
 	"BROWN": "#A52A2A", "TAN": "#D2B48C",
 }
 
-// Stable order: the sixteen ANSI names, then the fourteen extended names.
+// Stable picker order: the ANSI names first, then the extended ones.
 var colorTypeOrder = []string{
 	"ANSI_BLACK", "ANSI_RED", "ANSI_GREEN", "ANSI_YELLOW", "ANSI_BLUE", "ANSI_MAGENTA",
 	"ANSI_CYAN", "ANSI_WHITE", "ANSI_BRIGHT_BLACK", "ANSI_BRIGHT_RED", "ANSI_BRIGHT_GREEN",
@@ -36,7 +35,8 @@ var colorTypeOrder = []string{
 
 func ColorTypeNames() []string { return colorTypeOrder }
 
-// ok is false for an empty or unknown name, so callers can omit the swatch.
+// IssueColor resolves a backend ColorType name. ok is false for empty/unknown so callers can omit
+// the swatch.
 func IssueColor(name string) (color.Color, bool) {
 	key := strings.ToUpper(strings.TrimSpace(name))
 	if key == "" {
@@ -59,9 +59,8 @@ func ColorSwatch(name string) string {
 	return lipgloss.NewStyle().Foreground(c).Render("██")
 }
 
-// Measures perceived luminance from the color's own RGBA (ANSIColor resolves to the standard
-// palette, so one formula covers both ANSI and hex). #000/#fff rather than ANSI 0/15 so the
-// text is true black/white regardless of the terminal's palette.
+// RGBA luminance covers both ANSI and hex with one formula. #000/#fff rather than ANSI 0/15 so the
+// text stays true black/white whatever the terminal's palette.
 func contrastText(bg color.Color) color.Color {
 	r, g, b, _ := bg.RGBA()
 	lum := (0.299*float64(r) + 0.587*float64(g) + 0.114*float64(b)) / 257.0 // RGBA is 0..65535
@@ -71,8 +70,7 @@ func contrastText(bg color.Color) color.Color {
 	return lipgloss.Color("#ffffff")
 }
 
-// ok is false for an empty or unknown color, so callers can fall back to plain text. Callers
-// that render onto a cell grid need the colors, not a pre-styled string.
+// ChipColors serves callers painting onto a cell grid that need the colors, not a styled string.
 func ChipColors(name string) (bg, fg color.Color, ok bool) {
 	bg, ok = IssueColor(name)
 	if !ok {
@@ -81,7 +79,7 @@ func ChipColors(name string) (bg, fg color.Color, ok bool) {
 	return bg, contrastText(bg), true
 }
 
-// ok is false for an empty or unknown color, so callers can fall back to plain text.
+// ColorChip returns a styled chip. ok is false for empty/unknown so callers fall back to plain text.
 func ColorChip(name, text string) (string, bool) {
 	bg, fg, ok := ChipColors(name)
 	if !ok {
@@ -94,8 +92,7 @@ func ColorChip(name, text string) (string, bool) {
 		Render(" " + text + " "), true
 }
 
-// ColorLabel is the human-readable form of a ColorType name: "ANSI_BRIGHT_RED" ->
-// "ANSI Bright Red", "INDIGO" -> "Indigo".
+// ColorLabel humanizes a ColorType name: "ANSI_BRIGHT_RED" -> "ANSI Bright Red".
 func ColorLabel(name string) string {
 	words := strings.Split(strings.TrimSpace(name), "_")
 	for i, w := range words {

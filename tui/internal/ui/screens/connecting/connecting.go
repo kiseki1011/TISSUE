@@ -205,6 +205,7 @@ func gotoLogin(info domain.SystemInfo) tea.Cmd {
 	return func() tea.Msg { return nav.GoToLoginMsg{Info: info} }
 }
 
+// gotoHome sets Restore so the shell deep-links back into the last-open project.
 func gotoHome(info domain.SystemInfo, welcome string) tea.Cmd {
-	return func() tea.Msg { return nav.GoToHomeMsg{Info: info, Welcome: welcome} }
+	return func() tea.Msg { return nav.GoToHomeMsg{Info: info, Welcome: welcome, Restore: true} }
 }

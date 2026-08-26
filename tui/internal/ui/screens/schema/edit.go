@@ -18,6 +18,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // editKind selects which metadata endpoint a save hits.
@@ -30,7 +31,7 @@ const (
 	editIssueType
 )
 
-// fields present in the edit modal. efColor is skipped for transitions.
+// Edit-modal fields. efColor is skipped for transitions.
 const (
 	efName = iota
 	efColor
@@ -44,8 +45,8 @@ const (
 	editDescH  = 3
 )
 
-// editForm is the "Edit …" modal for a graph element's metadata. Only name, color
-// (states/workflow) and description are editable — category and wiring are not.
+// editForm is the "Edit …" modal for element metadata. Only name, color (states/workflow) and
+// description are editable, not category or wiring.
 type editForm struct {
 	deps   deps.Deps
 	kind   editKind
@@ -55,7 +56,7 @@ type editForm struct {
 
 	name    textinput.Model
 	desc    textarea.Model
-	colors  []string // color options — nil for a kind without a color field
+	colors  []string // nil for a kind without a color field
 	colorIx int
 	spinner spinner.Model
 
@@ -69,7 +70,7 @@ type editForm struct {
 	submitting bool
 }
 
-// withColor adds the color picker (states and workflows have one — transitions do not).
+// newEditForm builds the metadata modal. withColor is false for transitions, which have no color.
 func newEditForm(d deps.Deps, kind editKind, wfID, elemID int, title, name, colorName, desc string, withColor bool) editForm {
 	n := textinput.New()
 	n.Prompt = ""
@@ -184,7 +185,7 @@ func (f editForm) pickKey(msg tea.KeyPressMsg) editForm {
 		f.cpick = f.cpick.Move(0, -1)
 	case "down", "j":
 		f.cpick = f.cpick.Move(0, 1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyColor()
 	case "esc":
 		f.picking = false
@@ -328,9 +329,8 @@ func (f editForm) View() string {
 	return components.TitledBoxCentered(f.title, body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused control's row (View coordinates) and height, so a windowed modal
-// scrolls to keep it visible. +2 = top border + the padding row above the body. The Color field is
-// absent (height 0) for a kind without a colour, matching body(). ok=false while the picker is open.
+// FocusRow reports the focused row and height so a windowed modal can scroll it into view. Color
+// counts as height 0 for a kind without one, matching body(). ok=false while the picker is open.
 func (f editForm) FocusRow() (int, int, bool) {
 	if f.picking {
 		return 0, 0, false
@@ -512,6 +512,9 @@ func saveEdit(d deps.Deps, kind editKind, wfID, elemID int, name, color, desc st
 }
 
 func editErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -522,6 +525,9 @@ func editErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's own explanation
 	}
 	return "Could not save. Try again."
 }

@@ -18,11 +18,10 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
-	"github.com/kiseki1011/TISSUE/tui/internal/ui/nav"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-// Focus order for Tab:
-// search -> filter -> plus -> list -> detail -> back
+// Tab cycles focus through these in order.
 const (
 	focusSearch = iota
 	focusFilter
@@ -48,13 +47,14 @@ type Model struct {
 
 	projects []domain.Project
 	loading  bool
+	loaded   bool // a list has landed at least once, so a refresh failure keeps it rather than erroring
 	err      error
 	status   string
 
 	table    table.Model
 	search   textinput.Model
 	focus    int
-	hover    string // dashboard zone under the cursor, for hover highlight
+	hover    string // dashboard zone under the cursor, "" when none
 	hoverRow int    // hovered project row, -1 when the cursor is off the rows
 
 	creating bool
@@ -63,11 +63,18 @@ type Model struct {
 	filtering bool
 	filter    filterForm
 
+	// join gate: issues/members/sprints all require membership to read, so entering an unjoined project
+	// offers a join first. isAdmin (may self-join a PRIVATE project) is back-filled from the profile.
+	joining    bool
+	joinTarget domain.Project
+	joinUI     widgets.ConfirmForm
+	isAdmin    bool
+
 	// wheel scroll offset for a modal that overflows the terminal (the filter form — the create form scrolls itself)
 	modalScroll int
 
 	filterMembersOnly bool // show only projects the caller has joined
-	filterHidePrivate bool // hide PRIVATE-visibility projects
+	filterHidePrivate bool
 
 	// project stats, cached by project Key (selection re-sorts, so index is unstable)
 	stats        map[string]domain.ProjectStats
@@ -124,20 +131,27 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.create = m.create.resize(m.modalBodyHeight())
 		}
 		return m, nil
-	case projectsLoadedMsg:
-		m.loading, m.err, m.projects = false, nil, msg.projects
+	case RefreshMsg:
+		// a silent reload: the list stays visible and only the title shows "(loading)"
+		m.loading = true
+		return m, loadProjects(m.deps)
+	case ProjectsLoadedMsg:
+		m.loading, m.err, m.projects, m.loaded = false, nil, msg.projects, true
 		m.rebuildRows()
-		// The window sizes before the list loads, so the initial relayout ran SetRows on an empty
-		// list and drove the table cursor to -1 (SetRows clamps to len-1). With rows present now,
-		// land the default selection on the top row — the topmost pinned project, or the topmost
-		// project when none are pinned, since visibleProjects floats pins up.
+		// The window sizes before the list loads, so the initial relayout ran SetRows on an empty list
+		// and drove the cursor to -1 (SetRows clamps to len-1). With rows present, select the top row.
 		if m.table.Cursor() < 0 && len(m.visibleProjects()) > 0 {
 			m.table.SetCursor(0)
 			m.ensureCursorVisible()
 		}
 		return m, m.fetchStats()
-	case projectsErrMsg:
-		m.loading, m.err = false, msg.err
+	case ProjectsErrMsg:
+		m.loading = false
+		if m.loaded {
+			// keep the list we were showing rather than replacing the dashboard over a transient blip
+			return m, nil
+		}
+		m.err = msg.err
 		return m, nil
 	case StatsLoadedMsg:
 		delete(m.statsPending, msg.key)
@@ -148,6 +162,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.statsFailed[msg.key] = true
 		slog.Warn("load project stats", "key", msg.key, "err", msg.err)
 		return m, m.nextStatsPrefetch()
+	case joinDoneMsg:
+		return m.onJoinDone(msg)
 	}
 
 	if m.creating {
@@ -155,6 +171,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 	if m.filtering {
 		return m.updateFilter(msg)
+	}
+	if m.joining {
+		return m.updateJoin(msg)
 	}
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
@@ -274,7 +293,7 @@ func (m Model) onKeyButton(msg tea.KeyPressMsg, activate func(Model) (Model, tea
 		return m.focusSearch()
 	case "esc":
 		return m.focusList()
-	case "enter", " ", "space":
+	case "enter", "space":
 		return activate(m)
 	}
 	return m, nil
@@ -294,11 +313,16 @@ func (m Model) onKeyList(msg tea.KeyPressMsg) (Model, tea.Cmd) {
 		}
 	case "c":
 		return m.openCreate()
+	case "f":
+		return m.openFilter()
 	case "p":
 		return m.togglePin()
+	case "R":
+		m.loading = true
+		return m, loadProjects(m.deps)
 	case "enter":
 		if p, ok := m.selectedProject(); ok {
-			return m, func() tea.Msg { return nav.OpenProjectMsg{ProjectKey: p.Key, Title: p.Title} }
+			return m.enterProject(p)
 		}
 		return m, nil
 	}
@@ -351,7 +375,26 @@ func (m Model) setFocus(target int) (Model, tea.Cmd) {
 }
 
 func (m Model) cycleFocus(delta int) (Model, tea.Cmd) {
-	return m.setFocus((m.focus + delta + focusCount) % focusCount)
+	next := m.focus
+	// skip focuses that are not live Tab stops (the click-only filter/create buttons with the mouse
+	// off) so the ring never lands on an invisible control
+	for i := 0; i < focusCount; i++ {
+		next = (next + delta + focusCount) % focusCount
+		if m.focusAvailable(next) {
+			break
+		}
+	}
+	return m.setFocus(next)
+}
+
+// focusAvailable reports whether target is a live Tab stop. The filter/create buttons are click-only,
+// hidden with the mouse off, when the f / c keys drive them instead.
+func (m Model) focusAvailable(target int) bool {
+	switch target {
+	case focusFilter, focusPlus:
+		return m.deps.Mouse
+	}
+	return true
 }
 
 func (m Model) focusSearch() (Model, tea.Cmd) { return m.setFocus(focusSearch) }
@@ -507,8 +550,7 @@ func (m Model) forwardToFocused(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmd, m.maybeFetchStats())
 }
 
-// maybeFetchStats loads the selected project's stats and resets the Details scroll when
-// the selection moves to another project.
+// maybeFetchStats loads the selection's stats and resets the Details scroll on a new project.
 func (m *Model) maybeFetchStats() tea.Cmd {
 	p, ok := m.selectedProject()
 	if !ok {
@@ -524,8 +566,7 @@ func (m *Model) maybeFetchStats() tea.Cmd {
 // how many stats requests run at once during the background prefetch
 const statsPrefetchWorkers = 4
 
-// fetchStats requests the selected project's stats first, then starts the bounded background prefetch
-// of every other project's stats
+// fetchStats fetches the selection first, then prefetches the rest in the background
 func (m *Model) fetchStats() tea.Cmd {
 	m.statsQueue = m.statsQueue[:0]
 	for _, p := range m.projects {
@@ -571,10 +612,8 @@ func (m *Model) relayout() {
 	showRepo := m.showRepo()
 	cols := projectColumns(tableW, act, vis, arch, showRepo)
 	rows := m.projectRows(showRepo)
-	// Every table setter re-renders eagerly, and renderRow indexes cols[i] while ranging
-	// a row's cells, so a row must never be longer than the columns mid-swap. Crossing
-	// the Repository threshold changes the count: when it shrinks, install the narrower
-	// rows first. When it grows (or is unchanged), install the wider columns first.
+	// The table re-renders eagerly and renderRow indexes cols[i] per cell, so a row must never be
+	// longer than the columns mid-swap: shrinking installs rows first, growing installs columns first.
 	if len(cols) < len(m.table.Columns()) {
 		m.table.SetRows(rows)
 		m.table.SetColumns(cols)
@@ -590,23 +629,20 @@ func (m *Model) relayout() {
 	m.ensureCursorVisible()
 }
 
-// It keys the Repository cell off the actual column count, not showRepo(width): a
-// resize to a too-short terminal makes relayout early-return, so the width can cross
-// the Repository threshold while the columns stay put. Rows must equal the columns or
-// SetRows' eager render panics (renderRow indexes cols[i] while ranging a row's cells).
+// rebuildRows keys the Repository cell off the actual column count, not showRepo(width) — relayout
+// early-returns on a short terminal, so a stale column set must still get matching rows or SetRows panics.
 func (m *Model) rebuildRows() {
 	if len(m.table.Columns()) == 0 {
 		return
 	}
 	rows := m.projectRows(len(m.table.Columns()) == withRepoColCount)
 	m.table.SetRows(rows)
-	// Size the table to all rows and scroll it ourselves in listView. The widget's
-	// line-based scrolling mishandles our multi-line rows.
+	// Size to all rows and scroll ourselves in listView — the widget mishandles multi-line rows.
 	m.table.SetHeight(len(rows)*rowHeight + 1)
 	m.ensureCursorVisible()
 }
 
-// showRepo controls whether each row carries the Repository cell and must match the installed column set.
+// projectRows builds the table rows. showRepo must match the installed column set.
 func (m Model) projectRows(showRepo bool) []table.Row {
 	visible := m.visibleProjects()
 	cursor := m.table.Cursor()
@@ -630,12 +666,11 @@ func (m Model) projectRows(showRepo bool) []table.Row {
 		if p.Archived {
 			arch = g.Or(g.ArchiveCheck, "YES")
 		}
-		act := humanizeSince(effectiveActivity(p))
+		act := components.HumanizeSince(effectiveActivity(p))
 		var cells []string
 		switch {
 		case i == cursor, i == m.hoverRow:
-			// Both rows sit under a solid background (selection / hover), so leave the
-			// cells uncolored to keep inner color resets from punching holes in it.
+			// Under a solid background, so leave the cells uncolored — inner resets punch holes in it.
 			title := p.Title
 			if pinned {
 				title = g.Pin + " " + title
@@ -712,7 +747,6 @@ func (m Model) listView() string {
 	t := m.deps.Styles.Theme
 	sel := lipgloss.NewStyle().Foreground(t.Text).Background(t.Selection).Bold(true)
 	m.paintRow(body, start, end, m.table.Cursor(), sel)
-	// The hovered row gets a dimmer tone, and only when it is not the selected one.
 	if m.hoverRow >= 0 && m.hoverRow != m.table.Cursor() {
 		m.paintRow(body, start, end, m.hoverRow, m.hoverStyle())
 	}
@@ -722,8 +756,7 @@ func (m Model) listView() string {
 	return strings.Join(body[:region], "\n")
 }
 
-// paintRow shades only the row's content line (the last line of its rowHeight-line
-// block — the blank separator sits above it) so the highlight is a single line.
+// paintRow shades only the row's content line (the blank separator sits above it).
 func (m Model) paintRow(body []string, start, end, row int, style lipgloss.Style) {
 	di := row*rowHeight + (rowHeight - 1)
 	if di < start || di >= end {
@@ -737,8 +770,7 @@ func (m Model) paintRow(body []string, start, end, row int, style lipgloss.Style
 func (m Model) hoverStyle() lipgloss.Style {
 	t := m.deps.Styles.Theme
 	if _, noBg := t.Background.(lipgloss.NoColor); noBg {
-		// The ANSI theme follows the terminal's own colors and has no real background
-		// to dim, so tint the text instead of fabricating a background color.
+		// The ANSI theme has no real background to dim, so tint the text instead.
 		return lipgloss.NewStyle().Foreground(t.Secondary)
 	}
 	return lipgloss.NewStyle().Foreground(t.Text).Background(mixColors(t.Selection, t.Background, 0.5))
@@ -793,7 +825,7 @@ func (m Model) View() string {
 			m.deps.Styles.Muted.Render("Terminal too small"))
 	}
 
-	if m.creating || m.filtering {
+	if m.creating || m.filtering || m.joining {
 		return m.modalView()
 	}
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, m.dashboard())
@@ -807,14 +839,16 @@ func (m Model) dashboard() string {
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, " ", m.detailPanel())
 }
 
-// modalView centers the active modal over the dimmed dashboard, splicing it in by
-// hand (not lipgloss.NewCompositor, which drops zone marks) so it stays clickable.
+// modalView splices the modal in by hand, since lipgloss.NewCompositor drops zone marks.
 func (m Model) modalView() string {
 	backdrop := stripANSI(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, m.dashboard()))
 	modal := m.create.View() // the create form windows its own body, so leave it be
 	if m.filtering {
 		t := m.deps.Styles.Theme
 		modal, _, _ = components.ScrollBox(m.filter.View(), m.height, m.modalScroll, t.Primary, t.Border)
+	}
+	if m.joining {
+		modal = m.joinUI.View()
 	}
 	mx := max(0, (m.width-lipgloss.Width(modal))/2)
 	my := max(0, (m.height-lipgloss.Height(modal))/2)
@@ -826,11 +860,19 @@ const (
 	filterButtonW = 5
 )
 
-// searchBoxW is the outer width of the search box, sized so the search row (search
-// box + filter + create buttons) exactly fills the list column below it.
+// trailingButtonsW is the width of the filter + create buttons and their gaps. They are click-only, so
+// with the mouse off they are hidden and the search box reclaims the space.
+func (m Model) trailingButtonsW() int {
+	if !m.deps.Mouse {
+		return 0
+	}
+	return plusButtonW + filterButtonW + 2 // two one-cell gaps between the three boxes
+}
+
+// searchBoxW sizes the search box so the whole search row fills the list column below it.
 func (m Model) searchBoxW() int {
 	leftW, _ := m.panelWidths()
-	return leftW - plusButtonW - filterButtonW - 2 // two one-cell gaps between the three
+	return leftW - m.trailingButtonsW()
 }
 
 func (m Model) searchRow() string {
@@ -850,6 +892,9 @@ func (m Model) searchRow() string {
 	inputBody := lipgloss.NewStyle().Width(boxW - 4).MaxWidth(boxW - 4).MaxHeight(1).Render(inner)
 	searchBox := zone.Mark("home.search", components.TitledBoxWeighted("Search", inputBody, searchBorder, m.focus == focusSearch))
 
+	if !m.deps.Mouse {
+		return searchBox // the filter/create buttons are click-only, so the box fills the whole row
+	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, searchBox, " ", m.filterButton(), " ", m.plusButton())
 }
 
@@ -1050,10 +1095,9 @@ func (m Model) stacked() bool {
 	return components.StackVertically(m.width, m.height, m.sideFloor(), stackMinH)
 }
 
-// stackDetailH is the Details' top slice when stacked; the search row and list take the rest.
+// stackDetailH is the Details' top slice when stacked. The search row and list take the rest.
 func (m Model) stackDetailH() int { return min(max(m.height*9/20, 8), m.height-8) }
 
-// detailHeight is the Details panel's height: the full height side by side, the top slice when stacked.
 func (m Model) detailHeight() int {
 	if m.stacked() {
 		return m.stackDetailH()
@@ -1061,8 +1105,7 @@ func (m Model) detailHeight() int {
 	return m.height
 }
 
-// panelWidths splits the inner width into a 3:2 list/detail pair with a one-cell gap. When stacked
-// each occupies the full inner width, one above the other.
+// panelWidths splits the inner width 3:2 with a one-cell gap. Stacked, each takes the full width.
 func (m Model) panelWidths() (left, right int) {
 	if m.stacked() {
 		full := m.innerWidth()
@@ -1075,27 +1118,17 @@ func (m Model) panelWidths() (left, right int) {
 }
 
 const (
-	// titleColFloor is the Title width at which the table starts to truncate. Below it
-	// the columns overflow. It locates where the six-column (Repository) layout renders.
+	// titleColFloor is the Title width at which the table starts to truncate. Below it columns overflow.
 	titleColFloor = 6
-	// titleColComfort keeps the Title readable at the narrowest rendered width. It sets
-	// the five-column floor (about 110 cells in nerd mode).
+	// titleColComfort sets the five-column floor (about 110 cells in nerd mode).
 	titleColComfort = 25
 )
 
-// minWidth is the smallest terminal width that still renders the dashboard. Below the
-// Repository threshold the table drops to five columns, so the floor follows that
-// narrower layout with a comfortable Title (nerd glyph headers pack tighter than
-// fallback words, so nerd mode floors lower). But if the six-column layout would not
-// yet fit by the width it reappears at, hold the floor there instead so the band where
-// Repository shows is never rendered broken.
-// stackMinH is the height at or above which a too-narrow terminal stacks the Details above a
-// full-width list instead of refusing to render.
+// stackMinH is the height at or above which a too-narrow terminal stacks instead of refusing to render.
 const stackMinH = 30
 
-// minWidth is the smallest terminal width that still renders the dashboard. A tall terminal stacks
-// the Details above a full-width list, which fits the project table at a narrower width than the
-// side-by-side floor.
+// minWidth is the smallest width that still renders the dashboard. Stacking fits the table at a
+// narrower width than the side-by-side floor.
 func (m Model) minWidth() int {
 	return m.floorWidth(m.height >= stackMinH)
 }
@@ -1103,8 +1136,8 @@ func (m Model) minWidth() int {
 // sideFloor is the width below which the side-by-side layout can no longer render the table.
 func (m Model) sideFloor() int { return m.floorWidth(false) }
 
-// floorWidth is the width floor for the given arrangement: stacked gives the table the full inner
-// width, side by side gives it 3/5 of it.
+// floorWidth is the width floor for the given arrangement. It normally follows the narrower
+// five-column layout, unless the six-column one would not fit where Repository reappears.
 func (m Model) floorWidth(stacked bool) int {
 	if floor6 := m.tableFloorWidth(true, titleColFloor, stacked); floor6 > repoColMinWidth {
 		return floor6
@@ -1112,9 +1145,8 @@ func (m Model) floorWidth(stacked bool) int {
 	return m.tableFloorWidth(false, titleColComfort, stacked)
 }
 
-// tableFloorWidth is the smallest terminal width at which the project table's Title
-// column still reaches titleMin cells for the given column set. It inverts the
-// panelWidths -> tableW -> projectColumns chain.
+// tableFloorWidth is the smallest terminal width at which the Title column still reaches titleMin
+// cells. It inverts the panelWidths -> tableW -> projectColumns chain.
 func (m Model) tableFloorWidth(showRepo bool, titleMin int, stacked bool) int {
 	_, vis, arch := columnTitles(m.deps.Glyphs)
 	visW, archW := glyphColW(vis), glyphColW(arch)
@@ -1142,23 +1174,26 @@ func (m Model) showRepo() bool {
 	return m.width >= repoColMinWidth
 }
 
-// CapturingInput reports whether the screen owns the keyboard (search field focused or a
-// modal open), so the app shell suppresses its global tab-switch keys.
+// CapturingInput reports whether the screen owns the keyboard, so the shell drops its global keys.
 func (m Model) CapturingInput() bool {
-	return m.focus == focusSearch || m.creating || m.filtering
+	return m.focus == focusSearch || m.creating || m.filtering || m.joining
 }
 
-// Retheme swaps in new deps on a live theme change. The table caches both its styles and its built
-// rows (project rows embed theme colors — chips, activity, visibility — at build time), so both are
-// rebuilt. The rest of the screen reads the theme fresh each render.
+// Retheme swaps in new deps. Project rows embed theme colors at build time, so the rows are rebuilt
+// along with the styles. The rest of the screen reads the theme fresh each render.
 func (m Model) Retheme(d deps.Deps) Model {
 	m.deps = d
 	m.table.SetStyles(tableStyles(d))
 	m.rebuildRows()
+	// turning the mouse off can strand focus on a hidden filter/create button, so snap it to the list.
+	if !m.focusAvailable(m.focus) {
+		m.focus = focusList
+		m.search.Blur()
+	}
 	return m
 }
 
-// ThemeName is the active theme's name, so the shell can verify a live theme switch propagated here.
+// ThemeName lets the shell verify a live theme switch propagated here.
 func (m Model) ThemeName() string { return m.deps.Styles.Theme.Name }
 
 // HelpTitle / HelpAbout describe this screen in the app-level help modal.
@@ -1175,6 +1210,9 @@ func (m Model) HelpKeys() []key.Binding {
 	}
 	if m.filtering {
 		return m.filter.HelpKeys()
+	}
+	if m.joining {
+		return m.joinUI.HelpKeys()
 	}
 	if m.focus == focusSearch {
 		return []key.Binding{
@@ -1202,22 +1240,30 @@ func (m Model) HelpKeys() []key.Binding {
 		key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑/↓", "move")),
 		key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "focus")),
 		key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "search")),
+		key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "filter")),
 		key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "new project")),
 		key.NewBinding(key.WithKeys("p"), key.WithHelp("p", "pin/unpin")),
+		key.NewBinding(key.WithKeys("R"), key.WithHelp("R", "refresh")),
 	}
 }
 
-type projectsLoadedMsg struct{ projects []domain.Project }
+// ProjectsLoadedMsg and ProjectsErrMsg are exported so the app shell can route them to home even when
+// a restore deep-linked past the dashboard — otherwise the dashboard sticks on "Projects (loading)".
+type ProjectsLoadedMsg struct{ projects []domain.Project }
 
-type projectsErrMsg struct{ err error }
+type ProjectsErrMsg struct{ err error }
+
+// RefreshMsg asks the dashboard to silently reload. Exported so the shell can fire it on return from a
+// project drill-in, so edits made there show up without a manual refresh.
+type RefreshMsg struct{}
 
 func loadProjects(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		projects, err := d.Projects.ListProjects(context.Background(), true)
 		if err != nil {
-			return projectsErrMsg{err: err}
+			return ProjectsErrMsg{err: err}
 		}
-		return projectsLoadedMsg{projects: projects}
+		return ProjectsLoadedMsg{projects: projects}
 	}
 }
 

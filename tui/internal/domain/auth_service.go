@@ -15,16 +15,6 @@ var ErrInvalidCredentials = errors.New("invalid credentials")
 // ErrIncompleteResponse is returned when a 200 response is missing tokens the caller needs.
 var ErrIncompleteResponse = errors.New("server returned an incomplete response")
 
-// APIError is a non-success HTTP response. The UI reads Status to tell rate limiting (429) apart
-// from server errors.
-type APIError struct {
-	Status int
-}
-
-func (e *APIError) Error() string {
-	return fmt.Sprintf("server returned status %d", e.Status)
-}
-
 type AuthService struct {
 	api *client.ClientWithResponses
 }
@@ -40,7 +30,7 @@ func (s *AuthService) SystemInfo(ctx context.Context) (SystemInfo, error) {
 		return SystemInfo{}, fmt.Errorf("get system info: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return SystemInfo{}, &APIError{Status: resp.StatusCode()}
+		return SystemInfo{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return toSystemInfo(resp.JSON200), nil
 }
@@ -57,7 +47,7 @@ func (s *AuthService) Login(ctx context.Context, identifier, password string) (T
 		return TokenPair{}, ErrInvalidCredentials
 	}
 	if resp.JSON200 == nil {
-		return TokenPair{}, &APIError{Status: resp.StatusCode()}
+		return TokenPair{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return toTokenPair(resp.JSON200.AccessToken, resp.JSON200.RefreshToken)
 }
@@ -70,7 +60,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (TokenPa
 		return TokenPair{}, fmt.Errorf("refresh token: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return TokenPair{}, &APIError{Status: resp.StatusCode()}
+		return TokenPair{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return toTokenPair(resp.JSON200.AccessToken, resp.JSON200.RefreshToken)
 }
@@ -81,7 +71,7 @@ func (s *AuthService) StartDeviceLogin(ctx context.Context) (DeviceAuth, error) 
 		return DeviceAuth{}, fmt.Errorf("start device login: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return DeviceAuth{}, &APIError{Status: resp.StatusCode()}
+		return DeviceAuth{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	d := resp.JSON200
 	return DeviceAuth{
@@ -102,7 +92,7 @@ func (s *AuthService) PollDeviceLogin(ctx context.Context, deviceCode string) (D
 		return DevicePoll{}, fmt.Errorf("poll device login: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return DevicePoll{}, &APIError{Status: resp.StatusCode()}
+		return DevicePoll{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 
 	p := resp.JSON200
@@ -123,7 +113,7 @@ func (s *AuthService) Logout(ctx context.Context) error {
 		return fmt.Errorf("logout: %w", err)
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }

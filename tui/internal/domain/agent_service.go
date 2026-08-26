@@ -10,7 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// Agents are owner-scoped (the authenticated caller owns them). Tokens hang off an agent.
+// AgentService manages the agents owned by the authenticated caller.
 type AgentService struct {
 	api *client.ClientWithResponses
 }
@@ -26,7 +26,7 @@ func (s *AgentService) ListAgents(ctx context.Context) ([]Agent, error) {
 		return nil, fmt.Errorf("list agents: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]Agent, 0, len(*resp.JSON200))
 	for _, a := range *resp.JSON200 {
@@ -35,10 +35,8 @@ func (s *AgentService) ListAgents(ctx context.Context) ([]Agent, error) {
 	return out, nil
 }
 
-// CreateAgent creates an agent and returns it. name must be letters/spaces only. agentType, modelID,
-// and description are optional (empty type / 0 model / empty description are omitted, so the server
-// defaults the type to GENERAL). A 409 (duplicate name) or 403 (owner must be human) surfaces as an
-// *APIError.
+// CreateAgent creates an agent. name must be letters/spaces only.
+// Zero-valued optional args are omitted so the server applies its default (agentType GENERAL).
 func (s *AgentService) CreateAgent(ctx context.Context, name, agentType string, modelID int64, description string) (Agent, error) {
 	body := client.CreateAgentRequest{Name: name}
 	if agentType != "" {
@@ -56,13 +54,13 @@ func (s *AgentService) CreateAgent(ctx context.Context, name, agentType string, 
 		return Agent{}, fmt.Errorf("create agent: %w", err)
 	}
 	if resp.JSON201 == nil {
-		return Agent{}, &APIError{Status: resp.StatusCode()}
+		return Agent{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return toAgent(resp.JSON201), nil
 }
 
-// UpdateAgent patches an agent's type, model, and description. A 0 modelID clears the model and an
-// empty description clears it (both sent as an explicit null).
+// UpdateAgent patches type, model, and description.
+// A 0 modelID or empty description clears the field, sent as an explicit null.
 func (s *AgentService) UpdateAgent(ctx context.Context, agentID int64, agentType string, modelID int64, description string) error {
 	body := client.UpdateAgentRequest{AgentType: nullable.NewNullableWithValue(agentType)}
 	if modelID != 0 {
@@ -80,7 +78,7 @@ func (s *AgentService) UpdateAgent(ctx context.Context, agentID int64, agentType
 		return fmt.Errorf("update agent: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }
@@ -92,7 +90,7 @@ func (s *AgentService) ListModels(ctx context.Context) ([]AiModel, error) {
 		return nil, fmt.Errorf("list models: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]AiModel, 0, len(*resp.JSON200))
 	for _, m := range *resp.JSON200 {
@@ -117,7 +115,7 @@ func (s *AgentService) DeactivateAgent(ctx context.Context, agentID int64) error
 		return fmt.Errorf("deactivate agent: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }
@@ -129,7 +127,7 @@ func (s *AgentService) ListTokens(ctx context.Context, agentID int64) ([]Token, 
 		return nil, fmt.Errorf("list tokens: %w", err)
 	}
 	if resp.JSON200 == nil {
-		return nil, &APIError{Status: resp.StatusCode()}
+		return nil, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	out := make([]Token, 0, len(*resp.JSON200))
 	for _, t := range *resp.JSON200 {
@@ -138,8 +136,7 @@ func (s *AgentService) ListTokens(ctx context.Context, agentID int64) ([]Token, 
 	return out, nil
 }
 
-// IssueToken issues a new token for an agent and returns its raw secret exactly once. ttlDays <= 0
-// means no expiry. scope must be ScopeReadOnly or ScopeReadWrite.
+// IssueToken returns the raw secret exactly once. ttlDays <= 0 means no expiry.
 func (s *AgentService) IssueToken(ctx context.Context, agentID int64, name, scope string, ttlDays int) (IssuedToken, error) {
 	body := client.CreatePatRequest{Name: name, Scope: client.CreatePatRequestScope(scope)}
 	if ttlDays > 0 {
@@ -151,7 +148,7 @@ func (s *AgentService) IssueToken(ctx context.Context, agentID int64, name, scop
 		return IssuedToken{}, fmt.Errorf("issue token: %w", err)
 	}
 	if resp.JSON201 == nil || resp.JSON201.Token == nil {
-		return IssuedToken{}, &APIError{Status: resp.StatusCode()}
+		return IssuedToken{}, newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return IssuedToken{Secret: *resp.JSON201.Token, Token: toToken(resp.JSON201.Pat)}, nil
 }
@@ -163,7 +160,7 @@ func (s *AgentService) RevokeToken(ctx context.Context, agentID, tokenID int64) 
 		return fmt.Errorf("revoke token: %w", err)
 	}
 	if resp.StatusCode() != http.StatusNoContent {
-		return &APIError{Status: resp.StatusCode()}
+		return newAPIError(resp.StatusCode(), resp.Body)
 	}
 	return nil
 }
@@ -211,7 +208,6 @@ func toToken(t *client.PatResponse) Token {
 	}
 }
 
-// Agent/token ids are int64 (member ids).
 func derefInt64to64(p *int64) int64 {
 	if p == nil {
 		return 0

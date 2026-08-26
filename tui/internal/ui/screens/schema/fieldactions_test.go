@@ -12,7 +12,6 @@ import (
 
 func shiftDown() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeyDown, Mod: tea.ModShift} }
 
-// The fields list ends in a "+ Field" element that is selectable and renders a clickable handle.
 func TestAddFieldAffordanceRendersAndSelectable(t *testing.T) {
 	m := typeFieldsModel(t)
 	elems := m.typeElems()
@@ -30,11 +29,9 @@ func TestAddFieldAffordanceRendersAndSelectable(t *testing.T) {
 	}
 }
 
-// Selecting the + Field handle and pressing enter opens the new-field modal seeded with the append
-// position (one past the highest existing field position).
+// The modal is seeded with the append position: one past the highest existing field position.
 func TestOpenFieldCreateComputesPosition(t *testing.T) {
 	m := typeFieldsModel(t)
-	// walk to the last element (the + Field handle)
 	for i := 0; i < len(m.typeElems())-1; i++ {
 		m = m.moveTypeElem(keyDown())
 	}
@@ -45,7 +42,7 @@ func TestOpenFieldCreateComputesPosition(t *testing.T) {
 	if !m.creatingField || !m.CapturingInput() {
 		t.Fatalf("enter on + Field did not open the create modal (creating=%v)", m.creatingField)
 	}
-	// fixture fields have no explicit Position set (0), so append position is 0+1 accumulated to 1
+	// fixture fields have Position 0, so the append position is 1
 	if m.cfield.position != 1 {
 		t.Errorf("append position = %d, want 1", m.cfield.position)
 	}
@@ -54,7 +51,6 @@ func TestOpenFieldCreateComputesPosition(t *testing.T) {
 	}
 }
 
-// Clicking the + Field handle opens the create modal.
 func TestFieldCreateClickOpens(t *testing.T) {
 	m := typeFieldsModel(t)
 	_ = scanView(t, m.View(), "schema.field.new")
@@ -65,7 +61,6 @@ func TestFieldCreateClickOpens(t *testing.T) {
 	}
 }
 
-// A successful create closes the modal, drops the type's field cache, and refetches it.
 func TestCreateFieldSubmitRefetches(t *testing.T) {
 	m := typeFieldsModel(t)
 	m, _, _ = m.openFieldCreate()
@@ -81,7 +76,6 @@ func TestCreateFieldSubmitRefetches(t *testing.T) {
 	}
 }
 
-// The create form picks a type via the dropdown and rejects an empty name before any network call.
 func TestCreateFieldFormTypeAndValidation(t *testing.T) {
 	m := typeFieldsModel(t)
 	m, _, _ = m.openFieldCreate()
@@ -89,7 +83,6 @@ func TestCreateFieldFormTypeAndValidation(t *testing.T) {
 	if f.ftype != "TEXT" {
 		t.Errorf("default type = %q, want TEXT", f.ftype)
 	}
-	// open the type picker, move to SELECT_OPTION, apply
 	f, _ = f.focusOn(cffType)
 	f = f.openTypePicker()
 	if !f.pickOpen {
@@ -117,7 +110,6 @@ func TestCreateFieldFormTypeAndValidation(t *testing.T) {
 	}
 }
 
-// Pressing x on a selected custom field opens the delete-confirm dialog targeting that field.
 func TestDeleteFieldOpensConfirm(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown()) // metadata -> field 11
@@ -133,18 +125,14 @@ func TestDeleteFieldOpensConfirm(t *testing.T) {
 	}
 }
 
-// The confirm dialog runs the delete on accept; a success closes it and refetches, a failure keeps
-// it open with the error shown.
 func TestConfirmDeleteRunsDelete(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown())
 	m, _ = m.Update(keyX())
-	// accept -> the parent fires the delete command
 	m, cmd := m.Update(confirmAcceptedMsg{})
 	if cmd == nil {
 		t.Fatal("accepting did not fire a delete command")
 	}
-	// a failure keeps the dialog open and shows the message
 	m, _ = m.Update(fieldDeleteFailedMsg{message: "in use"})
 	if !m.confirming {
 		t.Fatal("a delete failure closed the dialog")
@@ -152,7 +140,6 @@ func TestConfirmDeleteRunsDelete(t *testing.T) {
 	if m.confirm.Status != "in use" || m.confirm.Submitting {
 		t.Errorf("failure not surfaced (status=%q submitting=%v)", m.confirm.Status, m.confirm.Submitting)
 	}
-	// a success closes the dialog and refetches
 	m, cmd = m.Update(fieldDeletedMsg{typeID: 1})
 	if m.confirming {
 		t.Fatal("success did not close the dialog")
@@ -162,7 +149,6 @@ func TestConfirmDeleteRunsDelete(t *testing.T) {
 	}
 }
 
-// esc cancels the confirm dialog without deleting.
 func TestConfirmCancelKeepsField(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown())
@@ -173,7 +159,6 @@ func TestConfirmCancelKeepsField(t *testing.T) {
 	}
 }
 
-// shift+down moves the selected field down, keeps the selection on it, and commits the full order.
 func TestReorderFieldMovesAndCommits(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown()) // select field 11 (Story Points, first)
@@ -188,7 +173,7 @@ func TestReorderFieldMovesAndCommits(t *testing.T) {
 	if e, ok := m.selectedTypeElem(); !ok || e != (wfElem{elemField, 11}) {
 		t.Errorf("selection = %+v, want field 11 (it moved with the field)", e)
 	}
-	// moving the now-last field further down is a no-op (returns false, no command)
+	// the now-last field cannot move further down
 	if _, _, ok := m.reorderSelectedField(1); ok {
 		t.Error("reordering past the end should be rejected")
 	}

@@ -59,7 +59,7 @@ func (f filterForm) onKey(msg tea.KeyPressMsg) (filterForm, tea.Cmd) {
 		return f.moveFocus(1), nil
 	case "shift+tab", "up":
 		return f.moveFocus(-1), nil
-	case " ", "space":
+	case "space":
 		if f.focus == filterMembers || f.focus == filterPrivate {
 			return f.toggle(f.focus), nil
 		}

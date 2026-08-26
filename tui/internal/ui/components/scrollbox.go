@@ -8,10 +8,8 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// ScrollBox fits an already-rendered, single bordered box into maxH rows so a modal taller than the
-// terminal can be scrolled instead of silently clipped. It assumes box is rectangular and its first
-// and last lines are the top/bottom border, as every components.TitledBox* produces. The scrollbar
-// column surgery is ANSI-aware (ansi.Cut), so the border colours on either side of it survive.
+// ScrollBox windows an already-rendered bordered box into maxH rows so a modal taller than the
+// terminal scrolls instead of being clipped. box must be rectangular with border first/last lines.
 func ScrollBox(box string, maxH, offset int, thumb, track color.Color) (out string, clamped int, scrolled bool) {
 	lines := strings.Split(box, "\n")
 	h := len(lines)
@@ -56,9 +54,8 @@ func ScrollBox(box string, maxH, offset int, thumb, track color.Color) (out stri
 	return strings.Join(rows, "\n"), offset, true
 }
 
-// spliceCol replaces the single visible column at x in line with cell. ansi.Cut is grapheme- and
-// SGR-aware, so the border char kept to the right of the scrollbar retains its colour. The reset
-// before cell stops the left content's style tinting it.
+// spliceCol replaces the single visible column at x with cell. ansi.Cut is grapheme- and SGR-aware so
+// the border char to its right keeps its colour, and the reset stops the left content tinting cell.
 func spliceCol(line string, x int, cell string) string {
 	left := ansi.Cut(line, 0, x)
 	right := ansi.Cut(line, x+1, ansi.StringWidth(line))

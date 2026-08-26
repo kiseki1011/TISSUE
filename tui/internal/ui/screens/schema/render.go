@@ -11,7 +11,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// affordanceStyle styles an action-bar handle by focus state. Shared by the create-workflow modal and the in-place flow editor.
+// affordanceStyle styles an action-bar handle by focus state.
 func affordanceStyle(t theme.Theme, base color.Color, focused, hovered bool) lipgloss.Style {
 	switch {
 	case focused:
@@ -23,8 +23,7 @@ func affordanceStyle(t theme.Theme, base color.Color, focused, hovered bool) lip
 	}
 }
 
-// The ANSI-strip, overlay, and row-fitting helpers live in components. These thin wrappers keep this
-// package's many call sites unqualified. See components/render.go for the implementations.
+// Thin wrappers over components/render.go so call sites stay unqualified.
 
 func stripANSI(s string) string { return components.StripANSI(s) }
 
@@ -40,19 +39,17 @@ func alignRow(head, tail string, w int, fill lipgloss.Style) string {
 	return components.AlignRow(head, tail, w, fill)
 }
 
-// minGap is the smallest space kept between a row's head and its right-aligned tail. The graph
-// renderer reuses it for its own label/category spacing.
+// minGap is the smallest space between a row's head and its right-aligned tail.
 const minGap = 2
 
-// metaLabelW is the width of the label column in a Details meta row. The value follows it,
-// so this also sets the gap between a label and its value.
+// metaLabelW is the label column width in a Details meta row, which also sets the label/value gap.
 const metaLabelW = 15
 
 func detailRow(s theme.Styles, label, value string) string {
 	return lipgloss.NewStyle().Foreground(s.Theme.Muted).Width(metaLabelW).Render(label) + value
 }
 
-// metaRow is a detailRow with a leading glyph followed by two spaces (matching home's section headers). An empty glyph leaves the label flush.
+// metaRow is a detailRow with a leading glyph. An empty glyph leaves the label flush.
 func metaRow(s theme.Styles, glyph, label, value string) string {
 	if glyph != "" {
 		label = glyph + "  " + label
@@ -69,7 +66,7 @@ func sectionRule(s theme.Styles, title string, width int) string {
 	return head + s.Muted.Render(" "+strings.Repeat("─", dashes))
 }
 
-// sectionRuleAction is sectionRule with a zone-marked clickable action near the right end (color reflects focus/hover). Falls back to a plain rule when the panel is too narrow to seat the button.
+// sectionRuleAction is sectionRule with a clickable action. Falls back to a plain rule when narrow.
 func sectionRuleAction(s theme.Styles, title, action, zoneID string, width int, hovered, focused bool) string {
 	const rightDashes = 2
 	btnW := lipgloss.Width(action) + 2 // a space on each side of the label
@@ -98,7 +95,7 @@ func closingRule(s theme.Styles, width int) string {
 	return s.Muted.Render(strings.Repeat("─", width))
 }
 
-// ruleWithTitle is a top border (rule with left-inset title, no sides). Focus is signalled by the rule COLOUR (c), not weight.
+// ruleWithTitle is a top border with a left-inset title. Focus is signalled by colour, not weight.
 func ruleWithTitle(title string, width int, c color.Color) string {
 	dash := "─"
 	label := " " + title + " "

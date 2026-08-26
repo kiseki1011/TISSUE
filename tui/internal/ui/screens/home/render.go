@@ -22,14 +22,12 @@ func tableStyles(d deps.Deps) table.Styles {
 	return table.Styles{
 		Header: lipgloss.NewStyle().Bold(true).Foreground(t.Text).Padding(0, 1),
 		Cell:   lipgloss.NewStyle().Padding(1, 1, 0, 1), // one blank line above each row, none below
-		// The selection highlight is painted per content line in listView (paintRow), so the
-		// widget must not band the whole 2-line row block.
+		// listView paints the highlight per content line, so the widget must not band the row block.
 		Selected: lipgloss.NewStyle(),
 	}
 }
 
-// activityColW fits the widest time value
-// (example: "12mon")
+// activityColW fits the widest time value (example: "12mon").
 const activityColW = 6
 
 // Narrow terminals drop Repository (see Model.showRepo) since it only holds a placeholder.
@@ -139,41 +137,16 @@ func yesNo(b bool) string {
 	return "No"
 }
 
+// formatDate renders the day in the viewer's timezone. The server serializes instants as UTC, so a
+// raw format would show UTC's day.
 func formatDate(t time.Time) string {
 	if t.IsZero() {
 		return "-"
 	}
-	return t.Format("2006-01-02")
+	return t.Local().Format("2006-01-02")
 }
 
-func humanizeSince(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	d := time.Since(t)
-	if d < 0 {
-		d = 0
-	}
-	switch {
-	case d < time.Minute:
-		return fmt.Sprintf("%ds", int(d.Seconds()))
-	case d < time.Hour:
-		return fmt.Sprintf("%dm", int(d.Minutes()))
-	case d < 24*time.Hour:
-		return fmt.Sprintf("%dh", int(d.Hours()))
-	case d < 7*24*time.Hour:
-		return fmt.Sprintf("%dd", int(d.Hours())/24)
-	case d < 30*24*time.Hour:
-		return fmt.Sprintf("%dw", int(d.Hours())/(24*7))
-	case d < 365*24*time.Hour:
-		return fmt.Sprintf("%dmon", int(d.Hours())/(24*30))
-	default:
-		return fmt.Sprintf("%dyr", int(d.Hours())/(24*365))
-	}
-}
-
-// The ANSI-strip, overlay, and color-mix helpers live in components. These thin wrappers keep this
-// package's call sites unqualified. See components/render.go for the implementations.
+// Thin wrappers over components so this package's call sites stay unqualified.
 
 func stripANSI(s string) string { return components.StripANSI(s) }
 
@@ -237,39 +210,11 @@ func sectionRule(s theme.Styles, width int) string {
 
 // Focus is signalled by the rule COLOUR (c), not weight.
 func ruleWithTitle(title string, width int, c color.Color) string {
-	dash := "─"
-	label := " " + title + " "
-	const lead = 2
-	rest := width - lead - lipgloss.Width(label)
-	if rest < 0 {
-		rest = 0
-	}
-	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat(dash, lead) + label + strings.Repeat(dash, rest))
+	return components.RuleWithTitle(title, width, c)
 }
 
 func scrollbarColumn(off, total, view int, t theme.Theme) []string {
-	cells := make([]string, view)
-	if total <= view {
-		for i := range cells {
-			cells[i] = " "
-		}
-		return cells
-	}
-	thumb := max(1, view*view/total)
-	pos := 0
-	if span := total - view; span > 0 {
-		pos = off * (view - thumb) / span
-	}
-	track := lipgloss.NewStyle().Foreground(t.Muted).Render("│")
-	head := lipgloss.NewStyle().Foreground(t.Primary).Render("█")
-	for i := range cells {
-		if i >= pos && i < pos+thumb {
-			cells[i] = head
-		} else {
-			cells[i] = track
-		}
-	}
-	return cells
+	return components.ScrollbarColumn(off, total, view, t.Primary, t.Muted)
 }
 
 func kpiRows(s theme.Styles, st domain.ProjectStats) []string {
@@ -334,8 +279,7 @@ func attentionColor(s theme.Styles, n int) color.Color {
 	return s.Theme.Muted
 }
 
-// effectiveActivity is the time a row sorts by. It prefers real issue activity and
-// falls back to the project's own timestamp, so a fresh project reads as recent.
+// effectiveActivity falls back to the project's own timestamp so a fresh project reads as recent.
 func effectiveActivity(p domain.Project) time.Time {
 	switch {
 	case !p.LastActivity.IsZero():

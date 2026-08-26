@@ -14,19 +14,15 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// TestMain mirrors the CLI's startup fix (internal/cli/root.go): under a CJK locale
-// go-runewidth counts ambiguous-width runes (box-drawing) as width 2, which would double
-// bubblezone's scanned coordinates and break the mouse hit-testing these tests rely on.
+// Mirrors the CLI's startup fix: under a CJK locale go-runewidth counts box-drawing runes as
+// width 2, doubling bubblezone's coordinates and breaking mouse hit-testing.
 func TestMain(m *testing.M) {
 	runewidth.DefaultCondition.EastAsianWidth = false
 	os.Exit(m.Run())
 }
 
-// scanView scans a rendered view and waits for the given zone's coordinates to settle. The
-// global manager is shared across tests (zone.NewGlobal is idempotent) and stores zones on a
-// background worker that drains a buffered channel, so another test's earlier scan (possibly at
-// a different terminal width) can transiently set this id before this scan is processed. This
-// scan's items are last in the FIFO, so once the coordinates stop changing they are ours.
+// scanView waits for a zone's coordinates to settle: the shared global manager stores zones on a
+// background worker, so another test's earlier scan can transiently set this id first.
 func scanView(t *testing.T, view, id string) string {
 	t.Helper()
 	zone.Clear(id)
@@ -49,8 +45,7 @@ func scanView(t *testing.T, view, id string) string {
 	return out
 }
 
-// locate finds needle in the scanned view and returns the display-cell position of its first
-// column, matching the coordinate space bubblezone hit-tests against.
+// locate returns needle's display-cell position, the space bubblezone hit-tests against.
 func locate(view, needle string) (x, y int, ok bool) {
 	for ln, line := range strings.Split(view, "\n") {
 		plain := stripANSI(line)
@@ -61,8 +56,7 @@ func locate(view, needle string) (x, y int, ok bool) {
 	return 0, 0, false
 }
 
-// Clicking a state chip in the graph selects that state and opens its metadata editor, even
-// when a different element was selected before.
+// Clicking a state selects it and opens its metadata editor, whatever was selected before.
 func TestClickOpensEditForElement(t *testing.T) {
 	m := mkWorkflowModel(t)
 	view := scanView(t, m.View(), "schema.detail")
@@ -82,8 +76,7 @@ func TestClickOpensEditForElement(t *testing.T) {
 	}
 }
 
-// Each spine transition shows a "+ Guard" affordance below its name/guards, and clicking it
-// opens the guard editor for that transition with the add-guard dropdown already open.
+// Clicking a spine transition's "+ Guard" opens the guard editor with the add dropdown open.
 func TestClickAddGuardOpensGuardEditor(t *testing.T) {
 	m := mkWorkflowModel(t)
 	view := scanView(t, m.View(), "schema.detail")
@@ -109,7 +102,7 @@ func TestClickAddGuardOpensGuardEditor(t *testing.T) {
 	}
 }
 
-// Moving the cursor over an element records it as hovered; moving off the panel clears it.
+// Moving over an element records the hover. Moving off the panel clears it.
 func TestMotionTracksHover(t *testing.T) {
 	m := mkWorkflowModel(t)
 	view := scanView(t, m.View(), "schema.detail")
@@ -165,8 +158,7 @@ func TestGraphHoverHighlightsElement(t *testing.T) {
 	}
 }
 
-// On the ANSI theme, which has no real surface to tint, hover still highlights (via the
-// foreground) rather than doing nothing.
+// The ANSI theme has no surface to tint, so hover highlights via the foreground instead.
 func TestGraphHoverAnsiTheme(t *testing.T) {
 	s := theme.New(theme.ANSI())
 	plain, _, _ := renderWorkflowGraph(exampleWorkflow(), s, 66, wfElem{}, wfElem{}, true)

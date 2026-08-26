@@ -12,8 +12,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// typeFieldsModel returns a model with an issue type selected in the Details pane and its fields
-// loaded (Story Points id 11 required, Severity id 12 with options).
+// typeFieldsModel loads a type with fields Story Points (id 11, required) and Severity (id 12, options).
 func typeFieldsModel(t *testing.T) Model {
 	t.Helper()
 	m := mk(120, 30, 3, 2, false)
@@ -30,7 +29,6 @@ func typeFieldsModel(t *testing.T) Model {
 
 func keyDown() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeyDown} }
 
-// Each custom field renders its own clickable edit-pen zone.
 func TestFieldPensRenderPerField(t *testing.T) {
 	m := typeFieldsModel(t)
 	view := m.View()
@@ -43,8 +41,6 @@ func TestFieldPensRenderPerField(t *testing.T) {
 	}
 }
 
-// The Details selection starts on the metadata block; pressing down walks into the fields, and e
-// opens the selected field's editor seeded with its values.
 func TestSelectFieldWithArrowThenEdit(t *testing.T) {
 	m := typeFieldsModel(t)
 	if e, ok := m.selectedTypeElem(); !ok || e.kind != elemTypeMeta {
@@ -64,7 +60,6 @@ func TestSelectFieldWithArrowThenEdit(t *testing.T) {
 	}
 }
 
-// Clicking a field's pen opens that field's editor directly.
 func TestFieldPenClickOpens(t *testing.T) {
 	m := typeFieldsModel(t)
 	_ = scanView(t, m.View(), fieldEditZone(12))
@@ -75,7 +70,6 @@ func TestFieldPenClickOpens(t *testing.T) {
 	}
 }
 
-// A successful field save closes the editor, drops the owning type's field cache, and refetches it.
 func TestFieldSaveRefetchesType(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown())
@@ -92,7 +86,6 @@ func TestFieldSaveRefetchesType(t *testing.T) {
 	}
 }
 
-// The field form toggles required with space and rejects an empty name before any network call.
 func TestFieldFormRequiredToggleAndValidation(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newFieldForm(d, 1, 11, "Story Points", "effort", false)
@@ -104,7 +97,7 @@ func TestFieldFormRequiredToggleAndValidation(t *testing.T) {
 	}
 
 	f.name.SetValue("   ")
-	f, _ = f.submit() // an invalid submit refocuses the name field (returning its focus cmd)
+	f, _ = f.submit() // an invalid submit refocuses the name field
 	if f.submitting {
 		t.Error("submitted despite an empty name")
 	}

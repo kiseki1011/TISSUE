@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,7 +23,7 @@ public class WebhookSignatureVerifier {
      * @param signature The signature from the header. (Example: sha256=...)
      * @param secret    The secret configured for the webhook.
      */
-    public void verifySignature(String payload, String signature, String secret) {
+    public void verifySignature(String payload, @Nullable String signature, String secret) {
         if (signature == null) {
             log.warn("Missing signature header");
             throw new ForbiddenException(VcsErrorCode.MISSING_SIGNATURE);

@@ -2,7 +2,7 @@ package theme
 
 import lipgloss "charm.land/lipgloss/v2"
 
-// Views use these instead of touching Theme colors or calling lipgloss.NewStyle directly.
+// Styles is the shared style set views render with, instead of lipgloss.NewStyle directly.
 type Styles struct {
 	Theme Theme
 

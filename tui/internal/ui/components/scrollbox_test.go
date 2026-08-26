@@ -10,7 +10,6 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// tallBox builds a bordered box with n coloured interior rows.
 func tallBox(n int) string {
 	rows := make([]string, n)
 	for i := range rows {
@@ -22,7 +21,6 @@ func tallBox(n int) string {
 var thumbCol = lipgloss.Color("#ff9e64")
 var trackCol = lipgloss.Color("#414868")
 
-// A box that already fits within maxH is returned untouched.
 func TestScrollBoxFits(t *testing.T) {
 	box := tallBox(4)
 	h := lipgloss.Height(box)
@@ -38,7 +36,6 @@ func TestScrollBoxFits(t *testing.T) {
 	}
 }
 
-// A guard rejects a maxH too small to draw a windowed box.
 func TestScrollBoxTinyMaxH(t *testing.T) {
 	box := tallBox(10)
 	if out, _, scrolled := ScrollBox(box, 2, 0, thumbCol, trackCol); scrolled || out != box {
@@ -46,8 +43,7 @@ func TestScrollBoxTinyMaxH(t *testing.T) {
 	}
 }
 
-// A box taller than maxH is windowed to exactly maxH rows, its width and top/bottom borders intact,
-// with a scrollbar drawn just inside the right border.
+// Windowing keeps the width and the top/bottom borders, and draws a scrollbar inside the right border.
 func TestScrollBoxWindows(t *testing.T) {
 	box := tallBox(20)
 	fullW := lipgloss.Width(box)
@@ -72,7 +68,6 @@ func TestScrollBoxWindows(t *testing.T) {
 	if got[len(got)-1] != in[len(in)-1] {
 		t.Error("bottom border row changed")
 	}
-	// every interior row keeps its right border, with a scrollbar cell just inside it
 	for _, ln := range got[1 : len(got)-1] {
 		r := []rune(StripANSI(ln))
 		if r[len(r)-1] != '│' {
@@ -84,8 +79,7 @@ func TestScrollBoxWindows(t *testing.T) {
 	}
 }
 
-// The offset is clamped into range; an out-of-range request lands on the last window and shows the
-// bottom-most interior rows.
+// An out-of-range offset clamps to the last window, a negative one to the top.
 func TestScrollBoxOffsetClamps(t *testing.T) {
 	box := tallBox(20)
 	interior := 20 + 2 // padding adds a blank row top and bottom of the body
@@ -94,11 +88,9 @@ func TestScrollBoxOffsetClamps(t *testing.T) {
 	if clamped != wantMax {
 		t.Errorf("clamped offset = %d, want %d", clamped, wantMax)
 	}
-	// the last content row must be visible at the bottom window
 	if !strings.Contains(StripANSI(out), "row 19 content") {
 		t.Errorf("bottom window does not show the last row:\n%s", StripANSI(out))
 	}
-	// a negative offset clamps to the top
 	out2, clamped2, _ := ScrollBox(box, 10, -5, thumbCol, trackCol)
 	if clamped2 != 0 {
 		t.Errorf("negative offset clamped to %d, want 0", clamped2)
@@ -108,9 +100,8 @@ func TestScrollBoxOffsetClamps(t *testing.T) {
 	}
 }
 
-// Windowing must keep the bubblezone click markers on the visible rows intact — the scrollbar column
-// surgery cuts each interior row, so a marker-dropping cut would silently break clicks on a modal's
-// buttons whenever it is scrolled.
+// The scrollbar column surgery cuts each interior row. A marker-dropping cut would silently break
+// clicks on a scrolled modal's buttons, so pin that the zones survive.
 func TestScrollBoxPreservesClickZones(t *testing.T) {
 	zone.NewGlobal()
 	rows := make([]string, 16)
@@ -135,8 +126,7 @@ func TestScrollBoxPreservesClickZones(t *testing.T) {
 	}
 	zone.Scan(out)
 
-	// bubblezone stores zones on a background worker, so poll until every visible button's marker
-	// registers. If windowing had dropped a marker it would never register and this would time out.
+	// bubblezone registers zones on a background worker, so poll — a dropped marker never registers.
 	for attempt := 0; attempt < 1000; attempt++ {
 		allSet := true
 		for _, id := range visibleIDs {

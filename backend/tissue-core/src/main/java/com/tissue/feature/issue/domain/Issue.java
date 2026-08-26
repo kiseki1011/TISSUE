@@ -141,6 +141,9 @@ public class Issue extends SoftDeleteEntity {
     private Set<IssueBranch> branches = new HashSet<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<IssuePullRequest> pullRequests = new HashSet<>();
+
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueTag> tags = new HashSet<>();
 
     @SuppressWarnings("NullAway.Init")
@@ -226,6 +229,11 @@ public class Issue extends SoftDeleteEntity {
     public void addBranch(IssueBranch branch) {
         ensureEditable();
         this.branches.add(branch);
+    }
+
+    public void addPullRequest(IssuePullRequest pullRequest) {
+        ensureEditable();
+        this.pullRequests.add(pullRequest);
     }
 
     public void addTag(Tag tag) {

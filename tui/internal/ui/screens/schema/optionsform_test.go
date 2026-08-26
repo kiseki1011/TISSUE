@@ -17,8 +17,7 @@ func optionsDeps() deps.Deps {
 	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
 
-// Pressing o on a SELECT_OPTION field opens the options editor seeded with the field's options; on
-// a non-option field it is a no-op.
+// o opens the options editor seeded from a SELECT_OPTION field, and is a no-op otherwise.
 func TestOpenFieldOptions(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown()) // field 11 (Story Points, INTEGER — no options)
@@ -35,19 +34,15 @@ func TestOpenFieldOptions(t *testing.T) {
 	}
 }
 
-// The editor adds, renames, and removes rows locally; the diff then reports each change against the
-// original options.
+// Rows are edited locally. diff then reports each change against the original options.
 func TestOptionsDiff(t *testing.T) {
 	orig := []domain.FieldOption{{ID: 1, Name: "low"}, {ID: 2, Name: "high"}, {ID: 3, Name: "urgent"}}
 	f := newOptionsForm(optionsDeps(), 1, 12, "Severity", orig)
 
-	// rename row 0 low -> lowest
 	f = f.openRename(0)
 	f.input.SetValue("lowest")
 	f = f.commitInput()
-	// delete row 1 (high)
 	f = f.removeRow(1)
-	// add a new option
 	f = f.openAdd()
 	f.input.SetValue("blocker")
 	f = f.commitInput()
@@ -76,7 +71,7 @@ func TestOptionsCaseOnlyRenameSkipped(t *testing.T) {
 	}
 }
 
-// Adding or renaming to a name that already exists (case-insensitively) is rejected in the prompt.
+// A name that collides case-insensitively is rejected in the prompt.
 func TestOptionsDuplicateRejected(t *testing.T) {
 	f := newOptionsForm(optionsDeps(), 1, 12, "Severity", []domain.FieldOption{{ID: 1, Name: "low"}, {ID: 2, Name: "high"}})
 	f = f.openAdd()
@@ -90,7 +85,7 @@ func TestOptionsDuplicateRejected(t *testing.T) {
 	}
 }
 
-// A no-op save (no changes) closes the editor without a network call.
+// A no-op save closes the editor without a network call.
 func TestOptionsNoChangeCloses(t *testing.T) {
 	f := newOptionsForm(optionsDeps(), 1, 12, "Severity", []domain.FieldOption{{ID: 1, Name: "low"}})
 	f, cmd := f.submit()
@@ -102,7 +97,6 @@ func TestOptionsNoChangeCloses(t *testing.T) {
 	}
 }
 
-// A real change fires the commit command and marks the form submitting.
 func TestOptionsSubmitCommits(t *testing.T) {
 	f := newOptionsForm(optionsDeps(), 1, 12, "Severity", []domain.FieldOption{{ID: 1, Name: "low"}})
 	f = f.openAdd()
@@ -114,8 +108,7 @@ func TestOptionsSubmitCommits(t *testing.T) {
 	}
 }
 
-// A successful commit closes the editor and refetches the type; a failure keeps it open with the
-// message shown.
+// A successful commit closes the editor and refetches. A failure keeps it open with the message.
 func TestOptionsSaveAndFailure(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown())
@@ -142,7 +135,6 @@ func TestOptionsEscNesting(t *testing.T) {
 	m = m.moveTypeElem(keyDown())
 	m = m.moveTypeElem(keyDown())
 	m, _ = m.Update(keyO())
-	// open the add prompt, then esc closes just the prompt
 	m.options = m.options.openAdd()
 	m, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if !m.optionsEditing {
@@ -151,7 +143,6 @@ func TestOptionsEscNesting(t *testing.T) {
 	if m.options.inputOpen {
 		t.Error("esc did not close the add prompt")
 	}
-	// a second esc closes the modal
 	m, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if m.optionsEditing {
 		t.Error("second esc did not close the modal")

@@ -9,6 +9,7 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/toast"
 )
 
@@ -22,7 +23,6 @@ func (m Model) deleteForPane() (Model, tea.Cmd, bool) {
 	return m, nil, false
 }
 
-// Deleting a global type affects every project, so the confirm copy spells that out.
 func (m Model) deleteSelectedType() (Model, tea.Cmd, bool) {
 	t, ok := m.selectedType()
 	if !ok {
@@ -75,6 +75,9 @@ func deleteWorkflowCmd(d deps.Deps, id int, name string) tea.Cmd {
 
 // 409 in-use is the common case: a global type/workflow still referenced by issues or types.
 func deleteCatalogErrorMessage(err error, noun string) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -83,6 +86,9 @@ func deleteCatalogErrorMessage(err error, noun string) string {
 		case http.StatusForbidden:
 			return "You do not have permission to delete this " + noun + "."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's own explanation
 	}
 	return "Could not delete the " + noun + ". Try again."
 }

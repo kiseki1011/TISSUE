@@ -30,7 +30,6 @@ func TestLayoutSelection(t *testing.T) {
 	}
 }
 
-// The stacked arrangement renders the detail pane above the agents list.
 func TestStackedLayoutPutsDetailAboveList(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps())

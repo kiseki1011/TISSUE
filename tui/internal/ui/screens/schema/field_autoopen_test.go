@@ -20,8 +20,7 @@ func autoOpenModel() Model {
 	return m
 }
 
-// Creating a SELECT_OPTION/CHECKLIST field auto-opens its options editor once the reloaded detail
-// carries the new field (matched by name, since the create call returns no id).
+// The reloaded field is matched by name because the create call returns no id.
 func TestCreateSelectFieldAutoOpensOptions(t *testing.T) {
 	m := autoOpenModel()
 	m, _ = m.Update(fieldCreatedMsg{typeID: 1, fieldType: "SELECT_OPTION", name: "Priority"})
@@ -45,7 +44,6 @@ func TestCreateSelectFieldAutoOpensOptions(t *testing.T) {
 	}
 }
 
-// A plain field type creates without opening the options editor.
 func TestCreateTextFieldSkipsOptions(t *testing.T) {
 	m := autoOpenModel()
 	m, _ = m.Update(fieldCreatedMsg{typeID: 1, fieldType: "TEXT", name: "Notes"})

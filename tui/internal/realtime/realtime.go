@@ -1,13 +1,7 @@
 // Package realtime consumes the backend's user-scoped SSE stream
-// (GET /api/v1/events/stream) and surfaces connection-state changes and parsed
-// domain events to the UI. It is deliberately UI-agnostic: the Bubble Tea shell
-// adapts Updates() into its own messages.
-//
-// The stream is "an HTTP request that never ends": the server holds the response
-// open, pushing `event:`/`id:`/`data:` frames plus `:keep-alive` comments every
-// ~15s. The Consumer reads frames until the connection drops, then reconnects
-// with exponential backoff. A read watchdog (longer than the heartbeat) detects a
-// silently dead connection and forces a reconnect.
+// (GET /api/v1/events/stream) and publishes connection state plus parsed domain events.
+// The server holds the response open with ~15s `:keep-alive` comments, so a read watchdog
+// (longer than the heartbeat) catches a silently dead connection and reconnects with backoff.
 package realtime
 
 import (
@@ -21,23 +15,17 @@ import (
 	"time"
 )
 
-// endpointPath is the user-scoped SSE stream. The caller's bearer token (added by
-// the shared auth transport) scopes it to that member's projects.
+// The bearer token added by the shared auth transport scopes this to the member's projects.
 const endpointPath = "/api/v1/events/stream"
 
 const (
-	// defaultReadTimeout must exceed the server's 15s heartbeat so a live-but-idle
-	// stream is not mistaken for a dead one. If no byte (frame or comment) arrives
-	// within this window the connection is treated as dead and reconnected.
+	// defaultReadTimeout must exceed the server's 15s heartbeat so a live-but-idle stream
+	// is not read as dead.
 	defaultReadTimeout = 40 * time.Second
-	// defaultHeaderTimeout bounds the phase between the socket being established and
-	// the response headers arriving. The read watchdog only guards a live stream, so
-	// without this a peer that accepts the connection but never sends headers (an
-	// overloaded backend, a half-open proxy) would wedge us in Connecting forever.
+	// defaultHeaderTimeout bounds connect->headers. The read watchdog only guards a live
+	// stream, so without it a peer that never sends headers wedges us in Connecting.
 	defaultHeaderTimeout = 15 * time.Second
-	// defaultHealthyFor is how long a connection must survive before its drop resets
-	// the backoff. A connection that dies immediately keeps backing off; one that
-	// held for a while starts the next backoff from the floor.
+	// defaultHealthyFor is how long a connection must survive before its drop resets the backoff.
 	defaultHealthyFor     = 5 * time.Second
 	defaultBackoffFloor   = 1 * time.Second
 	defaultBackoffCeiling = 30 * time.Second
@@ -64,10 +52,9 @@ func (s State) String() string {
 	}
 }
 
-// Event is one parsed SSE frame. Category is the SSE `event:` name ("issue" or
-// "sprint"); the rest come from the JSON `data:` payload (RealtimeMessage).
+// Event is one parsed SSE frame: the `event:` name plus the JSON `data:` payload.
 type Event struct {
-	Category      string         // SSE event name: "issue" | "sprint"
+	Category      string         // SSE event name: "issue" | "sprint" | "notification"
 	ID            string         // SSE id: the domain event UUID
 	Type          string         // data.type: ISSUE_CREATED, SPRINT_STARTED, ...
 	ProjectKey    string         // data.projectKey
@@ -77,7 +64,6 @@ type Event struct {
 	Data          map[string]any // data.data: per-type extra fields
 }
 
-// UpdateKind distinguishes the two things a Consumer surfaces.
 type UpdateKind int
 
 const (
@@ -85,9 +71,8 @@ const (
 	EventUpdate
 )
 
-// Update is one item read off the Consumer's channel: either a connection-state
-// change or an arrived event. Gen echoes the session generation the Consumer was
-// created with, so the shell can drop updates from a superseded session.
+// Update is either a connection-state change or an arrived event. Gen echoes the session
+// generation, so the shell can drop updates from a superseded session.
 type Update struct {
 	Kind  UpdateKind
 	State State
@@ -105,14 +90,13 @@ type wireMessage struct {
 	Data          map[string]any `json:"data"`
 }
 
-// Consumer streams SSE frames from one server on a background goroutine and
-// publishes Updates on a channel. It is single-use: New, Start, then Stop.
+// Consumer streams SSE frames on a background goroutine. Single-use: New, Start, then Stop.
 type Consumer struct {
 	server string
 	client *http.Client
 	gen    int
 
-	// timing knobs; defaulted in New, overridable in tests for speed
+	// timing knobs, defaulted in New and overridable in tests for speed
 	headerTimeout  time.Duration
 	readTimeout    time.Duration
 	healthyFor     time.Duration
@@ -124,9 +108,7 @@ type Consumer struct {
 	cancel context.CancelFunc
 }
 
-// New builds a Consumer for server (its base URL, e.g. http://host:8080) using
-// client, whose transport must attach the bearer token. gen is echoed on every
-// Update so the shell can ignore a stale session's updates.
+// New builds a Consumer for server's base URL. client's transport must attach the bearer token.
 func New(server string, client *http.Client, gen int) *Consumer {
 	return &Consumer{
 		server:         strings.TrimRight(server, "/") + endpointPath,
@@ -141,9 +123,7 @@ func New(server string, client *http.Client, gen int) *Consumer {
 	}
 }
 
-// Updates is the read side of the channel. It is closed when the Consumer's
-// goroutine exits (after Stop or an unrecoverable context cancel), so a pending
-// receive yields the zero Update with ok=false.
+// Updates is the read side of the channel, closed when the Consumer's goroutine exits.
 func (c *Consumer) Updates() <-chan Update { return c.ch }
 
 // Start launches the connect/read/reconnect loop. Call once.
@@ -152,8 +132,7 @@ func (c *Consumer) Start() {
 	go c.run()
 }
 
-// Stop cancels the loop. The goroutine emits no further updates and closes the
-// channel. Safe to call once; a nil-cancel (never started) Consumer is a no-op.
+// Stop cancels the loop and closes the channel. A never-started Consumer is a no-op.
 func (c *Consumer) Stop() {
 	if c.cancel != nil {
 		c.cancel()
@@ -188,8 +167,8 @@ func (c *Consumer) run() {
 	}
 }
 
-// stream opens one connection and reads frames until it drops. It returns whether
-// the connection was healthy long enough to reset the backoff.
+// stream reads one connection until it drops, reporting whether it lived long enough
+// to reset the backoff.
 func (c *Consumer) stream() (healthy bool) {
 	reqCtx, cancel := context.WithCancel(c.ctx)
 	defer cancel()
@@ -202,9 +181,8 @@ func (c *Consumer) stream() (healthy bool) {
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("Cache-Control", "no-cache")
 
-	// bound the header-arrival phase, then disarm the moment Do returns so the deadline never applies to
-	// the streaming body read (the read watchdog guards that instead). Without this, a peer that accepts
-	// the socket but never sends headers would block Do forever and wedge us in Connecting.
+	// bound the header-arrival phase, disarming the moment Do returns so the deadline never
+	// applies to the streaming body read (the read watchdog guards that).
 	headerGuard := time.AfterFunc(c.headerTimeout, cancel)
 	resp, err := c.client.Do(req)
 	headerGuard.Stop()
@@ -215,8 +193,7 @@ func (c *Consumer) stream() (healthy bool) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		// A 401 here means the auth transport already tried (and failed) to refresh:
-		// the session is dead. Other codes are server-side. Both back off and retry.
+		// A 401 means the auth transport already failed to refresh. Every code backs off and retries.
 		slog.Debug("realtime: non-200", "status", resp.StatusCode)
 		return false
 	}
@@ -225,9 +202,8 @@ func (c *Consumer) stream() (healthy bool) {
 	return c.read(reqCtx, cancel, resp.Body)
 }
 
-// read parses the SSE body until it ends. A watchdog cancels the request (via
-// cancel) if no byte arrives within readTimeout, unblocking the scanner so the
-// caller reconnects.
+// read parses the SSE body until it ends. The watchdog cancels the request if no byte
+// arrives within readTimeout, unblocking the scanner so the caller reconnects.
 func (c *Consumer) read(ctx context.Context, cancel context.CancelFunc, body io.Reader) (healthy bool) {
 	start := time.Now()
 	watchdog := time.AfterFunc(c.readTimeout, cancel)
@@ -250,8 +226,8 @@ func (c *Consumer) read(ctx context.Context, cancel context.CancelFunc, body io.
 			}
 			name, id, data = "", "", strings.Builder{}
 		case strings.HasPrefix(line, ":"):
-			// comment (":connected" on subscribe, ":keep-alive" heartbeat) — the
-			// watchdog reset above already counted it as liveness
+			// a comment line (":connected", ":keep-alive") — the watchdog reset above
+			// already counted it as liveness
 		default:
 			field, value := splitField(line)
 			switch field {
@@ -273,8 +249,8 @@ func (c *Consumer) read(ctx context.Context, cancel context.CancelFunc, body io.
 	return time.Since(start) > c.healthyFor
 }
 
-// emit delivers an update, or drops it if the Consumer is stopping (so a stalled
-// reader can never wedge the goroutine).
+// emit drops the update if the Consumer is stopping, so a stalled reader cannot wedge
+// the goroutine.
 func (c *Consumer) emit(u Update) {
 	select {
 	case c.ch <- u:
@@ -282,9 +258,7 @@ func (c *Consumer) emit(u Update) {
 	}
 }
 
-// splitField parses one SSE line into field/value, stripping a single leading
-// space from the value per the SSE spec. A line with no colon is a field whose
-// value is empty.
+// splitField strips a single leading space from the value, per the SSE spec.
 func splitField(line string) (field, value string) {
 	i := strings.IndexByte(line, ':')
 	if i < 0 {
@@ -297,8 +271,7 @@ func splitField(line string) (field, value string) {
 	return line[:i], value
 }
 
-// parseEvent turns a dispatched frame into an Event. It fails (ok=false) when the
-// data is not the expected JSON, which the caller skips.
+// parseEvent fails (ok=false) on data that is not the expected JSON, which the caller skips.
 func parseEvent(name, id, data string) (Event, bool) {
 	var msg wireMessage
 	if err := json.Unmarshal([]byte(data), &msg); err != nil {

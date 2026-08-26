@@ -165,7 +165,7 @@ func (f editAgentForm) onKey(msg tea.KeyPressMsg) (editAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelEdit
-	case "enter", " ":
+	case "enter", "space":
 		switch f.focus {
 		case eaType:
 			return f.openPicker(eaType), nil
@@ -196,7 +196,7 @@ func (f editAgentForm) pickKey(msg tea.KeyPressMsg) editAgentForm {
 		f.pick = f.pick.Move(-1)
 	case "down", "j":
 		f.pick = f.pick.Move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.picking = false

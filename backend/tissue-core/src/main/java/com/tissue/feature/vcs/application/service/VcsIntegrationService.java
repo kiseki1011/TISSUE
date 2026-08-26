@@ -6,12 +6,16 @@ import com.tissue.feature.issue.application.service.IssueTransitionService;
 import com.tissue.feature.issue.application.service.publisher.IssueEventPublisher;
 import com.tissue.feature.issue.domain.Issue;
 import com.tissue.feature.issue.domain.IssueBranch;
+import com.tissue.feature.issue.domain.IssuePullRequest;
 import com.tissue.feature.issue.domain.service.IssueBranchSyncService;
+import com.tissue.feature.issue.domain.service.IssueBranchSyncService.BranchSync;
+import com.tissue.feature.issue.domain.service.IssuePullRequestSyncService;
 import com.tissue.feature.issue.domain.support.IssueKeyExtractor;
 import com.tissue.feature.project.application.port.repository.ProjectMemberQueryRepository;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.dto.GitPushDto;
+import com.tissue.feature.vcs.application.dto.VcsEventResult;
 import com.tissue.feature.vcs.application.port.repository.ProjectVcsIntegrationRepository;
 import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
 import com.tissue.feature.vcs.domain.ProjectVcsIntegration;
@@ -26,6 +30,14 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Applies an inbound VCS event to the domain: links branches, records the PR connection, and runs the
+ * workflow automation configured for the issue's workflow.
+ *
+ * <p>Every exit returns a {@link VcsEventResult} describing what happened. Most events legitimately do
+ * nothing (a branch that names no issue, a PR against a workflow with no automation), and the inbox stores
+ * that reason so an operator can tell "nothing to do" apart from "something broke".
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,93 +49,142 @@ public class VcsIntegrationService implements GitProviderUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueEventPublisher eventPublisher;
     private final IssueBranchSyncService issueBranchSyncService;
+    private final IssuePullRequestSyncService issuePullRequestSyncService;
 
     private static final String REFS_HEADS_PREFIX = "refs/heads/";
 
     @Override
     @Transactional
-    public void handlePushEvent(GitPushDto gitPush) {
+    public VcsEventResult handlePushEvent(GitPushDto gitPush) {
         log.info("VCS Push event received for project: {}. Ref: {}", gitPush.projectKey(), gitPush.ref());
 
         if (gitPush.ref() == null || !gitPush.ref().startsWith(REFS_HEADS_PREFIX)) {
-            log.debug("Ignored non-branch push ref: {}", gitPush.ref());
-            return;
+            return VcsEventResult.skipped("Not a branch ref: " + gitPush.ref());
         }
 
-        ProjectVcsIntegration integration = getActiveIntegrationOrNull(gitPush.projectKey(), gitPush.provider());
-        if (integration == null) {
-            return;
+        IntegrationLookup integration = resolveIntegration(gitPush.projectKey(), gitPush.provider());
+        if (integration.integration() == null) {
+            return VcsEventResult.skipped(integration.detail());
         }
 
-        Issue issue = resolveIssueOrNull(gitPush.ref());
+        IssueLookup lookup = resolveIssue(gitPush.ref(), gitPush.projectKey());
+        Issue issue = lookup.issue();
         if (issue == null) {
-            return;
+            return VcsEventResult.skipped(lookup.detail());
         }
 
-        IssueBranch branch = issueBranchSyncService.syncBranch(issue, gitPush);
+        BranchSync sync = issueBranchSyncService.syncBranch(issue, gitPush);
+        IssueBranch branch = sync.branch();
         ProjectMember actor = findProjectMemberOrNull(issue.getProjectKey(), gitPush.pusherEmail());
 
-        eventPublisher.publishBranchLinked(issue, branch, actor);
+        // only the first push records activity: every later push to the same branch would repeat an
+        // identical entry, burying the issue's real history under it. The branch itself still shows the
+        // latest commit, so nothing is lost by staying quiet here.
+        if (sync.newlyLinked()) {
+            eventPublisher.publishBranchLinked(issue, branch, actor);
+            return VcsEventResult.handled("Linked branch %s to %s".formatted(branch.getBranchName(), issue.getKey()));
+        }
+
+        return VcsEventResult.handled("Updated branch %s on %s".formatted(branch.getBranchName(), issue.getKey()));
     }
 
     @Override
     @Transactional
-    public void handlePullRequest(GitPrDto gitPr) {
+    public VcsEventResult handlePullRequest(GitPrDto gitPr) {
         log.info(
                 "VCS Pull Request event received for project: {}. Action: {}, Title: {}",
                 gitPr.projectKey(),
                 gitPr.action(),
                 gitPr.title());
 
-        ProjectVcsIntegration integration = getActiveIntegrationOrNull(gitPr.projectKey(), gitPr.provider());
-        if (integration == null) {
-            return;
+        IntegrationLookup integration = resolveIntegration(gitPr.projectKey(), gitPr.provider());
+        if (integration.integration() == null) {
+            return VcsEventResult.skipped(integration.detail());
         }
 
-        Issue issue = resolveIssueOrNull(gitPr.title());
+        IssueLookup lookup = resolveIssue(gitPr.title(), gitPr.projectKey());
+        Issue issue = lookup.issue();
         if (issue == null) {
-            return;
+            return VcsEventResult.skipped(lookup.detail());
         }
 
+        // TODO: resolve the actor from the event's sender, not from the pull request's author.
+        //  gitPr.authorEmail() is `pull_request.user` - who opened the pull request - so on a merge or a
+        //  close this credits the author with an action someone else took. That actor flows into the
+        //  activity entry below and into processWorkflowTransition, which records the automatic transition
+        //  as performed by them. See the TODO in GithubPrPayload.toVcsDto for the payload-side change.
         ProjectMember actor = findProjectMemberOrNull(issue.getProjectKey(), gitPr.authorEmail());
 
-        eventPublisher.publishVcsConnectionEvent(issue, gitPr, actor);
-        processWorkflowTransition(issue, gitPr, actor);
+        IssuePullRequest pullRequest = issuePullRequestSyncService.syncPullRequest(issue, gitPr);
+
+        // GitHub sends a pull_request event for far more than opening and closing - a label change, a new
+        // commit pushed to the PR. Those move nothing on the issue, and recording each one would drown the
+        // activity feed; the pull request section carries their effect already.
+        if (gitPr.action() != PrAction.UNKNOWN) {
+            eventPublisher.publishVcsConnectionEvent(issue, gitPr, actor);
+        }
+        String transitionDetail = processWorkflowTransition(issue, gitPr, actor);
+
+        String linked = pullRequest == null
+                ? "Linked PR (%s) to %s".formatted(gitPr.action(), issue.getKey())
+                : "Linked PR #%d (%s) to %s".formatted(pullRequest.getNumber(), pullRequest.getState(), issue.getKey());
+
+        return VcsEventResult.handled("%s. %s".formatted(linked, transitionDetail));
     }
 
-    @Nullable
-    private ProjectVcsIntegration getActiveIntegrationOrNull(String projectKey, VcsProvider provider) {
+    private IntegrationLookup resolveIntegration(String projectKey, VcsProvider provider) {
         ProjectVcsIntegration integration = integrationRepository
                 .findByProjectKeyAndProvider(projectKey, provider)
                 .orElse(null);
 
         if (integration == null) {
             log.warn("VCS integration not found for project: {} and provider: {}", projectKey, provider);
-            return null;
+            return new IntegrationLookup(null, "No %s integration for project %s".formatted(provider, projectKey));
         }
 
         if (integration.isInactive()) {
             log.info("VCS integration is inactive for project: {}. Skipping event processing.", projectKey);
-            return null;
+            return new IntegrationLookup(
+                    null, "%s integration is disabled for project %s".formatted(provider, projectKey));
         }
 
-        return integration;
+        return new IntegrationLookup(integration, "");
     }
 
-    @Nullable
-    private Issue resolveIssueOrNull(@Nullable String text) {
+    /**
+     * Resolves the issue a webhook refers to, scoped to the project the webhook was delivered for. An issue
+     * key is just text an author controls, so without the project check a caller holding one project's
+     * webhook secret could drive issues in any other project.
+     */
+    private IssueLookup resolveIssue(@Nullable String text, String webhookProjectKey) {
         String issueKey = IssueKeyExtractor.extract(text);
         if (issueKey == null) {
             log.debug("No issue key found in text: {}", text);
-            return null;
+            return new IssueLookup(null, "No issue key found in: " + text);
         }
 
         // TODO: Join fetch with IssueType and Workflow
         //  Consider wrapping it with IssueFinder
-        return issueQueryRepository.findByKey(issueKey).orElseGet(() -> {
+        Issue issue = issueQueryRepository.findByKey(issueKey).orElse(null);
+        if (issue == null) {
             log.warn("Issue not found for key: {}", issueKey);
-            return null;
-        });
+            return new IssueLookup(null, "No such issue: " + issueKey);
+        }
+
+        if (!Objects.equals(issue.getProjectKey(), webhookProjectKey)) {
+            log.warn(
+                    "Issue {} belongs to project {}, but the webhook was delivered for project {}. "
+                            + "Ignoring cross-project reference.",
+                    issueKey,
+                    issue.getProjectKey(),
+                    webhookProjectKey);
+            return new IssueLookup(
+                    null,
+                    "Issue %s belongs to project %s, not %s"
+                            .formatted(issueKey, issue.getProjectKey(), webhookProjectKey));
+        }
+
+        return new IssueLookup(issue, "");
     }
 
     @Nullable
@@ -137,10 +198,10 @@ public class VcsIntegrationService implements GitProviderUseCase {
                 .orElse(null);
     }
 
-    private void processWorkflowTransition(Issue issue, GitPrDto gitPr, @Nullable ProjectMember matchedMember) {
+    private String processWorkflowTransition(Issue issue, GitPrDto gitPr, @Nullable ProjectMember matchedMember) {
         WorkflowTransition transition = resolveTransition(issue, gitPr.action());
         if (transition == null) {
-            return;
+            return "No transition configured for PR %s".formatted(gitPr.action());
         }
 
         if (currentStateNotMatchTransitionSourceState(issue, transition)) {
@@ -151,14 +212,21 @@ public class VcsIntegrationService implements GitProviderUseCase {
                     issue.getKey(),
                     issue.getCurrentState().getName().getDisplayName(),
                     transition.getSourceState().getName().getDisplayName());
-            return;
+            return "Transition skipped: issue is in '%s' but the automation requires '%s'"
+                    .formatted(
+                            issue.getCurrentState().getName().getDisplayName(),
+                            transition.getSourceState().getName().getDisplayName());
         }
 
         if (matchedMember == null) {
             performTransitionBySystem(issue, transition, gitPr);
-            return;
+            return "Transitioned to '%s' by system"
+                    .formatted(transition.getTargetState().getName().getDisplayName());
         }
+
         performTransitionByMember(issue, transition, matchedMember);
+        return "Transitioned to '%s' by %s"
+                .formatted(transition.getTargetState().getName().getDisplayName(), matchedMember.getDisplayName());
     }
 
     @Nullable
@@ -209,4 +277,8 @@ public class VcsIntegrationService implements GitProviderUseCase {
     private boolean currentStateNotMatchTransitionSourceState(Issue issue, WorkflowTransition transition) {
         return !Objects.equals(issue.getCurrentState(), transition.getSourceState());
     }
+
+    private record IntegrationLookup(@Nullable ProjectVcsIntegration integration, String detail) {}
+
+    private record IssueLookup(@Nullable Issue issue, String detail) {}
 }

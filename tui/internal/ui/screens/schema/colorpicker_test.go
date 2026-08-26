@@ -8,8 +8,7 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// The color grid widget itself is unit-tested in the widgets package; this asserts the schema edit
-// modal wires it in — opening the grid from a state's color field renders it over the dashboard.
+// The grid widget is unit-tested in widgets. This only checks the edit modal wires it in.
 func TestColorGridRendersInModal(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemState, 2}) // In Progress, has a color
 	m, _ = m.Update(pressE())

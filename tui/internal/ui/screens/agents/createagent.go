@@ -19,6 +19,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
@@ -32,8 +33,7 @@ const (
 	caCount
 )
 
-// agentNamePattern is the backend rule for agent names. Letters (many scripts) and spaces only,
-// no digits or punctuation.
+// agentNamePattern mirrors the backend rule: letters (many scripts) and spaces, no digits.
 var agentNamePattern = regexp.MustCompile(`^[A-Za-z\x{00C0}-\x{024F}\x{0370}-\x{03FF}\x{0400}-\x{04FF}\x{4E00}-\x{9FFF}\x{3040}-\x{30FF}\x{AC00}-\x{D7A3} ]+$`)
 
 type createAgentForm struct {
@@ -170,7 +170,7 @@ func (f createAgentForm) onKey(msg tea.KeyPressMsg) (createAgentForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelCreate
-	case "enter", " ":
+	case "enter", "space":
 		switch f.focus {
 		case caType:
 			return f.openPicker(caType), nil
@@ -195,7 +195,7 @@ func (f createAgentForm) pickKey(msg tea.KeyPressMsg) createAgentForm {
 		f.pick = f.pick.Move(-1)
 	case "down", "j":
 		f.pick = f.pick.Move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.picking = false
@@ -380,6 +380,9 @@ func createAgentCmd(d deps.Deps, name, agentType string, modelID int64, descript
 }
 
 func createAgentError(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -390,6 +393,9 @@ func createAgentError(err error) string {
 		case http.StatusBadRequest:
 			return "Invalid agent name."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not create the agent. Try again."
 }

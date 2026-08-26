@@ -1,32 +1,38 @@
 package com.tissue.feature.vcs.adapter.web.github;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.feature.vcs.application.port.repository.ProjectVcsIntegrationRepository;
-import com.tissue.feature.vcs.application.port.usecase.GitProviderUseCase;
+import com.tissue.feature.vcs.application.service.VcsWebhookInboxService;
 import com.tissue.feature.vcs.domain.ProjectVcsIntegration;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.feature.vcs.domain.exception.ProjectVcsIntegrationNotFoundException;
 import com.tissue.feature.vcs.domain.support.WebhookSignatureVerifier;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+/**
+ * Authenticates an inbound GitHub webhook and hands it to the inbox. Does no parsing and no domain work,
+ * so the request returns as soon as the delivery is safely on disk.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GithubWebhookService {
 
-    private final GitProviderUseCase gitProviderUseCase;
     private final ProjectVcsIntegrationRepository vcsIntegrationRepository;
     private final WebhookSignatureVerifier signatureVerifier;
-    private final ObjectMapper objectMapper;
+    private final VcsWebhookInboxService inboxService;
 
-    private static final String EVENT_PUSH = "push";
-    private static final String EVENT_PULL_REQUEST = "pull_request";
+    private static final String UNKNOWN_EVENT_TYPE = "unknown";
 
-    public void handleWebhook(String projectKey, String signature, String eventType, String rawPayload) {
-        log.info("Processing GitHub webhook for project: {}, event: {}", projectKey, eventType);
+    public void handleWebhook(
+            String projectKey,
+            @Nullable String signature,
+            @Nullable String deliveryId,
+            @Nullable String eventType,
+            String rawPayload) {
 
         ProjectVcsIntegration integration = vcsIntegrationRepository
                 .findByProjectKeyAndProvider(projectKey, VcsProvider.GITHUB)
@@ -35,24 +41,24 @@ public class GithubWebhookService {
 
         signatureVerifier.verifySignature(rawPayload, signature, integration.getWebhookSecret());
 
-        try {
-            switch (eventType) {
-                case EVENT_PUSH -> {
-                    GithubPushPayload payload = objectMapper.readValue(rawPayload, GithubPushPayload.class);
-                    gitProviderUseCase.handlePushEvent(payload.toVcsDto(projectKey, VcsProvider.GITHUB));
-                }
-                case EVENT_PULL_REQUEST -> {
-                    GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
-                    if (payload.getPullRequest() != null) {
-                        gitProviderUseCase.handlePullRequest(payload.toVcsDto(projectKey, VcsProvider.GITHUB));
-                    }
-                }
-                default -> log.debug("Ignored GitHub event type: {}", eventType);
-            }
-        } catch (JsonProcessingException e) {
-            log.warn("Failed to parse GitHub {} payload for project: {}", eventType, projectKey, e);
-        } catch (Exception e) {
-            log.error("Error processing GitHub {} webhook for project: {}", eventType, projectKey, e);
+        inboxService.receive(
+                VcsProvider.GITHUB,
+                resolveDeliveryId(deliveryId, projectKey),
+                projectKey,
+                eventType != null ? eventType : UNKNOWN_EVENT_TYPE,
+                rawPayload);
+    }
+
+    /**
+     * GitHub always stamps a delivery id, but a caller that omits it must not be able to collapse every
+     * delivery onto one row, so an absent id gets a unique substitute and simply forfeits deduplication.
+     */
+    private String resolveDeliveryId(@Nullable String deliveryId, String projectKey) {
+        if (deliveryId != null && !deliveryId.isBlank()) {
+            return deliveryId;
         }
+
+        log.warn("GitHub webhook for project {} carried no delivery id; deduplication is not possible", projectKey);
+        return "no-delivery-id-" + UUID.randomUUID();
     }
 }

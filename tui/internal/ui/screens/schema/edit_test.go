@@ -12,8 +12,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// mkWorkflowModel returns a schema Model with one workflow loaded and the Details pane
-// focused, ready for element selection and editing.
+// mkWorkflowModel loads one workflow and focuses the Details pane.
 func mkWorkflowModel(t *testing.T) Model {
 	t.Helper()
 	zone.NewGlobal()
@@ -27,7 +26,6 @@ func mkWorkflowModel(t *testing.T) Model {
 	return m
 }
 
-// selectElem points the workflow selection at a specific element.
 func selectElem(m Model, e wfElem) Model {
 	for i, el := range m.workflowElems() {
 		if el == e {
@@ -40,8 +38,6 @@ func selectElem(m Model, e wfElem) Model {
 func pressE() tea.KeyPressMsg   { return tea.KeyPressMsg{Code: 'e', Text: "e"} }
 func pressEsc() tea.KeyPressMsg { return tea.KeyPressMsg{Code: tea.KeyEscape} }
 
-// Pressing e on a selected state opens the metadata editor seeded with its values, including
-// a color picker positioned at the state's current color.
 func TestOpenEditStateSeedsForm(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemState, 3}) // In Review, INDIGO
 	m, _ = m.Update(pressE())
@@ -62,7 +58,6 @@ func TestOpenEditStateSeedsForm(t *testing.T) {
 	}
 }
 
-// A transition has no color, so its editor omits the color field.
 func TestOpenEditTransitionHasNoColor(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemTransition, 13}) // Reject
 	m, _ = m.Update(pressE())
@@ -77,7 +72,6 @@ func TestOpenEditTransitionHasNoColor(t *testing.T) {
 	}
 }
 
-// Esc and a cancel message both close the editor without touching the cached graph.
 func TestEditCancelClosesModal(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemState, 1})
 	m, _ = m.Update(pressE())
@@ -93,8 +87,7 @@ func TestEditCancelClosesModal(t *testing.T) {
 	}
 }
 
-// A successful save closes the editor, drops the cached graph, and refetches it so the
-// diagram reflects the change.
+// Save drops the cached graph and refetches so the diagram shows the change.
 func TestEditSaveInvalidatesAndRefetches(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemState, 1})
 	m, _ = m.Update(pressE())
@@ -113,8 +106,6 @@ func TestEditSaveInvalidatesAndRefetches(t *testing.T) {
 	}
 }
 
-// Enter on the color field opens the swatch grid seeded at the current color; navigating and
-// pressing enter commits the highlighted swatch and closes the grid.
 func TestColorGridPicksSwatch(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editState, 1, 3, "Edit State", "In Review", "ANSI_BLACK", "", true)
@@ -139,13 +130,12 @@ func TestColorGridPicksSwatch(t *testing.T) {
 	}
 }
 
-// Esc closes the grid without changing the color, and leaves the edit form open.
 func TestColorGridEscKeepsColor(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editState, 1, 3, "Edit State", "In Review", "ANSI_BLACK", "", true)
 	f, _ = f.focusOn(efColor)
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
-	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyRight}) // move the grid cursor
+	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyRight})
 	f, _ = f.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if f.picking {
 		t.Fatal("esc did not close the grid")
@@ -155,7 +145,6 @@ func TestColorGridEscKeepsColor(t *testing.T) {
 	}
 }
 
-// Submitting with an empty name is rejected before any network call.
 func TestEditRequiresName(t *testing.T) {
 	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 	f := newEditForm(d, editTransition, 1, 13, "Edit Transition", "Reject", "", "", false)

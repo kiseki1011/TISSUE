@@ -9,13 +9,13 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// picker is a single-select dropdown used inside a modal instead of cycling options with ←/→.
 type pickerOption struct {
-	value string // applied on select
-	label string // display text
-	lead  string // optional pre-rendered decoration before the label (like a color swatch)
+	value string
+	label string
+	lead  string // optional decoration before the label, like a color swatch
 }
 
+// picker is a single-select dropdown used inside a modal instead of cycling options with ←/→.
 type picker struct {
 	title   string
 	options []pickerOption

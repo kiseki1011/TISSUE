@@ -1,6 +1,7 @@
 package com.tissue.feature.realtime.adapter.event;
 
 import com.tissue.feature.issue.domain.event.IssueAssignedEvent;
+import com.tissue.feature.issue.domain.event.IssueBranchLinkedEvent;
 import com.tissue.feature.issue.domain.event.IssueCreatedEvent;
 import com.tissue.feature.issue.domain.event.IssueDeletedEvent;
 import com.tissue.feature.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -10,8 +11,10 @@ import com.tissue.feature.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.feature.issue.domain.event.IssueReviewerRemovedEvent;
+import com.tissue.feature.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.feature.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.feature.issue.domain.event.IssueUnassignedEvent;
+import com.tissue.feature.issue.domain.event.IssueVcsConnectionEvent;
 import com.tissue.feature.realtime.application.RealtimeBroadcaster;
 import java.time.Instant;
 import java.util.List;
@@ -19,13 +22,14 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Bridges issue domain events (lifecycle, reviewers, relations) onto the realtime SSE stream,
+ * Bridges issue domain events (lifecycle, reviewers, relations, VCS links) onto the realtime SSE stream,
  * delivering each to the emitters of the project's connected members.
  *
  * <p>Runs after the transaction is committed ({@link TransactionPhase#AFTER_COMMIT}) on a separate
@@ -206,6 +210,56 @@ public class RealtimeEventBridge {
                 "ISSUE_RELATION_REMOVED");
     }
 
+    /**
+     * A push linked a branch to the issue, so its detail gained a branch.
+     */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onBranchLinked(IssueBranchLinkedEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_BRANCH_CONNECTED",
+                Map.of("branchName", event.branchName(), "repoUrl", event.repoUrl()));
+    }
+
+    /**
+     * A pull request opened, closed or merged against the issue, so its detail's pull requests moved.
+     */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onVcsConnectionLinked(IssueVcsConnectionEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                event.actorMemberId(),
+                event.occurredAt(),
+                "ISSUE_VCS_CONNECTION_LINKED",
+                Map.of("prAction", event.prAction().name()));
+    }
+
+    /**
+     * A VCS event moved the issue with no member to attribute it to. Bridged alongside the member-driven
+     * transition: the same state change should not reach a watching client only when a project member
+     * happened to match the pull request's author.
+     */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onTransitionedBySystem(IssueTransitionedBySystemEvent event) {
+        broadcastIssue(
+                event.eventId(),
+                event.projectKey(),
+                event.issueKey(),
+                null,
+                event.occurredAt(),
+                "ISSUE_TRANSITIONED_BY_SYSTEM",
+                Map.of("newStateId", event.newStateId(), "newStateName", event.newStateName()));
+    }
+
     private void broadcastRelation(
             UUID eventId,
             String sourceProjectKey,
@@ -229,7 +283,7 @@ public class RealtimeEventBridge {
             UUID eventId,
             String projectKey,
             String issueKey,
-            Long actorMemberId,
+            @Nullable Long actorMemberId,
             Instant occurredAt,
             String type,
             Map<String, Object> data) {

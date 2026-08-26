@@ -57,6 +57,7 @@ public class ProjectHardDeleteService {
         purgeRepository.deleteIssueRelations(projectId);
         purgeRepository.deleteAttachments(projectId);
         purgeRepository.deleteIssueBranches(projectId);
+        purgeRepository.deleteIssuePullRequests(projectId);
         purgeRepository.deleteIssueReviewers(projectId);
         purgeRepository.deleteIssueSubscribers(projectId);
         purgeRepository.deleteIssueTags(projectId);

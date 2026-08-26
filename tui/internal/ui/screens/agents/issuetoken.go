@@ -19,6 +19,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // issue-token focus stops.
@@ -143,7 +144,7 @@ func (f issueTokenForm) onKey(msg tea.KeyPressMsg) (issueTokenForm, tea.Cmd) {
 		return f.moveFocus(-1)
 	case "esc":
 		return f, cancelIssue
-	case "left", "right", " ":
+	case "left", "right", "space":
 		if f.focus == itScope {
 			f.scope = toggleScope(f.scope)
 			return f, nil
@@ -355,6 +356,9 @@ func issueTokenCmd(d deps.Deps, agentID int64, name, scope string, ttlDays int) 
 }
 
 func issueTokenError(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -365,6 +369,9 @@ func issueTokenError(err error) string {
 		case http.StatusBadRequest:
 			return "Invalid token details."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not issue the token. Try again."
 }

@@ -20,7 +20,7 @@ var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
-// fieldOptions builds a field's options from bare names (ids start at 1), for test fixtures.
+// fieldOptions builds options from bare names, ids from 1.
 func fieldOptions(names ...string) []domain.FieldOption {
 	opts := make([]domain.FieldOption, len(names))
 	for i, n := range names {
@@ -58,8 +58,7 @@ func maxWidth(s string) int {
 	return w
 }
 
-// A list row must stay exactly one terminal line: long items must never wrap into extra rows — exercises BOTH the selected
-// (cursor) row and the plain rows, and asserts the whole screen keeps its height budget.
+// A long item must never wrap a list row into a second line and blow the height budget.
 func TestListItemNeverWraps(t *testing.T) {
 	const w, h = 120, 25
 	m := mk(w, h, 4, 3, true)
@@ -71,9 +70,8 @@ func TestListItemNeverWraps(t *testing.T) {
 	}
 }
 
-// An over-wide row does not wrap, it silently widens TitledBox, so the height assertions
-// above cannot see it. Pin the width budget separately, or the row truncation can be
-// deleted outright while the suite stays green.
+// An over-wide row silently widens TitledBox instead of wrapping, so the height assertions above
+// miss it. Without this width check the row truncation could be deleted and the suite stay green.
 func TestRenderedWidthStaysInBudget(t *testing.T) {
 	for _, sz := range [][2]int{{120, 25}, {110, 24}, {80, 14}, {minWidth, minHeight}, {201, 41}} {
 		w, h := sz[0], sz[1]
@@ -88,9 +86,8 @@ func TestRenderedWidthStaysInBudget(t *testing.T) {
 	}
 }
 
-// Field rows carry column alignment, so unlike the free-text description paragraph they
-// must never reach the panel's wrap: a wrapped row shifts every line below it and its
-// continuation loses the indent, reading as a separate field.
+// A wrapped field row shifts every line below it and its continuation loses the indent, reading
+// as a separate field. Unlike the description paragraph, field rows must never reach the wrap.
 func TestFieldRowsFitContentWidth(t *testing.T) {
 	for _, w := range []int{minWidth, 80, 100, 120, 200} {
 		m := mk(w, 30, 3, 2, true)
@@ -117,9 +114,8 @@ func TestFieldRowsFitContentWidth(t *testing.T) {
 	}
 }
 
-// Names and descriptions are admin free text and arrive unsanitized. An embedded newline
-// survives ansi.Truncate, so lipgloss pads it into a SECOND row: the box grows past its
-// height budget and every click below the offending item selects the wrong one.
+// Names and descriptions are unsanitized admin text. An embedded newline survives ansi.Truncate
+// and lipgloss pads it into a second row, blowing the height budget and misaligning every click.
 func TestControlCharactersDoNotSplitRows(t *testing.T) {
 	const w, h = 160, 25 // wide enough that the field description is not merely width-clipped
 	zone.NewGlobal()
@@ -147,14 +143,13 @@ func TestControlCharactersDoNotSplitRows(t *testing.T) {
 			t.Fatalf("field line %d spans multiple lines: %q", i, plain(ln))
 		}
 	}
-	// the description must survive flattening (on its own indented line now), not be dropped
+	// the description must survive flattening, not be dropped
 	if joined := plain(strings.Join(lines, " ")); !strings.Contains(joined, "reproduce it") {
 		t.Fatalf("multi-line description was dropped from the field: %q", joined)
 	}
 }
 
-// The Fields section renders "<TYPE>  <name>" with an edit pen flush right on the header line
-// (no brackets around the type), and the description on its own indented line below.
+// A field renders "<TYPE>  <name>" with the pen flush right, description on its own line below.
 func TestFieldRowFormat(t *testing.T) {
 	m := mk(160, 30, 2, 1, false)
 	m, _ = m.Update(TypeDetailLoadedMsg{ID: 1, Detail: domain.IssueTypeDetail{
@@ -182,10 +177,8 @@ func TestFieldRowFormat(t *testing.T) {
 	}
 }
 
-// The Details meta rows put a leading glyph in a fixed 12-cell label column. If a glyph is
-// wide enough to overflow the label, detailRow's Width(12) wraps it to a second line, which
-// pushes the whole Details panel down. Assert each glyph+label stays one line with the
-// value flush at column 12.
+// A glyph wide enough to overflow the fixed label column makes detailRow's Width wrap it to a
+// second line, pushing the whole Details panel down.
 func TestMetaRowGlyphsFitLabelColumn(t *testing.T) {
 	zone.NewGlobal() // plain() -> zone.Scan needs the global manager, even with no marks
 	s := theme.New(theme.TokyoNight())
@@ -207,13 +200,11 @@ func TestMetaRowGlyphsFitLabelColumn(t *testing.T) {
 	}
 }
 
-// The list is a Projects-style table: a header row, then airy (blank-line-above) data rows,
-// all inset by the box padding. The padding is what the click hit-test offsets by, so a render
-// that drops the header or the airy blank silently misaligns every row.
+// The click hit-test offsets by the box padding, header, and airy blank, so a render that drops
+// any of them silently misaligns every row.
 func TestListBoxPadding(t *testing.T) {
 	const w, h = 120, 25
-	// the requested geometry, spelled out rather than derived from the constants, so
-	// zeroing listPadX/listPadY (or dropping the header/airy blank) fails this test
+	// spelled out rather than derived from the constants, so zeroing listPadX/listPadY fails here
 	const padX, padY = 3, 1
 	m := mk(w, h, 4, 3, false)
 	lines := strings.Split(plain(m.leftColumn()), "\n")
@@ -221,16 +212,14 @@ func TestListBoxPadding(t *testing.T) {
 		t.Fatalf("leftColumn = %d rows, want m.height=%d", got, h)
 	}
 
-	// the row right after each panel's top rule is padding (a blank interior row). The Issue Types
-	// and Workflows panels are borderless (TitledRule), so the side columns are blank spaces too.
+	// the row after each top rule is padding. TitledRule is borderless, so side columns are blank
 	for _, top := range []int{0, m.typesHeight()} {
 		if inner := strings.Trim(lines[top+1], "│┃ "); inner != "" {
 			t.Fatalf("row after the top border should be padding, got %q", lines[top+1])
 		}
 	}
 
-	// hasInset reports whether line, after its 1-cell side column and padX padding columns, begins
-	// with want — the side column is a blank space (TitledRule is borderless), skipped either way.
+	// hasInset checks line begins with want after its 1-cell side column and padX padding
 	hasInset := func(line, want string) bool {
 		r := []rune(line)
 		if len(r) < 1+padX {
@@ -244,7 +233,6 @@ func TestListBoxPadding(t *testing.T) {
 		return strings.HasPrefix(string(r[1+padX:]), want)
 	}
 
-	// the header row carries the column titles, inset by the padding
 	header := lines[1+padY]
 	if !hasInset(header, "Name") {
 		t.Fatalf("types header = %q, want %d-col inset then Name", header, padX)
@@ -266,10 +254,8 @@ func TestListBoxPadding(t *testing.T) {
 	}
 }
 
-// Click-to-select must resolve to the row actually painted there. Reads the real rendered
-// workflows box, so it catches a render/hit-test height mismatch whatever helper each side
-// uses. Each airy data row spans two lines (a blank separator above its content), and a click
-// on either line must select it.
+// Click-to-select must resolve to the row actually painted there, read from the real rendered box
+// so a render/hit-test height mismatch is caught. Either line of an airy row must select it.
 func TestWorkflowClickMatchesRenderedRow(t *testing.T) {
 	const w, h = 120, 25 // odd height: typesHeight()=12 vs workflowHeight()=13
 	m := mk(w, h, 3, 30, false)

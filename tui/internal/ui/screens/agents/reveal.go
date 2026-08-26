@@ -42,7 +42,7 @@ func (r revealModal) Update(msg tea.Msg) (revealModal, tea.Cmd) {
 		case "tab", "left", "right", "shift+tab":
 			r.focus = (r.focus + 1) % rvCount
 			return r, nil
-		case "enter", " ":
+		case "enter", "space":
 			if r.focus == rvCopy {
 				r.copied = true
 				return r, tea.SetClipboard(r.issued.Secret)

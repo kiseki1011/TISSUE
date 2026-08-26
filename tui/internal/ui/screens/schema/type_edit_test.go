@@ -9,17 +9,15 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// typeDetailModel returns a model with issue types loaded and the Details pane focused on the
-// first type, ready for the metadata editor.
+// typeDetailModel has issue types loaded and Details focused on the first type.
 func typeDetailModel(t *testing.T) Model {
 	t.Helper()
 	m := mk(120, 30, 3, 2, false)
-	m, _ = m.setFocus(paneDetail) // kind stays selType; T0 (id 1) is selected
+	m, _ = m.setFocus(paneDetail) // kind stays selType, T0 (id 1) is selected
 	return m
 }
 
-// Pressing e on a selected issue type opens the metadata editor seeded with its name, with a
-// color picker (issue types carry a color) but no hierarchy/workflow fields.
+// e opens the metadata editor seeded with the name and a color picker, no hierarchy/workflow.
 func TestOpenTypeEditSeedsForm(t *testing.T) {
 	m := typeDetailModel(t)
 	m, _ = m.Update(pressE())
@@ -57,8 +55,7 @@ func TestTypeEditButtonClickOpens(t *testing.T) {
 	}
 }
 
-// A successful issue type metadata save closes the editor and refetches the catalog (so the list
-// reflects the new name/color) without evicting the unrelated workflow graph cache.
+// A type metadata save refetches the catalog without evicting the workflow graph cache.
 func TestTypeEditSaveReloadsCatalog(t *testing.T) {
 	m := typeDetailModel(t)
 	m, _ = m.Update(pressE())

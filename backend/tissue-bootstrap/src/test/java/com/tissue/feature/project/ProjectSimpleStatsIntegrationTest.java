@@ -19,7 +19,7 @@ import com.tissue.feature.project.application.dto.response.ProjectSimpleStats.Hi
 import com.tissue.feature.project.application.dto.response.ProjectSimpleStats.PriorityCount;
 import com.tissue.feature.project.application.port.repository.ProjectCommandRepository;
 import com.tissue.feature.project.application.port.repository.ProjectMemberCommandRepository;
-import com.tissue.feature.project.application.service.ProjectQueryService;
+import com.tissue.feature.project.application.service.ProjectStatsQueryService;
 import com.tissue.feature.project.domain.Project;
 import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.application.port.repository.WorkflowRepository;
@@ -44,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 class ProjectSimpleStatsIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private ProjectQueryService sut;
+    private ProjectStatsQueryService sut;
 
     @Autowired
     private MemberCommandRepository memberRepository;

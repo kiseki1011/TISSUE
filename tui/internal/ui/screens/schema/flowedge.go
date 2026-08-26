@@ -23,10 +23,8 @@ const (
 	egCancel
 )
 
-// edgeForm creates a new transition or rewires an existing one before it is folded into the
-// graph editor. Source and target are chosen from the editor's current states. The name is
-// editable only for a new transition (an existing one is renamed via the per-element editor,
-// since a whole-graph replace preserves its name). It never touches the backend.
+// edgeForm creates or rewires a transition in the editor's working copy, never the backend.
+// The name is editable only for a new transition: a replace preserves an existing one.
 type edgeForm struct {
 	deps  deps.Deps
 	title string
@@ -132,7 +130,7 @@ func (f edgeForm) pickKey(msg tea.KeyPressMsg) edgeForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false

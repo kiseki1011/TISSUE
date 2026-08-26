@@ -65,6 +65,7 @@ public class IssueSearchPolicy {
                 c.priorities(),
                 c.stateCategories(),
                 c.currentStateIds(),
+                c.issueTypeIds(),
                 c.tagIds(),
                 c.authorMemberIds(),
                 c.assigneeMemberIds(),
@@ -80,7 +81,7 @@ public class IssueSearchPolicy {
 
     /**
      * Applies the default sort when the caller did not specify one, and maps
-     * user-friendly aliases (e.g. {@code dueAt}) to the embedded JPA path
+     * user-friendly aliases (ex: {@code dueAt}) to the embedded JPA path
      * ({@code schedule.dueAt}). Throws {@link InvalidSortPropertyException} for
      * any sort property that is not on the whitelist.
      */

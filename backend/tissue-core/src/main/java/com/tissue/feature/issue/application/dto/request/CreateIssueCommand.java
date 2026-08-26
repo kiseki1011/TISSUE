@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueCommand(
-        Long sprintId,
+        @Nullable Long sprintId,
         String parentProjectKey,
         @Nullable String parentKey,
         String title,

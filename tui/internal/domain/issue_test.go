@@ -2,20 +2,22 @@ package domain
 
 import (
 	"testing"
+	"time"
 
 	"github.com/kiseki1011/TISSUE/tui/pkg/client"
 )
 
-// toIssueSummary maps the projection nil-safely, stringifies the enum pointers, and sets Assigned
-// from the presence of an assignee id.
+// toIssueSummary must be nil-safe, and Assigned comes from the presence of an assignee id.
 func TestToIssueSummaryMapping(t *testing.T) {
 	pri := client.IssueSummaryPriority("P1")
 	cat := client.IssueSummaryCurrentStateCategory("ACTIVE")
 	col := client.IssueSummaryIssueTypeColor("ANSI_BLUE")
+	lastAct := time.Date(2026, 8, 17, 10, 0, 0, 0, time.UTC)
 	got := toIssueSummary(&client.IssueSummary{
 		IssueKey: ptr("TIS-7"), Title: ptr("Do the thing"), IssueTypeName: ptr("Task"),
 		IssueTypeColor: &col, Priority: &pri, CurrentStateLabel: ptr("In Progress"),
 		CurrentStateCategory: &cat, AssigneeMemberId: ptr(int64(99)), StoryPoint: ptr(int32(5)),
+		LastActivityAt: &lastAct,
 	})
 	if got.Key != "TIS-7" || got.Title != "Do the thing" || got.TypeName != "Task" {
 		t.Errorf("core fields wrong: %+v", got)
@@ -26,18 +28,23 @@ func TestToIssueSummaryMapping(t *testing.T) {
 	if !got.Assigned || got.AssigneeID != 99 || got.StoryPoint != 5 {
 		t.Errorf("assignee/storypoint wrong: assigned=%v id=%d sp=%d", got.Assigned, got.AssigneeID, got.StoryPoint)
 	}
+	if !got.LastActivity.Equal(lastAct) {
+		t.Errorf("lastActivity not mapped: got %v want %v", got.LastActivity, lastAct)
+	}
 
-	// no assignee => Assigned false; all-nil must not panic
+	// no assignee, a nil lastActivity, and an all-nil summary must not panic
 	un := toIssueSummary(&client.IssueSummary{IssueKey: ptr("TIS-8")})
 	if un.Assigned {
 		t.Error("issue with no assignee id should be Assigned=false")
+	}
+	if !un.LastActivity.IsZero() {
+		t.Errorf("a nil lastActivity should map to the zero time, got %v", un.LastActivity)
 	}
 	if z := toIssueSummary(&client.IssueSummary{}); z.Key != "" {
 		t.Errorf("empty summary should map to zero, got %+v", z)
 	}
 }
 
-// toIssuePage carries pagination metadata and maps the content slice.
 func TestToIssuePageMapping(t *testing.T) {
 	content := []client.IssueSummary{{IssueKey: ptr("A-1")}, {IssueKey: ptr("A-2")}}
 	got := toIssuePage(&client.PageResponseIssueSummary{

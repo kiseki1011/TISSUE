@@ -361,7 +361,7 @@ func (m Model) button() string {
 	return zone.Mark("login.submit", components.TitledBoxWeighted("", body, borderCol, m.focus == focusSubmit))
 }
 
-// errorLine keeps a blank row when empty so the form does not jump as messages appear and clear.
+// errorLine keeps a blank row so the form does not jump as messages appear and clear.
 func (m Model) errorLine(msg string) string {
 	if msg == "" {
 		return " "

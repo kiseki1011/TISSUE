@@ -10,8 +10,7 @@ import (
 
 const appName = "tissue"
 
-// Setup points slog and the standard logger at <cache>/tissue/tissue.log
-// and returns a cleanup func that closes the file.
+// Setup points slog and the standard logger at <cache>/tissue/tissue.log.
 func Setup() (func(), error) {
 	base, err := os.UserCacheDir()
 	if err != nil {

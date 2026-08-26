@@ -18,6 +18,12 @@ public interface ActivityLogQueryRepository {
      */
     Map<String, Instant> findLastActivityAtByProjectKeys(Collection<String> projectKeys);
 
+    /**
+     * Latest activity Instant per issue key (comments included). Keys with no activity are absent
+     * from the map.
+     */
+    Map<String, Instant> findLastActivityAtByIssueKeys(Collection<String> issueKeys);
+
     List<ActivityLog> findAllByIssueKey(String issueKey, @Nullable Long keysetId, int limit);
 
     List<ActivityLog> findAllBySprintId(Long sprintId, @Nullable Long keysetId, int limit);

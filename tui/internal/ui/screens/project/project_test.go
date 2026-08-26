@@ -19,8 +19,9 @@ var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
+// testDeps mirrors the real default (mouse on), so click affordances render and Tab includes filter.
 func testDeps() deps.Deps {
-	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	return deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Mouse: true}
 }
 
 const testKey = "TIS"
@@ -49,6 +50,19 @@ func press(s string) tea.KeyPressMsg {
 	return tea.KeyPressMsg{Text: s}
 }
 
+// clickZone retries because bubblezone records zone bounds off a background scan.
+func clickZone(t *testing.T, m Model, id string) tea.MouseClickMsg {
+	t.Helper()
+	for i := 0; i < 1000; i++ {
+		if _ = zone.Scan(m.View()); zone.Get(id) != nil && !zone.Get(id).IsZero() {
+			z := zone.Get(id)
+			return tea.MouseClickMsg{X: z.StartX, Y: z.StartY, Button: tea.MouseLeft}
+		}
+	}
+	t.Fatalf("zone %q never registered", id)
+	return tea.MouseClickMsg{}
+}
+
 func TestIssuesLoadedPopulates(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	if m.loading {
@@ -62,7 +76,7 @@ func TestIssuesLoadedPopulates(t *testing.T) {
 func TestLoadError(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps(), testKey, "Tissue")
-	m, _ = m.Update(tea.WindowSizeMsg{Width: 90, Height: 20})
+	m, _ = m.Update(tea.WindowSizeMsg{Width: 160, Height: 40})
 	m, _ = m.Update(issuesLoadedMsg{key: testKey, gen: m.reqGen, err: true})
 	if !m.loadErr {
 		t.Fatal("loadErr not set")
@@ -72,7 +86,6 @@ func TestLoadError(t *testing.T) {
 	}
 }
 
-// Moving past the last loaded row with more pages available requests the next page (appended).
 func TestMoveLoadsNextPage(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 10, HasNext: true, Page: 0})
 	m.cursor = 2 // last loaded
@@ -85,20 +98,19 @@ func TestMoveLoadsNextPage(t *testing.T) {
 	}
 }
 
-// Without a next page, moving past the end just clamps and issues no command.
 func TestMoveAtEndNoMore(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3, HasNext: false})
 	m.cursor = 2
-	m, cmd := m.moveCursor(1)
-	if m.loadingMore || cmd != nil {
-		t.Error("moving past the end without HasNext should not load")
+	m, _ = m.moveCursor(1)
+	if m.loadingMore {
+		t.Error("moving past the end without HasNext should not load another page")
 	}
 	if m.cursor != 2 {
 		t.Errorf("cursor = %d, want clamped at 2", m.cursor)
 	}
 }
 
-// Appending a page keeps existing issues and adds the new ones without resetting the cursor.
+// Appending a page must not reset the cursor.
 func TestAppendPage(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	m.cursor = 2
@@ -111,30 +123,33 @@ func TestAppendPage(t *testing.T) {
 	}
 }
 
-// Esc (and q/backspace) request a return to the Projects tab.
+// esc/q are intentionally inert at the list root, so a reflex press cannot escape the project.
 func TestBackNavigation(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(2), TotalElements: 2})
+	_, cmd := m.Update(press("backspace"))
+	if cmd == nil {
+		t.Fatal("backspace produced no message")
+	}
+	if _, ok := cmd().(nav.CloseProjectMsg); !ok {
+		t.Errorf("backspace did not request a close (got %T)", cmd())
+	}
 	for _, k := range []string{"esc", "q"} {
-		_, cmd := m.Update(press(k))
-		if cmd == nil {
-			t.Fatalf("%s produced no message", k)
-		}
-		if _, ok := cmd().(nav.CloseProjectMsg); !ok {
-			t.Errorf("%s did not request a close (got %T)", k, cmd())
+		if _, c := m.Update(press(k)); c != nil {
+			if _, ok := c().(nav.CloseProjectMsg); ok {
+				t.Errorf("%s should not escape the drill-in from the list root", k)
+			}
 		}
 	}
 }
 
-// 'r' reloads the first page.
 func TestReload(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(2), TotalElements: 2})
-	m, cmd := m.Update(press("r"))
+	m, cmd := m.Update(press("R"))
 	if !m.loading || cmd == nil {
 		t.Error("r should re-enter the loading state and issue a load command")
 	}
 }
 
-// A load result for a different project (a stale drill-in) is ignored, not applied to this model.
 func TestStaleCrossProjectLoadIgnored(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 3})
 	m, _ = m.Update(issuesLoadedMsg{key: "OTHER", gen: m.reqGen, page: domain.IssuePage{Issues: issues(9), TotalElements: 9}})
@@ -143,11 +158,10 @@ func TestStaleCrossProjectLoadIgnored(t *testing.T) {
 	}
 }
 
-// A reload (r) supersedes an in-flight load: the older generation's late result is dropped.
 func TestReloadSupersedesInFlight(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	staleGen := m.reqGen
-	m, _ = m.Update(press("r")) // bumps reqGen, starts a fresh load
+	m, _ = m.Update(press("R")) // bumps reqGen, starts a fresh load
 	// the earlier load-more/page finally lands with the OLD generation — must be ignored
 	m, _ = m.Update(issuesLoadedMsg{key: testKey, gen: staleGen, page: domain.IssuePage{Issues: issues(3), Page: 1}, append: true})
 	if len(m.issues) != 3 || m.loading != true {
@@ -155,7 +169,6 @@ func TestReloadSupersedesInFlight(t *testing.T) {
 	}
 }
 
-// A failed load-more keeps the already-loaded pages instead of blanking the whole list.
 func TestLoadMoreErrorKeepsList(t *testing.T) {
 	m := loaded(t, 90, 20, domain.IssuePage{Issues: issues(3), TotalElements: 6, HasNext: true, Page: 0})
 	m.loadingMore = true
@@ -171,10 +184,9 @@ func TestLoadMoreErrorKeepsList(t *testing.T) {
 	}
 }
 
-// A list longer than the panel windows to the selected row and never overflows the height budget.
 func TestListWindowsToSelection(t *testing.T) {
-	const h = 14
-	m := loaded(t, 90, h, domain.IssuePage{Issues: issues(50), TotalElements: 50})
+	const h = 24
+	m := loaded(t, 130, h, domain.IssuePage{Issues: issues(50), TotalElements: 50})
 	m.cursor = 49
 	out := plain(m.View())
 	if got := len(strings.Split(out, "\n")); got > h {

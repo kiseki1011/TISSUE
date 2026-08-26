@@ -2,10 +2,11 @@ package com.tissue.feature.vcs.application.port.usecase;
 
 import com.tissue.feature.vcs.application.dto.GitPrDto;
 import com.tissue.feature.vcs.application.dto.GitPushDto;
+import com.tissue.feature.vcs.application.dto.VcsEventResult;
 
 public interface GitProviderUseCase {
 
-    void handlePushEvent(GitPushDto event);
+    VcsEventResult handlePushEvent(GitPushDto event);
 
-    void handlePullRequest(GitPrDto event);
+    VcsEventResult handlePullRequest(GitPrDto event);
 }

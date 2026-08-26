@@ -8,8 +8,6 @@ import (
 	lipgloss "charm.land/lipgloss/v2"
 )
 
-// On a terminal too short for the options modal, the modal is windowed to the terminal height with a
-// scrollbar, and the wheel scrolls the window (revealing the logout button at the bottom).
 func TestOptionsModalWindowsAndScrolls(t *testing.T) {
 	a := optionsApp(nil)
 	a.width, a.height = 60, 12 // shorter than the Account section needs
@@ -29,8 +27,6 @@ func TestOptionsModalWindowsAndScrolls(t *testing.T) {
 		t.Error("windowed modal has no scrollbar")
 	}
 
-	// wheel down advances the window; it clamps at the bottom (revealing the logout button) and does
-	// not scroll past it
 	var am tea.Model = app
 	for i := 0; i < 20; i++ {
 		am, _ = am.(App).Update(tea.MouseWheelMsg{Button: tea.MouseWheelDown})
@@ -43,12 +39,10 @@ func TestOptionsModalWindowsAndScrolls(t *testing.T) {
 	if !strings.Contains(stripCSI(app2.modalView()), "Log out") {
 		t.Error("scrolling to the bottom did not reveal the logout button")
 	}
-	// one more wheel-down must not move past the clamped bottom
 	am, _ = app2.Update(tea.MouseWheelMsg{Button: tea.MouseWheelDown})
 	if off := am.(App).modalScroll; off != bottomOff {
 		t.Errorf("scrolled past the bottom: offset = %d, want %d", off, bottomOff)
 	}
-	// wheel up all the way clamps at the top
 	for i := 0; i < 20; i++ {
 		am, _ = am.(App).Update(tea.MouseWheelMsg{Button: tea.MouseWheelUp})
 	}
@@ -57,8 +51,7 @@ func TestOptionsModalWindowsAndScrolls(t *testing.T) {
 	}
 }
 
-// A modal that fits the terminal is not windowed, so its own scroll (e.g. the help viewport) keeps
-// the wheel and no host scrollbar is drawn.
+// A fitting modal keeps the wheel for its own scroll (e.g. the help viewport). No host scrollbar.
 func TestModalNotWindowedWhenItFits(t *testing.T) {
 	a := optionsApp(nil)
 	a.width, a.height = 100, 40 // ample room

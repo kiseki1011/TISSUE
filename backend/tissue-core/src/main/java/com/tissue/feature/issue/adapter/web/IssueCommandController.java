@@ -661,6 +661,9 @@ public class IssueCommandController {
             **Behavior:**
             - `approved: true` — Sets the reviewer's status to `APPROVED`
             - `approved: false` — Sets the reviewer's status to `CHANGES_REQUESTED`
+            - `comment` (optional) — Stored as a comment on the issue, carrying the verdict in its \
+            `reviewStatus`, so the feedback appears in the issue's conversation. The verdict on that \
+            comment is frozen: submit a new review to change your decision.
 
             **Workflow automation:**
             When rejected, if the current state's outgoing transition has a `REQUIRED_APPROVAL` guard \
@@ -698,7 +701,10 @@ public class IssueCommandController {
             @RequestBody @Valid SubmitReviewRequest request,
             @CurrentMember MemberDetails memberDetails) {
         reviewUseCase.submitReview(
-                IssueIdentifier.ofIssueKey(issueKey), request.approved(), memberDetails.getMemberId());
+                IssueIdentifier.ofIssueKey(issueKey),
+                request.approved(),
+                request.comment(),
+                memberDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }

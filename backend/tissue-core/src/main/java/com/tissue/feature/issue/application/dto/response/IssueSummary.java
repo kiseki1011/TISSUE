@@ -8,6 +8,7 @@ import com.tissue.feature.project.domain.ProjectMember;
 import com.tissue.feature.workflow.domain.WorkflowState;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
 import com.tissue.shared.enums.ColorType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import org.jspecify.annotations.Nullable;
 
@@ -23,6 +24,7 @@ public record IssueSummary(
         String currentStateLabel,
         StateCategory currentStateCategory,
         @Nullable Long assigneeMemberId,
+        @Nullable String assigneeName,
         @Nullable Long sprintId,
         @Nullable Long issueTypeId,
         @Nullable String issueTypeName,
@@ -31,21 +33,44 @@ public record IssueSummary(
         // The actor's own review status on this issue, or null when they are not a reviewer.
         // Only the FTS search service (which knows the actor) populates it. Other leave it null.
         @Nullable ReviewStatus myReviewStatus,
-        @Nullable String content) {
+        @Nullable String content,
+
+        @Schema(
+                description = "The most recent activity Instant on this issue (comments included),"
+                        + " `null` when the issue has no activity yet")
+        @Nullable
+        Instant lastActivityAt) {
 
     public static IssueSummary from(Issue issue) {
-        return from(issue, null);
+        return create(issue, null, null, null, null);
+    }
+
+    public static IssueSummary from(Issue issue, @Nullable Instant lastActivityAt) {
+        return create(issue, null, null, null, lastActivityAt);
     }
 
     public static IssueSummary from(Issue issue, @Nullable ReviewStatus myReviewStatus) {
-        return create(issue, myReviewStatus, null);
+        return create(issue, myReviewStatus, null, null, null);
+    }
+
+    public static IssueSummary from(
+            Issue issue,
+            @Nullable ReviewStatus myReviewStatus,
+            @Nullable String assigneeName,
+            @Nullable Instant lastActivityAt) {
+        return create(issue, myReviewStatus, null, assigneeName, lastActivityAt);
     }
 
     public static IssueSummary fromDeleted(Issue issue) {
-        return create(issue, null, issue.getContent());
+        return create(issue, null, issue.getContent(), null, null);
     }
 
-    private static IssueSummary create(Issue issue, @Nullable ReviewStatus myReviewStatus, @Nullable String content) {
+    private static IssueSummary create(
+            Issue issue,
+            @Nullable ReviewStatus myReviewStatus,
+            @Nullable String content,
+            @Nullable String assigneeName,
+            @Nullable Instant lastActivityAt) {
         WorkflowState state = issue.getCurrentState();
         ProjectMember assignee = issue.getParticipants().getAssignee();
         IssueType issueType = issue.getIssueType();
@@ -61,11 +86,13 @@ public record IssueSummary(
                 state.getDisplayName(),
                 state.getCategory(),
                 assignee != null ? assignee.getMemberId() : null,
+                assigneeName,
                 issue.getSprint() != null ? issue.getSprint().getId() : null,
                 issueType != null ? issueType.getId() : null,
                 issueType != null ? issueType.getName() : null,
                 issueType != null ? issueType.getColor() : null,
                 myReviewStatus,
-                content);
+                content,
+                lastActivityAt);
     }
 }

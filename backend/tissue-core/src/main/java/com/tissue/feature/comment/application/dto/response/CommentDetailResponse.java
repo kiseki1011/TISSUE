@@ -1,6 +1,7 @@
 package com.tissue.feature.comment.application.dto.response;
 
 import com.tissue.feature.comment.domain.Comment;
+import com.tissue.feature.issue.domain.enums.ReviewStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,13 +10,16 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(
         description = "A comment on an issue with author info and nested replies. "
-                + "Only deleted comments contents are `null` to preserve structure.",
+                + "Only deleted comments contents are `null` to preserve structure. "
+                + "`reviewStatus` is set only when the comment is the feedback body of a submitted review, "
+                + "and holds the verdict it was submitted with.",
         example = """
         {
           "commentId": 1,
           "content": "We should refactor this module first.",
           "isEdited": false,
           "isDeleted": false,
+          "reviewStatus": null,
           "createdAt": "2026-01-06T09:00:00Z",
           "lastUpdatedAt": "2026-01-06T09:00:00Z",
           "author": {
@@ -45,6 +49,7 @@ public record CommentDetailResponse(
         @Nullable String content,
         boolean isEdited,
         boolean isDeleted,
+        @Nullable ReviewStatus reviewStatus,
         Instant createdAt,
         Instant lastUpdatedAt,
         CommentAuthorInfo author,
@@ -58,6 +63,7 @@ public record CommentDetailResponse(
                 deleted ? null : comment.getContent(),
                 comment.isEdited(),
                 deleted,
+                comment.getReviewStatus(),
                 comment.getCreatedAt(),
                 comment.getLastModifiedAt(),
                 CommentAuthorInfo.from(comment.getAuthor()),

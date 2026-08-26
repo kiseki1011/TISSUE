@@ -12,6 +12,7 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/agents"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/screens/schema"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
@@ -29,8 +30,7 @@ func helpApp() App {
 	return a
 }
 
-// ? opens the app-level help modal, and it carries the active screen's title, an about blurb, and
-// both the global and screen key sections drawn from the live bindings.
+// ? opens the help modal, carrying the screen's title and both key sections from the live bindings.
 func TestQuestionMarkOpensHelp(t *testing.T) {
 	a := helpApp()
 	m, _ := a.Update(keyPress("?"))
@@ -60,7 +60,7 @@ func TestHelpEscCloses(t *testing.T) {
 	}
 }
 
-// A left click outside the modal box dismisses it; a click inside leaves it open.
+// A left click outside the modal box dismisses it. A click inside leaves it open.
 func TestHelpClickOutsideCloses(t *testing.T) {
 	a := helpApp()
 	m, _ := a.Update(keyPress("?"))
@@ -92,8 +92,6 @@ func TestModalSuppressesTabSwitch(t *testing.T) {
 	}
 }
 
-// Content taller than the terminal scrolls: the viewport reports scrollable and a down key advances
-// the offset.
 func TestHelpModalScrolls(t *testing.T) {
 	keys := make([]key.Binding, 0, 30)
 	for i := 0; i < 30; i++ {
@@ -108,5 +106,28 @@ func TestHelpModalScrolls(t *testing.T) {
 	nm := next.(helpModal)
 	if got := nm.vp.YOffset(); got <= before {
 		t.Errorf("down did not scroll the viewport: offset %d -> %d", before, got)
+	}
+}
+
+// The Agents tab satisfies describer, so its help no longer falls back to the "Help · Help" default.
+func TestAgentsHelpTitle(t *testing.T) {
+	zone.NewGlobal()
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode), Server: "http://localhost:8080"}
+	a := New(d)
+	a.screen = screenAgents
+	a.agents = agents.New(d)
+	a.width, a.height = 100, 30
+
+	m, _ := a.Update(keyPress("?"))
+	app := m.(App)
+	if app.modal == nil {
+		t.Fatal("? did not open the help modal on the Agents tab")
+	}
+	view := stripCSI(app.modal.View())
+	if !strings.Contains(view, "Agents") {
+		t.Errorf("agents help modal title is not \"Agents\":\n%s", view)
+	}
+	if strings.Contains(view, "Help · Help") {
+		t.Errorf("agents help modal fell back to the default title:\n%s", view)
 	}
 }

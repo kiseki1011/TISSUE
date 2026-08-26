@@ -42,7 +42,7 @@ func newRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "tissue",
 		Short: "Tissue project-management TUI",
-		// Silence Cobra's usage/error dump so a runtime failure prints only our error line.
+		// Silence Cobra's dump so a runtime failure prints only our error line.
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE:          runTUI,
@@ -79,8 +79,8 @@ func runTUI(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("build dependencies: %w", err)
 	}
 
-	// Under a CJK locale go-runewidth counts ambiguous-width runes (box-drawing) as width 2, but lipgloss
-	// and the terminal render them width 1, so uncorrected bubblezone X doubles and mouse hits miss. Force width 1.
+	// Under a CJK locale go-runewidth counts ambiguous-width runes (box-drawing) as width 2 while the
+	// terminal renders them width 1, doubling bubblezone's X so mouse hits miss. Force width 1.
 	runewidth.DefaultCondition.EastAsianWidth = false
 
 	zone.NewGlobal()
@@ -118,20 +118,23 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 	}
 
 	return deps.Deps{
-		Server:    server,
-		Public:    public,
-		Authed:    domain.NewAuthService(authedAPI),
-		Projects:  domain.NewProjectService(authedAPI),
-		Catalog:   domain.NewCatalogService(authedAPI),
-		Agents:    domain.NewAgentService(authedAPI),
-		Issues:    domain.NewIssueService(authedAPI),
-		Store:     store,
-		Transport: transport,
-		Config:    cfg,
-		Styles:    theme.New(theme.ByName(resolveTheme(cfg))),
-		Glyphs:    glyph.New(glyph.ParseMode(resolveIcons(cfg))),
-		Icons:     glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
-		Mouse:     resolveMouse(cfg),
+		Server:   server,
+		Public:   public,
+		Authed:   domain.NewAuthService(authedAPI),
+		Projects: domain.NewProjectService(authedAPI),
+		Catalog:  domain.NewCatalogService(authedAPI),
+		Agents:   domain.NewAgentService(authedAPI),
+		Issues:   domain.NewIssueService(authedAPI),
+		Sprints:  domain.NewSprintService(authedAPI),
+
+		Notifications: domain.NewNotificationService(authedAPI),
+		Store:         store,
+		Transport:     transport,
+		Config:        cfg,
+		Styles:        theme.New(theme.ByName(resolveTheme(cfg))),
+		Glyphs:        glyph.New(glyph.ParseMode(resolveIcons(cfg))),
+		Icons:         glyph.ModeName(glyph.ParseMode(resolveIcons(cfg))),
+		Mouse:         resolveMouse(cfg),
 	}, nil
 }
 
@@ -156,7 +159,6 @@ func resolveIcons(cfg *config.Config) string {
 	return cfg.Icons
 }
 
-// resolveMouse defaults to on: only an explicit "off" in the config disables mouse capture.
 func resolveMouse(cfg *config.Config) bool {
 	return cfg.Mouse != "off"
 }

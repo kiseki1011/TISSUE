@@ -11,8 +11,7 @@ import (
 
 const issueFrame = `{"type":"ISSUE_TRANSITIONED","projectKey":"ENG","issueKey":"ENG-1","actorMemberId":42,"occurredAt":"2026-08-08T00:00:00Z","data":{"newStateId":3,"newStateName":"Done"}}`
 
-// fast lowers the timing knobs so reconnect/backoff/watchdog behaviour is testable
-// in milliseconds rather than seconds.
+// fast lowers the timing knobs so reconnect behaviour runs in milliseconds.
 func fast(c *Consumer) {
 	c.backoffFloor = 5 * time.Millisecond
 	c.backoffCeiling = 20 * time.Millisecond
@@ -81,8 +80,7 @@ func firstEvent(us []Update) (Event, bool) {
 	return Event{}, false
 }
 
-// A live connection reports Connecting then Connected, and a data frame is parsed
-// into a fully-populated Event carrying the session generation.
+// A live connection reports Connecting then Connected, and a data frame parses into a full Event.
 func TestConnectAndParseEvent(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f := w.(http.Flusher)
@@ -126,8 +124,7 @@ func TestConnectAndParseEvent(t *testing.T) {
 	}
 }
 
-// When the connection drops, the consumer reports Disconnected and reconnects,
-// receiving the next connection's events.
+// A drop reports Disconnected and reconnects, receiving the next connection's events.
 func TestReconnectAfterDrop(t *testing.T) {
 	var conns atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +145,6 @@ func TestReconnectAfterDrop(t *testing.T) {
 	c.Start()
 	defer c.Stop()
 
-	// wait until we have seen two Connected states (the reconnect) and the second event
 	got := collect(t, c, func(us []Update) bool {
 		sawSprint := false
 		for _, u := range us {
@@ -162,7 +158,6 @@ func TestReconnectAfterDrop(t *testing.T) {
 	if countState(got, Disconnected) < 1 {
 		t.Errorf("a drop should surface Disconnected: %v", states(got))
 	}
-	// the sprint event has a null issueKey — it must parse to an empty IssueKey
 	for _, u := range got {
 		if u.Kind == EventUpdate && u.Event.Type == "SPRINT_STARTED" && u.Event.IssueKey != "" {
 			t.Errorf("null issueKey should parse empty, got %q", u.Event.IssueKey)
@@ -192,7 +187,7 @@ func TestNon200BacksOffThenReconnects(t *testing.T) {
 
 	got := collect(t, c, func(us []Update) bool { _, ok := firstEvent(us); return ok })
 
-	// the first attempt (500) must not report Connected; the Connected we see is the retry
+	// the first attempt (500) must not report Connected — the one we see is the retry
 	firstConnectedAt, firstEventAt := -1, -1
 	for i, u := range got {
 		if u.Kind == StateUpdate && u.State == Connected && firstConnectedAt < 0 {
@@ -240,8 +235,7 @@ func TestWatchdogReconnectsSilentConnection(t *testing.T) {
 	}
 }
 
-// A peer that accepts the socket but never sends response headers is bounded by the header-arrival
-// deadline (not just the post-headers read watchdog) and reconnects.
+// A socket that accepts but never sends headers is bounded by the header deadline, not the read watchdog.
 func TestHeaderTimeoutReconnectsStalledConnect(t *testing.T) {
 	var conns atomic.Int32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -270,7 +264,6 @@ func TestHeaderTimeoutReconnectsStalledConnect(t *testing.T) {
 	}
 }
 
-// Stop ends the goroutine and closes the channel.
 func TestStopClosesChannel(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f := w.(http.Flusher)
@@ -318,7 +311,7 @@ func TestSplitField(t *testing.T) {
 }
 
 func TestParseEventMultilineAndBadData(t *testing.T) {
-	// SSE joins multiple data: lines with \n; the payload is still valid JSON.
+	// SSE joins multiple data: lines with \n. The payload is still valid JSON.
 	ev, ok := parseEvent("issue", "x", "{\n\"type\":\"ISSUE_CREATED\",\n\"projectKey\":\"ENG\"\n}")
 	if !ok || ev.Type != "ISSUE_CREATED" || ev.ProjectKey != "ENG" {
 		t.Errorf("multiline data mis-parsed: %+v ok=%v", ev, ok)

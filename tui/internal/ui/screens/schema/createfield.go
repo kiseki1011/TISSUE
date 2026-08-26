@@ -18,9 +18,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/glyph"
 )
 
-// fieldTypes are the ten IssueFieldType values in the order the create picker lists them —
-// the backend's declaration order, but with PERCENTAGE moved above SELECT_OPTION so the two
-// option-carrying types (SELECT_OPTION, CHECKLIST) sit together at the tail.
+// fieldTypes is the backend's declaration order, except PERCENTAGE moves up so the two
+// option-carrying types sit together at the tail.
 var fieldTypes = []string{
 	"TEXT", "SHORT_TEXT", "INTEGER", "DECIMAL", "TIMESTAMP",
 	"DATE", "BOOLEAN", "PERCENTAGE", "SELECT_OPTION", "CHECKLIST",
@@ -54,29 +53,7 @@ func fieldTypeLabel(t string) string {
 
 // fieldTypeGlyph returns empty on plain terminals so the bare label shows.
 func fieldTypeGlyph(g glyph.Set, fieldType string) string {
-	switch fieldType {
-	case "TEXT":
-		return g.Or(g.SymbolString, "")
-	case "SHORT_TEXT":
-		return g.Or(g.WholeWord, "")
-	case "SELECT_OPTION":
-		return g.Or(g.SymbolEnum, "")
-	case "CHECKLIST":
-		return g.Or(g.Checklist, "")
-	case "BOOLEAN":
-		return g.Or(g.SymbolBoolean, "")
-	case "DATE":
-		return g.Or(g.Calendar, "")
-	case "DECIMAL":
-		return g.Or(g.Decimal, "")
-	case "INTEGER":
-		return g.Or(g.Number, "")
-	case "PERCENTAGE":
-		return g.Or(g.Percent, "")
-	case "TIMESTAMP":
-		return g.Or(g.Clock, "")
-	}
-	return ""
+	return g.FieldTypeGlyph(fieldType)
 }
 
 // canHaveOptions mirrors the backend's IssueFieldType.canHaveOptions (SELECT_OPTION / CHECKLIST).
@@ -93,14 +70,12 @@ const (
 	cffCancel
 )
 
-// createFieldForm is the "New Field" modal for adding a custom field to an issue type. Unlike the
-// edit form the type is chosen here (fixed thereafter), from a dropdown. Options are not collected
-// here — a SELECT_OPTION / CHECKLIST field starts empty and its options are populated afterward
-// through the options editor.
+// createFieldForm is the "New Field" modal. The type is fixed after creation, and options are
+// filled in later through the options editor.
 type createFieldForm struct {
 	deps     deps.Deps
 	typeID   int
-	position int // the append position, computed at open
+	position int // append position, computed at open
 
 	name     textinput.Model
 	ftype    string
@@ -221,7 +196,7 @@ func (f createFieldForm) pickKey(msg tea.KeyPressMsg) createFieldForm {
 		f.pick = f.pick.move(-1)
 	case "down", "j":
 		f.pick = f.pick.move(1)
-	case "enter", " ":
+	case "enter", "space":
 		return f.applyPick()
 	case "esc":
 		f.pickOpen = false
@@ -232,8 +207,7 @@ func (f createFieldForm) pickKey(msg tea.KeyPressMsg) createFieldForm {
 func (f createFieldForm) openTypePicker() createFieldForm {
 	opts := make([]pickerOption, 0, len(fieldTypes))
 	for _, t := range fieldTypes {
-		// a trailing space on the glyph gives it one extra cell before the label (the picker adds
-		// its own single space), matching the "glyph  label" spacing used elsewhere
+		// the extra space matches the "glyph  label" spacing elsewhere (the picker adds one)
 		lead := fieldTypeGlyph(f.deps.Glyphs, t)
 		if lead != "" {
 			lead += " "
@@ -379,9 +353,8 @@ func (f createFieldForm) View() string {
 	return components.TitledBoxCentered("New Field", body, f.deps.Styles.Theme.Primary)
 }
 
-// FocusRow reports the focused control's row (in View coordinates) and height, so a windowed modal
-// scrolls to keep it visible. The +2 chrome offset is the top border plus the padding row above the
-// body. It reports ok=false while the type picker is open (that view replaces the form).
+// FocusRow reports the focused row and height so a windowed modal can scroll it into view.
+// chromeTop 2 = top border + the padding row. ok=false while the type picker is open.
 func (f createFieldForm) FocusRow() (int, int, bool) {
 	if f.pickOpen {
 		return 0, 0, false

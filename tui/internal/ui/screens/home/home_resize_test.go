@@ -12,11 +12,8 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// The bubbles table re-renders eagerly on every SetColumns/SetRows/SetWidth call, and
-// renderRow indexes cols[i] while ranging a row's cells. So a table row must never hold
-// more cells than there are columns, or it panics with "index out of range". Hiding the
-// Repository column on narrow terminals changes the column count, which makes this easy
-// to violate across a resize; these tests guard both crash paths we hit.
+// The bubbles table re-renders eagerly and renderRow indexes cols[i] per cell, so a row with more
+// cells than columns panics. Hiding Repository changes that count — these guard both crashes we hit.
 
 func testModel(t *testing.T) Model {
 	t.Helper()
@@ -45,9 +42,8 @@ func assertRowsMatchCols(t *testing.T, m Model, tag string) {
 	}
 }
 
-// TestMinWidthFloor pins the smallest width that renders the dashboard: nerd mode
-// floors at the narrower five-column layout (Repository is hidden that low), while
-// fallback headers pack wider and hold at the six-column floor.
+// Nerd mode floors at the five-column layout (Repository is hidden that low), while fallback headers
+// pack wider and hold at the six-column floor.
 func TestMinWidthFloor(t *testing.T) {
 	if got := testModel(t).minWidth(); got != 110 {
 		t.Fatalf("nerd minWidth = %d, want 110", got)
@@ -63,9 +59,8 @@ func TestMinWidthFloor(t *testing.T) {
 	}
 }
 
-// TestRelayoutResizeAcrossRepoThreshold covers the crash from shrinking the terminal
-// across the Repository threshold: relayout swapped columns to 5 while the table still
-// held 6-cell rows. It also checks the grow direction and cursor preservation.
+// Guards the crash from shrinking across the Repository threshold: relayout swapped to 5 columns
+// while the table still held 6-cell rows.
 func TestRelayoutResizeAcrossRepoThreshold(t *testing.T) {
 	zone.NewGlobal()
 	m := testModel(t)
@@ -102,10 +97,8 @@ func TestRelayoutResizeAcrossRepoThreshold(t *testing.T) {
 	_ = zone.Scan(m.dashboard()) // full render must not panic
 }
 
-// TestRebuildRowsMatchesStaleColumns covers the crash where a resize to a too-short
-// terminal makes relayout early-return, so the width crosses the Repository threshold
-// while the columns stay put; a later rebuildRows (projectsLoaded, key nav, etc.) must
-// build rows matching the installed columns, not showRepo(width).
+// Guards the crash where a too-short terminal makes relayout early-return: width crosses the
+// Repository threshold while the columns stay put, so rebuildRows must match the installed columns.
 func TestRebuildRowsMatchesStaleColumns(t *testing.T) {
 	zone.NewGlobal()
 	m := testModel(t)
@@ -116,8 +109,7 @@ func TestRebuildRowsMatchesStaleColumns(t *testing.T) {
 		t.Fatalf("want 5 cols, got %d", got)
 	}
 
-	// Resize wide but too short: relayout early-returns (height below minimum), so the
-	// columns stay at 5 while showRepo(width) would now be true.
+	// wide but too short: relayout early-returns, so columns stay at 5 while showRepo(width) is true
 	m.width, m.height = 160, 8
 	m.relayout()
 	if got := len(m.table.Columns()); got != 5 {

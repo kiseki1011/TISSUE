@@ -112,4 +112,48 @@ class ProjectMemberQueryServiceIntegrationTest extends IntegrationTestSupport {
                     .isInstanceOf(ProjectMemberNotFoundException.class);
         }
     }
+
+    @Nested
+    @DisplayName("purged members")
+    class PurgedMembers {
+
+        @Test
+        @DisplayName("excludes a purged (anonymized 'Deleted User') member from the list")
+        void excludesPurgedMember() {
+            // given - alice's account is purged: her Member row is anonymized but her ProjectMember row survives
+            purge(alice);
+
+            // when
+            Page<ProjectMemberSummary> page =
+                    sut.getProjectMembers(PROJECT_IDENTIFIER, null, null, PageRequest.of(0, 10), gildong.getId());
+
+            // then - only the still-active manager remains; the purged member is not pickable
+            assertThat(page.getTotalElements()).isEqualTo(1);
+            assertThat(page.getContent())
+                    .extracting(ProjectMemberSummary::username)
+                    .containsExactly("gildong");
+        }
+
+        @Test
+        @DisplayName("a keyword matching the purged 'Deleted User' name still excludes them")
+        void keywordDoesNotSurfacePurged() {
+            // given
+            purge(alice);
+
+            // when - the keyword matches the anonymized display name
+            Page<ProjectMemberSummary> page =
+                    sut.getProjectMembers(PROJECT_IDENTIFIER, null, "Deleted", PageRequest.of(0, 10), gildong.getId());
+
+            // then
+            assertThat(page.getContent()).isEmpty();
+        }
+
+        // Anonymize the member (status -> PURGED, name -> "Deleted User") and persist, as MemberPurgeService does.
+        private void purge(Member member) {
+            member.anonymize();
+            memberRepository.save(member);
+            em.flush();
+            em.clear();
+        }
+    }
 }

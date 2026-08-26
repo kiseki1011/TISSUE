@@ -7,8 +7,7 @@ import (
 	zone "github.com/lrstanley/bubblezone/v2"
 )
 
-// Pressing e on the workflow's metadata element opens the metadata editor seeded with its name and
-// description, with no color field (the workflow color is not edited here).
+// The workflow editor seeds name/description and offers no color field.
 func TestOpenWorkflowEditSeedsForm(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemWfMeta, 0})
 	m, _ = m.Update(pressE())
@@ -26,7 +25,6 @@ func TestOpenWorkflowEditSeedsForm(t *testing.T) {
 	}
 }
 
-// Enter on the selected workflow metadata element also opens the editor.
 func TestWorkflowMetaEnterOpensEditor(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemWfMeta, 0})
 	m, _ = m.Update(keyEnter())
@@ -35,8 +33,6 @@ func TestWorkflowMetaEnterOpensEditor(t *testing.T) {
 	}
 }
 
-// The workflow Details renders a clickable edit-pen zone on its title row, and clicking it opens the
-// metadata editor.
 func TestWorkflowEditButtonClickOpens(t *testing.T) {
 	m := mkWorkflowModel(t)
 	_ = scanView(t, m.View(), "schema.wf.edit")
@@ -50,8 +46,7 @@ func TestWorkflowEditButtonClickOpens(t *testing.T) {
 	}
 }
 
-// The metadata pen is above the section buttons: from the default graph element, up reaches Flow,
-// then VCS, then the workflow metadata.
+// The metadata pen sits above the section buttons.
 func TestWorkflowMetaNavigableAboveButtons(t *testing.T) {
 	m := mkWorkflowModel(t)
 	m, _ = m.Update(keyUp()) // Flow
@@ -62,8 +57,7 @@ func TestWorkflowMetaNavigableAboveButtons(t *testing.T) {
 	}
 }
 
-// The metadata pen is selectable before the graph loads, so name/description can be edited without
-// waiting on the diagram.
+// The metadata pen is selectable before the graph loads, so editing does not wait on the diagram.
 func TestWorkflowMetaSelectableBeforeGraph(t *testing.T) {
 	m := mkWorkflowModel(t)
 	delete(m.wfDetail, 1) // drop the loaded graph
@@ -73,8 +67,7 @@ func TestWorkflowMetaSelectableBeforeGraph(t *testing.T) {
 	}
 }
 
-// A successful workflow metadata save closes the editor and refetches the catalog (so the list and
-// header reflect the new name/description) without evicting the workflow graph cache.
+// A metadata save refetches the catalog without evicting the graph cache.
 func TestWorkflowMetaSaveReloadsCatalog(t *testing.T) {
 	m := selectElem(mkWorkflowModel(t), wfElem{elemWfMeta, 0})
 	m, _ = m.Update(pressE())

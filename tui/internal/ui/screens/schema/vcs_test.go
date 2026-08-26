@@ -5,8 +5,7 @@ import (
 	"testing"
 )
 
-// vcsModel loads the example workflow with the given VCS transition mappings and focuses the
-// Details pane.
+// vcsModel loads the example workflow with the given VCS transition mappings.
 func vcsModel(t *testing.T, opened, merged int) Model {
 	t.Helper()
 	m := mkWorkflowModel(t)
@@ -26,8 +25,6 @@ func lineWith(body, needle string) string {
 	return ""
 }
 
-// The Details panel shows a VCS Automation section that resolves the PR-opened/merged
-// transition ids to their names, each on its own row.
 func TestVcsSectionShowsTransitionNames(t *testing.T) {
 	m := vcsModel(t, 10, 12) // 10 = Start (PR opened), 12 = Approve (PR merged)
 	body := stripANSI(m.detail())
@@ -42,7 +39,6 @@ func TestVcsSectionShowsTransitionNames(t *testing.T) {
 	}
 }
 
-// When a mapping is unset the row shows a dash instead of a transition name.
 func TestVcsUnsetShowsDash(t *testing.T) {
 	m := vcsModel(t, 0, 0)
 	body := stripANSI(m.detail())
@@ -51,8 +47,7 @@ func TestVcsUnsetShowsDash(t *testing.T) {
 	}
 }
 
-// The VCS section only appears once the workflow graph is loaded (it needs the transitions to
-// resolve names).
+// The VCS section needs the graph's transitions to resolve names, so it hides while loading.
 func TestVcsHiddenWhileLoading(t *testing.T) {
 	m := mkWorkflowModel(t)
 	delete(m.wfDetail, 1)

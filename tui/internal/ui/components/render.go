@@ -12,14 +12,12 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-// Shared row/overlay render helpers. Screens keep thin lowercase wrappers so call sites stay untouched.
-
 var csiPattern = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
 
 func StripANSI(s string) string { return csiPattern.ReplaceAllString(s, "") }
 
-// OverlayDim splices fg over a dimmed copy of the plain backdrop at (x,y). fg is copied in verbatim
-// so its zone markers survive (a cell-by-cell compositor would rebuild the frame and drop them).
+// OverlayDim splices fg over a dimmed copy of the plain backdrop at (x,y). fg is copied verbatim so
+// its zone markers survive — a cell-by-cell compositor would rebuild the frame and drop them.
 func OverlayDim(backdrop, fg string, x, y int, dim color.Color) string {
 	style := lipgloss.NewStyle().Foreground(dim)
 	bgLines := strings.Split(backdrop, "\n")
@@ -38,9 +36,8 @@ func OverlayDim(backdrop, fg string, x, y int, dim color.Color) string {
 	return strings.Join(bgLines, "\n")
 }
 
-// splitCols splits a plain (ANSI-free) string at visible column c, returning the left part padded
-// to exactly c columns and the remainder. A wide rune straddling c is replaced with spaces on both
-// sides so the total column count is preserved.
+// splitCols splits a plain (ANSI-free) string at visible column c, the left part padded to exactly c
+// columns. A wide rune straddling c becomes spaces on both sides so the column count is preserved.
 func splitCols(plain string, c int) (string, string) {
 	if c <= 0 {
 		return "", plain
@@ -61,7 +58,7 @@ func splitCols(plain string, c int) (string, string) {
 	return plain + strings.Repeat(" ", c-col), ""
 }
 
-// MixColors blends a toward b by t in [0,1], used for the dimmer hover band.
+// MixColors blends a toward b by t in [0,1].
 func MixColors(a, b color.Color, t float64) color.Color {
 	ar, ag, ab, _ := a.RGBA()
 	br, bg, bb, _ := b.RGBA()
@@ -71,14 +68,12 @@ func MixColors(a, b color.Color, t float64) color.Color {
 	return color.RGBA{R: blend(ar, br), G: blend(ag, bg), B: blend(ab, bb), A: 0xff}
 }
 
-// breaking reports whether r would split a row across lines or make lipgloss mis-measure its width.
-// ESC is spared so ANSI styling survives.
+// breaking reports control chars that split a row or break lipgloss' width math. ESC is spared so
+// ANSI styling survives.
 func breaking(r rune) bool { return (r < 0x20 && r != 0x1b) || r == 0x7f }
 
-// Flatten replaces breaking control characters with a space. Catalog names and descriptions are
-// admin free text that reaches us unsanitized, and ansi.Truncate carries one running width across
-// the whole string, so an embedded newline would otherwise survive truncation and then let lipgloss
-// pad each line separately into two rows.
+// Flatten replaces breaking control characters with a space. Catalog text arrives unsanitized, and
+// ansi.Truncate carries one running width, so an embedded newline would survive and split the row.
 func Flatten(s string) string {
 	if !strings.ContainsFunc(s, breaking) {
 		return s
@@ -91,8 +86,8 @@ func Flatten(s string) string {
 	}, s)
 }
 
-// Trunc clips s to w cells, ANSI-aware. lipgloss Width() WRAPS rather than clips, so a list row must
-// be truncated first or it silently becomes two rows.
+// Trunc clips s to w cells, ANSI-aware. lipgloss WRAPS rather than clips, so an untruncated list row
+// silently becomes two rows.
 func Trunc(s string, w int) string {
 	if w < 1 {
 		w = 1
@@ -107,18 +102,15 @@ func FitLine(s string, w int) string {
 	return lipgloss.NewStyle().Width(w).Render(Trunc(s, w))
 }
 
-// minGap is the smallest space kept between a row's head and its right-aligned tail, so a clipped
-// tail never butts up against the head.
+// minGap keeps a clipped tail from butting up against the head.
 const minGap = 2
 
-// AlignRow lays out "head ....... tail" in exactly w cells. The tail is clipped first so the head
-// always stays readable. Only a head that overflows on its own is clipped.
+// AlignRow lays out "head ... tail" in exactly w cells, clipping the tail first so the head stays readable.
 func AlignRow(head, tail string, w int, fill lipgloss.Style) string {
 	if w < 1 {
 		w = 1
 	}
-	// flatten before measuring: lipgloss.Width reports only the widest line, so a multi-line tail
-	// would be sized as tiny and then truncated away entirely
+	// flatten first: lipgloss.Width reports only the widest line, so a multi-line tail measures tiny
 	head, tail = Flatten(head), Flatten(tail)
 	hw := lipgloss.Width(head)
 	if hw >= w { // no room left for the tail
@@ -130,8 +122,7 @@ func AlignRow(head, tail string, w int, fill lipgloss.Style) string {
 	return join(head, tail, w, fill)
 }
 
-// join pads head and tail apart to exactly w cells, styling the gap so a selected row's background
-// reaches the tail.
+// join styles the gap so a selected row's background reaches the tail.
 func join(head, tail string, w int, fill lipgloss.Style) string {
 	gap := w - lipgloss.Width(head) - lipgloss.Width(tail)
 	if gap < 0 {
@@ -140,9 +131,45 @@ func join(head, tail string, w int, fill lipgloss.Style) string {
 	return FitLine(head+fill.Render(strings.Repeat(" ", gap))+tail, w)
 }
 
-// HintBar renders an inline shortcut hint as "key label · key label …", tinting the key glyphs
-// (Secondary) so they read as pressable while the labels stay muted. Arguments alternate key, label —
-// a label may be empty for a bare key affordance.
+// RuleWithTitle draws a titled top rule for a borderless panel. c carries focus, not the weight.
+func RuleWithTitle(title string, width int, c color.Color) string {
+	label := " " + title + " "
+	const lead = 2
+	rest := width - lead - lipgloss.Width(label)
+	if rest < 0 {
+		rest = 0
+	}
+	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat("─", lead) + label + strings.Repeat("─", rest))
+}
+
+// ScrollbarColumn returns view cells for a scrollbar, blank when everything fits.
+func ScrollbarColumn(off, total, view int, thumb, track color.Color) []string {
+	cells := make([]string, view)
+	if total <= view {
+		for i := range cells {
+			cells[i] = " "
+		}
+		return cells
+	}
+	size := max(1, view*view/total)
+	pos := 0
+	if span := total - view; span > 0 {
+		pos = off * (view - size) / span
+	}
+	trackCell := lipgloss.NewStyle().Foreground(track).Render("│")
+	thumbCell := lipgloss.NewStyle().Foreground(thumb).Render("█")
+	for i := range cells {
+		if i >= pos && i < pos+size {
+			cells[i] = thumbCell
+		} else {
+			cells[i] = trackCell
+		}
+	}
+	return cells
+}
+
+// HintBar renders "key label · key label …" from pairs alternating key, label. An empty label leaves
+// a bare key affordance.
 func HintBar(s theme.Styles, pairs ...string) string {
 	keyStyle := lipgloss.NewStyle().Foreground(s.Theme.Secondary)
 	var b strings.Builder

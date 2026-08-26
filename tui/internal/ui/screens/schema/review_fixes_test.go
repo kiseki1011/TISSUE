@@ -7,8 +7,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 )
 
-// tempRenameNames yields distinct throwaway names that avoid all current and final option names, so
-// the two-phase rename never collides mid-commit (the swap/cycle case).
+// Temp names must be distinct and clear of every option name, or the two-phase rename collides.
 func TestTempRenameNamesAvoidCollisions(t *testing.T) {
 	avoid := map[string]bool{"tmp0": true, "tmp1": true, "low": true, "high": true}
 	names := tempRenameNames(3, avoid)
@@ -27,11 +26,9 @@ func TestTempRenameNamesAvoidCollisions(t *testing.T) {
 	}
 }
 
-// A commit that renames one option into another's current name (reachable when a second rename frees
-// that name) is allowed by the editor and produces a command — the two-phase rename resolves the
-// intermediate collision server-side.
+// Renaming one option into a name another still holds is allowed: the two-phase rename resolves
+// the intermediate collision server-side.
 func TestOptionsRenameChainSubmits(t *testing.T) {
-	// A(1), B(2) -> rename B to B2, then rename A to B. Final rows {A->B, B->B2} are collision-free.
 	f := newOptionsForm(optionsDeps(), 1, 12, "Sev", []domain.FieldOption{{ID: 1, Name: "A"}, {ID: 2, Name: "B"}})
 	f = f.openRename(1) // B
 	f.input.SetValue("B2")
@@ -52,8 +49,7 @@ func TestOptionsRenameChainSubmits(t *testing.T) {
 	}
 }
 
-// A partial-commit failure keeps the options editor open with the error and refetches, so the stale
-// baseline is reseeded and applied changes are not re-issued on the next Save.
+// A partial-commit failure refetches to reseed the baseline, so applied changes are not re-issued.
 func TestOptionsFailureRefetchesAndReseeds(t *testing.T) {
 	m := typeFieldsModel(t)
 	m = m.moveTypeElem(keyDown())
@@ -66,7 +62,7 @@ func TestOptionsFailureRefetchesAndReseeds(t *testing.T) {
 	if _, ok := m.typeDetail[1]; ok || !m.detailPending[1] || cmd == nil {
 		t.Error("failure did not invalidate + refetch to reseed")
 	}
-	// the refetch result reseeds the editor's baseline from the fresh options, preserving the error
+	// the refetch reseeds the baseline and preserves the error
 	m, _ = m.Update(TypeDetailLoadedMsg{ID: 1, Detail: domain.IssueTypeDetail{
 		ID: 1, Fields: []domain.IssueField{{ID: 12, Name: "Severity", Type: "SELECT_OPTION",
 			Options: []domain.FieldOption{{ID: 3, Name: "only"}}}},
@@ -82,8 +78,7 @@ func TestOptionsFailureRefetchesAndReseeds(t *testing.T) {
 	}
 }
 
-// A long Korean issue-type name (within the backend's 50-character bound) is accepted, not rejected
-// as too long by a byte-count check.
+// A 20-character Korean name is accepted: the bound is characters, not bytes.
 func TestTypeCreateAcceptsLongKoreanName(t *testing.T) {
 	wfs := []domain.WorkflowSummary{{ID: 1, Name: "Flow"}}
 	f := newCreateTypeForm(optionsDeps(), wfs)
@@ -97,8 +92,7 @@ func TestTypeCreateAcceptsLongKoreanName(t *testing.T) {
 	}
 }
 
-// Workflow validation accepts a long Korean workflow name (≤32 chars) and rejects an over-long
-// state name with an accurate, state-specific message.
+// Workflow name length is counted in characters, and an over-long state name gets its own message.
 func TestWorkflowCreateNameRuleUnicode(t *testing.T) {
 	f := newCreateWorkflowForm(optionsDeps())
 	f.name.SetValue(strings.Repeat("가", 20)) // 20 chars, 60 bytes, within 32
@@ -106,7 +100,6 @@ func TestWorkflowCreateNameRuleUnicode(t *testing.T) {
 	if msg := f.validate(); msg != "" {
 		t.Errorf("a 20-character Korean workflow name was rejected: %q", msg)
 	}
-	// an over-long state name is caught with the state message, not the generic graph error
 	f2 := newCreateWorkflowForm(optionsDeps())
 	f2.name.SetValue("Valid")
 	f2.states[0].name = strings.Repeat("x", 40)

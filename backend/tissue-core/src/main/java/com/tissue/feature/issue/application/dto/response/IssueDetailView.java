@@ -15,4 +15,6 @@ public record IssueDetailView(
         IssueIdentifierResponse parent,
         List<IssueIdentifierResponse> children,
         IssueRelationsDetail relations,
-        PageResponse<CommentDetailResponse> comments) {}
+        PageResponse<CommentDetailResponse> comments,
+        List<IssueBranchView> branches,
+        List<IssuePullRequestView> pullRequests) {}

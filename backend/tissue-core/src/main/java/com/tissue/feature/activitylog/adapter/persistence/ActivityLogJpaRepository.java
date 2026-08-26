@@ -21,4 +21,15 @@ public interface ActivityLogJpaRepository
             """)
     List<ProjectLastActivityRow> findLastActivityByProjectKeys(
             @Param("projectKeys") Collection<String> projectKeys, @Param("types") Collection<ActivityType> types);
+
+    // No activity_type filter: issue_key is only populated on issue-scoped rows (comments included), so
+    // scoping by issue_key already excludes sprint/project events. This also keeps the aggregate
+    // index-only against idx_activity_log_issue_key_created_at (issue_key, created_at DESC).
+    @Query("""
+            SELECT al.entityReference.issueKey AS issueKey, MAX(al.createdAt) AS lastActivityAt
+            FROM ActivityLog al
+            WHERE al.entityReference.issueKey IN :issueKeys
+            GROUP BY al.entityReference.issueKey
+            """)
+    List<IssueLastActivityRow> findLastActivityByIssueKeys(@Param("issueKeys") Collection<String> issueKeys);
 }

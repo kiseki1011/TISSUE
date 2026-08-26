@@ -16,16 +16,14 @@ import (
 
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
-// navRefWidth is a fixed width used only to order the draft elements top-to-bottom for keyboard
-// navigation. The vertical layout — and thus the row ordering — is width-independent, so the
-// exact panel width is irrelevant here.
+// navRefWidth is arbitrary: the vertical layout is width-independent, so nav order is unaffected.
 const navRefWidth = 80
 
-// flowState is one state in the editor's working copy of the graph. key is a stable local
-// handle ("s<id>" for an existing state, "n<seq>" for a new one) that transitions reference, so
-// wiring survives reordering. On save it becomes an existing-id or temp-key node reference.
+// flowState is one state in the working copy. key is a stable local handle ("s<id>" existing,
+// "n<seq>" new) that transitions reference, so wiring survives reordering.
 type flowState struct {
 	id       int
 	key      string
@@ -35,8 +33,7 @@ type flowState struct {
 }
 
 // flowTrans is one transition in the working copy. src/tgt hold flowState keys. guards is carried
-// unedited (the flow editor changes topology, not guards) purely so the preview can show them. A
-// whole-graph replace preserves an existing transition's guards.
+// unedited so the preview can show it — a whole-graph replace preserves it server-side.
 type flowTrans struct {
 	id     int
 	key    string
@@ -46,8 +43,7 @@ type flowTrans struct {
 	guards []domain.WorkflowGuard
 }
 
-// flowForm is the whole-graph structure editor: it holds an editable copy of the states and
-// transitions and serializes the full desired graph into one optimistic-locked replace.
+// flowForm edits a copy of the whole graph and serializes it into one optimistic-locked replace.
 type flowForm struct {
 	deps    deps.Deps
 	wfID    int
@@ -101,10 +97,8 @@ type flowItem struct {
 	idx  int
 }
 
-// items is the editor's flat focus order: every state, then every transition, then the command
-// affordances. Keeping the commands contiguous at the tail means the selection walks the whole
-// graph before reaching the action bar, so navigating into a command scrolls cleanly to the bar
-// instead of jumping mid-graph.
+// items is the flat focus order: states, transitions, then commands. The commands stay contiguous
+// at the tail so navigating into one scrolls to the action bar instead of jumping mid-graph.
 func (f flowForm) items() []flowItem {
 	items := make([]flowItem, 0, len(f.states)+len(f.trans)+5)
 	for i := range f.states {
@@ -130,10 +124,7 @@ func (f flowForm) addStateFocus() int   { return len(f.states) + len(f.trans) }
 func (f flowForm) addTransFocus() int   { return len(f.states) + len(f.trans) + 1 }
 func (f flowForm) saveFocus() int       { return len(f.states) + len(f.trans) + 2 }
 
-// selElem maps the focused item to the draft diagram element it highlights. draftDetail numbers
-// states and transitions by their draft-order index+1, so the editor's selection cursor tracks the
-// same node/edge the flat focus points at. Action-bar items (add/save/cancel) have no diagram
-// element and report ok=false.
+// selElem maps the focused item to a draft element, matching draftDetail's index+1 numbering.
 func (f flowForm) selElem() (wfElem, bool) {
 	switch it := f.cur(); it.kind {
 	case fiState:
@@ -144,8 +135,7 @@ func (f flowForm) selElem() (wfElem, bool) {
 	return wfElem{}, false
 }
 
-// focusForElem is the inverse of selElem: it points the focus at the item for a draft diagram
-// element (a click landed on it), reporting false for anything that is not a current element.
+// focusForElem is the inverse of selElem: a clicked draft element back to its focus index.
 func (f flowForm) focusForElem(e wfElem) (int, bool) {
 	switch e.kind {
 	case elemState:
@@ -160,9 +150,7 @@ func (f flowForm) focusForElem(e wfElem) (int, bool) {
 	return 0, false
 }
 
-// navOrder returns items() indices in visual top-to-bottom order: graph elements sorted by their
-// draft-diagram row, then the command items. ↑/↓ walk this so the selection reads down the graph
-// the way the read view does, even though the flat focus index stays in draft order.
+// navOrder is visual top-to-bottom order, so ↑/↓ read down the graph while focus stays draft-ordered.
 func (f flowForm) navOrder() []int {
 	items := f.items()
 	_, rows, _ := renderWorkflowGraph(f.draftDetail(), f.deps.Styles, navRefWidth, wfElem{}, wfElem{}, false)
@@ -185,9 +173,7 @@ func (f flowForm) navOrder() []int {
 	return append(graph, cmds...)
 }
 
-// firstStateFocus is the focus index of the state at the top of the diagram (the first element in
-// visual order), so the editor opens anchored on the initial state rather than wherever the draft
-// order happens to start.
+// firstStateFocus anchors the editor at the topmost drawn state, not the first in draft order.
 func (f flowForm) firstStateFocus() int {
 	for _, idx := range f.navOrder() {
 		if f.items()[idx].kind == fiState {
@@ -197,8 +183,7 @@ func (f flowForm) firstStateFocus() int {
 	return 0
 }
 
-// navStep moves the focus delta positions along the visual nav order, wrapping at both ends so
-// every nav key (arrows, j/k, tab) cycles the small bounded item list in either direction.
+// navStep moves the focus delta positions along the visual nav order, wrapping at both ends.
 func (f flowForm) navStep(delta int) int {
 	order := f.navOrder()
 	pos := indexOfInt(order, f.focus)
@@ -208,8 +193,7 @@ func (f flowForm) navStep(delta int) int {
 	return order[(pos+delta+len(order))%len(order)]
 }
 
-// hasOverlay reports whether a sub-form is open over the in-place editor, so the screen knows to
-// composite flowForm.View() as a centered modal on top of the Details panel.
+// hasOverlay tells the screen to composite View() as a centered modal over the Details panel.
 func (f flowForm) hasOverlay() bool { return f.nodeOpen || f.edgeOpen }
 
 func (f flowForm) clampFocus() flowForm {
@@ -319,8 +303,7 @@ func (f flowForm) onKey(msg tea.KeyPressMsg) (flowForm, tea.Cmd) {
 		f.node, f.editingNode, f.nodeOpen = newNodeForm(f.deps, "Add state", "", "ACTIVE", ""), -1, true
 		return f, nil
 	case "t":
-		// adding a transition while a state is focused pre-fills it as the source, so "add from
-		// here" needs only a target
+		// a focused state pre-fills as the source, so "add from here" needs only a target
 		src := ""
 		if it := f.cur(); it.kind == fiState {
 			src = f.states[it.idx].key
@@ -331,7 +314,7 @@ func (f flowForm) onKey(msg tea.KeyPressMsg) (flowForm, tea.Cmd) {
 		return f.deleteCur(), nil
 	case "ctrl+s":
 		return f.submit()
-	case "enter", " ":
+	case "enter", "space":
 		return f.activateCur()
 	}
 	return f, nil
@@ -387,8 +370,7 @@ func (f flowForm) applyEdge(name, src, tgt string) flowForm {
 	return f
 }
 
-// enforceInitial keeps the initial state unique: if state i is now INITIAL, every other INITIAL
-// state falls back to ACTIVE, so the graph always presents exactly one starting point.
+// enforceInitial keeps exactly one INITIAL: every other one falls back to ACTIVE.
 func (f flowForm) enforceInitial(i int) flowForm {
 	if i < 0 || i >= len(f.states) || f.states[i].category != "INITIAL" {
 		return f
@@ -401,8 +383,7 @@ func (f flowForm) enforceInitial(i int) flowForm {
 	return f
 }
 
-// deleteCur removes the focused state or transition. Deleting a state also drops every
-// transition touching it, so the serialized graph never references a missing node.
+// deleteCur also drops every transition touching a deleted state, so nothing dangles in the payload.
 func (f flowForm) deleteCur() flowForm {
 	switch it := f.cur(); it.kind {
 	case fiState:
@@ -435,9 +416,8 @@ func (f flowForm) submit() (flowForm, tea.Cmd) {
 	return f, tea.Batch(saveFlow(f.deps, f.wfID, f.version, states, trans), f.spinner.Tick)
 }
 
-// buildInputs serializes the working copy into the whole-graph replace payload: existing nodes
-// carry their id (states send only their category — the rest is preserved server-side), new nodes
-// carry a temp key plus the fields the backend needs to create them.
+// buildInputs serializes into the whole-graph replace payload: existing nodes carry their id (a
+// state sends only its category, the rest is preserved server-side), new nodes carry a temp key.
 func (f flowForm) buildInputs() ([]domain.GraphStateInput, []domain.GraphTransitionInput) {
 	states := make([]domain.GraphStateInput, 0, len(f.states))
 	for _, st := range f.states {
@@ -475,8 +455,8 @@ func (f flowForm) ref(key string) domain.GraphRef {
 	return domain.GraphRef{}
 }
 
-// validate runs the cheap structural checks client-side for a fast error. The backend still
-// enforces connectivity, node caps, and issue migration on deleted states.
+// validate runs cheap structural checks for a fast error. The backend still enforces connectivity,
+// node caps, and issue migration on deleted states.
 func (f flowForm) validate() string {
 	if len(f.states) == 0 {
 		return "Add at least one state."
@@ -501,9 +481,8 @@ func (f flowForm) validate() string {
 	return ""
 }
 
-// draftDetail renders the working copy into a throwaway WorkflowDetail so the graph renderer can
-// draw the live draft diagram in the Details panel. Local keys become synthetic ids numbered by
-// draft order, so selElem/focusForElem can map between the flat focus and the drawn element.
+// draftDetail renders the working copy into a throwaway WorkflowDetail for the graph renderer.
+// Local keys become synthetic ids numbered by draft order, which selElem/focusForElem map back.
 func (f flowForm) draftDetail() domain.WorkflowDetail {
 	ids := make(map[string]int, len(f.states))
 	var d domain.WorkflowDetail
@@ -521,10 +500,8 @@ func (f flowForm) draftDetail() domain.WorkflowDetail {
 	return d
 }
 
-// View renders only the sub-form overlays (node/edge) the in-place editor floats as centered
-// modals. The editor body itself — the draft diagram, the action bar, and the status — is drawn
-// into the Details panel by the screen (see flowEditorLines), so there is nothing to render when
-// no sub-form is open.
+// View renders only the node/edge sub-forms. The screen draws the editor body into the Details
+// panel, so with no sub-form open there is nothing to render here.
 func (f flowForm) View() string {
 	switch {
 	case f.nodeOpen:
@@ -535,15 +512,13 @@ func (f flowForm) View() string {
 	return ""
 }
 
-// affordance renders one action-bar item (an add/save/cancel handle). It is zone-marked so a
-// click routes to it through flowForm.onClick.
+// affordance renders one action-bar handle, zone-marked so a click routes to flowForm.onClick.
 func (f flowForm) affordance(id, label string, focused bool, base color.Color) string {
 	st := affordanceStyle(f.deps.Styles.Theme, base, focused, f.hover == id)
 	return zone.Mark(id, st.Render(label))
 }
 
-// actionBar is the editor's command row above the draft diagram. The line stays within width so
-// the Details panel does not wrap it, which would break its zone markers.
+// actionBar must stay within width: a line the Details panel wraps loses its zone markers.
 func (f flowForm) actionBar(width int) []string {
 	t := f.deps.Styles.Theme
 	row := f.affordance("flow.addstate", "+ State", f.focus == f.addStateFocus(), t.Secondary) +
@@ -555,8 +530,7 @@ func (f flowForm) actionBar(width int) []string {
 
 func (f flowForm) statusBlock(width int) []string {
 	s := f.deps.Styles
-	// keep the hint to one line: a wrapped hint would shift every diagram row below it out of
-	// step with the element-row map used for scroll-into-view
+	// a wrapped hint would shift every diagram row out of step with the element-row map
 	out := []string{trunc(f.hint(), width)}
 	switch {
 	case f.submitting:
@@ -567,8 +541,7 @@ func (f flowForm) statusBlock(width int) []string {
 	return out
 }
 
-// hint is the contextual key row. Existing states are recategorized inline and renamed from the
-// read view, so enter only edits a brand-new state. The add handles are always available.
+// hint is the contextual key row. Enter only edits a new state: existing ones recategorize inline.
 func (f flowForm) hint() string {
 	s := f.deps.Styles
 	switch it := f.cur(); it.kind {
@@ -617,8 +590,7 @@ func (f flowForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-// onClick routes clicks on the action-bar handles. Clicks that land on a diagram element are
-// hit-tested by the screen (which owns the panel geometry) before this runs.
+// onClick handles the action bar only. The screen hit-tests diagram elements first, it owns geometry.
 func (f flowForm) onClick(msg tea.MouseClickMsg) (flowForm, tea.Cmd) {
 	if msg.Button != tea.MouseLeft || f.submitting {
 		return f, nil
@@ -657,6 +629,9 @@ func saveFlow(d deps.Deps, wfID, version int, states []domain.GraphStateInput, t
 }
 
 func flowErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -667,6 +642,9 @@ func flowErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit this workflow."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's own explanation
 	}
 	return "Could not save the graph. Try again."
 }

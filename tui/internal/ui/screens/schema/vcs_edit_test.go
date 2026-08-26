@@ -18,8 +18,7 @@ func openVcsEditor(t *testing.T, opened, merged int) Model {
 	return m
 }
 
-// Pressing v on a loaded workflow opens the VCS editor seeded with its current mappings and the
-// transition list to choose from.
+// v on a loaded workflow opens the VCS editor seeded with its mappings and transitions.
 func TestOpenVcsSeedsForm(t *testing.T) {
 	m := openVcsEditor(t, 10, 12) // 10 = Start, 12 = Approve
 	if !m.CapturingInput() {
@@ -43,7 +42,7 @@ func TestOpenVcsOnlyForLoadedWorkflow(t *testing.T) {
 	}
 }
 
-// Enter on a field opens a dropdown of None + every transition; selecting one sets the mapping.
+// Enter on a field opens a dropdown of None + every transition.
 func TestVcsPickerSelectsTransition(t *testing.T) {
 	m := openVcsEditor(t, 0, 0) // both None
 	m.vcs.focus = vfOpened
@@ -97,7 +96,6 @@ func TestVcsEscClosesPickerThenModal(t *testing.T) {
 	}
 }
 
-// A save enters the submitting state and issues a command.
 func TestVcsSubmitIssuesSave(t *testing.T) {
 	m := openVcsEditor(t, 10, 0)
 	m.vcs.focus = vfSave
@@ -108,8 +106,7 @@ func TestVcsSubmitIssuesSave(t *testing.T) {
 	}
 }
 
-// The Edit button spliced into the VCS Automation rule opens the editor when clicked (its zone
-// survives the Details render + scroll pipeline).
+// Clicking the VCS rule's Edit button opens the editor (its zone survives the render pipeline).
 func TestVcsEditButtonOpensEditor(t *testing.T) {
 	m := vcsModel(t, 10, 0)
 	_ = scanView(t, m.View(), "schema.vcs.edit")
@@ -120,8 +117,7 @@ func TestVcsEditButtonOpensEditor(t *testing.T) {
 	}
 }
 
-// Hovering the VCS Edit button records the hover and repaints the button; moving away clears
-// it.
+// Hovering the VCS Edit button records it and repaints. Moving away clears it.
 func TestVcsEditButtonHover(t *testing.T) {
 	m := vcsModel(t, 10, 0)
 	_ = scanView(t, m.View(), "schema.vcs.edit")

@@ -16,6 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/domain"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/components"
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/deps"
+	"github.com/kiseki1011/TISSUE/tui/internal/ui/errmsg"
 )
 
 // id 0 marks a new option not yet on the server.
@@ -29,8 +30,8 @@ const maxFieldOptions = 50
 
 const optionRowW = 40
 
-// optionsForm edits one SELECT_OPTION / CHECKLIST field's options. Save diffs against the original
-// and fires per-option endpoints (delete, rename, add) since the backend has no whole-list replace.
+// optionsForm edits one SELECT_OPTION / CHECKLIST field's options. Save diffs against the
+// original and fires per-option endpoints, as the backend has no whole-list replace.
 type optionsForm struct {
 	deps    deps.Deps
 	typeID  int
@@ -126,7 +127,7 @@ func (f optionsForm) onKey(msg tea.KeyPressMsg) (optionsForm, tea.Cmd) {
 		if f.onRow() {
 			return f.removeRow(f.focus), nil
 		}
-	case "enter", " ":
+	case "enter", "space":
 		switch {
 		case f.onRow():
 			return f.openRename(f.focus), nil
@@ -198,8 +199,7 @@ func (f optionsForm) commitInput() optionsForm {
 	return f
 }
 
-// duplicateName reports a case-insensitive collision. The backend's option uniqueness is on the
-// normalized name.
+// duplicateName is case-insensitive: the backend's uniqueness is on the normalized name.
 func (f optionsForm) duplicateName(name string, except int) bool {
 	norm := strings.ToLower(strings.TrimSpace(name))
 	for i, r := range f.rows {
@@ -244,8 +244,7 @@ func (f optionsForm) diff() (dels []int, renames []optRow, adds []string) {
 	return dels, renames, adds
 }
 
-// submit closes without a network call when nothing changed. Otherwise it gathers the avoid-set so
-// temp rename names dodge a swap-or-cycle collision.
+// submit skips the network when nothing changed. avoid keeps temp rename names off a collision.
 func (f optionsForm) submit() (optionsForm, tea.Cmd) {
 	f.status = ""
 	dels, renames, adds := f.diff()
@@ -439,9 +438,8 @@ func commitOptions(d deps.Deps, typeID, fieldID int, dels []int, renames []optRo
 				return optionsFailedMsg{message: optionsErrorMessage(err)}
 			}
 		}
-		// Rename in two phases so a swap or cycle of names never hits an intermediate duplicate: move
-		// every renamed option to a throwaway name clear of all current and final names, then to its
-		// target. The backend enforces uniqueness at each PATCH, so a one-pass rename could 409.
+		// Rename in two phases so a swap or cycle never hits an intermediate duplicate: everything
+		// moves to a throwaway name first. The backend checks uniqueness per PATCH, so one pass 409s.
 		if len(renames) > 0 {
 			temp := tempRenameNames(len(renames), avoid)
 			for i, r := range renames {
@@ -479,6 +477,9 @@ func tempRenameNames(n int, avoid map[string]bool) []string {
 }
 
 func optionsErrorMessage(err error) string {
+	if m, ok := errmsg.Override(err); ok {
+		return m // connectivity, or a leaky code mapped to friendlier copy
+	}
 	var apiErr *domain.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.Status {
@@ -489,6 +490,9 @@ func optionsErrorMessage(err error) string {
 		case http.StatusForbidden:
 			return "You do not have permission to edit options."
 		}
+	}
+	if r := domain.ErrorReason(err); r != "" {
+		return r // prefer the server's explanation over the generic line
 	}
 	return "Could not save options. Some changes may have applied."
 }
