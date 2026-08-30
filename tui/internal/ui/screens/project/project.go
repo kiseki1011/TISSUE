@@ -1383,8 +1383,9 @@ func (m Model) focusAvailable(target projectFocus) bool {
 		return m.deps.Mouse
 	case focusDetail:
 		return !m.narrow()
+	default: // the list, search and count are always reachable
+		return true
 	}
-	return true
 }
 
 func (m Model) setFocus(target projectFocus) (Model, tea.Cmd) {
@@ -1797,13 +1798,6 @@ func (m Model) issueActionBinds() []key.Binding {
 		binds = append(binds, key.NewBinding(key.WithKeys("U"), key.WithHelp("U", "unlink")))
 	}
 	return binds
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 type issuesLoadedMsg struct {

@@ -247,7 +247,7 @@ var (
 	//   📝
 	filePen = variant{"\uf05f", "\U0001f4dd"}
 	//   ⧉
-	copy = variant{"\uf0c5", "\u29c9"}
+	copyGlyph = variant{"\uf0c5", "\u29c9"}
 	//   💾
 	save = variant{"\uf0c7", "\U0001f4be"}
 	//   📁
@@ -531,7 +531,7 @@ func New(mode Mode) Set {
 		PenSquare:            pick(penSquare),
 		Edit:                 pick(edit),
 		FilePen:              pick(filePen),
-		Copy:                 pick(copy),
+		Copy:                 pick(copyGlyph),
 		Save:                 pick(save),
 		Folder:               pick(folder),
 		File:                 pick(file),

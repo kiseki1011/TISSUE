@@ -590,9 +590,14 @@ func (m optionsModal) themeSwatches(preview theme.Theme) string {
 		c     color.Color
 	}
 	palette := []swatch{
-		{"Accent", preview.Accent}, {"Primary", preview.Primary}, {"Secondary", preview.Secondary},
-		{"Success", preview.Success}, {"Warning", preview.Warning}, {"Error", preview.Error},
-		{"Text", preview.Text}, {"Muted", preview.Muted},
+		{"Accent", preview.Accent},
+		{"Primary", preview.Primary},
+		{"Secondary", preview.Secondary},
+		{"Success", preview.Success},
+		{"Warning", preview.Warning},
+		{"Error", preview.Error},
+		{"Text", preview.Text},
+		{"Muted", preview.Muted},
 	}
 	rows := make([]string, len(palette))
 	for i, s := range palette {

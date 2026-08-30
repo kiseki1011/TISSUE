@@ -35,6 +35,7 @@ func main() {
 	}
 }
 
+//nolint:gosec // a codegen CLI reads and writes the paths it is handed
 func run(in, out string) error {
 	data, err := os.ReadFile(in)
 	if err != nil {
@@ -47,24 +48,24 @@ func run(in, out string) error {
 	}
 
 	spec["openapi"] = "3.0.3"
-	replaceJsonNullableRefs(spec)
+	replaceJSONNullableRefs(spec)
 	deleteSchemas(spec, jsonNullableNames())
 
 	result, err := json.MarshalIndent(spec, "", "  ")
 	if err != nil {
 		return fmt.Errorf("encode: %w", err)
 	}
-	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(out), 0o750); err != nil {
 		return fmt.Errorf("create out dir: %w", err)
 	}
-	if err := os.WriteFile(out, result, 0o644); err != nil {
+	if err := os.WriteFile(out, result, 0o600); err != nil {
 		return fmt.Errorf("write %s: %w", out, err)
 	}
 	return nil
 }
 
-// replaceJsonNullableRefs rewrites every JsonNullableX $ref node in place into its value schema.
-func replaceJsonNullableRefs(node any) {
+// replaceJSONNullableRefs rewrites every JsonNullableX $ref node in place into its value schema.
+func replaceJSONNullableRefs(node any) {
 	switch n := node.(type) {
 	case map[string]any:
 		if ref, ok := n["$ref"].(string); ok {
@@ -80,11 +81,11 @@ func replaceJsonNullableRefs(node any) {
 			}
 		}
 		for _, v := range n {
-			replaceJsonNullableRefs(v)
+			replaceJSONNullableRefs(v)
 		}
 	case []any:
 		for _, v := range n {
-			replaceJsonNullableRefs(v)
+			replaceJSONNullableRefs(v)
 		}
 	}
 }

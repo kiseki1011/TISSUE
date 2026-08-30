@@ -356,7 +356,7 @@ func (a App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		a.schema, cmd = a.schema.Update(msg)
 		return a, cmd
-	case agents.AgentsLoadedMsg, agents.TokensLoadedMsg, agents.ModelsLoadedMsg:
+	case agents.LoadedMsg, agents.TokensLoadedMsg, agents.ModelsLoadedMsg:
 		// route the background agents prefetch to the Agents screen even while another tab is active
 		var cmd tea.Cmd
 		a.agents, cmd = a.agents.Update(msg)
@@ -1113,6 +1113,7 @@ func (a App) connectionBrand() string {
 		dot, col = g.Connected, t.Success
 	case realtime.Connecting:
 		dot, col = g.Connecting, t.Warning
+	default: // Disconnected is the initial pair above
 	}
 	return lipgloss.NewStyle().Foreground(col).Bold(true).Render(dot + " Tissue Server")
 }
@@ -1129,8 +1130,9 @@ func (a App) tabGlyph(s screen) string {
 		return g.Or(g.Robot, "")
 	case screenInbox:
 		return g.Or(g.Bell, "")
+	default: // the pre-auth and drill-in screens are not tabs
+		return ""
 	}
-	return ""
 }
 
 // tabBar renders the clickable top-level tabs, the active one accented and underlined. Each carries

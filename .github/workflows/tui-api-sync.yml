@@ -1,0 +1,93 @@
+name: TUI API Sync
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "docs/api-docs.json"
+      - "tui/api/**"
+      - "tui/pkg/client/**"
+      - "tui/internal/tools/specprep/**"
+      - "tui/oapi-codegen.yaml"
+      - "tui/Makefile"
+      - ".github/workflows/tui-api-sync.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "docs/api-docs.json"
+      - "tui/api/**"
+      - "tui/pkg/client/**"
+      - "tui/internal/tools/specprep/**"
+      - "tui/oapi-codegen.yaml"
+      - "tui/Makefile"
+      - ".github/workflows/tui-api-sync.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Spec and client in sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+
+      - name: Keep the committed spec for comparison
+        run: cp docs/api-docs.json "$RUNNER_TEMP/committed-api-docs.json"
+
+      - name: Regenerate the OpenAPI spec from the backend
+        working-directory: backend
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :tissue-bootstrap:generateOpenApiDocs --no-daemon --stacktrace
+
+      # springdoc serializes its x-* vendor extensions from a map, so key order moves between runs
+      # while the content is identical.
+      - name: Check docs/api-docs.json is current
+        run: |
+          python3 -c '
+          import json, sys
+          if json.load(open(sys.argv[1])) == json.load(open(sys.argv[2])):
+              print("docs/api-docs.json matches the backend")
+              sys.exit(0)
+          print("::error file=docs/api-docs.json::The committed OpenAPI spec is stale.")
+          print("Regenerate it with: cd backend && ./gradlew :tissue-bootstrap:generateOpenApiDocs")
+          sys.exit(1)
+          ' "$RUNNER_TEMP/committed-api-docs.json" docs/api-docs.json
+
+      - name: Regenerate the API client
+        working-directory: tui
+        run: make gen
+
+      - name: Check the generated client is current
+        run: |
+          if git diff --quiet -- tui/api/openapi.json tui/pkg/client/client.gen.go; then
+            echo "The generated API client matches the spec"
+            exit 0
+          fi
+          echo "::error::The committed API client does not match the backend spec."
+          echo "Regenerate it with: cd tui && make gen"
+          git diff --stat -- tui/api/openapi.json tui/pkg/client/client.gen.go
+          git diff -- tui/api/openapi.json tui/pkg/client/client.gen.go | head -200
+          exit 1

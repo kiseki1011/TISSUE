@@ -105,8 +105,10 @@ func TestApplyRealtimeRoutesIssueEvent(t *testing.T) {
 	a.project = project.New(d, "ENG", "Eng")
 
 	evt := func(pk string) realtime.Update {
-		return realtime.Update{Kind: realtime.EventUpdate, Gen: 7,
-			Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: pk, IssueKey: pk + "-1"}}
+		return realtime.Update{
+			Kind: realtime.EventUpdate, Gen: 7,
+			Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: pk, IssueKey: pk + "-1"},
+		}
 	}
 
 	m, cmd := a.applyRealtime(evt("ENG"))
@@ -121,8 +123,10 @@ func TestApplyRealtimeRoutesIssueEvent(t *testing.T) {
 		t.Error("an event for another project should still re-arm")
 	}
 
-	if _, cmd := a.applyRealtime(realtime.Update{Kind: realtime.EventUpdate, Gen: 6,
-		Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: "ENG"}}); cmd != nil {
+	if _, cmd := a.applyRealtime(realtime.Update{
+		Kind: realtime.EventUpdate, Gen: 6,
+		Event: realtime.Event{Category: "issue", Type: "ISSUE_CREATED", ProjectKey: "ENG"},
+	}); cmd != nil {
 		t.Error("a stale-gen event should not re-arm")
 	}
 }
@@ -139,7 +143,8 @@ func TestApplyRealtimeRoutesSprintEvent(t *testing.T) {
 	evt := func(pk string) realtime.Update {
 		return realtime.Update{Kind: realtime.EventUpdate, Gen: 7, Event: realtime.Event{
 			Category: "sprint", Type: "SPRINT_STARTED", ProjectKey: pk,
-			Data: map[string]any{"sprintId": float64(3)}}}
+			Data: map[string]any{"sprintId": float64(3)},
+		}}
 	}
 
 	m, cmd := a.applyRealtime(evt("ENG"))
@@ -164,7 +169,8 @@ func TestApplyRealtimeNotificationRepolls(t *testing.T) {
 	a.screen = screenHome
 
 	notif := realtime.Update{Kind: realtime.EventUpdate, Gen: 9, Event: realtime.Event{
-		Category: "notification", Type: "NOTIFICATION_CREATED", ProjectKey: "ENG"}}
+		Category: "notification", Type: "NOTIFICATION_CREATED", ProjectKey: "ENG",
+	}}
 	if _, cmd := a.applyRealtime(notif); cmd == nil {
 		t.Error("a notification event should re-poll the badge and re-arm")
 	}
@@ -177,7 +183,8 @@ func TestApplyRealtimeNotificationRepolls(t *testing.T) {
 	}
 
 	stale := realtime.Update{Kind: realtime.EventUpdate, Gen: 8, Event: realtime.Event{
-		Category: "notification", Type: "NOTIFICATION_CREATED"}}
+		Category: "notification", Type: "NOTIFICATION_CREATED",
+	}}
 	if _, cmd := a.applyRealtime(stale); cmd != nil {
 		t.Error("a stale-gen notification event should be dropped without re-arming")
 	}

@@ -26,7 +26,7 @@ import (
 const (
 	itName = iota
 	itScope
-	itTtl
+	itTTL
 	itSubmit
 	itCancel
 	itCount
@@ -105,7 +105,7 @@ func (f issueTokenForm) hitZone(msg tea.MouseMsg) int {
 	case zone.Get("agents.token.scope").InBounds(msg):
 		return itScope
 	case zone.Get("agents.token.ttl").InBounds(msg):
-		return itTtl
+		return itTTL
 	case zone.Get("agents.token.submit").InBounds(msg):
 		return itSubmit
 	case zone.Get("agents.token.cancel").InBounds(msg):
@@ -119,7 +119,7 @@ func (f issueTokenForm) onClick(msg tea.MouseClickMsg) (issueTokenForm, tea.Cmd)
 		return f, nil
 	}
 	switch f.hitZone(msg) {
-	case itName, itTtl:
+	case itName, itTTL:
 		return f.focusOn(f.hitZone(msg))
 	case itScope:
 		f, _ = f.focusOn(itScope)
@@ -174,7 +174,7 @@ func (f issueTokenForm) focusOn(target int) (issueTokenForm, tea.Cmd) {
 	switch target {
 	case itName:
 		cmd = f.name.Focus()
-	case itTtl:
+	case itTTL:
 		cmd = f.ttl.Focus()
 	}
 	return f, cmd
@@ -187,7 +187,7 @@ func (f issueTokenForm) typeIntoFocused(msg tea.KeyPressMsg) (issueTokenForm, te
 	case itName:
 		f.nameErr = ""
 		f.name, cmd = f.name.Update(msg)
-	case itTtl:
+	case itTTL:
 		f.ttlErr = ""
 		f.ttl, cmd = f.ttl.Update(msg)
 	}
@@ -225,7 +225,7 @@ func (f issueTokenForm) submit() (issueTokenForm, tea.Cmd) {
 	case f.nameErr != "":
 		return f.focusOn(itName)
 	case f.ttlErr != "":
-		return f.focusOn(itTtl)
+		return f.focusOn(itTTL)
 	}
 	f.submitting = true
 	return f, tea.Batch(issueTokenCmd(f.deps, f.agent.ID, name, f.scope, ttl), f.spinner.Tick)
@@ -236,7 +236,7 @@ func (f issueTokenForm) View() string {
 	rows := []string{
 		f.field(itName, "Name", f.name.View(), f.nameErr),
 		f.scopeField(),
-		f.field(itTtl, "Expires in days", f.ttl.View(), f.ttlErr),
+		f.field(itTTL, "Expires in days", f.ttl.View(), f.ttlErr),
 	}
 	switch {
 	case f.submitting:
@@ -279,7 +279,7 @@ func (f issueTokenForm) fieldZone(which int) string {
 	switch which {
 	case itName:
 		return "agents.token.name"
-	case itTtl:
+	case itTTL:
 		return "agents.token.ttl"
 	}
 	return ""
@@ -340,8 +340,10 @@ func toggleScope(s string) string {
 	return domain.ScopeReadWrite
 }
 
-type issueFailedMsg struct{ message string }
-type issueCancelledMsg struct{}
+type (
+	issueFailedMsg    struct{ message string }
+	issueCancelledMsg struct{}
+)
 
 func cancelIssue() tea.Msg { return issueCancelledMsg{} }
 

@@ -13,9 +13,11 @@ import (
 )
 
 // TestMain disables ambiguous-width counting, matching the CLI's startup fix. Without it bubblezone's
-// scanned coordinates double under a CJK locale.
+// scanned coordinates double under a CJK locale. NewGlobal here so a test that marks a zone does not
+// depend on another test having initialised the manager first.
 func TestMain(m *testing.M) {
 	runewidth.DefaultCondition.EastAsianWidth = false
+	zone.NewGlobal()
 	os.Exit(m.Run())
 }
 

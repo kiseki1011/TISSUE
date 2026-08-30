@@ -12,7 +12,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var csiPattern = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csiPattern = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func StripANSI(s string) string { return csiPattern.ReplaceAllString(s, "") }
 

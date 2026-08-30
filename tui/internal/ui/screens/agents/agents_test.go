@@ -16,7 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/widgets"
 )
 
-var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csi = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
@@ -35,7 +35,7 @@ func twoAgents(t *testing.T) Model {
 	zone.NewGlobal()
 	m := New(testDeps())
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 100, Height: 24})
-	m, _ = m.Update(AgentsLoadedMsg{Agents: []domain.Agent{
+	m, _ = m.Update(LoadedMsg{Agents: []domain.Agent{
 		{ID: 1, Name: "Build Bot", Username: "agent-a-build"},
 		{ID: 2, Name: "Reviewer", Username: "agent-a-review"},
 	}})
@@ -51,9 +51,9 @@ func keyStr(s string) tea.KeyPressMsg {
 
 func TestAgentsLoadedSelectsFirst(t *testing.T) {
 	m := New(testDeps())
-	m, cmd := m.Update(AgentsLoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "A"}, {ID: 2, Name: "B"}}})
+	m, cmd := m.Update(LoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "A"}, {ID: 2, Name: "B"}}})
 	if m.loading {
-		t.Error("still loading after AgentsLoadedMsg")
+		t.Error("still loading after LoadedMsg")
 	}
 	if m.cursor != 0 {
 		t.Errorf("cursor = %d, want 0", m.cursor)
@@ -70,7 +70,7 @@ func TestAgentsLoadError(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps())
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 100, Height: 24})
-	m, _ = m.Update(AgentsLoadedMsg{Err: true})
+	m, _ = m.Update(LoadedMsg{Err: true})
 	if !m.loadErr {
 		t.Fatal("loadErr not set")
 	}
@@ -109,9 +109,6 @@ func TestOpenCreateCapturesInput(t *testing.T) {
 
 func TestCreateAgentValidation(t *testing.T) {
 	f := newCreateAgentForm(testDeps(), nil)
-	if _, _ = f.submit(); f.nameErr == "" {
-		// submit returns a copy, so re-run it capturing the result
-	}
 	f2, _ := f.submit()
 	if f2.nameErr == "" {
 		t.Error("empty name should be rejected")
@@ -290,7 +287,7 @@ func TestAgentListWindowsToSelection(t *testing.T) {
 	for i := 0; i < 40; i++ {
 		many = append(many, domain.Agent{ID: int64(i + 1), Name: "Agent " + string(rune('A'+i%26)), Username: "agent-x"})
 	}
-	m, _ = m.Update(AgentsLoadedMsg{Agents: many})
+	m, _ = m.Update(LoadedMsg{Agents: many})
 	m.cursor = 39 // last agent, far past the fold
 
 	leftW, _ := m.panelWidths()
@@ -315,7 +312,7 @@ func TestViewNoPanic(t *testing.T) {
 		zone.NewGlobal()
 		m := New(testDeps())
 		m, _ = m.Update(tea.WindowSizeMsg{Width: sz[0], Height: sz[1]})
-		m, _ = m.Update(AgentsLoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "A", Username: "agent-a"}}})
+		m, _ = m.Update(LoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "A", Username: "agent-a"}}})
 		if got := plain(m.View()); got == "" && sz[0] > 0 {
 			t.Errorf("%dx%d: empty view", sz[0], sz[1])
 		}

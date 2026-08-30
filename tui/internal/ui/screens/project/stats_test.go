@@ -45,7 +45,7 @@ func TestStatsLazyLoad(t *testing.T) {
 func TestStatsOpenWhileLoadingIsInert(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{})
 	m, _ = m.Update(press("3")) // load now in flight (statsLoading)
-	m, cmd := m.Update(press("3"))
+	_, cmd := m.Update(press("3"))
 	if cmd != nil {
 		t.Error("reopening while a load is in flight should not fire a duplicate fetch")
 	}
@@ -198,8 +198,15 @@ func TestHumanizeDur(t *testing.T) {
 		in   int
 		want string
 	}{
-		{0, "0m"}, {-5, "0m"}, {30, "1m"}, {90, "1m"}, {3600, "1h"},
-		{3660, "1h 1m"}, {9000, "2h 30m"}, {86400, "1d"}, {90000, "1d 1h"},
+		{0, "0m"},
+		{-5, "0m"},
+		{30, "1m"},
+		{90, "1m"},
+		{3600, "1h"},
+		{3660, "1h 1m"},
+		{9000, "2h 30m"},
+		{86400, "1d"},
+		{90000, "1d 1h"},
 	}
 	for _, c := range cases {
 		if got := humanizeDur(c.in); got != c.want {

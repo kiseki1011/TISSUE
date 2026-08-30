@@ -254,7 +254,7 @@ func (s *IssueService) UpdateIssueCommonFields(ctx context.Context, issueKey str
 
 // UpdateIssueStoryPoint uses a dedicated endpoint. 0 unsets it and is sent explicitly, not omitted.
 func (s *IssueService) UpdateIssueStoryPoint(ctx context.Context, issueKey string, storyPoint int) error {
-	sp := int32(storyPoint)
+	sp := int32Of(storyPoint)
 	resp, err := s.api.UpdateIssueStoryPointWithResponse(ctx, issueKey, client.UpdateStoryPointRequest{StoryPoint: &sp})
 	if err != nil {
 		return fmt.Errorf("update issue story point: %w", err)

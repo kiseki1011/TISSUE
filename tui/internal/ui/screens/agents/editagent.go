@@ -324,9 +324,11 @@ func (f editAgentForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-type agentUpdatedMsg struct{}
-type editCancelledMsg struct{}
-type editFailedMsg struct{ message string }
+type (
+	agentUpdatedMsg  struct{}
+	editCancelledMsg struct{}
+	editFailedMsg    struct{ message string }
+)
 
 func cancelEdit() tea.Msg { return editCancelledMsg{} }
 

@@ -20,11 +20,11 @@ import org.springframework.data.repository.query.Param;
 
 /**
  * Spring Data fragment holding the project-statistics JPQL. An internal detail of
- * {@link IssueStatsQueryAdapter}; application code depends on the
+ * {@link IssueStatsQueryAdapter}. Application code depends on the
  * {@link com.tissue.feature.issue.application.port.repository.IssueStatsQueryRepository} port, not on
  * this interface, so the query mechanism can be swapped without touching callers.
  */
-interface IssueStatsJpaRepository extends Repository<Issue, Long> {
+public interface IssueStatsJpaRepository extends Repository<Issue, Long> {
 
     @Query("""
             SELECT i.currentState.category AS category, COUNT(i) AS count

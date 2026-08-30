@@ -16,7 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var stackCSI = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var stackCSI = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func stackPlain(s string) string { return stackCSI.ReplaceAllString(zone.Scan(s), "") }
 

@@ -59,7 +59,7 @@ func Dir() (string, error) {
 		return "", fmt.Errorf("locate config dir: %w", err)
 	}
 	dir := filepath.Join(base, appName)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return "", fmt.Errorf("create config dir %s: %w", dir, err)
 	}
 	return dir, nil

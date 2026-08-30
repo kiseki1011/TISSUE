@@ -38,7 +38,7 @@ type IssueActivityPage struct {
 
 // ListIssueActivities fetches the most recent page of an issue's activity log.
 func (s *IssueService) ListIssueActivities(ctx context.Context, issueKey string, limit int) (IssueActivityPage, error) {
-	l := int32(limit)
+	l := int32Of(limit)
 	resp, err := s.api.ListIssueActivitiesWithResponse(ctx, issueKey, &client.ListIssueActivitiesParams{Limit: &l})
 	if err != nil {
 		return IssueActivityPage{}, fmt.Errorf("list issue activities: %w", err)

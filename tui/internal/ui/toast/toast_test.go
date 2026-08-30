@@ -10,7 +10,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csi = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func plain(s string) string { return csi.ReplaceAllString(s, "") }
 

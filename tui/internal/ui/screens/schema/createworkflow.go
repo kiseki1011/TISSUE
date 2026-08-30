@@ -138,7 +138,6 @@ func (f createWorkflowForm) indexOfKind(kind createWorkflowItemKind) int {
 func (f createWorkflowForm) addStateFocus() int { return f.indexOfKind(cwAddState) }
 func (f createWorkflowForm) addTransFocus() int { return f.indexOfKind(cwAddTrans) }
 func (f createWorkflowForm) saveFocus() int     { return f.indexOfKind(cwSave) }
-func (f createWorkflowForm) cancelFocus() int   { return f.indexOfKind(cwCancel) }
 
 // navOrder sorts graph elements by drawn row so navigation reads down the diagram rather than in raw
 // draft order. Metadata first, commands last, mirroring the in-place flow editor.
@@ -178,8 +177,9 @@ func (f createWorkflowForm) selElem() (wfElem, bool) {
 		return wfElem{elemState, it.idx + 1}, true
 	case cwTrans:
 		return wfElem{elemTransition, it.idx + 1}, true
+	default: // the fields and buttons are not diagram elements
+		return wfElem{}, false
 	}
-	return wfElem{}, false
 }
 
 func (f createWorkflowForm) clampFocus() createWorkflowForm {
@@ -386,6 +386,7 @@ func (f createWorkflowForm) focusOn(i int) (createWorkflowForm, tea.Cmd) {
 		cmd = f.name.Focus()
 	case cwDesc:
 		cmd = f.desc.Focus()
+	default: // only the text fields take focus
 	}
 	return f, cmd
 }
@@ -682,8 +683,9 @@ func (f createWorkflowForm) hint() string {
 		return hintBar(s, "enter", "add", "esc", "cancel")
 	case cwSave, cwCancel:
 		return hintBar(s, "enter", "select", "esc", "cancel")
+	default: // the name and description fields
+		return hintBar(s, "tab", "next", "a", "add state", "t", "add transition")
 	}
-	return hintBar(s, "tab", "next", "a", "add state", "t", "add transition")
 }
 
 func (f createWorkflowForm) field(kind createWorkflowItemKind, label, content, errMsg string) string {
@@ -744,8 +746,9 @@ func cwFieldZone(kind createWorkflowItemKind) string {
 		return "cw.name"
 	case cwDesc:
 		return "cw.desc"
+	default: // only the two text fields carry a click zone
+		return ""
 	}
-	return ""
 }
 
 func (f createWorkflowForm) onClick(msg tea.MouseClickMsg) (createWorkflowForm, tea.Cmd) {

@@ -17,7 +17,7 @@ func NewIssueService(api *client.ClientWithResponses) *IssueService {
 
 // page is 0-based.
 func (s *IssueService) SearchProjectIssues(ctx context.Context, projectKey string, filter IssueFilter, page, size int) (IssuePage, error) {
-	p, sz := int32(page), int32(size)
+	p, sz := int32Of(page), int32Of(size)
 	params := &client.SearchProjectIssuesParams{Page: &p, Size: &sz}
 	applyFilter(params, filter)
 	resp, err := s.api.SearchProjectIssuesWithResponse(ctx, projectKey, params)

@@ -284,7 +284,7 @@ func (m Model) tokenRow(tok domain.Token, i int, now time.Time, w int, hovered b
 		lipgloss.NewStyle().Foreground(t.Muted).Render(scope) + "  " + status
 	sub := lipgloss.NewStyle().Foreground(t.Muted).Render(fit(
 		fmt.Sprintf("  used %s · expires %s", fmtRelative(tok.LastUsedAt, now), fmtExpiry(tok.ExpiresAt)), w))
-	if hovered && !(i == m.tokenCursor && m.focus == paneTokens) {
+	if hovered && (i != m.tokenCursor || m.focus != paneTokens) {
 		band := m.hoverBand()
 		head, sub = band.Width(w).Render(head), band.Width(w).Render(sub)
 	}

@@ -310,10 +310,10 @@ func (m Model) mentionPopupLines() []string {
 			label += "  " + name
 		}
 		marker, style := "  ", lipgloss.NewStyle().Foreground(t.Muted)
-		switch {
-		case i == f.mention.sel:
+		switch i {
+		case f.mention.sel:
 			marker, style = "▸ ", lipgloss.NewStyle().Foreground(t.Accent).Bold(true)
-		case i == f.mention.hover:
+		case f.mention.hover:
 			style = lipgloss.NewStyle().Foreground(t.Text)
 		}
 		cell := lipgloss.NewStyle().Width(editFieldW).Render(style.Render(components.Trunc(marker+label, editFieldW)))

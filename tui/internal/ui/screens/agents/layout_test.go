@@ -34,7 +34,7 @@ func TestStackedLayoutPutsDetailAboveList(t *testing.T) {
 	zone.NewGlobal()
 	m := New(testDeps())
 	m, _ = m.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
-	m, _ = m.Update(AgentsLoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "Build Bot", Username: "agent-build"}}})
+	m, _ = m.Update(LoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "Build Bot", Username: "agent-build"}}})
 	if m.layout() != layoutStacked {
 		t.Fatalf("expected stacked layout at 70x30, got %v", m.layout())
 	}

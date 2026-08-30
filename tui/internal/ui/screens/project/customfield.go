@@ -364,17 +364,6 @@ func inZone(id string, msg tea.MouseMsg) bool {
 	return z != nil && z.InBounds(msg)
 }
 
-// lines is how many rows this input occupies, so the form can size its window.
-func (c customFieldInput) lines() int {
-	switch {
-	case cfIsArea(c.field.Type):
-		return editContentH
-	case cfIsChecklist(c.field.Type):
-		return max(1, len(c.field.Options))
-	}
-	return 1
-}
-
 // value serializes to the backend's per-type JSON shape. present=false for an unset optional field,
 // err is set when the entry is invalid or a required field is missing.
 func (c customFieldInput) value() (val interface{}, present bool, err string) {

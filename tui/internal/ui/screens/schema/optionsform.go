@@ -264,7 +264,7 @@ func (f optionsForm) submit() (optionsForm, tea.Cmd) {
 
 // sameNormalized treats a case-only rename (which the backend rejects) as no change.
 func sameNormalized(a, b string) bool {
-	return strings.ToLower(strings.TrimSpace(a)) == strings.ToLower(strings.TrimSpace(b))
+	return strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b))
 }
 
 func (f optionsForm) View() string {

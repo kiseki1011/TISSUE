@@ -15,9 +15,11 @@ import (
 )
 
 // Mirrors the CLI's startup fix: under a CJK locale go-runewidth counts box-drawing runes as
-// width 2, doubling bubblezone's coordinates and breaking mouse hit-testing.
+// width 2, doubling bubblezone's coordinates and breaking mouse hit-testing. NewGlobal here so a test
+// that marks a zone does not depend on another test having initialised the manager first.
 func TestMain(m *testing.M) {
 	runewidth.DefaultCondition.EastAsianWidth = false
+	zone.NewGlobal()
 	os.Exit(m.Run())
 }
 

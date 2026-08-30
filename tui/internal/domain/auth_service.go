@@ -169,3 +169,9 @@ func derefInt32(p *int32) int {
 	}
 	return int(*p)
 }
+
+// int32Of narrows a value the UI supplies to the int32 the API takes: page numbers, page sizes, day
+// counts and form-validated numbers, none of which come near the limit.
+func int32Of(v int) int32 {
+	return int32(v) //nolint:gosec // see the doc comment
+}

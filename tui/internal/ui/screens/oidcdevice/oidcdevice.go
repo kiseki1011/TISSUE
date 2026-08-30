@@ -195,8 +195,9 @@ func (m Model) HelpKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "back")),
 			key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
 		}
+	default: // starting and done are transient, with nothing to press
+		return nil
 	}
-	return nil
 }
 
 func (m Model) idpLabel() string {

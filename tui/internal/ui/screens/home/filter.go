@@ -1,6 +1,8 @@
 package home
 
 import (
+	"slices"
+
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	lipgloss "charm.land/lipgloss/v2"
@@ -145,7 +147,7 @@ func (f filterForm) View() string {
 		}
 	}
 	buttons := lipgloss.PlaceHorizontal(w, lipgloss.Right, f.buttonGroup())
-	rows := append(checks, "", buttons)
+	rows := slices.Concat(checks, []string{"", buttons})
 	body := lipgloss.NewStyle().Padding(1, 1).Render(lipgloss.JoinVertical(lipgloss.Left, rows...))
 	return components.TitledBoxCentered("Filters", body, f.deps.Styles.Theme.Primary)
 }

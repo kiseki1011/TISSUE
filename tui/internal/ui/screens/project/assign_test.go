@@ -71,8 +71,10 @@ func TestAssignPickerWaitsForDetail(t *testing.T) {
 func TestAssignPickerSearchFilters(t *testing.T) {
 	m := loaded(t, 120, 30, domain.IssuePage{Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1})
 	m, _ = m.Update(membersLoadedMsg{members: []domain.ProjectMember{
-		{MemberID: 1, DisplayName: "Hong"}, {MemberID: 2, DisplayName: "Kim Younghee"},
-		{MemberID: 3, DisplayName: "Kim Cheolsu"}, {MemberID: 4, DisplayName: "Lee"},
+		{MemberID: 1, DisplayName: "Hong"},
+		{MemberID: 2, DisplayName: "Kim Younghee"},
+		{MemberID: 3, DisplayName: "Kim Cheolsu"},
+		{MemberID: 4, DisplayName: "Lee"},
 	}})
 	m, _ = m.Update(press("enter"))
 	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey], detail: domain.IssueDetail{Key: m.viewKey}})

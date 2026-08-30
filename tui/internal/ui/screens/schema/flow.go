@@ -131,8 +131,9 @@ func (f flowForm) selElem() (wfElem, bool) {
 		return wfElem{elemState, it.idx + 1}, true
 	case fiTrans:
 		return wfElem{elemTransition, it.idx + 1}, true
+	default: // the buttons are not diagram elements
+		return wfElem{}, false
 	}
-	return wfElem{}, false
 }
 
 // focusForElem is the inverse of selElem: a clicked draft element back to its focus index.
@@ -585,6 +586,7 @@ func (f flowForm) HelpKeys() []key.Binding {
 			key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "delete")))
 	case fiAddState, fiAddTrans:
 		binds = append(binds, key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "add")))
+	default: // save and cancel add nothing beyond the two bindings below
 	}
 	binds = append(binds, key.NewBinding(key.WithKeys("ctrl+s"), key.WithHelp("ctrl+s", "save")))
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))

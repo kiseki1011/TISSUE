@@ -184,7 +184,8 @@ func (m Model) detailContent(innerW, bodyH int) string {
 	if n.IsRead {
 		status = "Read"
 	}
-	lines := []string{"", head, "",
+	lines := []string{
+		"", head, "",
 		row(g.Or(g.Tag, ""), "Type", domain.HumanizeNotificationType(n.Type)),
 		row(g.Or(g.Person, ""), "From", orDash(n.Actor())),
 		row(g.Or(g.Calendar, ""), "When", fmtWhen(n)),

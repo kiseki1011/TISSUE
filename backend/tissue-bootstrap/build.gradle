@@ -48,6 +48,7 @@ project(':tissue-bootstrap') {
         "--spring.profiles.active=local",
         "--server.port=8080"
       ])
+      jvmArgs.set(["-Dspring.devtools.restart.enabled=false"])
     }
   }
 

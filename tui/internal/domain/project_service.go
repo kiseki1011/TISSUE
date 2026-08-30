@@ -677,7 +677,7 @@ type ContributionDay struct {
 func (s *ProjectService) GetProjectContributions(
 	ctx context.Context, projectKey string, memberID int64, days int,
 ) (Contributions, error) {
-	d := int32(days)
+	d := int32Of(days)
 	zone := LocalZoneID()
 	resp, err := s.api.GetProjectContributionsWithResponse(
 		ctx, projectKey, &client.GetProjectContributionsParams{MemberId: memberID, Days: &d, ZoneId: &zone})

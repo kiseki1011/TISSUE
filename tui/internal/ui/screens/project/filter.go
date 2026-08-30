@@ -308,6 +308,7 @@ func (f filterForm) rowsOfKind(k filterKind) []string {
 			checked = f.types[it.id]
 		case kindReviewStatus:
 			checked = f.reviewSel[it.value]
+		default: // the people rows and the buttons are not checkboxes
 		}
 		label := it.label
 		if k == kindReviewStatus {

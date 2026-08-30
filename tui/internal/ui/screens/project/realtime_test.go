@@ -213,8 +213,10 @@ func TestRealtimeReloadPreservesNavigationDuringWindow(t *testing.T) {
 	}
 
 	m, _ = m.Update(issuesLoadedMsg{key: testKey, gen: gen, page: domain.IssuePage{Issues: []domain.IssueSummary{
-		{Key: "ENG-9", StateCategory: "ACTIVE"}, {Key: "ENG-1", StateCategory: "ACTIVE"},
-		{Key: "ENG-2", StateCategory: "ACTIVE"}, {Key: "ENG-3", StateCategory: "ACTIVE"},
+		{Key: "ENG-9", StateCategory: "ACTIVE"},
+		{Key: "ENG-1", StateCategory: "ACTIVE"},
+		{Key: "ENG-2", StateCategory: "ACTIVE"},
+		{Key: "ENG-3", StateCategory: "ACTIVE"},
 	}, TotalElements: 4}})
 
 	if got := m.issues[m.cursor].Key; got != "ENG-3" {
@@ -225,8 +227,10 @@ func TestRealtimeReloadPreservesNavigationDuringWindow(t *testing.T) {
 // Deleting a row ABOVE the cursor must not slide the cursor onto the neighbor.
 func TestRealtimeDeleteAboveCursorKeepsSelection(t *testing.T) {
 	m := loaded(t, 160, 40, domain.IssuePage{Issues: []domain.IssueSummary{
-		{Key: "ENG-1", StateCategory: "ACTIVE"}, {Key: "ENG-2", StateCategory: "ACTIVE"},
-		{Key: "ENG-3", StateCategory: "ACTIVE"}, {Key: "ENG-4", StateCategory: "ACTIVE"},
+		{Key: "ENG-1", StateCategory: "ACTIVE"},
+		{Key: "ENG-2", StateCategory: "ACTIVE"},
+		{Key: "ENG-3", StateCategory: "ACTIVE"},
+		{Key: "ENG-4", StateCategory: "ACTIVE"},
 	}, TotalElements: 4})
 	m, _ = m.Update(press("down"))
 	m, _ = m.Update(press("down")) // cursor index 2 -> ENG-3
