@@ -33,17 +33,24 @@ func TestToIssueDetailMapsCommonAndRelations(t *testing.T) {
 			CurrentState: &client.StateInfo{DisplayName: ptr("In Progress"), Category: ptr(client.StateInfoCategoryACTIVE)},
 		},
 		Children: &[]client.IssueIdentifierResponse{
-			{IssueKey: ptr("ENG-8"), IssueType: &client.IssueTypeInfo{DisplayName: ptr("Task"), Color: ptr(client.IssueTypeInfoColor("ANSI_RED"))},
-				CurrentState: &client.StateInfo{DisplayName: ptr("Todo"), Category: ptr(client.StateInfoCategoryINITIAL)}},
+			{
+				IssueKey: ptr("ENG-8"), IssueType: &client.IssueTypeInfo{DisplayName: ptr("Task"), Color: ptr(client.IssueTypeInfoColor("ANSI_RED"))},
+				CurrentState: &client.StateInfo{DisplayName: ptr("Todo"), Category: ptr(client.StateInfoCategoryINITIAL)},
+			},
 			{IssueKey: ptr("ENG-9")},
 			{}, // no key -> dropped
 		},
 		AvailableTransitions: &[]client.AvailableTransition{
-			{TransitionId: ptr(int64(10)), DisplayLabel: ptr("Resolve"), CanExecute: ptr(true),
-				TargetState: &client.StateInfo{DisplayName: ptr("Done"), Category: ptr(client.StateInfoCategoryCOMPLETED)}},
-			{TransitionId: ptr(int64(11)), DisplayLabel: ptr("Abandon"), CanExecute: ptr(false),
+			{
+				TransitionId: ptr(int64(10)), DisplayLabel: ptr("Resolve"), CanExecute: ptr(true),
+				TargetState: &client.StateInfo{DisplayName: ptr("Done"), Category: ptr(client.StateInfoCategoryCOMPLETED)},
+			},
+			{
+				TransitionId: ptr(int64(11)), DisplayLabel: ptr("Abandon"), CanExecute: ptr(false),
 				BlockedReasons: &[]client.GuardViolation{
-					{Message: ptr("needs approval")}, {}, {Message: ptr("assignee required")}}},
+					{Message: ptr("needs approval")}, {}, {Message: ptr("assignee required")},
+				},
+			},
 		},
 	}
 

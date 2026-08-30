@@ -30,7 +30,7 @@ func (s *NotificationService) List(ctx context.Context, unreadOnly, mentionsOnly
 		params.Cursor = &cursor
 	}
 	if limit > 0 {
-		l := int32(limit)
+		l := int32Of(limit)
 		params.Limit = &l
 	}
 	resp, err := s.api.ListNotificationsWithResponse(ctx, params)

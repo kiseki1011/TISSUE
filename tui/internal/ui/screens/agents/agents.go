@@ -129,7 +129,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.modalScroll = m.clampModalScroll(m.modalScroll) // a resize may reveal or hide modal rows
 		return m, nil
 
-	case AgentsLoadedMsg:
+	case LoadedMsg:
 		m.loading, m.loadErr = false, msg.Err
 		m.agents = msg.Agents
 		if m.cursor >= len(m.agents) {
@@ -398,8 +398,9 @@ func (m Model) runConfirmedAction() (Model, tea.Cmd) {
 		return m, deactivateAgent(m.deps, m.confirmAgentID)
 	case confirmRevoke:
 		return m, revokeToken(m.deps, m.confirmAgentID, m.confirmTokenID)
+	default: // confirmNone: nothing was armed
+		return m, nil
 	}
-	return m, nil
 }
 
 func (m Model) onClick(msg tea.MouseClickMsg) (Model, tea.Cmd) {
@@ -576,8 +577,8 @@ func clamp(v, lo, hi int) int {
 	return v
 }
 
-// AgentsLoadedMsg carries the caller's agents. Exported so the shell can route a prefetch here.
-type AgentsLoadedMsg struct {
+// LoadedMsg carries the caller's agents. Exported so the shell can route a prefetch here.
+type LoadedMsg struct {
 	Agents []domain.Agent
 	Err    bool
 }
@@ -595,16 +596,18 @@ type ModelsLoadedMsg struct {
 	Err    bool
 }
 
-type agentCreatedMsg struct{ agent domain.Agent }
-type agentDeactivatedMsg struct{}
-type tokenIssuedMsg struct{ issued domain.IssuedToken }
-type tokenRevokedMsg struct{}
-type actionFailedMsg struct{ message string }
+type (
+	agentCreatedMsg     struct{ agent domain.Agent }
+	agentDeactivatedMsg struct{}
+	tokenIssuedMsg      struct{ issued domain.IssuedToken }
+	tokenRevokedMsg     struct{}
+	actionFailedMsg     struct{ message string }
+)
 
 func loadAgents(d deps.Deps) tea.Cmd {
 	return func() tea.Msg {
 		agents, err := d.Agents.ListAgents(context.Background())
-		return AgentsLoadedMsg{Agents: agents, Err: err != nil}
+		return LoadedMsg{Agents: agents, Err: err != nil}
 	}
 }
 

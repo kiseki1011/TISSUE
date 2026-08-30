@@ -12,9 +12,11 @@ import (
 func TestToRelationGroups(t *testing.T) {
 	rel := &client.IssueRelationsDetail{
 		BlockedBy: &[]client.RelatedIssueInfo{
-			{IssueKey: ptr("ENG-7"), Title: ptr("Staging DB"),
+			{
+				IssueKey: ptr("ENG-7"), Title: ptr("Staging DB"),
 				IssueType:    &client.IssueTypeInfo{DisplayName: ptr("Task")},
-				CurrentState: &client.StateInfo{DisplayName: ptr("Done"), Category: ptr(client.StateInfoCategoryCOMPLETED)}},
+				CurrentState: &client.StateInfo{DisplayName: ptr("Done"), Category: ptr(client.StateInfoCategoryCOMPLETED)},
+			},
 		},
 		Blocks:   &[]client.RelatedIssueInfo{{IssueKey: ptr("ENG-42"), Title: ptr("Migration")}},
 		Relevant: &[]client.RelatedIssueInfo{}, // empty -> dropped

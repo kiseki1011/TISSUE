@@ -21,7 +21,7 @@ func toastApp() App {
 	return a
 }
 
-var csiSeq = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csiSeq = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func stripCSI(s string) string { return csiSeq.ReplaceAllString(s, "") }
 

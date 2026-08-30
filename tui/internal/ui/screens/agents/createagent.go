@@ -364,8 +364,10 @@ func (f createAgentForm) HelpKeys() []key.Binding {
 	return append(binds, key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")))
 }
 
-type createFailedMsg struct{ message string }
-type createCancelledMsg struct{}
+type (
+	createFailedMsg    struct{ message string }
+	createCancelledMsg struct{}
+)
 
 func cancelCreate() tea.Msg { return createCancelledMsg{} }
 

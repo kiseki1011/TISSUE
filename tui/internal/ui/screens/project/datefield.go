@@ -25,10 +25,12 @@ const (
 const datePickerW = 24
 
 // The forms emit these to ask the model to open the calendar. The model owns the overlay.
-type openDueCreateMsg struct{}
-type openDueEditMsg struct{}
-type openCustomDateMsg struct{ index int }
-type openCustomDateEditMsg struct{ index int }
+type (
+	openDueCreateMsg      struct{}
+	openDueEditMsg        struct{}
+	openCustomDateMsg     struct{ index int }
+	openCustomDateEditMsg struct{ index int }
+)
 
 func openDueCreate() tea.Msg       { return openDueCreateMsg{} }
 func openDueEdit() tea.Msg         { return openDueEditMsg{} }
@@ -49,6 +51,7 @@ func (m Model) openDuePicker(target dateTarget) (Model, tea.Cmd) {
 		if m.editUI.dueSet {
 			initial = m.editUI.dueAt
 		}
+	default: // the custom-field and sprint targets open empty
 	}
 	m.dating = true
 	m.dateTarget = target

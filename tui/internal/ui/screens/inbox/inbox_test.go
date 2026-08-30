@@ -16,7 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csi = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
@@ -39,12 +39,16 @@ func press(s string) tea.KeyPressMsg {
 func sample() []domain.Notification {
 	now := time.Now()
 	return []domain.Notification{
-		{ID: 1, Type: domain.NotifIssueAssigned, ActorName: "Alice",
+		{
+			ID: 1, Type: domain.NotifIssueAssigned, ActorName: "Alice",
 			Data: map[string]string{"issueKey": "P-1"},
-			Ref:  domain.EntityRef{IssueKey: "P-1", ProjectKey: "P"}, CreatedAt: now},
-		{ID: 2, Type: domain.NotifIssueMentioned, ActorName: "Bob", IsRead: true,
+			Ref:  domain.EntityRef{IssueKey: "P-1", ProjectKey: "P"}, CreatedAt: now,
+		},
+		{
+			ID: 2, Type: domain.NotifIssueMentioned, ActorName: "Bob", IsRead: true,
 			Data: map[string]string{"issueKey": "P-2", "content": "hey"},
-			Ref:  domain.EntityRef{IssueKey: "P-2", ProjectKey: "P"}, CreatedAt: now},
+			Ref:  domain.EntityRef{IssueKey: "P-2", ProjectKey: "P"}, CreatedAt: now,
+		},
 	}
 }
 
@@ -187,20 +191,26 @@ func TestEnterOnReadItemNavigatesOnly(t *testing.T) {
 
 // navCmdFor builds the drill-in message per notification kind.
 func TestNavCmdFor(t *testing.T) {
-	issue := domain.Notification{Type: domain.NotifIssueAssigned,
-		Ref: domain.EntityRef{ResourceType: "ISSUE", ProjectKey: "P", IssueKey: "P-1"}}
+	issue := domain.Notification{
+		Type: domain.NotifIssueAssigned,
+		Ref:  domain.EntityRef{ResourceType: "ISSUE", ProjectKey: "P", IssueKey: "P-1"},
+	}
 	if msg := runNav(t, navCmdFor(issue)); msg.ProjectKey != "P" || msg.IssueKey != "P-1" || msg.SprintID != 0 {
 		t.Errorf("issue nav = %+v, want ProjectKey=P IssueKey=P-1", msg)
 	}
 
-	sprint := domain.Notification{Type: domain.NotifSprintStarted,
-		Ref: domain.EntityRef{ResourceType: "SPRINT", ProjectKey: "P", ResourceID: 42}}
+	sprint := domain.Notification{
+		Type: domain.NotifSprintStarted,
+		Ref:  domain.EntityRef{ResourceType: "SPRINT", ProjectKey: "P", ResourceID: 42},
+	}
 	if msg := runNav(t, navCmdFor(sprint)); msg.ProjectKey != "P" || msg.IssueKey != "" || msg.SprintID != 42 {
 		t.Errorf("sprint nav = %+v, want ProjectKey=P SprintID=42", msg)
 	}
 
-	role := domain.Notification{Type: domain.NotifProjectRoleChanged,
-		Ref: domain.EntityRef{ResourceType: "PROJECT_MEMBER", ProjectKey: "P"}}
+	role := domain.Notification{
+		Type: domain.NotifProjectRoleChanged,
+		Ref:  domain.EntityRef{ResourceType: "PROJECT_MEMBER", ProjectKey: "P"},
+	}
 	if msg := runNav(t, navCmdFor(role)); msg.ProjectKey != "P" || msg.IssueKey != "" || msg.SprintID != 0 {
 		t.Errorf("role nav = %+v, want ProjectKey=P only", msg)
 	}

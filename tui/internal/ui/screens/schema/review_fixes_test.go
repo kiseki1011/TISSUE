@@ -64,8 +64,10 @@ func TestOptionsFailureRefetchesAndReseeds(t *testing.T) {
 	}
 	// the refetch reseeds the baseline and preserves the error
 	m, _ = m.Update(TypeDetailLoadedMsg{ID: 1, Detail: domain.IssueTypeDetail{
-		ID: 1, Fields: []domain.IssueField{{ID: 12, Name: "Severity", Type: "SELECT_OPTION",
-			Options: []domain.FieldOption{{ID: 3, Name: "only"}}}},
+		ID: 1, Fields: []domain.IssueField{{
+			ID: 12, Name: "Severity", Type: "SELECT_OPTION",
+			Options: []domain.FieldOption{{ID: 3, Name: "only"}},
+		}},
 	}})
 	if !m.optionsEditing {
 		t.Fatal("reseed closed the editor unexpectedly")

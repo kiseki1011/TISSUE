@@ -140,7 +140,7 @@ func (s *AgentService) ListTokens(ctx context.Context, agentID int64) ([]Token, 
 func (s *AgentService) IssueToken(ctx context.Context, agentID int64, name, scope string, ttlDays int) (IssuedToken, error) {
 	body := client.CreatePatRequest{Name: name, Scope: client.CreatePatRequestScope(scope)}
 	if ttlDays > 0 {
-		d := int32(ttlDays)
+		d := int32Of(ttlDays)
 		body.TtlDays = &d
 	}
 	resp, err := s.api.IssueAgentTokenWithResponse(ctx, agentID, body)

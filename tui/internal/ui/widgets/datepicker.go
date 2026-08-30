@@ -312,12 +312,12 @@ func (p DatePicker) footer(t theme.Theme) string {
 	if !p.allowClear {
 		return p.padLeft(ok, okW, p.contentW()-okW)
 	}
-	clear := zone.Mark(dpClearZone, lipgloss.NewStyle().Foreground(t.Muted).Render("Clear"))
+	clearBtn := zone.Mark(dpClearZone, lipgloss.NewStyle().Foreground(t.Muted).Render("Clear"))
 	gap := p.contentW() - lipgloss.Width("Clear") - okW
 	if gap < 1 {
 		gap = 1
 	}
-	return clear + strings.Repeat(" ", gap) + ok
+	return clearBtn + strings.Repeat(" ", gap) + ok
 }
 
 // padCenter centers by the caller's plain width, since lipgloss.Width would count the zone markers.
@@ -328,7 +328,7 @@ func (p DatePicker) padCenter(s string, plainW int) string {
 	return s
 }
 
-func (p DatePicker) padLeft(s string, plainW, pad int) string {
+func (p DatePicker) padLeft(s string, _, pad int) string {
 	if pad > 0 {
 		return strings.Repeat(" ", pad) + s
 	}

@@ -211,8 +211,10 @@ func TestTransitionPickerListsEveryBlockingCondition(t *testing.T) {
 // An executable transition carries no conditions: its guards passed, and the server does not report the
 // ones it silently satisfied - so a clean row must not gain a phantom warning line.
 func TestTransitionPickerLeavesExecutableMovesUnannotated(t *testing.T) {
-	if notes := blockedNotes(domain.IssueTransition{ID: 1, Label: "Start", CanExecute: true,
-		BlockedReasons: []string{"stale reason"}}); notes != nil {
+	if notes := blockedNotes(domain.IssueTransition{
+		ID: 1, Label: "Start", CanExecute: true,
+		BlockedReasons: []string{"stale reason"},
+	}); notes != nil {
 		t.Errorf("an executable transition should carry no conditions, got %v", notes)
 	}
 }
@@ -228,7 +230,7 @@ func TestTransitionBlockedWithoutAReasonStillExplains(t *testing.T) {
 		t.Errorf("a reasonless block should still be explained:\n%s", body)
 	}
 
-	m, cmd := m.Update(press("enter"))
+	_, cmd := m.Update(press("enter"))
 	if ts, ok := toastFrom(cmd); !ok || ts.Level != toast.Warning || !strings.Contains(ts.Text, "blocked") {
 		t.Errorf("selecting it should still warn, got %+v ok=%v", ts, ok)
 	}
@@ -250,19 +252,23 @@ func TestTransitionPickerFitsTheFrame(t *testing.T) {
 	var trs []domain.IssueTransition
 	for i := 1; i <= 6; i++ {
 		n := strconv.Itoa(i)
-		trs = append(trs, domain.IssueTransition{ID: int64(i), Label: "Move" + n, TargetLabel: "State" + n,
+		trs = append(trs, domain.IssueTransition{
+			ID: int64(i), Label: "Move" + n, TargetLabel: "State" + n,
 			BlockedReasons: []string{
 				"Reason A" + n + ": blocked by unresolved issues [ENG-4, ENG-9, ENG-12, ENG-31]",
 				"Reason B" + n + ": an assignee is required before this can be resolved.",
-			}})
+			},
+		})
 	}
 	for _, height := range []int{10, 20, 40} {
 		m := loaded(t, 120, height, domain.IssuePage{
 			Issues: []domain.IssueSummary{{Key: "ENG-1", Title: "X", StateCategory: "ACTIVE"}}, TotalElements: 1,
 		})
 		m, _ = m.Update(press("enter"))
-		m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey],
-			detail: domain.IssueDetail{Key: m.viewKey, Title: "X", Transitions: trs}})
+		m, _ = m.Update(IssueDetailLoadedMsg{
+			key: m.viewKey, gen: m.detailGen[m.viewKey],
+			detail: domain.IssueDetail{Key: m.viewKey, Title: "X", Transitions: trs},
+		})
 		m, _ = m.Update(press("t"))
 
 		if got := lipgloss.Height(m.picker.View(m.deps.Styles)); got > height {

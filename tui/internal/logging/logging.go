@@ -17,7 +17,7 @@ func Setup() (func(), error) {
 		return nil, fmt.Errorf("locate cache dir: %w", err)
 	}
 	dir := filepath.Join(base, appName)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create cache dir %s: %w", dir, err)
 	}
 

@@ -23,12 +23,12 @@ func TitledBoxCentered(title, body string, borderColor color.Color) string {
 }
 
 // TitledBoxWeighted ignores focused: focus is signalled by borderColor, never by border weight.
-func TitledBoxWeighted(title, body string, borderColor color.Color, focused bool) string {
+func TitledBoxWeighted(title, body string, borderColor color.Color, _ bool) string {
 	return TitledBox(title, body, borderColor)
 }
 
 // TitledBoxSubWeighted ignores focused (see TitledBoxWeighted).
-func TitledBoxSubWeighted(title, subtitle, body string, borderColor color.Color, focused bool) string {
+func TitledBoxSubWeighted(title, subtitle, body string, borderColor color.Color, _ bool) string {
 	return TitledBoxSub(title, subtitle, body, borderColor)
 }
 

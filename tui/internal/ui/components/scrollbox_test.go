@@ -18,8 +18,10 @@ func tallBox(n int) string {
 	return TitledBoxCentered("Modal", lipgloss.NewStyle().Padding(1, 1).Render(strings.Join(rows, "\n")), lipgloss.Color("#ff9e64"))
 }
 
-var thumbCol = lipgloss.Color("#ff9e64")
-var trackCol = lipgloss.Color("#414868")
+var (
+	thumbCol = lipgloss.Color("#ff9e64")
+	trackCol = lipgloss.Color("#414868")
+)
 
 func TestScrollBoxFits(t *testing.T) {
 	box := tallBox(4)

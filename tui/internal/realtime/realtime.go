@@ -264,10 +264,7 @@ func splitField(line string) (field, value string) {
 	if i < 0 {
 		return line, ""
 	}
-	value = line[i+1:]
-	if strings.HasPrefix(value, " ") {
-		value = value[1:]
-	}
+	value = strings.TrimPrefix(line[i+1:], " ")
 	return line[:i], value
 }
 

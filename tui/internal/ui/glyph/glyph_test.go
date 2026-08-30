@@ -8,7 +8,7 @@ func TestParseMode(t *testing.T) {
 		"NERD":    Nerd,
 		"unicode": Unicode,
 		"plain":   Unicode,
-		" auto ":  Auto,
+		" auto ":  Auto, //nolint:gocritic // the padding is the point: ParseMode trims before matching
 		"":        Auto,
 		"garbage": Auto,
 	}

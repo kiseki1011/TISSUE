@@ -284,8 +284,10 @@ func TestMentionPopupScrollsIntoView(t *testing.T) {
 		comments[i] = domain.IssueComment{ID: int64(i + 1), AuthorName: "U", Content: "a comment line"}
 	}
 	m, _ = m.Update(press("enter"))
-	m, _ = m.Update(IssueDetailLoadedMsg{key: m.viewKey, gen: m.detailGen[m.viewKey],
-		detail: domain.IssueDetail{Key: m.viewKey, Title: "Root", StateLabel: "Active", StateCategory: "ACTIVE", CommentCount: len(comments), Comments: comments}})
+	m, _ = m.Update(IssueDetailLoadedMsg{
+		key: m.viewKey, gen: m.detailGen[m.viewKey],
+		detail: domain.IssueDetail{Key: m.viewKey, Title: "Root", StateLabel: "Active", StateCategory: "ACTIVE", CommentCount: len(comments), Comments: comments},
+	})
 	m, _ = m.Update(press("c"))
 
 	m = typeInto(m, "@")

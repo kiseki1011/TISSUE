@@ -18,7 +18,7 @@ func TestMouseOffHidesButtons(t *testing.T) {
 		d.Mouse = mouse
 		m := New(d)
 		m, _ = m.Update(tea.WindowSizeMsg{Width: 120, Height: 20})
-		m, _ = m.Update(AgentsLoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "Build Bot", Username: "bot"}}})
+		m, _ = m.Update(LoadedMsg{Agents: []domain.Agent{{ID: 1, Name: "Build Bot", Username: "bot"}}})
 		return m
 	}
 

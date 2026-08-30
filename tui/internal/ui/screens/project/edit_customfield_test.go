@@ -15,10 +15,14 @@ func editDetail() domain.IssueDetail {
 		CustomFields: []domain.CustomField{
 			{ID: 40, Label: "Notes", Type: "SHORT_TEXT", Raw: "before"},
 			{ID: 41, Label: "Estimate", Type: "INTEGER", Raw: float64(3)},
-			{ID: 42, Label: "Severity", Type: "SELECT_OPTION", Raw: float64(2),
-				Options: []domain.FieldOption{{ID: 1, Name: "Low"}, {ID: 2, Name: "High"}}},
-			{ID: 43, Label: "Tags", Type: "CHECKLIST", Raw: map[string]interface{}{"7": true},
-				Options: []domain.FieldOption{{ID: 7, Name: "alpha"}, {ID: 8, Name: "beta"}}},
+			{
+				ID: 42, Label: "Severity", Type: "SELECT_OPTION", Raw: float64(2),
+				Options: []domain.FieldOption{{ID: 1, Name: "Low"}, {ID: 2, Name: "High"}},
+			},
+			{
+				ID: 43, Label: "Tags", Type: "CHECKLIST", Raw: map[string]interface{}{"7": true},
+				Options: []domain.FieldOption{{ID: 7, Name: "alpha"}, {ID: 8, Name: "beta"}},
+			},
 		},
 	}
 }

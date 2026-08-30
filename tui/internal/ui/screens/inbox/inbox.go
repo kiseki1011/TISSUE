@@ -384,8 +384,10 @@ type ReadChangedMsg struct{}
 
 // MarkedAllMsg and ActionFailedMsg are routed at the app level so their toast and badge refresh survive
 // the user leaving the tab before the request completes.
-type MarkedAllMsg struct{}
-type ActionFailedMsg struct{ Text string }
+type (
+	MarkedAllMsg    struct{}
+	ActionFailedMsg struct{ Text string }
+)
 
 func emitReadChanged() tea.Cmd {
 	return func() tea.Msg { return ReadChangedMsg{} }

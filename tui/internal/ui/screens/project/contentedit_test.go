@@ -78,7 +78,7 @@ func TestContentEditorSaves(t *testing.T) {
 
 	m2 := editReady(t, sampleDetail())
 	m2, _ = m2.Update(press("E"))
-	m2, cmd2 := m2.Update(contentSubmittedMsg{content: "# body"}) // unchanged
+	_, cmd2 := m2.Update(contentSubmittedMsg{content: "# body"}) // unchanged
 	if ts, ok := toastFrom(cmd2); !ok || !strings.Contains(ts.Text, "No changes") {
 		t.Errorf("an unchanged body should report no changes, got %+v ok=%v", ts, ok)
 	}

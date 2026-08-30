@@ -100,7 +100,7 @@ type IssueCommentPage struct {
 
 // ListComments fetches one page, 0-based. The detail BFF carries page 0, so "load more" starts at 1.
 func (s *IssueService) ListComments(ctx context.Context, issueKey string, page int) (IssueCommentPage, error) {
-	p, sz := int32(page), int32(CommentPageSize)
+	p, sz := int32Of(page), int32Of(CommentPageSize)
 	params := &client.ListIssueCommentsParams{Pageable: client.Pageable{Page: &p, Size: &sz}}
 	resp, err := s.api.ListIssueCommentsWithResponse(ctx, issueKey, params)
 	if err != nil {

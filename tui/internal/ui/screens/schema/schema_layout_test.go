@@ -16,7 +16,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csi = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 func plain(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
 
@@ -94,10 +94,14 @@ func TestFieldRowsFitContentWidth(t *testing.T) {
 		m, _ = m.Update(TypeDetailLoadedMsg{ID: 1, Detail: domain.IssueTypeDetail{
 			ID: 1, Name: "Epic",
 			Fields: []domain.IssueField{
-				{Name: "Acceptance Criteria That Runs Very Long Indeed", Type: "CHECKLIST", Required: true,
-					Description: strings.Repeat("desc ", 30)},
-				{Name: "Severity", Type: "SELECT_OPTION",
-					Options: fieldOptions("blocker", "critical", "major", "minor", "trivial", "cosmetic", "wontfix")},
+				{
+					Name: "Acceptance Criteria That Runs Very Long Indeed", Type: "CHECKLIST", Required: true,
+					Description: strings.Repeat("desc ", 30),
+				},
+				{
+					Name: "Severity", Type: "SELECT_OPTION",
+					Options: fieldOptions("blocker", "critical", "major", "minor", "trivial", "cosmetic", "wontfix"),
+				},
 				{Name: "Untyped"},
 			},
 		}})
@@ -194,7 +198,12 @@ func TestMetaRowGlyphsFitLabelColumn(t *testing.T) {
 			t.Errorf("%s meta row wrapped: %q (glyph overflows the 12-cell label)", c.label, row)
 			continue
 		}
-		if col := lipgloss.Width(row[:strings.Index(row, "VALUE")]); col != 15 {
+		at := strings.Index(row, "VALUE")
+		if at < 0 {
+			t.Errorf("%s meta row lost its value: %q", c.label, row)
+			continue
+		}
+		if col := lipgloss.Width(row[:at]); col != 15 {
 			t.Errorf("%s value at column %d, want 15", c.label, col)
 		}
 	}

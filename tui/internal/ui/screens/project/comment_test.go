@@ -13,8 +13,10 @@ func detailWithComments() domain.IssueDetail {
 	d := sampleDetail()
 	d.CommentCount = 2
 	d.Comments = []domain.IssueComment{
-		{ID: 1, AuthorName: "Hong", Content: "still repros", CreatedAt: time.Date(2026, 8, 8, 0, 0, 0, 0, time.UTC), Edited: true,
-			Replies: []domain.IssueComment{{ID: 2, AuthorName: "Kim", Content: "on it"}}},
+		{
+			ID: 1, AuthorName: "Hong", Content: "still repros", CreatedAt: time.Date(2026, 8, 8, 0, 0, 0, 0, time.UTC), Edited: true,
+			Replies: []domain.IssueComment{{ID: 2, AuthorName: "Kim", Content: "on it"}},
+		},
 		{ID: 3, AuthorName: "bot", Deleted: true},
 	}
 	return d

@@ -12,7 +12,7 @@ import (
 	"github.com/kiseki1011/TISSUE/tui/internal/ui/theme"
 )
 
-var csi = regexp.MustCompile("\\x1b\\[[0-9;]*[A-Za-z]")
+var csi = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
 
 // stripStyles drops the color escapes and zone markers, leaving the text the user reads.
 func stripStyles(s string) string { return csi.ReplaceAllString(zone.Scan(s), "") }
@@ -87,8 +87,10 @@ func keyRune(r rune) tea.KeyPressMsg { return tea.KeyPressMsg{Code: r, Text: str
 // Filtering is a case-insensitive substring match. Navigation wraps within the matches.
 func TestListPickerFilters(t *testing.T) {
 	opts := []PickerOption{
-		{Value: "1", Label: "Hong"}, {Value: "2", Label: "Kim Younghee"},
-		{Value: "3", Label: "Kim Cheolsu"}, {Value: "4", Label: "Lee"},
+		{Value: "1", Label: "Hong"},
+		{Value: "2", Label: "Kim Younghee"},
+		{Value: "3", Label: "Kim Cheolsu"},
+		{Value: "4", Label: "Lee"},
 	}
 	p := NewSearchableListPicker("Assign", opts, "", 8, 30)
 	if !p.Searchable() {

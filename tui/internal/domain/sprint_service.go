@@ -21,7 +21,7 @@ func NewSprintService(api *client.ClientWithResponses) *SprintService {
 // ListProjectSprints returns one 0-based page of all statuses. This endpoint paginates via a Spring
 // Pageable, not the flat query params the issue search uses.
 func (s *SprintService) ListProjectSprints(ctx context.Context, projectKey string, page, size int) (SprintPage, error) {
-	p, sz := int32(page), int32(size)
+	p, sz := int32Of(page), int32Of(size)
 	params := &client.ListProjectSprintsParams{Pageable: client.Pageable{Page: &p, Size: &sz}}
 	resp, err := s.api.ListProjectSprintsWithResponse(ctx, projectKey, params)
 	if err != nil {

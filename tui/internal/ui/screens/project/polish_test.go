@@ -56,7 +56,12 @@ func TestDetailStatusColumnsAligned(t *testing.T) {
 	want := w - colStatus
 	for label, key := range map[string]string{"Done": "CHI-1", "Approved": "Rev ", "Aborted": "REL-1"} {
 		line := lineWith(t, body, key)
-		col := lipgloss.Width(line[:strings.Index(line, label)])
+		at := strings.Index(line, label)
+		if at < 0 {
+			t.Errorf("status %q missing from the %q row:\n%q", label, key, line)
+			continue
+		}
+		col := lipgloss.Width(line[:at])
 		if col != want {
 			t.Errorf("status %q on the %q row starts at column %d, want %d:\n%q", label, key, col, want, line)
 		}
