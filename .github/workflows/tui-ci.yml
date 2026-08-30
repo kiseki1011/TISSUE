@@ -1,0 +1,127 @@
+name: TUI CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tui/**"
+      - ".github/workflows/tui-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: tui
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          # go.mod should be the source for the Go version
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+
+      - name: Verify module checksums
+        run: go mod verify
+
+      - name: Check go.mod is tidy
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -shuffle=on -covermode=atomic -coverprofile=coverage.out ./...
+
+      - name: Coverage summary
+        if: success()
+        run: go tool cover -func=coverage.out | tail -1 >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tui-coverage
+          path: tui/coverage.out
+          retention-days: 7
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+
+      # gofumpt and goimports are declared as formatters in .golangci.yml, so this fails on an
+      # unformatted file too - `make fmt` is what fixes it.
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13.2
+          working-directory: tui
+
+  vuln:
+    name: Vulnerability scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  cross-compile:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: tui/go.mod
+          cache-dependency-path: tui/go.sum
+
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -o /dev/null ./cmd/tissue
