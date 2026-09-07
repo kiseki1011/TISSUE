@@ -60,7 +60,7 @@ public class ProjectQueryController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Project detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}")

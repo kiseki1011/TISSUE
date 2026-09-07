@@ -3,6 +3,7 @@ package com.tissue.config;
 import static com.tissue.shared.meta.LLMInvolvement.VIBE_CODED;
 
 import com.tissue.feature.notification.adapter.web.NotificationErrors;
+import com.tissue.global.openapi.AgentErrors;
 import com.tissue.global.openapi.AiModelErrors;
 import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.CommentErrors;
@@ -121,6 +122,14 @@ public class OpenApiConfig {
                                                 "Member Account",
                                                 "Member Profile",
                                                 "Member Administration")),
+                                Map.of(
+                                        "name",
+                                        "Agent",
+                                        "tags",
+                                        List.of(
+                                                "Agents",
+                                                "Agent Tokens",
+                                                "Agent Model")),
                                 Map.of(
                                         "name",
                                         "Organization",
@@ -244,6 +253,7 @@ public class OpenApiConfig {
             addIfPresent(handlerMethod, MemberErrors.class, MemberErrors::value, codes);
             addIfPresent(handlerMethod, PositionErrors.class, PositionErrors::value, codes);
             addIfPresent(handlerMethod, TeamErrors.class, TeamErrors::value, codes);
+            addIfPresent(handlerMethod, AgentErrors.class, AgentErrors::value, codes);
             addIfPresent(handlerMethod, AiModelErrors.class, AiModelErrors::value, codes);
             addIfPresent(handlerMethod, ProjectErrors.class, ProjectErrors::value, codes);
             addIfPresent(handlerMethod, IssueErrors.class, IssueErrors::value, codes);

@@ -39,7 +39,7 @@ public class ProjectMemberController {
                 Add multiple members to the project at once. Up to 100 members can be added.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Members added"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -87,7 +87,7 @@ public class ProjectMemberController {
                 Change a project member's role.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role
+                - Requires project `MANAGER` or system `ADMIN` or higher role
                 - Cannot modify members with equal or higher authority""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Role changed"),
@@ -119,7 +119,7 @@ public class ProjectMemberController {
                 Remove a member from the project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role
+                - Requires project `MANAGER` or system `ADMIN` or higher role
                 - Cannot kick members with equal or higher authority""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member kicked"),

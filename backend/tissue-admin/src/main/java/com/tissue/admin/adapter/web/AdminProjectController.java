@@ -40,8 +40,8 @@ public class AdminProjectController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Preview computed"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Project is not soft-deleted", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_NOT_SOFT_DELETED})
     @GetMapping("/{projectKey}/hard/preview")
@@ -63,9 +63,9 @@ public class AdminProjectController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Project permanently deleted"),
-        @ApiResponse(responseCode = "400", description = "Confirmation key mismatch", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Project is not soft-deleted", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_NOT_FOUND,

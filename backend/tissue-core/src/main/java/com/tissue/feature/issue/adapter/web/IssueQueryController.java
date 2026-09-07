@@ -154,7 +154,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue basic info retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/basic")
     public ResponseEntity<IssueBasicInfo> getIssueBasic(
@@ -171,7 +171,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue common fields retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/common")
     public ResponseEntity<IssueCommonDetail> getIssueCommon(
@@ -194,7 +194,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue detail retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/detail")
     public ResponseEntity<IssueDetailView> getIssueDetailView(
@@ -217,7 +217,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue custom fields retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/custom")
     public ResponseEntity<IssueCustomDetail> getIssueCustom(
@@ -234,7 +234,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Parent identifier retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/parent")
     public ResponseEntity<IssueIdentifierResponse> getIssueParent(
@@ -244,14 +244,14 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getIssueChildren", summary = "Get child issue identifiers", description = """
+    @Operation(operationId = "getIssueChildren", summary = "List child issue identifiers", description = """
                 List the issue's direct child identifiers (one level only).
 
                 **Requirements:**
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Children retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/children")
     public ResponseEntity<List<IssueIdentifierResponse>> getIssueChildren(
@@ -269,7 +269,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Relations retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/relations")
     public ResponseEntity<IssueRelationsDetail> getIssueRelations(
@@ -286,7 +286,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Author retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/author")
     public ResponseEntity<ProjectMemberInfo> getIssueAuthor(
@@ -303,7 +303,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Reviewers retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/reviewers")
     public ResponseEntity<IssueReviewersDetail> getIssueReviewers(
@@ -320,7 +320,7 @@ public class IssueQueryController {
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Subscribers retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/subscribers")
     public ResponseEntity<IssueSubscribersDetail> getIssueSubscribers(
@@ -332,7 +332,7 @@ public class IssueQueryController {
 
     @Operation(
             operationId = "getIssueAvailableTransitions",
-            summary = "Get available workflow transitions",
+            summary = "List available workflow transitions",
             description = """
                     List the workflow transitions available from the issue's current state, each \
                     with `canExecute` and `blockedReasons` from guard evaluation so the client can \
@@ -342,7 +342,7 @@ public class IssueQueryController {
                     - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Available transitions retrieved"),
-        @ApiResponse(responseCode = "404", description = "Issue not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/transitions")
     public ResponseEntity<List<TransitionDetail>> getIssueAvailableTransitions(

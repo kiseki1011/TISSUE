@@ -52,11 +52,13 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email authentication linked"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
         AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
         AuthenticationErrorCode.EMAIL_IDENTITY_ALREADY_EXISTS,
     })
@@ -109,10 +111,12 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
         AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
         AuthenticationErrorCode.EMAIL_NOT_VERIFIED,
     })
@@ -141,9 +145,13 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "204", description = "Password updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND})
+    @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
+        AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND
+    })
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
@@ -166,7 +174,8 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "204", description = "Account deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
@@ -192,9 +201,11 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "204", description = "Account restored"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
         AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS,
         AuthenticationErrorCode.RESTORE_NOT_DELETED
     })
@@ -216,9 +227,10 @@ public class MemberAccountController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Email is available"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @MemberErrors({MemberErrorCode.DUPLICATE_EMAIL})
     @LocalAuthOnly
     @PublicApi

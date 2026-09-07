@@ -21,8 +21,7 @@ public enum IssueTypeErrorCode implements ErrorCode {
     ISSUE_FIELD_OPTION_IN_USE(HttpStatus.CONFLICT, "Field option is currently in use"),
 
     FIELD_TYPE_CANNOT_HAVE_OPTION(HttpStatus.BAD_REQUEST, "This field type cannot add options"),
-    OPTION_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of options exceeded"),
-    OPTION_REORDER_UNKNOWN_ID(HttpStatus.BAD_REQUEST, "Provided option ID does not exist in this field");
+    OPTION_LIMIT_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of options exceeded");
 
     private final HttpStatus httpStatus;
     private final String defaultMessage;

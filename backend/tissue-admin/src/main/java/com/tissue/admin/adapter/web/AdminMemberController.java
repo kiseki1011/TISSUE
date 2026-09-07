@@ -7,7 +7,9 @@ import com.tissue.admin.application.port.usecase.AdminMemberUseCase;
 import com.tissue.feature.member.domain.MemberStatus;
 import com.tissue.feature.member.domain.SystemRole;
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.global.openapi.MemberErrors;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
@@ -67,7 +69,7 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Member retrieved"),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND})
     @GetMapping("/{memberId}")
@@ -84,8 +86,8 @@ public class AdminMemberController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Role changed"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Last super admin / self-demotion", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @MemberErrors({
         MemberErrorCode.SUPER_ADMIN_REQUIRED,
@@ -111,8 +113,8 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member withdrawn"),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Last super admin", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED, MemberErrorCode.LAST_SUPER_ADMIN})
     @PostMapping("/{memberId}/withdraw")
@@ -128,8 +130,8 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member restored"),
-        @ApiResponse(responseCode = "400", description = "Member is not deleted", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_DELETED})
     @PostMapping("/{memberId}/restore")
@@ -146,7 +148,7 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sessions revoked"),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND})
     @DeleteMapping("/{memberId}/sessions")
@@ -164,9 +166,9 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member locked"),
-        @ApiResponse(responseCode = "400", description = "Member is not active", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Already locked / cannot lock super admin", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
@@ -187,8 +189,8 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member unlocked"),
-        @ApiResponse(responseCode = "400", description = "Member is not locked", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_LOCKED})
     @PostMapping("/{memberId}/unlock")
@@ -206,8 +208,8 @@ public class AdminMemberController {
                 - Requires system `SUPER_ADMIN` role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member purged"),
-        @ApiResponse(responseCode = "400", description = "Member is not deleted", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_DELETED})
     @PostMapping("/{memberId}/purge")
@@ -229,12 +231,14 @@ public class AdminMemberController {
                 - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password-reset email triggered"),
-        @ApiResponse(responseCode = "400", description = "Member not active / has no email", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Member not found", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_NOT_ACTIVE, MemberErrorCode.MEMBER_NO_EMAIL
     })
     @LocalAuthOnly
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY})
     @PostMapping("/{memberId}/reset-password")
     public ResponseEntity<Void> forcePasswordReset(
             @PathVariable Long memberId, @CurrentMember MemberDetails memberDetails) {

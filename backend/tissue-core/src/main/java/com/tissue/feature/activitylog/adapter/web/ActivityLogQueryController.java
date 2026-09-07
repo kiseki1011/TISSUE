@@ -5,6 +5,7 @@ import com.tissue.feature.activitylog.application.port.usecase.ActivityLogQueryU
 import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
 import com.tissue.feature.sprint.domain.exception.SprintErrorCode;
+import com.tissue.global.openapi.CommonErrors;
 import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.global.openapi.SprintErrors;
@@ -12,6 +13,7 @@ import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import com.tissue.shared.dto.CursorPage;
 import com.tissue.shared.dto.IssueIdentifier;
+import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,10 +49,12 @@ public class ActivityLogQueryController {
                     - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @CommonErrors({CommonErrorCode.INVALID_CURSOR})
     @GetMapping("issues/{issueKey}/activities")
     public ResponseEntity<CursorPage<ActivityLogResponse>> listIssueActivities(
             @PathVariable String issueKey,
@@ -79,10 +83,12 @@ public class ActivityLogQueryController {
                     - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Activity logs retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @SprintErrors({SprintErrorCode.SPRINT_NOT_FOUND})
+    @CommonErrors({CommonErrorCode.INVALID_CURSOR})
     @GetMapping("sprints/{sprintId}/activities")
     public ResponseEntity<CursorPage<ActivityLogResponse>> listSprintActivities(
             @PathVariable Long sprintId,

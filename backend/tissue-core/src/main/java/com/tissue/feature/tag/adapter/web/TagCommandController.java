@@ -40,7 +40,7 @@ public class TagCommandController {
                 Create a new tag within a project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Tag created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -71,7 +71,7 @@ public class TagCommandController {
                 Update a tag's name, description, or color. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -103,7 +103,7 @@ public class TagCommandController {
                 Permanently delete a tag from the project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag deleted"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),

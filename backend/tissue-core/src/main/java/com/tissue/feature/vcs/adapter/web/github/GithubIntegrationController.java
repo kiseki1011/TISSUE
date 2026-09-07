@@ -67,7 +67,7 @@ public class GithubIntegrationController {
                 Regenerate the webhook secret used to verify GitHub webhook payloads.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "New secret generated"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -92,7 +92,7 @@ public class GithubIntegrationController {
                 integration that "does nothing" is usually diagnosed.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Deliveries retrieved"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
@@ -120,7 +120,7 @@ public class GithubIntegrationController {
                 needed to resume.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sync setting updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -147,7 +147,7 @@ public class GithubIntegrationController {
                 Remove the GitHub integration from a project. This will also invalidate the webhook secret.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Integration removed"),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
