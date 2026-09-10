@@ -1,8 +1,11 @@
 package com.tissue.security.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tissue.feature.member.domain.Member;
@@ -10,7 +13,9 @@ import com.tissue.security.adapter.persistence.PersonalAccessTokenRepository;
 import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.domain.PatScope;
 import com.tissue.security.domain.PersonalAccessToken;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.util.TokenHashUtil;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -42,6 +47,21 @@ class PersonalAccessTokenServiceTest {
         assertThat(generated.token().getTokenHash()).isEqualTo(TokenHashUtil.hash(generated.rawToken()));
         assertThat(generated.token().getScope()).isEqualTo(PatScope.READ_WRITE);
         assertThat(generated.token().isUsable()).isTrue();
+    }
+
+    @Test
+    void generateRejectsANameTheMemberAlreadyUsed() {
+        // given
+        Member member = mock(Member.class);
+        when(member.getId()).thenReturn(1L);
+        when(repository.existsByMember_IdAndName(1L, "ci")).thenReturn(true);
+
+        // when & then
+        assertThatThrownBy(() -> service.generate(member, "ci", PatScope.READ_ONLY, null))
+                .isInstanceOf(ResourceConflictException.class)
+                .extracting(ex -> ((ResourceConflictException) ex).getErrorCode())
+                .isEqualTo(AuthenticationErrorCode.DUPLICATE_TOKEN_NAME);
+        verify(repository, never()).save(any());
     }
 
     @Test

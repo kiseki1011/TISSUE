@@ -4,11 +4,13 @@ import com.tissue.feature.agent.application.service.AgentService;
 import com.tissue.feature.agent.domain.exception.AgentErrorCode;
 import com.tissue.feature.member.domain.Member;
 import com.tissue.global.openapi.AgentErrors;
+import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.security.adapter.web.request.CreatePatRequest;
 import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.application.dto.response.CreatedPatResponse;
 import com.tissue.security.application.dto.response.PatResponse;
 import com.tissue.security.application.service.PersonalAccessTokenService;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,9 +47,11 @@ public class AgentTokenController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Token issued"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
+    @AuthenticationErrors({AuthenticationErrorCode.DUPLICATE_TOKEN_NAME})
     @PostMapping
     public ResponseEntity<CreatedPatResponse> issueToken(
             @PathVariable Long agentId,

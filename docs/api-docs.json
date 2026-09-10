@@ -3575,6 +3575,9 @@
           },
           "404": {
             "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_TOKEN_NAME`: An access token with this name already exists"
           }
         }
       }
@@ -15845,6 +15848,7 @@
   },
   "x-tagGroups": [
     {
+      "name": "Guide",
       "tags": [
         "Resource Scoping",
         "Authorization",
@@ -15852,112 +15856,111 @@
         "Issue Relation",
         "Partial Update",
         "Error"
-      ],
-      "name": "Guide"
+      ]
     },
     {
+      "name": "Authentication",
       "tags": [
         "Authentication",
         "Member Signup",
         "Password Reset"
-      ],
-      "name": "Authentication"
+      ]
     },
     {
+      "name": "Member Account",
       "tags": [
         "Member Account",
         "Member Profile",
         "Member Administration"
-      ],
-      "name": "Member Account"
+      ]
     },
     {
+      "name": "Agent",
       "tags": [
         "Agents",
         "Agent Tokens",
         "Agent Model"
-      ],
-      "name": "Agent"
+      ]
     },
     {
+      "name": "Organization",
       "tags": [
         "Position",
         "Team"
-      ],
-      "name": "Organization"
+      ]
     },
     {
+      "name": "Project",
       "tags": [
         "Project",
         "Project Member"
-      ],
-      "name": "Project"
+      ]
     },
     {
+      "name": "Issue",
       "tags": [
         "Issue",
         "Issue Attachment",
         "Comment",
         "Tag",
         "Activity Log"
-      ],
-      "name": "Issue"
+      ]
     },
     {
+      "name": "Issue Configuration",
       "tags": [
         "Custom Issue Type",
         "Custom Issue Field",
         "Workflow"
-      ],
-      "name": "Issue Configuration"
+      ]
     },
     {
+      "name": "Wiki",
       "tags": [
         "Wiki Document",
         "Wiki Attachment"
-      ],
-      "name": "Wiki"
+      ]
     },
     {
+      "name": "Sprint",
       "tags": [
         "Sprint"
-      ],
-      "name": "Sprint"
+      ]
     },
     {
+      "name": "Notification",
       "tags": [
         "Notification",
         "Notification Preference"
-      ],
-      "name": "Notification"
+      ]
     },
     {
+      "name": "Realtime",
       "tags": [
         "Realtime"
-      ],
-      "name": "Realtime"
+      ]
     },
     {
+      "name": "VCS",
       "tags": [
         "GitHub Integration"
-      ],
-      "name": "VCS"
+      ]
     },
     {
+      "name": "Super Admin",
       "tags": [
         "Global Member Management",
         "Global Activity Log",
         "Super Admin Audit",
         "Project Lifecycle Management",
         "Advanced System Info"
-      ],
-      "name": "Super Admin"
+      ]
     },
     {
+      "name": "System",
       "tags": [
         "System Info"
-      ],
-      "name": "System"
+      ]
     }
   ]
 }

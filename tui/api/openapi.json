@@ -7542,6 +7542,9 @@
           },
           "404": {
             "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `DUPLICATE_TOKEN_NAME`: An access token with this name already exists"
           }
         },
         "summary": "Issue a token",

@@ -21,6 +21,7 @@ public enum AuthenticationErrorCode implements ErrorCode {
     INVALID_PASSWORD_RESET_TOKEN(HttpStatus.BAD_REQUEST, "The password reset token is invalid or has expired"),
     TOKEN_REUSE_DETECTED(HttpStatus.UNAUTHORIZED, "Token reuse detected"),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "Active session not found or has expired"),
+    DUPLICATE_TOKEN_NAME(HttpStatus.CONFLICT, "An access token with this name already exists"),
 
     LOGIN_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Too many login attempts; please try again later"),
 
