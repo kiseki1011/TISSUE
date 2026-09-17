@@ -2,6 +2,7 @@ package com.tissue.security.adapter.web;
 
 import com.tissue.feature.member.domain.exception.MemberErrorCode;
 import com.tissue.global.openapi.AuthenticationErrors;
+import com.tissue.global.openapi.CommonErrors;
 import com.tissue.global.openapi.MemberErrors;
 import com.tissue.security.adapter.web.annotation.PublicApi;
 import com.tissue.security.adapter.web.annotation.RequireEmail;
@@ -16,12 +17,14 @@ import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.LocalAuthOnly;
 import com.tissue.shared.auth.MemberDetails;
+import com.tissue.shared.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -202,18 +205,17 @@ public class MemberAccountController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
+        @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
-    @AuthenticationErrors({
-        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
-        AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS,
-        AuthenticationErrorCode.RESTORE_NOT_DELETED
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS
     })
+    @CommonErrors({CommonErrorCode.RATE_LIMITED})
     @LocalAuthOnly
     @PublicApi
     @PostMapping("/members:restore")
-    public ResponseEntity<Void> restoreMember(@RequestBody @Valid RestoreMemberRequest request) {
-        memberAccountUseCase.restore(request.identifier(), request.password());
+    public ResponseEntity<Void> restoreMember(
+            @RequestBody @Valid RestoreMemberRequest request, HttpServletRequest httpRequest) {
+        memberAccountUseCase.restore(request.identifier(), request.password(), httpRequest.getRemoteAddr());
 
         return ResponseEntity.noContent().build();
     }

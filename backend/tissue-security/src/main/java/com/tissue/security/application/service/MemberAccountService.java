@@ -39,6 +39,7 @@ public class MemberAccountService implements MemberAccountUseCase {
     private final TissueSecurityProperties tissueSecurityProperties;
     private final TissueAuthProperties tissueAuthProperties;
     private final OwnedAgentDeactivationService ownedAgentDeactivationService;
+    private final RateLimitService rateLimitService;
 
     @Override
     public void linkEmailAuthentication(String newPassword, Long memberId) {
@@ -124,11 +125,15 @@ public class MemberAccountService implements MemberAccountUseCase {
     }
 
     @Override
-    public void restore(String identifier, String password) {
+    public void restore(String identifier, String password, String clientIp) {
+        rateLimitService.checkRestoreRateLimit(clientIp, identifier);
+
         AuthenticationIdentityProvider provider = tissueSecurityProperties.isEmailRequired()
                 ? AuthenticationIdentityProvider.EMAIL
                 : AuthenticationIdentityProvider.USERNAME;
 
+        // Unknown identifier, wrong password, and a non-deleted account all answer with the same
+        // 401 — a distinguishable response would let an unauthenticated caller verify passwords.
         AuthenticationIdentity identity = authenticationIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .orElseThrow(() -> new UnauthorizedException(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS));
@@ -140,7 +145,7 @@ public class MemberAccountService implements MemberAccountUseCase {
 
         Member member = identity.getMember();
         if (!member.isDeleted()) {
-            throw new ResourceConflictException(AuthenticationErrorCode.RESTORE_NOT_DELETED);
+            throw new UnauthorizedException(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS);
         }
 
         member.restore();

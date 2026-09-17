@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 public class RateLimitProperties {
 
     private Login login = new Login();
+    private Restore restore = new Restore();
     private EmailVerification emailVerification = new EmailVerification();
     private PasswordReset passwordReset = new PasswordReset();
     private Webhook webhook = new Webhook();
@@ -18,6 +19,12 @@ public class RateLimitProperties {
     @Data
     public static class Login {
         private int maxAttempts = 10;
+        private Duration window = Duration.ofMinutes(30);
+    }
+
+    @Data
+    public static class Restore {
+        private int maxAttempts = 5;
         private Duration window = Duration.ofMinutes(30);
     }
 

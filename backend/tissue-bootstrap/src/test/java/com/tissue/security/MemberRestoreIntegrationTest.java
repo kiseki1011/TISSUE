@@ -13,7 +13,7 @@ import com.tissue.security.application.service.MemberAccountService;
 import com.tissue.security.domain.AuthenticationIdentity;
 import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.exception.TissueException;
-import com.tissue.shared.exception.base.ResourceConflictException;
+import com.tissue.shared.exception.base.RateLimitExceededException;
 import com.tissue.shared.exception.base.UnauthorizedException;
 import com.tissue.support.IntegrationTestSupport;
 import java.time.Duration;
@@ -60,7 +60,7 @@ class MemberRestoreIntegrationTest extends IntegrationTestSupport {
                 "gildong@tissue.com", "password1234!", Instant.now().minus(Duration.ofDays(2)));
 
         // when
-        memberAccountService.restore("gildong@tissue.com", "password1234!");
+        memberAccountService.restore("gildong@tissue.com", "password1234!", "10.0.0.1");
         em.flush();
         em.clear();
 
@@ -73,7 +73,7 @@ class MemberRestoreIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("RESTORE_INVALID_CREDENTIALS when no auth identity matches the identifier")
     void invalidCredentialsWhenIdentifierUnknown() {
-        assertThatThrownBy(() -> memberAccountService.restore("nobody@tissue.com", "password1234!"))
+        assertThatThrownBy(() -> memberAccountService.restore("nobody@tissue.com", "password1234!", "10.0.0.2"))
                 .isInstanceOf(UnauthorizedException.class)
                 .extracting(e -> ((TissueException) e).getErrorCode())
                 .isEqualTo(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS);
@@ -88,15 +88,16 @@ class MemberRestoreIntegrationTest extends IntegrationTestSupport {
                 "gildong@tissue.com", "password1234!", Instant.now().minus(Duration.ofDays(2)));
 
         // when & then
-        assertThatThrownBy(() -> memberAccountService.restore("gildong@tissue.com", "wrongPassword"))
+        assertThatThrownBy(() -> memberAccountService.restore("gildong@tissue.com", "wrongPassword", "10.0.0.3"))
                 .isInstanceOf(UnauthorizedException.class)
                 .extracting(e -> ((TissueException) e).getErrorCode())
                 .isEqualTo(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS);
     }
 
     @Test
-    @DisplayName("RESTORE_NOT_DELETED when the member is still ACTIVE")
-    void notDeletedWhenActive() {
+    @DisplayName(
+            "same RESTORE_INVALID_CREDENTIALS when the member is still ACTIVE, so a correct password is not confirmed")
+    void invalidCredentialsWhenActive() {
         // given
         Member member = memberCommandRepository.save(Member.create("gildong@tissue.com", "gildong", "Hong Gildong"));
         authenticationIdentityRepository.save(AuthenticationIdentity.createEmailIdentity(
@@ -105,10 +106,28 @@ class MemberRestoreIntegrationTest extends IntegrationTestSupport {
         em.clear();
 
         // when & then
-        assertThatThrownBy(() -> memberAccountService.restore("gildong@tissue.com", "password1234!"))
-                .isInstanceOf(ResourceConflictException.class)
+        assertThatThrownBy(() -> memberAccountService.restore("gildong@tissue.com", "password1234!", "10.0.0.4"))
+                .isInstanceOf(UnauthorizedException.class)
                 .extracting(e -> ((TissueException) e).getErrorCode())
-                .isEqualTo(AuthenticationErrorCode.RESTORE_NOT_DELETED);
+                .isEqualTo(AuthenticationErrorCode.RESTORE_INVALID_CREDENTIALS);
+    }
+
+    @Test
+    @DisplayName("rate-limits repeated attempts per client and identifier")
+    void rateLimitsRepeatedAttempts() {
+        // given — 5 failed attempts exhaust the default rate limit
+        for (int i = 0; i < 5; i++) {
+            assertThatThrownBy(() -> memberAccountService.restore("target@tissue.com", "guess", "10.9.9.9"))
+                    .isInstanceOf(UnauthorizedException.class);
+        }
+
+        // when & then — the 6th attempt is cut off before credential check
+        assertThatThrownBy(() -> memberAccountService.restore("target@tissue.com", "guess", "10.9.9.9"))
+                .isInstanceOf(RateLimitExceededException.class);
+
+        // different client ip still gets normal credential failure
+        assertThatThrownBy(() -> memberAccountService.restore("target@tissue.com", "guess", "10.9.9.10"))
+                .isInstanceOf(UnauthorizedException.class);
     }
 
     /**

@@ -10865,8 +10865,8 @@
           "403": {
             "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           },
-          "409": {
-            "description": "Resource conflict\n\n- `RESTORE_NOT_DELETED`: Account is not DELETED status; cannot restore"
+          "429": {
+            "description": "Too many requests\n\n- `RATE_LIMITED`: Too many requests. Please try again later"
           }
         },
         "security": [],
