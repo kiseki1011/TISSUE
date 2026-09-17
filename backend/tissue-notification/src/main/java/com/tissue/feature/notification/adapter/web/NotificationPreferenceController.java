@@ -30,7 +30,7 @@ public class NotificationPreferenceController {
 
     @Operation(
             operationId = "getNotificationPreferences",
-            summary = "Get notification preferences",
+            summary = "List notification preferences",
             description = "Retrieve the current user's notification preferences.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Preferences retrieved")})
     @GetMapping

@@ -61,7 +61,7 @@ public class WikiDocumentQueryController {
 
     @Operation(
             operationId = "listRootWikiDocuments",
-            summary = "Get root documents",
+            summary = "List root documents",
             description = "Retrieve root documents that have no parent.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Root documents retrieved")})
     @GetMapping("/roots")
@@ -73,7 +73,7 @@ public class WikiDocumentQueryController {
 
     @Operation(
             operationId = "listWikiDocumentChildren",
-            summary = "Get child documents",
+            summary = "List child documents",
             description = "Retrieve child documents of a given parent document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Child documents retrieved"),
@@ -90,7 +90,7 @@ public class WikiDocumentQueryController {
 
     @Operation(
             operationId = "getWikiDocumentTree",
-            summary = "Get document tree",
+            summary = "List document tree",
             description = "Retrieve a list of all documents with parent references.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Document tree retrieved")})
     @GetMapping("/tree")
@@ -102,7 +102,7 @@ public class WikiDocumentQueryController {
 
     @Operation(
             operationId = "listWikiDocumentVersions",
-            summary = "Get version history",
+            summary = "List version history",
             description = "Retrieve the version history (snapshots) of a document.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Version history retrieved"),

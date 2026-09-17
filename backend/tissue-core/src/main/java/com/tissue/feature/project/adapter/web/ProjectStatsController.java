@@ -53,7 +53,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Project statistics retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/simple-stats")
@@ -64,7 +64,7 @@ public class ProjectStatsController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(operationId = "getProjectMemberStats", summary = "Get per-member contribution stats", description = """
+    @Operation(operationId = "getProjectMemberStats", summary = "List per-member contribution stats", description = """
                 Per-member contribution stats for a project: resolved and open assigned counts, resolved \
                 story points, and completion rate. A row is returned only for members that have at least \
                 one assigned issue; soft-deleted issues are excluded. Limited to project members.
@@ -73,7 +73,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Member stats retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/member-stats")
@@ -94,7 +94,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Aging stats retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/aging")
@@ -119,7 +119,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Flow stats retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project or sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/flow")
@@ -149,7 +149,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Cycle time stats retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project or sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/cycle-time")
@@ -174,7 +174,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Sprint report retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project or sprint not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/sprint-report")
@@ -198,7 +198,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Velocity retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/velocity")
@@ -225,7 +225,7 @@ public class ProjectStatsController {
                 - Requires authentication""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Contribution heatmap retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND})
     @GetMapping("/{projectKey}/stats/contributions")

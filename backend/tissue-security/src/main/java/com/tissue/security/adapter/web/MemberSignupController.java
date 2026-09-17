@@ -60,6 +60,7 @@ public class MemberSignupController {
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
         AuthenticationErrorCode.EMAIL_SIGNUP_DISABLED,
         AuthenticationErrorCode.EMAIL_NOT_VERIFIED,
         AuthenticationErrorCode.MEMBER_SIGNUP_CONFLICT,
@@ -86,9 +87,15 @@ public class MemberSignupController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification email sent"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content),
         @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
+        AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
+        AuthenticationErrorCode.VERIFICATION_TOKEN_DUPLICATE,
+    })
     @CommonErrors({CommonErrorCode.RATE_LIMITED})
     @PublicApi
     @RequireEmail
@@ -112,9 +119,10 @@ public class MemberSignupController {
                 responseCode = "200",
                 description = "HTML verification result page",
                 content = @Content(mediaType = "text/html")),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/verify")
@@ -133,9 +141,10 @@ public class MemberSignupController {
                 - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/signup/status/{verificationId}")

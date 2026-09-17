@@ -42,7 +42,7 @@ public class ProjectMemberQueryController {
                     - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Members retrieved"),
-        @ApiResponse(responseCode = "404", description = "Project or member not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
     @GetMapping
@@ -63,13 +63,17 @@ public class ProjectMemberQueryController {
                     (case-insensitive). A blank keyword returns all candidates.
 
                     **Requirements:**
-                    - Requires project manager role""")
+                    - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Candidates retrieved"),
-        @ApiResponse(responseCode = "403", description = "Not a project manager", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Project or member not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
-    @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @ProjectErrors({
+        ProjectErrorCode.PROJECT_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
+        ProjectErrorCode.PROJECT_MANAGER_REQUIRED,
+    })
     @GetMapping("/candidates")
     public ResponseEntity<PageResponse<MemberCandidateSummary>> listMemberCandidates(
             @PathVariable String projectKey,

@@ -53,6 +53,7 @@ public class ProjectController {
         ProjectErrorCode.RESERVED_PROJECT_KEY,
         ProjectErrorCode.DUPLICATE_PROJECT_KEY,
     })
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND})
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(
             @RequestBody @Valid CreateProjectRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -70,8 +71,8 @@ public class ProjectController {
                 and must be globally unique. Use for validation before creating a project.""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Project key is available"),
-        @ApiResponse(responseCode = "400", description = "Invalid or reserved project key", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Duplicate project key", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @ProjectErrors({
         ProjectErrorCode.INVALID_PROJECT_KEY_FORMAT,

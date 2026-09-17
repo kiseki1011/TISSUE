@@ -40,7 +40,7 @@ public class WikiTagCommandController {
         @ApiResponse(responseCode = "200", description = "Tag attached"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Tag limit exceeded", content = @Content)
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @WikiErrors({
         WikiErrorCode.DOCUMENT_NOT_FOUND,
@@ -63,6 +63,7 @@ public class WikiTagCommandController {
             description = "Detach a tag from a wiki document. The tag itself remains in the catalog.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Tag detached"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @WikiErrors({

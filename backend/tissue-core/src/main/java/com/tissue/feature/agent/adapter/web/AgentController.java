@@ -4,6 +4,12 @@ import com.tissue.feature.agent.adapter.web.request.CreateAgentRequest;
 import com.tissue.feature.agent.adapter.web.request.UpdateAgentRequest;
 import com.tissue.feature.agent.application.dto.AgentResponse;
 import com.tissue.feature.agent.application.port.usecase.AgentUseCase;
+import com.tissue.feature.agent.domain.exception.AgentErrorCode;
+import com.tissue.feature.agent.model.domain.exception.AiModelErrorCode;
+import com.tissue.feature.member.domain.exception.MemberErrorCode;
+import com.tissue.global.openapi.AgentErrors;
+import com.tissue.global.openapi.AiModelErrors;
+import com.tissue.global.openapi.MemberErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,8 +46,13 @@ public class AgentController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Agent created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Duplicate agent name", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.OWNER_MUST_BE_HUMAN, AgentErrorCode.DUPLICATE_AGENT_NAME})
+    @AiModelErrors({AiModelErrorCode.AI_MODEL_NOT_FOUND})
+    @MemberErrors({MemberErrorCode.MEMBER_NOT_FOUND, MemberErrorCode.MEMBER_DELETED})
     @PostMapping
     public ResponseEntity<AgentResponse> createAgent(
             @RequestBody @Valid CreateAgentRequest request, @CurrentMember MemberDetails memberDetails) {
@@ -58,6 +69,8 @@ public class AgentController {
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
+    @AiModelErrors({AiModelErrorCode.AI_MODEL_NOT_FOUND})
     @PatchMapping("/{agentId}")
     public ResponseEntity<Void> updateAgent(
             @PathVariable Long agentId,
@@ -84,8 +97,9 @@ public class AgentController {
             description = "Deactivate one of your agents. Its tokens stop working immediately.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Agent deactivated"),
-        @ApiResponse(responseCode = "404", description = "Agent not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
     @DeleteMapping("/{agentId}")
     public ResponseEntity<Void> deactivateAgent(
             @PathVariable Long agentId, @CurrentMember MemberDetails memberDetails) {

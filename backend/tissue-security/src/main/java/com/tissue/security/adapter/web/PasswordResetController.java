@@ -50,9 +50,11 @@ public class PasswordResetController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Password reset successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @AuthenticationErrors({
+        AuthenticationErrorCode.LOCAL_AUTH_ONLY,
         AuthenticationErrorCode.EMAIL_FEATURE_DISABLED,
         AuthenticationErrorCode.INVALID_PASSWORD_RESET_TOKEN,
         AuthenticationErrorCode.EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND,
@@ -77,9 +79,10 @@ public class PasswordResetController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Password reset email sent"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @CommonErrors({CommonErrorCode.RATE_LIMITED})
     @PublicApi
     @RequireEmail
@@ -103,9 +106,10 @@ public class PasswordResetController {
                 responseCode = "200",
                 description = "HTML verification result page",
                 content = @Content(mediaType = "text/html")),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/verify")
@@ -127,9 +131,10 @@ public class PasswordResetController {
                 - **Unavailable in OIDC mode**""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Verification status retrieved"),
-        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
     })
-    @AuthenticationErrors({AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.EMAIL_FEATURE_DISABLED})
     @PublicApi
     @RequireEmail
     @GetMapping("/status/{verificationId}")

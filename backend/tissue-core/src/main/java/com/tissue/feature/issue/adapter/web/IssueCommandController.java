@@ -163,7 +163,7 @@ public class IssueCommandController {
                 Soft delete multiple issues at once.
 
                 **Requirements:**
-                - Requires project `MANAGER` or issue author (per issue)""")
+                - Requires project `MANAGER` or issue author""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Batch operation result returned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -428,9 +428,10 @@ public class IssueCommandController {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Member assigned"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND, IssueErrorCode.ISSUE_ALREADY_ASSIGNED})
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
         ProjectErrorCode.PROJECT_ARCHIVED,

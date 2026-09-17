@@ -1,12 +1,16 @@
 package com.tissue.security.adapter.web;
 
 import com.tissue.feature.agent.application.service.AgentService;
+import com.tissue.feature.agent.domain.exception.AgentErrorCode;
 import com.tissue.feature.member.domain.Member;
+import com.tissue.global.openapi.AgentErrors;
+import com.tissue.global.openapi.AuthenticationErrors;
 import com.tissue.security.adapter.web.request.CreatePatRequest;
 import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.application.dto.response.CreatedPatResponse;
 import com.tissue.security.application.dto.response.PatResponse;
 import com.tissue.security.application.service.PersonalAccessTokenService;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,9 +47,11 @@ public class AgentTokenController {
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Token issued"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Agent not found", content = @Content),
-        @ApiResponse(responseCode = "409", description = "Duplicate token name", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
+    @AuthenticationErrors({AuthenticationErrorCode.DUPLICATE_TOKEN_NAME})
     @PostMapping
     public ResponseEntity<CreatedPatResponse> issueToken(
             @PathVariable Long agentId,
@@ -65,8 +71,9 @@ public class AgentTokenController {
             description = "List the tokens of one of your agents (metadata only).")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Tokens retrieved"),
-        @ApiResponse(responseCode = "404", description = "Agent not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
     @GetMapping
     public ResponseEntity<List<PatResponse>> listTokens(
             @PathVariable Long agentId, @CurrentMember MemberDetails memberDetails) {
@@ -81,11 +88,12 @@ public class AgentTokenController {
     @Operation(
             operationId = "revokeAgentToken",
             summary = "Revoke a token",
-            description = "Revoke a agent token (PAT for agent). It will stop working.")
+            description = "Revoke an agent token (PAT for agent). It will stop working.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Token revoked"),
-        @ApiResponse(responseCode = "404", description = "Agent not found", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
+    @AgentErrors({AgentErrorCode.AGENT_NOT_FOUND})
     @DeleteMapping("/{tokenId}")
     public ResponseEntity<Void> revokeToken(
             @PathVariable Long agentId, @PathVariable Long tokenId, @CurrentMember MemberDetails memberDetails) {

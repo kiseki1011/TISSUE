@@ -55,7 +55,6 @@ public class WorkflowCommandController {
         @ApiResponse(responseCode = "201", description = "Workflow created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
     @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
@@ -103,6 +102,8 @@ public class WorkflowCommandController {
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_TRANSITION_NOT_FOUND,
         WorkflowErrorCode.WORKFLOW_VERSION_MISMATCH,
+        WorkflowErrorCode.MISSING_NODE_IDENTIFIER,
+        WorkflowErrorCode.CANNOT_DELETE_INITIAL_STATE,
         WorkflowErrorCode.INCOMPLETE_NEW_STATE,
         WorkflowErrorCode.INCOMPLETE_NEW_TRANSITION,
         WorkflowErrorCode.INVALID_INITIAL_STATE_COUNT,
@@ -203,6 +204,7 @@ public class WorkflowCommandController {
     @MemberErrors({MemberErrorCode.SYSTEM_ADMIN_REQUIRED})
     @WorkflowErrors({
         WorkflowErrorCode.WORKFLOW_NOT_FOUND,
+        WorkflowErrorCode.WORKFLOW_IN_USE,
         WorkflowErrorCode.WORKFLOW_STATE_IN_USE,
     })
     @RequireSystemAdmin

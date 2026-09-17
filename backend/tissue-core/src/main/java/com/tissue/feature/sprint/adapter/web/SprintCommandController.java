@@ -44,7 +44,7 @@ public class SprintCommandController {
                 Create a new sprint within a project.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Sprint created"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -73,7 +73,7 @@ public class SprintCommandController {
                 Update a sprint's name, goal, or description. Only provided fields are updated.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint updated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -104,7 +104,7 @@ public class SprintCommandController {
                 Start a sprint with a due date. Only sprints in `PLANNED` status can be started.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint started"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -138,7 +138,7 @@ public class SprintCommandController {
                 Complete an active sprint. Only sprints in `ACTIVE` status can be completed.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint completed"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -196,7 +196,7 @@ public class SprintCommandController {
                 Migrate incomplete issues from a completed sprint to another sprint.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Issues migrated"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -257,7 +257,7 @@ public class SprintCommandController {
                 All issues in the sprint will be unassigned.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint cancelled"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
@@ -284,7 +284,7 @@ public class SprintCommandController {
                 Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.
 
                 **Requirements:**
-                - Requires project `MANAGER` or higher role""")
+                - Requires project `MANAGER` or system `ADMIN` or higher role""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Sprint deleted"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),

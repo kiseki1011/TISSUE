@@ -46,9 +46,10 @@ public class AuthenticationController {
         @ApiResponse(responseCode = "200", description = "Login successful"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "429", description = "Too many requests", content = @Content)
     })
-    @AuthenticationErrors({AuthenticationErrorCode.LOGIN_RATE_LIMITED})
+    @AuthenticationErrors({AuthenticationErrorCode.LOCAL_AUTH_ONLY, AuthenticationErrorCode.LOGIN_RATE_LIMITED})
     @PublicApi
     @LocalAuthOnly
     @PostMapping("/login")
@@ -66,7 +67,8 @@ public class AuthenticationController {
             description = "Issue a new access token and refresh token using an existing refresh token.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @AuthenticationErrors({
@@ -78,6 +80,7 @@ public class AuthenticationController {
     @MemberErrors({
         MemberErrorCode.MEMBER_NOT_FOUND,
         MemberErrorCode.MEMBER_DELETED,
+        MemberErrorCode.MEMBER_LOCKED,
     })
     @PublicApi
     @PostMapping("/token:refresh")
@@ -93,7 +96,7 @@ public class AuthenticationController {
             description = "Revoke the refresh token for the current logged in member.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Logged out successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content)
     })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CurrentMember MemberDetails memberDetails) {

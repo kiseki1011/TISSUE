@@ -286,7 +286,7 @@ public class WikiDocumentCommandController {
 
     @Operation(
             operationId = "emptyWikiDocumentTrash",
-            summary = "Permanently delete all soft-deleted documents ",
+            summary = "Permanently delete all soft-deleted documents",
             description = """
                 Permanently delete all soft-deleted documents.
 
@@ -294,8 +294,7 @@ public class WikiDocumentCommandController {
                 - Checks delete permission per document (system `ADMIN` or higher role, or document creator)""")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Trash emptied"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
+        @ApiResponse(responseCode = "403", description = "Insufficient permission", content = @Content)
     })
     @WikiErrors({WikiErrorCode.DOCUMENT_DELETE_NOT_ALLOWED})
     @DeleteMapping("/trash")

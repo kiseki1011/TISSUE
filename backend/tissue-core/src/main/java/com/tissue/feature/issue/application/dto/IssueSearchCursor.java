@@ -3,7 +3,7 @@ package com.tissue.feature.issue.application.dto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
-import com.tissue.feature.issue.domain.exception.InvalidCursorException;
+import com.tissue.feature.issue.domain.exception.InvalidCursorTokenException;
 import com.tissue.shared.meta.Evaluation;
 import com.tissue.shared.meta.LLMGenerated;
 import com.tissue.shared.meta.LLMInvolvement;
@@ -49,7 +49,7 @@ public record IssueSearchCursor(IssuePriority priority, Long id) {
             byte[] json = Base64.getUrlDecoder().decode(token);
             return MAPPER.readValue(json, IssueSearchCursor.class);
         } catch (IllegalArgumentException | IOException e) {
-            throw new InvalidCursorException(token, e);
+            throw new InvalidCursorTokenException(token, e);
         }
     }
 }

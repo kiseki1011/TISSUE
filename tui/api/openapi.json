@@ -6938,7 +6938,7 @@
             "description": "Member retrieved"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Get member detail",
@@ -6967,13 +6967,13 @@
             "description": "Member locked"
           },
           "400": {
-            "description": "Member is not active\n\n- `MEMBER_NOT_ACTIVE`: Member is not active"
+            "description": "Invalid request\n\n- `MEMBER_NOT_ACTIVE`: Member is not active"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           },
           "409": {
-            "description": "Already locked / cannot lock super admin\n\n- `MEMBER_ALREADY_LOCKED`: Member is already locked\n- `CANNOT_LOCK_SUPER_ADMIN`: Cannot lock a SUPER_ADMIN; demote first"
+            "description": "Resource conflict\n\n- `MEMBER_ALREADY_LOCKED`: Member is already locked\n- `CANNOT_LOCK_SUPER_ADMIN`: Cannot lock a SUPER_ADMIN; demote first"
           }
         },
         "summary": "Lock a member account",
@@ -7002,10 +7002,10 @@
             "description": "Member purged"
           },
           "400": {
-            "description": "Member is not deleted\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
+            "description": "Invalid request\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Permanently purge a deleted member",
@@ -7034,10 +7034,13 @@
             "description": "Password-reset email triggered"
           },
           "400": {
-            "description": "Member not active / has no email\n\n- `MEMBER_NOT_ACTIVE`: Member is not active\n- `MEMBER_NO_EMAIL`: Member has no email; cannot send a password reset"
+            "description": "Invalid request\n\n- `MEMBER_NOT_ACTIVE`: Member is not active\n- `MEMBER_NO_EMAIL`: Member has no email; cannot send a password reset"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Send a member a password-reset email",
@@ -7066,10 +7069,10 @@
             "description": "Member restored"
           },
           "400": {
-            "description": "Member is not deleted\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
+            "description": "Invalid request\n\n- `MEMBER_NOT_DELETED`: Member is not in a deleted state"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Restore a withdrawn member",
@@ -7111,10 +7114,10 @@
             "description": "Insufficient permission\n\n- `SUPER_ADMIN_REQUIRED`: Super admin privilege required"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Last super admin / self-demotion\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN\n- `CANNOT_DEMOTE_SELF_SUPER_ADMIN`: A SUPER_ADMIN cannot demote themselves"
+            "description": "Resource conflict\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN\n- `CANNOT_DEMOTE_SELF_SUPER_ADMIN`: A SUPER_ADMIN cannot demote themselves"
           }
         },
         "summary": "Change a member's system role",
@@ -7143,7 +7146,7 @@
             "description": "Sessions revoked"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Revoke a member's sessions",
@@ -7172,10 +7175,10 @@
             "description": "Member unlocked"
           },
           "400": {
-            "description": "Member is not locked\n\n- `MEMBER_NOT_LOCKED`: Member is not locked"
+            "description": "Invalid request\n\n- `MEMBER_NOT_LOCKED`: Member is not locked"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           }
         },
         "summary": "Unlock a member account",
@@ -7204,10 +7207,10 @@
             "description": "Member withdrawn"
           },
           "404": {
-            "description": "Member not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Last super admin\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN"
+            "description": "Resource conflict\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN"
           }
         },
         "summary": "Force-withdraw a member",
@@ -7250,13 +7253,13 @@
             "description": "Project permanently deleted"
           },
           "400": {
-            "description": "Confirmation key mismatch\n\n- `HARD_DELETE_CONFIRMATION_MISMATCH`: Confirmation key does not match the target project key"
+            "description": "Invalid request\n\n- `HARD_DELETE_CONFIRMATION_MISMATCH`: Confirmation key does not match the target project key"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           },
           "409": {
-            "description": "Project is not soft-deleted\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
+            "description": "Resource conflict\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
           }
         },
         "summary": "Permanently delete a soft-deleted project",
@@ -7291,10 +7294,10 @@
             "description": "Preview computed"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           },
           "409": {
-            "description": "Project is not soft-deleted\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
+            "description": "Resource conflict\n\n- `PROJECT_NOT_SOFT_DELETED`: Project must be soft-deleted before it can be permanently deleted"
           }
         },
         "summary": "Preview a project hard-delete",
@@ -7376,8 +7379,14 @@
           "400": {
             "description": "Invalid request"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `OWNER_MUST_BE_HUMAN`: Only human members can own agents"
+          },
+          "404": {
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `AI_MODEL_NOT_FOUND`: AI model not found"
+          },
           "409": {
-            "description": "Duplicate agent name"
+            "description": "Resource conflict\n\n- `DUPLICATE_AGENT_NAME`: An agent with this name already exists"
           }
         },
         "summary": "Create an agent",
@@ -7406,7 +7415,7 @@
             "description": "Agent deactivated"
           },
           "404": {
-            "description": "Agent not found"
+            "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
           }
         },
         "summary": "Deactivate an agent",
@@ -7446,7 +7455,7 @@
             "description": "Invalid request"
           },
           "404": {
-            "description": "Resource not found"
+            "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found\n- `AI_MODEL_NOT_FOUND`: AI model not found"
           }
         },
         "summary": "Update an agent",
@@ -7485,7 +7494,7 @@
             "description": "Tokens retrieved"
           },
           "404": {
-            "description": "Agent not found"
+            "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
           }
         },
         "summary": "List tokens",
@@ -7532,10 +7541,10 @@
             "description": "Invalid request"
           },
           "404": {
-            "description": "Agent not found"
+            "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
           },
           "409": {
-            "description": "Duplicate token name"
+            "description": "Resource conflict\n\n- `DUPLICATE_TOKEN_NAME`: An access token with this name already exists"
           }
         },
         "summary": "Issue a token",
@@ -7546,7 +7555,7 @@
     },
     "/api/v1/agents/{agentId}/tokens/{tokenId}": {
       "delete": {
-        "description": "Revoke a agent token (PAT for agent). It will stop working.",
+        "description": "Revoke an agent token (PAT for agent). It will stop working.",
         "operationId": "revokeAgentToken",
         "parameters": [
           {
@@ -7573,7 +7582,7 @@
             "description": "Token revoked"
           },
           "404": {
-            "description": "Agent not found"
+            "description": "Resource not found\n\n- `AGENT_NOT_FOUND`: Agent not found"
           }
         },
         "summary": "Revoke a token",
@@ -7613,6 +7622,9 @@
           "401": {
             "description": "Invalid credentials"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
+          },
           "429": {
             "description": "Too many requests\n\n- `LOGIN_RATE_LIMITED`: Too many login attempts; please try again later"
           }
@@ -7633,7 +7645,7 @@
             "description": "Logged out successfully"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid credentials"
           }
         },
         "summary": "Logout",
@@ -7665,7 +7677,16 @@
                 }
               }
             },
-            "description": "OK"
+            "description": "Poll result returned"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `OIDC_AUTH_ONLY`: This operation requires OIDC authentication mode\n- `OIDC_PROVISIONING_DISABLED`: Automatic account provisioning via OIDC is disabled\n- `OIDC_EMAIL_DOMAIN_NOT_ALLOWED`: Email domain is not allowed to sign in via OIDC\n- `OIDC_EMAIL_MISSING`: OIDC login requires an email from the identity provider"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `OIDC_EMAIL_CONFLICT`: An account with this email already exists under a different identity"
           }
         },
         "security": [],
@@ -7688,7 +7709,10 @@
                 }
               }
             },
-            "description": "OK"
+            "description": "Device authorization started"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `OIDC_AUTH_ONLY`: This operation requires OIDC authentication mode"
           }
         },
         "security": [],
@@ -7724,7 +7748,10 @@
             "description": "Token refreshed successfully"
           },
           "401": {
-            "description": "Unauthorized\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired\n- `REFRESH_TOKEN_NOT_FOUND`: Active session not found or has expired\n- `TOKEN_REUSE_DETECTED`: Token reuse detected"
+            "description": "Invalid credentials\n\n- `INVALID_TOKEN`: The provided token is invalid\n- `EXPIRED_TOKEN`: The provided token has expired\n- `REFRESH_TOKEN_NOT_FOUND`: Active session not found or has expired\n- `TOKEN_REUSE_DETECTED`: Token reuse detected"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `MEMBER_LOCKED`: Member account is locked"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -8401,6 +8428,9 @@
             },
             "description": "Activity logs retrieved"
           },
+          "400": {
+            "description": "Invalid request\n\n- `INVALID_CURSOR`: Invalid pagination cursor"
+          },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
           }
@@ -8474,6 +8504,9 @@
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `ISSUE_ALREADY_ASSIGNED`: The issue is already assigned to another member"
           }
         },
         "summary": "Assign issue",
@@ -8691,7 +8724,7 @@
             "description": "Author retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue author",
@@ -8726,7 +8759,7 @@
             "description": "Issue basic info retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue basic info",
@@ -8764,10 +8797,10 @@
             "description": "Children retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
-        "summary": "Get child issue identifiers",
+        "summary": "List child issue identifiers",
         "tags": [
           "Issue"
         ]
@@ -8982,7 +9015,7 @@
             "description": "Issue common fields retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue common fields",
@@ -9017,7 +9050,7 @@
             "description": "Issue custom fields retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue custom fields",
@@ -9101,7 +9134,7 @@
             "description": "Issue detail retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get aggregated issue detail",
@@ -9165,7 +9198,7 @@
             "description": "Parent identifier retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get parent issue identifier",
@@ -9278,7 +9311,7 @@
             "description": "Relations retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue relations",
@@ -9352,7 +9385,7 @@
             "description": "Reviewers retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue reviewers",
@@ -9538,7 +9571,7 @@
             "description": "Subscribers retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
         "summary": "Get issue subscribers",
@@ -9683,10 +9716,10 @@
             "description": "Available transitions retrieved"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Resource not found"
           }
         },
-        "summary": "Get available workflow transitions",
+        "summary": "List available workflow transitions",
         "tags": [
           "Issue"
         ]
@@ -10143,7 +10176,7 @@
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           },
           "409": {
-            "description": "Conflict\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN"
+            "description": "Resource conflict\n\n- `LAST_SUPER_ADMIN`: Cannot demote or remove the last SUPER_ADMIN"
           }
         },
         "summary": "Withdraw account",
@@ -10205,7 +10238,7 @@
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "403": {
-            "description": "Forbidden\n\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -10273,7 +10306,10 @@
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid credentials"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
@@ -10334,6 +10370,9 @@
           "400": {
             "description": "Invalid request"
           },
+          "403": {
+            "description": "Insufficient permission"
+          },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted"
           }
@@ -10368,6 +10407,9 @@
           "401": {
             "description": "Invalid credentials"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
+          },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `MEMBER_DELETED`: Member account has been deleted\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
           }
@@ -10398,6 +10440,9 @@
           },
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server\n- `INVALID_PASSWORD_RESET_TOKEN`: The password reset token is invalid or has expired"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           },
           "404": {
             "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found\n- `EMAIL_AUTHENTICATION_IDENTITY_NOT_FOUND`: Could not find the email authentication identity"
@@ -10438,6 +10483,9 @@
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
+          },
           "429": {
             "description": "Too many requests\n\n- `RATE_LIMITED`: Too many requests. Please try again later"
           }
@@ -10476,6 +10524,9 @@
           },
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           }
         },
         "security": [],
@@ -10545,7 +10596,7 @@
             "description": "Invalid request"
           },
           "403": {
-            "description": "Insufficient permission\n\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode\n- `EMAIL_SIGNUP_DISABLED`: Email signup is currently disabled by policy\n- `EMAIL_NOT_VERIFIED`: Email is not verified"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_USERNAME`: This username is already in use\n- `DUPLICATE_EMAIL`: This email is already in use\n- `MEMBER_SIGNUP_CONFLICT`: Member signup failed due to duplicate email or username"
@@ -10585,6 +10636,9 @@
           },
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           }
         },
         "security": [],
@@ -10621,6 +10675,12 @@
           },
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
+          },
+          "409": {
+            "description": "Resource conflict\n\n- `VERIFICATION_TOKEN_DUPLICATE`: A verification email was already sent recently"
           },
           "429": {
             "description": "Too many requests\n\n- `RATE_LIMITED`: Too many requests. Please try again later"
@@ -10734,6 +10794,9 @@
           "400": {
             "description": "Invalid request\n\n- `EMAIL_FEATURE_DISABLED`: Email feature is disabled on this server"
           },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
+          },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_EMAIL`: This email is already in use"
           }
@@ -10798,6 +10861,9 @@
           },
           "401": {
             "description": "Invalid credentials\n\n- `RESTORE_INVALID_CREDENTIALS`: Invalid credentials for account restore"
+          },
+          "403": {
+            "description": "Insufficient permission\n\n- `LOCAL_AUTH_ONLY`: This operation requires local authentication mode"
           },
           "409": {
             "description": "Resource conflict\n\n- `RESTORE_NOT_DELETED`: Account is not DELETED status; cannot restore"
@@ -11027,6 +11093,9 @@
               }
             },
             "description": "Notifications retrieved"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `INVALID_CURSOR`: Invalid pagination cursor"
           }
         },
         "summary": "List notifications",
@@ -11054,7 +11123,7 @@
             "description": "Preferences retrieved"
           }
         },
-        "summary": "Get notification preferences",
+        "summary": "List notification preferences",
         "tags": [
           "Notification Preference"
         ]
@@ -11373,7 +11442,7 @@
             "description": "Invalid request\n\n- `INVALID_PROJECT_KEY_FORMAT`: Project key must be 2-10 uppercase letters, optionally followed by numbers\n- `RESERVED_PROJECT_KEY`: Cannot use reserved project key"
           },
           "404": {
-            "description": "Resource not found"
+            "description": "Resource not found\n\n- `MEMBER_NOT_FOUND`: Member not found"
           },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_PROJECT_KEY`: Project key already exists"
@@ -11440,7 +11509,7 @@
             "description": "Project detail retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project detail",
@@ -11493,7 +11562,7 @@
     },
     "/api/v1/projects/{projectKey}/integrations/github": {
       "delete": {
-        "description": "Remove the GitHub integration from a project. This will also invalidate the webhook secret.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Remove the GitHub integration from a project. This will also invalidate the webhook secret.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "removeGithubIntegration",
         "parameters": [
           {
@@ -11555,7 +11624,7 @@
         ]
       },
       "patch": {
-        "description": "Pause or resume acting on this project's GitHub webhooks, without removing the integration.\nWhile disabled, inbound events are ignored: no branches are linked and no workflow\nautomation runs. The webhook secret and URL stay valid, so no re-registration on GitHub is\nneeded to resume.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Pause or resume acting on this project's GitHub webhooks, without removing the integration.\nWhile disabled, inbound events are ignored: no branches are linked and no workflow\nautomation runs. The webhook secret and URL stay valid, so no re-registration on GitHub is\nneeded to resume.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "updateGithubSync",
         "parameters": [
           {
@@ -11606,7 +11675,7 @@
     },
     "/api/v1/projects/{projectKey}/integrations/github/deliveries": {
       "get": {
-        "description": "List what GitHub has sent to this project's webhook and how each delivery was handled,\nnewest first. Shows deliveries that were deliberately ignored and why, which is where an\nintegration that \"does nothing\" is usually diagnosed.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "List what GitHub has sent to this project's webhook and how each delivery was handled,\nnewest first. Shows deliveries that were deliberately ignored and why, which is where an\nintegration that \"does nothing\" is usually diagnosed.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "listGithubDeliveries",
         "parameters": [
           {
@@ -11652,7 +11721,7 @@
     },
     "/api/v1/projects/{projectKey}/integrations/github:regenerateSecret": {
       "post": {
-        "description": "Regenerate the webhook secret used to verify GitHub webhook payloads.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Regenerate the webhook secret used to verify GitHub webhook payloads.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "regenerateGithubSecret",
         "parameters": [
           {
@@ -11738,7 +11807,7 @@
     },
     "/api/v1/projects/{projectKey}/issues/batch": {
       "delete": {
-        "description": "Soft delete multiple issues at once.\n\n**Requirements:**\n- Requires project `MANAGER` or issue author (per issue)",
+        "description": "Soft delete multiple issues at once.\n\n**Requirements:**\n- Requires project `MANAGER` or issue author",
         "operationId": "batchDeleteIssues",
         "parameters": [
           {
@@ -12219,10 +12288,10 @@
             "description": "Member stats retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
-        "summary": "Get per-member contribution stats",
+        "summary": "List per-member contribution stats",
         "tags": [
           "Project"
         ]
@@ -12308,7 +12377,7 @@
             "description": "Members retrieved"
           },
           "404": {
-            "description": "Project or member not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "List project members",
@@ -12357,7 +12426,7 @@
     },
     "/api/v1/projects/{projectKey}/members/batch": {
       "post": {
-        "description": "Add multiple members to the project at once. Up to 100 members can be added.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Add multiple members to the project at once. Up to 100 members can be added.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "addProjectMembers",
         "parameters": [
           {
@@ -12408,7 +12477,7 @@
     },
     "/api/v1/projects/{projectKey}/members/candidates": {
       "get": {
-        "description": "Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.\n\n**Requirements:**\n- Requires project manager role",
+        "description": "Search global members who can be added to the project (not already active members of it), matching the keyword on username, name or email (case-insensitive). A blank keyword returns all candidates.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "listMemberCandidates",
         "parameters": [
           {
@@ -12448,10 +12517,10 @@
             "description": "Candidates retrieved"
           },
           "403": {
-            "description": "Not a project manager"
+            "description": "Insufficient permission\n\n- `PROJECT_MANAGER_REQUIRED`: Requires project manager role"
           },
           "404": {
-            "description": "Project or member not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
           }
         },
         "summary": "Search members to add",
@@ -12462,7 +12531,7 @@
     },
     "/api/v1/projects/{projectKey}/members/{targetMemberId}": {
       "delete": {
-        "description": "Remove a member from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role\n- Cannot kick members with equal or higher authority",
+        "description": "Remove a member from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role\n- Cannot kick members with equal or higher authority",
         "operationId": "kickProjectMember",
         "parameters": [
           {
@@ -12505,7 +12574,7 @@
     },
     "/api/v1/projects/{projectKey}/members/{targetMemberId}/role": {
       "patch": {
-        "description": "Change a project member's role.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role\n- Cannot modify members with equal or higher authority",
+        "description": "Change a project member's role.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role\n- Cannot modify members with equal or higher authority",
         "operationId": "updateProjectMemberRole",
         "parameters": [
           {
@@ -12582,7 +12651,7 @@
             "description": "Project statistics retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project simple statistics",
@@ -12652,7 +12721,7 @@
         ]
       },
       "post": {
-        "description": "Create a new sprint within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Create a new sprint within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "createSprint",
         "parameters": [
           {
@@ -12727,7 +12796,7 @@
             "description": "Aging stats retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project aging \u0026 blocked stats",
@@ -12789,7 +12858,7 @@
             "description": "Contribution heatmap retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get a member's contribution heatmap",
@@ -12842,7 +12911,7 @@
             "description": "Cycle time stats retrieved"
           },
           "404": {
-            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project cycle \u0026 lead time stats",
@@ -12903,7 +12972,7 @@
             "description": "Flow stats retrieved"
           },
           "404": {
-            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project flow statistics",
@@ -12947,7 +13016,7 @@
             "description": "Sprint report retrieved"
           },
           "404": {
-            "description": "Project or sprint not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get a sprint report",
@@ -12982,7 +13051,7 @@
             "description": "Velocity retrieved"
           },
           "404": {
-            "description": "Project not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
+            "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found"
           }
         },
         "summary": "Get project sprint velocity",
@@ -13042,7 +13111,7 @@
         ]
       },
       "post": {
-        "description": "Create a new tag within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Create a new tag within a project.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "createTag",
         "parameters": [
           {
@@ -13144,10 +13213,10 @@
             "description": "Project key is available"
           },
           "400": {
-            "description": "Invalid or reserved project key\n\n- `INVALID_PROJECT_KEY_FORMAT`: Project key must be 2-10 uppercase letters, optionally followed by numbers\n- `RESERVED_PROJECT_KEY`: Cannot use reserved project key"
+            "description": "Invalid request\n\n- `INVALID_PROJECT_KEY_FORMAT`: Project key must be 2-10 uppercase letters, optionally followed by numbers\n- `RESERVED_PROJECT_KEY`: Cannot use reserved project key"
           },
           "409": {
-            "description": "Duplicate project key\n\n- `DUPLICATE_PROJECT_KEY`: Project key already exists"
+            "description": "Resource conflict\n\n- `DUPLICATE_PROJECT_KEY`: Project key already exists"
           }
         },
         "summary": "Check project key availability",
@@ -13220,7 +13289,7 @@
     },
     "/api/v1/sprints/{sprintId}": {
       "delete": {
-        "description": "Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Delete a cancelled sprint. Only sprints in `CANCELLED` status can be deleted.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "deleteSprint",
         "parameters": [
           {
@@ -13287,7 +13356,7 @@
         ]
       },
       "patch": {
-        "description": "Update a sprint's name, goal, or description. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Update a sprint's name, goal, or description. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "updateSprint",
         "parameters": [
           {
@@ -13376,6 +13445,9 @@
               }
             },
             "description": "Activity logs retrieved"
+          },
+          "400": {
+            "description": "Invalid request\n\n- `INVALID_CURSOR`: Invalid pagination cursor"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
@@ -13505,7 +13577,7 @@
     },
     "/api/v1/sprints/{sprintId}:cancel": {
       "post": {
-        "description": "Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled.\nAll issues in the sprint will be unassigned.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Cancel a sprint. Sprints in `PLANNING` or `ACTIVE` status can be cancelled.\nAll issues in the sprint will be unassigned.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "cancelSprint",
         "parameters": [
           {
@@ -13540,7 +13612,7 @@
     },
     "/api/v1/sprints/{sprintId}:complete": {
       "post": {
-        "description": "Complete an active sprint. Only sprints in `ACTIVE` status can be completed.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Complete an active sprint. Only sprints in `ACTIVE` status can be completed.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "completeSprint",
         "parameters": [
           {
@@ -13575,7 +13647,7 @@
     },
     "/api/v1/sprints/{sprintId}:migrateIssues": {
       "post": {
-        "description": "Migrate incomplete issues from a completed sprint to another sprint.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Migrate incomplete issues from a completed sprint to another sprint.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "migrateSprintIssues",
         "parameters": [
           {
@@ -13620,7 +13692,7 @@
     },
     "/api/v1/sprints/{sprintId}:start": {
       "post": {
-        "description": "Start a sprint with a due date. Only sprints in `PLANNED` status can be started.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Start a sprint with a due date. Only sprints in `PLANNED` status can be started.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "startSprint",
         "parameters": [
           {
@@ -13691,7 +13763,7 @@
     },
     "/api/v1/tags/{tagId}": {
       "delete": {
-        "description": "Permanently delete a tag from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Permanently delete a tag from the project.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "deleteTag",
         "parameters": [
           {
@@ -13721,7 +13793,7 @@
         ]
       },
       "patch": {
-        "description": "Update a tag's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or higher role",
+        "description": "Update a tag's name, description, or color. Only provided fields are updated.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "updateTag",
         "parameters": [
           {
@@ -13994,7 +14066,7 @@
             "description": "Root documents retrieved"
           }
         },
-        "summary": "Get root documents",
+        "summary": "List root documents",
         "tags": [
           "Wiki Document"
         ]
@@ -14127,12 +14199,9 @@
           },
           "403": {
             "description": "Insufficient permission\n\n- `DOCUMENT_DELETE_NOT_ALLOWED`: Only admins or document creators can delete documents"
-          },
-          "404": {
-            "description": "Resource not found"
           }
         },
-        "summary": "Permanently delete all soft-deleted documents ",
+        "summary": "Permanently delete all soft-deleted documents",
         "tags": [
           "Wiki Document"
         ]
@@ -14192,7 +14261,7 @@
             "description": "Document tree retrieved"
           }
         },
-        "summary": "Get document tree",
+        "summary": "List document tree",
         "tags": [
           "Wiki Document"
         ]
@@ -14537,7 +14606,7 @@
             "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
-        "summary": "Get child documents",
+        "summary": "List child documents",
         "tags": [
           "Wiki Document"
         ]
@@ -14750,7 +14819,7 @@
             "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           },
           "409": {
-            "description": "Tag limit exceeded\n\n- `DOCUMENT_TAG_LIMIT_EXCEEDED`: Maximum number of tags per document exceeded"
+            "description": "Resource conflict\n\n- `DOCUMENT_TAG_LIMIT_EXCEEDED`: Maximum number of tags per document exceeded"
           }
         },
         "summary": "Attach tag",
@@ -14788,7 +14857,7 @@
             "description": "Tag detached"
           },
           "400": {
-            "description": "Bad Request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
+            "description": "Invalid request\n\n- `DOCUMENT_LOCKED`: Cannot edit a locked document"
           },
           "404": {
             "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found\n- `TAG_NOT_FOUND`: Wiki tag not found"
@@ -14875,7 +14944,7 @@
             "description": "Resource not found\n\n- `DOCUMENT_NOT_FOUND`: Wiki document not found"
           }
         },
-        "summary": "Get version history",
+        "summary": "List version history",
         "tags": [
           "Wiki Document"
         ]
@@ -15079,9 +15148,6 @@
           "403": {
             "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
           },
-          "404": {
-            "description": "Resource not found"
-          },
           "409": {
             "description": "Resource conflict\n\n- `DUPLICATE_STATE_NAME`: A state with this name already exists in the workflow\n- `DUPLICATE_TRANSITION_NAME`: A transition with this name and source state already exists in the workflow\n- `DUPLICATE_WORKFLOW_NAME`: Workflow with this label already exists"
           }
@@ -15121,7 +15187,7 @@
             "description": "Resource not found\n\n- `WORKFLOW_NOT_FOUND`: Workflow not found"
           },
           "409": {
-            "description": "Resource conflict\n\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
+            "description": "Resource conflict\n\n- `WORKFLOW_IN_USE`: Cannot delete a workflow that is still assigned to an issue type\n- `WORKFLOW_STATE_IN_USE`: Cannot delete workflow states that are currently assigned to active issues"
           }
         },
         "summary": "Delete workflow",
@@ -15240,7 +15306,7 @@
             "description": "Workflow graph replaced"
           },
           "400": {
-            "description": "Invalid request\n\n- `INCOMPLETE_NEW_STATE`: New states require 'name' and 'color'\n- `INCOMPLETE_NEW_TRANSITION`: New transitions require 'name'\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INITIAL_STATE_BELONG_MISMATCH`: State must belong to the workflow\n- `INITIAL_STATE_CATEGORY_MISMATCH`: Initial (first) state must be categorized as 'INITIAL'\n- `MIGRATION_TARGET_BEING_DELETED`: Cannot migrate issues to a state that is also being deleted\n- `STATE_MIGRATION_REQUIRED`: Active issues exist in states being deleted; migration mapping required"
+            "description": "Invalid request\n\n- `MISSING_NODE_IDENTIFIER`: Either an existing ID or a temporary key must be provided for node identification\n- `CANNOT_DELETE_INITIAL_STATE`: Cannot delete the state categorized as 'INITIAL' in a workflow\n- `INCOMPLETE_NEW_STATE`: New states require 'name' and 'color'\n- `INCOMPLETE_NEW_TRANSITION`: New transitions require 'name'\n- `INVALID_INITIAL_STATE_COUNT`: Workflow must have exactly one 'INITIAL' state\n- `INVALID_TRANSITION_TARGET`: Transitions cannot target the 'INITIAL' state\n- `MISSING_COMPLETED_STATE`: Workflow must have at least one 'COMPLETED' state\n- `ORPHAN_STATE`: Unreachable states detected\n- `DEAD_END_STATE`: The following 'ACTIVE' states have no outgoing transitions\n- `DUPLICATE_TRANSITION_EDGE`: Duplicate transition between these two states already exists\n- `INITIAL_STATE_BELONG_MISMATCH`: State must belong to the workflow\n- `INITIAL_STATE_CATEGORY_MISMATCH`: Initial (first) state must be categorized as 'INITIAL'\n- `MIGRATION_TARGET_BEING_DELETED`: Cannot migrate issues to a state that is also being deleted\n- `STATE_MIGRATION_REQUIRED`: Active issues exist in states being deleted; migration mapping required"
           },
           "403": {
             "description": "Insufficient permission\n\n- `SYSTEM_ADMIN_REQUIRED`: System admin privilege required"
@@ -15754,6 +15820,14 @@
         "Member Account",
         "Member Profile",
         "Member Administration"
+      ]
+    },
+    {
+      "name": "Agent",
+      "tags": [
+        "Agents",
+        "Agent Tokens",
+        "Agent Model"
       ]
     },
     {

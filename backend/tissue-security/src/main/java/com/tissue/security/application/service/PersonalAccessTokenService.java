@@ -5,7 +5,9 @@ import com.tissue.security.adapter.persistence.PersonalAccessTokenRepository;
 import com.tissue.security.application.dto.GeneratedToken;
 import com.tissue.security.domain.PatScope;
 import com.tissue.security.domain.PersonalAccessToken;
+import com.tissue.security.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.util.TokenHashUtil;
+import com.tissue.shared.exception.base.ResourceConflictException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
@@ -29,6 +31,8 @@ public class PersonalAccessTokenService {
 
     @Transactional
     public GeneratedToken generate(Member member, String name, PatScope scope, @Nullable Duration ttl) {
+        ensureTokenNameUnique(member.getId(), name);
+
         String rawToken = generateRawToken();
         PersonalAccessToken token = PersonalAccessToken.create(member, name, TokenHashUtil.hash(rawToken), scope, ttl);
         return new GeneratedToken(repository.save(token), rawToken);
@@ -57,6 +61,16 @@ public class PersonalAccessTokenService {
     @Transactional
     public void revokeAllFor(Long memberId) {
         repository.findAllByMember_Id(memberId).forEach(PersonalAccessToken::revoke);
+    }
+
+    /**
+     * Fails before the insert so the caller gets a named conflict instead of the generic
+     * constraint violation that {@code uk_pat_member_name} would raise.
+     */
+    private void ensureTokenNameUnique(Long memberId, String name) {
+        if (repository.existsByMember_IdAndName(memberId, name)) {
+            throw new ResourceConflictException(AuthenticationErrorCode.DUPLICATE_TOKEN_NAME);
+        }
     }
 
     private String generateRawToken() {
