@@ -34,6 +34,7 @@ public class AuthenticationService implements AuthenticationUseCase {
     private final TokenPairCreateService tokenPairCreateService;
     private final MemberFinder memberFinder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRevocationService refreshTokenRevocationService;
     private final RateLimitService rateLimitService;
 
     @Override
@@ -84,7 +85,7 @@ public class AuthenticationService implements AuthenticationUseCase {
                 refreshTokenRepository.findByMemberId(memberId).orElseThrow(RefreshTokenNotFoundException::new);
 
         if (!TokenHashUtil.matches(refreshToken, storedHash)) {
-            refreshTokenRepository.deleteByMemberId(memberId);
+            refreshTokenRevocationService.revoke(memberId);
             log.warn("Refresh token reuse detected! memberId: {}", memberId);
             throw new TokenReuseDetectedException();
         }
@@ -93,7 +94,7 @@ public class AuthenticationService implements AuthenticationUseCase {
     private @NonNull Member ensureMemberNotLocked(Long memberId) {
         Member member = memberFinder.getActiveById(memberId);
         if (member.isLocked()) {
-            refreshTokenRepository.deleteByMemberId(memberId);
+            refreshTokenRevocationService.revoke(memberId);
             throw new MemberLockedException(memberId);
         }
         return member;

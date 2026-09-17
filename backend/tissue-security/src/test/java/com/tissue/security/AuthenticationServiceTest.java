@@ -16,6 +16,7 @@ import com.tissue.security.application.dto.response.RefreshTokenResponse;
 import com.tissue.security.application.port.repository.RefreshTokenRepository;
 import com.tissue.security.application.service.AuthenticationService;
 import com.tissue.security.application.service.RateLimitService;
+import com.tissue.security.application.service.RefreshTokenRevocationService;
 import com.tissue.security.application.service.TokenPairCreateService;
 import com.tissue.security.domain.TokenProvider;
 import com.tissue.security.domain.exception.RefreshTokenNotFoundException;
@@ -52,6 +53,9 @@ class AuthenticationServiceTest {
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    RefreshTokenRevocationService refreshTokenRevocationService;
 
     @Mock
     RateLimitService rateLimitService;
@@ -162,7 +166,7 @@ class AuthenticationServiceTest {
             // when & then
             assertThatThrownBy(() -> sut.refreshToken(incomingToken)).isInstanceOf(TokenReuseDetectedException.class);
 
-            then(refreshTokenRepository).should().deleteByMemberId(memberId);
+            then(refreshTokenRevocationService).should().revoke(memberId);
         }
     }
 
