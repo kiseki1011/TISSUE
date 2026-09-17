@@ -46,6 +46,16 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     @Query("SELECT i FROM Issue i WHERE i.key.value IN :issueKeys")
     List<Issue> findByKeyIn(@Param("issueKeys") Collection<String> issueKeys);
 
+    @Query("""
+           SELECT i
+           FROM Issue i
+           JOIN FETCH i.project p
+           WHERE p.key.value = :projectKey
+             AND i.key.value IN :issueKeys
+       """)
+    List<Issue> findByProjectKeyAndKeyIn(
+            @Param("projectKey") String projectKey, @Param("issueKeys") Collection<String> issueKeys);
+
     @Query(value = """
            SELECT i.*
            FROM issue i

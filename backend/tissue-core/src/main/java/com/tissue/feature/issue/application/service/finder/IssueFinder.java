@@ -40,8 +40,15 @@ public class IssueFinder {
                 .orElseThrow(() -> new IssueNotFoundException(issueKey));
     }
 
+    /**
+     * This is unscoped. Callers must verify each issue's project themselves.
+     */
     public List<Issue> getAllByIssueKeys(Collection<String> issueKeys) {
         return issueQueryRepository.findByKeyIn(issueKeys);
+    }
+
+    public List<Issue> getAllByIssueKeys(String projectKey, Collection<String> issueKeys) {
+        return issueQueryRepository.findByProjectKeyAndKeyIn(projectKey, issueKeys);
     }
 
     public List<Issue> getAllBySprint(Sprint sprint) {

@@ -304,7 +304,8 @@ class IssueUpdateServiceTest {
 
             given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys()))
+                    .willReturn(List.of(issue1, issue2));
             given(issueFinder.getWithProjectByIssueKey(cmd.parentIssueKey())).willReturn(newParent);
 
             given(issue1.getKey()).willReturn("PROJ-1");
@@ -343,7 +344,8 @@ class IssueUpdateServiceTest {
 
             given(projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys()))
+                    .willReturn(List.of(issue1, issue2));
 
             given(issue1.getParentIssue()).willReturn(null);
             given(issue2.getParentIssue()).willReturn(parent2);
