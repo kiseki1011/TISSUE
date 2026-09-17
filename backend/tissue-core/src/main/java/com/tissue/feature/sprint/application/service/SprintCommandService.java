@@ -141,7 +141,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         ProjectMember actor = projectMemberFinder.getBy(sourceSprint.getProject(), actorMemberId);
         projectAuthorizationService.requireProjectManager(actor);
 
-        Sprint targetSprint = sprintFinder.getWithProject(cmd.targetSprintId());
+        Sprint targetSprint = sprintFinder.getBy(cmd.targetSprintId(), sourceSprint.getProject());
 
         sprintValidator.ensureSprintNotClosed(sourceSprint);
         sprintValidator.ensureSprintNotClosed(targetSprint);

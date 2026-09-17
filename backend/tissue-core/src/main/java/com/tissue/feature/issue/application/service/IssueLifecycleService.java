@@ -126,7 +126,7 @@ public class IssueLifecycleService implements IssueLifecycleUseCase {
     public BatchOperationResponse batchDelete(ProjectIdentifier pid, BatchDeleteCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys());
         List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {

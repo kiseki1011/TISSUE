@@ -130,7 +130,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
             ProjectIdentifier pid, BatchChangeParentCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys());
         Issue newParent = issueFinder.getWithProjectByIssueKey(cmd.parentIssueKey());
 
         List<BatchFailure> failures = new ArrayList<>();
@@ -155,7 +155,7 @@ public class IssueUpdateService implements IssueUpdateUseCase {
             ProjectIdentifier pid, BatchRemoveParentCommand cmd, Long actorMemberId) {
         ProjectMember actor = projectMemberFinder.getByProjectKey(pid.projectKey(), actorMemberId);
 
-        List<Issue> issues = issueFinder.getAllByIssueKeys(cmd.issueKeys());
+        List<Issue> issues = issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys());
         List<BatchFailure> failures = new ArrayList<>();
 
         for (Issue issue : issues) {

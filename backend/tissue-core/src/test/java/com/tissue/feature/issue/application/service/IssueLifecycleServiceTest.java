@@ -356,7 +356,8 @@ class IssueLifecycleServiceTest {
 
             given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys()))
+                    .willReturn(List.of(issue1, issue2));
 
             // when
             BatchOperationResponse result = sut.batchDelete(pid, cmd, actorMemberId);
@@ -383,7 +384,8 @@ class IssueLifecycleServiceTest {
 
             given(projectAccessResolver.resolveByProjectKey(pid.projectKey(), actorMemberId))
                     .willReturn(actor);
-            given(issueFinder.getAllByIssueKeys(cmd.issueKeys())).willReturn(List.of(issue1, issue2));
+            given(issueFinder.getAllByIssueKeys(pid.projectKey(), cmd.issueKeys()))
+                    .willReturn(List.of(issue1, issue2));
 
             given(issue1.getKey()).willReturn("PROJ-1");
             willThrow(new ForbiddenException(mock(ErrorCode.class)))
