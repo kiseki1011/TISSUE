@@ -1216,7 +1216,7 @@
           "Sprint"
         ],
         "summary": "Migrate incomplete issues",
-        "description": "Migrate incomplete issues from a completed sprint to another sprint.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
+        "description": "Migrate incomplete issues from a completed sprint to another sprint in the same project.\n\n**Requirements:**\n- Requires project `MANAGER` or system `ADMIN` or higher role",
         "operationId": "migrateSprintIssues",
         "parameters": [
           {

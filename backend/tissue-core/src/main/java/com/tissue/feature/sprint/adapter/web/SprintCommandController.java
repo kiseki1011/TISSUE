@@ -193,7 +193,7 @@ public class SprintCommandController {
     }
 
     @Operation(operationId = "migrateSprintIssues", summary = "Migrate incomplete issues", description = """
-                Migrate incomplete issues from a completed sprint to another sprint.
+                Migrate incomplete issues from a completed sprint to another sprint in the same project.
 
                 **Requirements:**
                 - Requires project `MANAGER` or system `ADMIN` or higher role""")
