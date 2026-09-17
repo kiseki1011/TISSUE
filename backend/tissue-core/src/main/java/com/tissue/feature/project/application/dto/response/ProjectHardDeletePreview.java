@@ -20,4 +20,7 @@ public record ProjectHardDeletePreview(
         @Schema(example = "10") long tags,
         @Schema(example = "6") long members,
         @Schema(example = "300") long activityLogs,
-        @Schema(example = "1") long vcsIntegrations) {}
+        @Schema(example = "1") long vcsIntegrations,
+
+        @Schema(description = "Stored inbound webhook delivery rows", example = "50")
+        long webhookDeliveries) {}

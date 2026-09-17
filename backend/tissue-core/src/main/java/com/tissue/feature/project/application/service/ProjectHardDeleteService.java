@@ -21,7 +21,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
  * Permanently deletes (hard-delete) an already soft-deleted project and every resource that hangs off it
- * (issue subtree, sprints, tags, project members, VCS integrations, activity log) + physical attachment files.
+ * (issue subtree, sprints, tags, project members, VCS integrations, webhook deliveries, activity log) + physical
+ * attachment files.
  * The project must already be soft-deleted.
  */
 @LLMGenerated(
@@ -73,6 +74,7 @@ public class ProjectHardDeleteService {
 
         purgeRepository.deleteVcsIntegrations(projectKey);
         purgeRepository.deleteActivityLogs(projectKey);
+        purgeRepository.deleteWebhookDeliveries(projectKey);
 
         // The project itself
         purgeRepository.deleteProject(projectId);
@@ -108,6 +110,7 @@ public class ProjectHardDeleteService {
                 .members(purgeRepository.countMembers(projectId))
                 .activityLogs(purgeRepository.countActivityLogs(projectKey))
                 .vcsIntegrations(purgeRepository.countVcsIntegrations(projectKey))
+                .webhookDeliveries(purgeRepository.countWebhookDeliveries(projectKey))
                 .build();
     }
 

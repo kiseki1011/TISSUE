@@ -4200,6 +4200,12 @@
             "example": 1,
             "format": "int64",
             "type": "integer"
+          },
+          "webhookDeliveries": {
+            "description": "Stored inbound webhook delivery rows",
+            "example": 50,
+            "format": "int64",
+            "type": "integer"
           }
         },
         "type": "object"
