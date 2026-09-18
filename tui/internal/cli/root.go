@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	zone "github.com/lrstanley/bubblezone/v2"
@@ -92,6 +93,10 @@ func runTUI(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
+// restTimeout bounds a single REST request (connect through body read). Applied per-request via
+// context on the REST clients only; the SSE stream uses the bare transport and is not affected.
+const restTimeout = 30 * time.Second
+
 // The public client stays unauthenticated so token refresh cannot recurse back through the transport.
 func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 	store, err := auth.NewTokenStore()
@@ -99,7 +104,8 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 		return deps.Deps{}, fmt.Errorf("open token store: %w", err)
 	}
 
-	publicAPI, err := client.NewClientWithResponses(server)
+	publicAPI, err := client.NewClientWithResponses(server,
+		client.WithHTTPClient(&http.Client{Transport: auth.NewTimeoutTransport(nil, restTimeout)}))
 	if err != nil {
 		return deps.Deps{}, fmt.Errorf("build public client: %w", err)
 	}
@@ -112,7 +118,7 @@ func buildDeps(server string, cfg *config.Config) (deps.Deps, error) {
 	})
 
 	authedAPI, err := client.NewClientWithResponses(server,
-		client.WithHTTPClient(&http.Client{Transport: transport}))
+		client.WithHTTPClient(&http.Client{Transport: auth.NewTimeoutTransport(transport, restTimeout)}))
 	if err != nil {
 		return deps.Deps{}, fmt.Errorf("build authed client: %w", err)
 	}
