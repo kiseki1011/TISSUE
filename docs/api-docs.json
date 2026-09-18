@@ -15467,6 +15467,12 @@
             "type": "integer",
             "format": "int64",
             "example": 1
+          },
+          "webhookDeliveries": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Stored inbound webhook delivery rows",
+            "example": 50
           }
         }
       },

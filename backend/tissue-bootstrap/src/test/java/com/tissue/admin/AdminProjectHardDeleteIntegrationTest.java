@@ -22,6 +22,7 @@ import com.tissue.feature.project.domain.exception.ProjectNotFoundException;
 import com.tissue.feature.sprint.application.port.repository.SprintCommandRepository;
 import com.tissue.feature.sprint.domain.Sprint;
 import com.tissue.feature.vcs.domain.ProjectVcsIntegration;
+import com.tissue.feature.vcs.domain.VcsWebhookDelivery;
 import com.tissue.feature.vcs.domain.enums.VcsProvider;
 import com.tissue.shared.exception.base.BadRequestException;
 import com.tissue.shared.exception.base.ResourceConflictException;
@@ -81,6 +82,8 @@ class AdminProjectHardDeleteIntegrationTest extends IntegrationTestSupport {
         projectMemberCommandRepository.save(ProjectMember.create(project, member));
         sprintCommandRepository.save(Sprint.create(project, "Sprint 1", "goal"));
         em.persist(ProjectVcsIntegration.create(VcsProvider.GITHUB, key, "webhook-secret"));
+        em.persist(
+                VcsWebhookDelivery.create(VcsProvider.GITHUB, key + "-delivery-1", key, "push", "{\"ref\":\"main\"}"));
         activityLogCommandRepository.save(ActivityLog.builder()
                 .eventId(UUID.randomUUID())
                 .activityType(ActivityType.ISSUE_CREATED)
@@ -114,6 +117,7 @@ class AdminProjectHardDeleteIntegrationTest extends IntegrationTestSupport {
             assertThat(preview.members()).isEqualTo(1);
             assertThat(preview.sprints()).isEqualTo(1);
             assertThat(preview.vcsIntegrations()).isEqualTo(1);
+            assertThat(preview.webhookDeliveries()).isEqualTo(1);
             assertThat(preview.activityLogs()).isEqualTo(1);
             assertThat(preview.issues()).isZero();
             assertThat(preview.comments()).isZero();
@@ -175,6 +179,8 @@ class AdminProjectHardDeleteIntegrationTest extends IntegrationTestSupport {
                     .isZero();
             assertThat(nativeCount("SELECT COUNT(*) FROM project_vcs_integration WHERE project_key = :k", "k", "PROJ"))
                     .isZero();
+            assertThat(nativeCount("SELECT COUNT(*) FROM vcs_webhook_delivery WHERE project_key = :k", "k", "PROJ"))
+                    .isZero();
 
             // then: an audit entry was recorded
             Page<AdminAuditLogResponse> audit = adminAuditQueryService.listAuditLogs(
@@ -213,5 +219,39 @@ class AdminProjectHardDeleteIntegrationTest extends IntegrationTestSupport {
             assertThatThrownBy(() -> adminProjectService.hardDelete("LIVE", "LIVE", actor.getId()))
                     .isInstanceOf(ResourceConflictException.class);
         }
+    }
+
+    /**
+     * Denormalized tables the purge removes by project_key (no FK to cascade through). The
+     * vcs_webhook_delivery omission that this guard exists to catch lived exactly here.
+     */
+    private static final java.util.Set<String> PURGED_BY_PROJECT_KEY =
+            java.util.Set.of("activity_log", "project_vcs_integration", "vcs_webhook_delivery");
+
+    /**
+     * Tables that carry a project_key but are intentionally NOT removed by it: the aggregate root
+     * (deleted by id last), children deleted by project_id, and user-scoped notification history.
+     */
+    private static final java.util.Set<String> EXEMPT_FROM_PROJECT_KEY_PURGE =
+            java.util.Set.of("project", "project_member", "sprint", "tag", "notification");
+
+    @Test
+    @DisplayName("every project_key-scoped table is either purged or explicitly exempt")
+    void everyProjectKeyScopedTableIsAccountedFor() {
+        @SuppressWarnings("unchecked")
+        java.util.List<String> tablesWithProjectKey = em.createNativeQuery(
+                        "SELECT DISTINCT table_name FROM information_schema.columns "
+                                + "WHERE table_schema = 'public' AND column_name = 'project_key'")
+                .getResultList();
+
+        java.util.Set<String> unaccounted = new java.util.HashSet<>(tablesWithProjectKey);
+        unaccounted.removeAll(PURGED_BY_PROJECT_KEY);
+        unaccounted.removeAll(EXEMPT_FROM_PROJECT_KEY_PURGE);
+
+        assertThat(unaccounted)
+                .as("a table carries project_key but is neither purged by the hard-delete cascade nor listed as "
+                        + "exempt; decide whether a project hard-delete must remove it, then update "
+                        + "ProjectPurgeRepository/ProjectHardDeleteService or the exemption list here")
+                .isEmpty();
     }
 }

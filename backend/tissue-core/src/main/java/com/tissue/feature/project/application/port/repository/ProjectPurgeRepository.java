@@ -63,6 +63,9 @@ public interface ProjectPurgeRepository extends Repository<Project, Long> {
     @Query(value = "SELECT COUNT(*) FROM project_vcs_integration WHERE project_key = :projectKey", nativeQuery = true)
     long countVcsIntegrations(@Param("projectKey") String projectKey);
 
+    @Query(value = "SELECT COUNT(*) FROM vcs_webhook_delivery WHERE project_key = :projectKey", nativeQuery = true)
+    long countWebhookDeliveries(@Param("projectKey") String projectKey);
+
     /* --- Issue subtree — must run while issue rows still exist (subqueries) --- */
 
     /**
@@ -172,6 +175,10 @@ public interface ProjectPurgeRepository extends Repository<Project, Long> {
     @Modifying(clearAutomatically = true)
     @Query(value = "DELETE FROM activity_log WHERE project_key = :projectKey", nativeQuery = true)
     void deleteActivityLogs(@Param("projectKey") String projectKey);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM vcs_webhook_delivery WHERE project_key = :projectKey", nativeQuery = true)
+    void deleteWebhookDeliveries(@Param("projectKey") String projectKey);
 
     /* --- The project row itself — last --- */
 

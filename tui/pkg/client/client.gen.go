@@ -6180,6 +6180,9 @@ type ProjectHardDeletePreview struct {
 	Sprints         *int64  `json:"sprints,omitempty"`
 	Tags            *int64  `json:"tags,omitempty"`
 	VcsIntegrations *int64  `json:"vcsIntegrations,omitempty"`
+
+	// WebhookDeliveries Stored inbound webhook delivery rows
+	WebhookDeliveries *int64 `json:"webhookDeliveries,omitempty"`
 }
 
 // ProjectMemberInfo defines model for ProjectMemberInfo.
