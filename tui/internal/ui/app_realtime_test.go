@@ -206,3 +206,40 @@ func TestSprintEventDataExtraction(t *testing.T) {
 		t.Errorf("issueKeysFromEvent(empty) = %v, want nil", got)
 	}
 }
+
+// A drop-and-recover (any non-Connected -> Connected) is a reconnect that must resync; other state
+// updates only move the indicator. Stale-gen updates are dropped even when they look like a reconnect.
+func TestApplyRealtimeReconnectTransition(t *testing.T) {
+	d := deps.Deps{Styles: theme.New(theme.TokyoNight()), Glyphs: glyph.New(glyph.Unicode)}
+	a := New(d)
+	a.sessionGen = 3
+	a.rt = realtime.New("http://x", &http.Client{}, 3)
+	a.screen = screenHome // isolate the transition logic from screen-specific refetch
+
+	a.rtState = realtime.Disconnected
+	m, cmd := a.applyRealtime(realtime.Update{Kind: realtime.StateUpdate, State: realtime.Connected, Gen: 3})
+	if got := m.(App).rtState; got != realtime.Connected {
+		t.Errorf("reconnect should apply the Connected state, got %v", got)
+	}
+	if cmd == nil {
+		t.Error("reconnect should re-arm the wait")
+	}
+
+	a.rtState = realtime.Connected
+	m2, cmd2 := a.applyRealtime(realtime.Update{Kind: realtime.StateUpdate, State: realtime.Connecting, Gen: 3})
+	if got := m2.(App).rtState; got != realtime.Connecting {
+		t.Errorf("a Connecting update should move the indicator, got %v", got)
+	}
+	if cmd2 == nil {
+		t.Error("a non-reconnect state update should still re-arm")
+	}
+
+	a.rtState = realtime.Disconnected
+	m3, cmd3 := a.applyRealtime(realtime.Update{Kind: realtime.StateUpdate, State: realtime.Connected, Gen: 2})
+	if got := m3.(App).rtState; got != realtime.Disconnected {
+		t.Errorf("a stale-gen update should be dropped, got %v", got)
+	}
+	if cmd3 != nil {
+		t.Error("a stale-gen update should not re-arm")
+	}
+}
