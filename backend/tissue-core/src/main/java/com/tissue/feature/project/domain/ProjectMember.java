@@ -86,6 +86,14 @@ public class ProjectMember extends SoftDeleteEntity {
         return this.role == ProjectRole.MANAGER;
     }
 
+    /**
+     * Whether the underlying account is ACTIVE. A LOCKED/DELETED/PURGED member keeps its
+     * {@code ProjectMember} row (for attribution).
+     */
+    public boolean isActiveMember() {
+        return member.isActive();
+    }
+
     public Long getMemberId() {
         return member.getId();
     }

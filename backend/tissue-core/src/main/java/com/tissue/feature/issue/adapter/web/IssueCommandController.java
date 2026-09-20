@@ -94,6 +94,7 @@ public class IssueCommandController {
         IssueErrorCode.DECIMAL_INTEGER_PART_TOO_LONG,
         IssueErrorCode.DECIMAL_FRACTION_PART_TOO_LONG,
         IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION,
+        IssueErrorCode.CANNOT_ASSIGN_INACTIVE_MEMBER,
     })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
@@ -431,7 +432,11 @@ public class IssueCommandController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content),
         @ApiResponse(responseCode = "409", description = "Resource conflict", content = @Content)
     })
-    @IssueErrors({IssueErrorCode.ISSUE_NOT_FOUND, IssueErrorCode.ISSUE_ALREADY_ASSIGNED})
+    @IssueErrors({
+        IssueErrorCode.ISSUE_NOT_FOUND,
+        IssueErrorCode.ISSUE_ALREADY_ASSIGNED,
+        IssueErrorCode.CANNOT_ASSIGN_INACTIVE_MEMBER,
+    })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,
         ProjectErrorCode.PROJECT_ARCHIVED,
@@ -528,6 +533,7 @@ public class IssueCommandController {
         IssueErrorCode.ISSUE_NOT_FOUND,
         IssueErrorCode.MAX_REVIEWERS_EXCEEDED,
         IssueErrorCode.ASSIGNEE_CANNOT_BE_REVIEWER,
+        IssueErrorCode.CANNOT_ADD_INACTIVE_REVIEWER,
     })
     @ProjectErrors({
         ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND,

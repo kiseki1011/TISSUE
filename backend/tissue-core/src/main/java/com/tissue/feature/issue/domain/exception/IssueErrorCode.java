@@ -38,6 +38,9 @@ public enum IssueErrorCode implements ErrorCode {
     SHORT_TEXT_TOO_LONG(HttpStatus.BAD_REQUEST, "Short text field value exceeds the maximum allowed length"),
     MAX_REVIEWERS_EXCEEDED(HttpStatus.CONFLICT, "Maximum number of reviewers reached"),
     ASSIGNEE_CANNOT_BE_REVIEWER(HttpStatus.BAD_REQUEST, "The assignee cannot also be a reviewer of the same issue"),
+    CANNOT_ASSIGN_INACTIVE_MEMBER(
+            HttpStatus.BAD_REQUEST, "Cannot assign the issue to a member whose account is not active"),
+    CANNOT_ADD_INACTIVE_REVIEWER(HttpStatus.BAD_REQUEST, "Cannot add a reviewer whose account is not active"),
     ISSUE_ALREADY_ASSIGNED(HttpStatus.CONFLICT, "The issue is already assigned to another member"),
     ISSUE_DELETE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Insufficient permission to delete this issue"),
 

@@ -8506,7 +8506,7 @@
             "description": "Member assigned"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `CANNOT_ASSIGN_INACTIVE_MEMBER`: Cannot assign the issue to a member whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
@@ -9471,7 +9471,7 @@
             "description": "Reviewer added"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ASSIGNEE_CANNOT_BE_REVIEWER`: The assignee cannot also be a reviewer of the same issue"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ASSIGNEE_CANNOT_BE_REVIEWER`: The assignee cannot also be a reviewer of the same issue\n- `CANNOT_ADD_INACTIVE_REVIEWER`: Cannot add a reviewer whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
@@ -11804,7 +11804,7 @@
             "description": "Issue created"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100\n- `CANNOT_ASSIGN_INACTIVE_MEMBER`: Cannot assign the issue to a member whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
