@@ -17,7 +17,9 @@ import com.tissue.feature.issue.application.port.usecase.IssueDetailViewUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueFullTextSearchUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueQueryUseCase;
 import com.tissue.feature.issue.application.port.usecase.IssueTrashUseCase;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.project.domain.exception.ProjectErrorCode;
+import com.tissue.global.openapi.IssueErrors;
 import com.tissue.global.openapi.ProjectErrors;
 import com.tissue.shared.auth.CurrentMember;
 import com.tissue.shared.auth.MemberDetails;
@@ -29,12 +31,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Validated
 public class IssueQueryController {
 
     private final IssueQueryUseCase issueQueryUseCase;
@@ -74,6 +80,7 @@ public class IssueQueryController {
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @ProjectErrors({ProjectErrorCode.PROJECT_NOT_FOUND, ProjectErrorCode.PROJECT_MEMBER_NOT_FOUND})
+    @IssueErrors({IssueErrorCode.INVALID_MEMBER_ID_FILTER})
     @GetMapping("/projects/{projectKey}/issues:search")
     public ResponseEntity<PageResponse<IssueSummary>> searchProjectIssues(
             @PathVariable String projectKey,
@@ -107,6 +114,7 @@ public class IssueQueryController {
         @ApiResponse(responseCode = "200", description = "Issues retrieved"),
         @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content)
     })
+    @IssueErrors({IssueErrorCode.INVALID_MEMBER_ID_FILTER})
     @GetMapping("/issues:search")
     public ResponseEntity<PageResponse<IssueSummary>> searchAllIssues(
             @ParameterObject IssueSearchRequest request,
@@ -188,18 +196,19 @@ public class IssueQueryController {
                 whole detail screen without a separate call per section.
 
                 **Pagination:**
-                - `commentSize` is how many root comments to embed (default 20).
+                - `commentSize` is how many root comments to embed (default 20, 1-100).
 
                 **Requirements:**
                 - Requires project membership""")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Issue detail retrieved"),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
         @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @GetMapping("/issues/{issueKey}/detail")
     public ResponseEntity<IssueDetailView> getIssueDetailView(
             @PathVariable String issueKey,
-            @RequestParam(value = "commentSize", defaultValue = "20") int commentSize,
+            @RequestParam(value = "commentSize", defaultValue = "20") @Min(1) @Max(100) int commentSize,
             @CurrentMember MemberDetails memberDetails) {
         IssueDetailView response = issueDetailViewUseCase.getDetailView(
                 IssueIdentifier.ofIssueKey(issueKey),

@@ -23,6 +23,7 @@ public enum IssueErrorCode implements ErrorCode {
             HttpStatus.BAD_REQUEST, "Cannot delete issue that is not in the initial state"),
     CANNOT_DELETE_ISSUE_WITH_CHILDREN(HttpStatus.BAD_REQUEST, "Cannot delete issue that has child issues"),
     DUE_DATE_MUST_BE_FUTURE(HttpStatus.BAD_REQUEST, "Due date must be in the future"),
+    INVALID_MEMBER_ID_FILTER(HttpStatus.BAD_REQUEST, "Member id filter must be 'me' or a numeric member id"),
     INVALID_PERCENTAGE_EXCEPTION(HttpStatus.BAD_REQUEST, "Percentage must be a value of 0 ~ 100"),
     REVIEWER_NOT_FOUND(HttpStatus.NOT_FOUND, "Reviewer not found in issue participants"),
     RELATION_CIRCULAR_DEPENDENCY(HttpStatus.BAD_REQUEST, "Circular dependency detected in the issue relation graph"),

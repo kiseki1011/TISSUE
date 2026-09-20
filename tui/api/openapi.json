@@ -9106,7 +9106,7 @@
     },
     "/api/v1/issues/{issueKey}/detail": {
       "get": {
-        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20).\n\n**Requirements:**\n- Requires project membership",
+        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20, 1-100).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueDetailView",
         "parameters": [
           {
@@ -9124,6 +9124,8 @@
             "schema": {
               "default": 20,
               "format": "int32",
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -9138,6 +9140,9 @@
               }
             },
             "description": "Issue detail retrieved"
+          },
+          "400": {
+            "description": "Invalid request"
           },
           "404": {
             "description": "Resource not found"
@@ -10113,7 +10118,7 @@
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `INVALID_MEMBER_ID_FILTER`: Member id filter must be 'me' or a numeric member id"
           }
         },
         "summary": "Search issues across my projects",
@@ -12189,7 +12194,7 @@
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `INVALID_MEMBER_ID_FILTER`: Member id filter must be 'me' or a numeric member id"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
