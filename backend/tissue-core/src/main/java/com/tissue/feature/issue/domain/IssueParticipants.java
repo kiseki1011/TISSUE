@@ -35,21 +35,22 @@ public class IssueParticipants {
     protected IssueParticipants() {}
 
     public static IssueParticipants of(@Nullable ProjectMember assignee) {
+        if (assignee != null) {
+            ensureActive(assignee, IssueErrorCode.CANNOT_ASSIGN_INACTIVE_MEMBER);
+        }
         IssueParticipants participants = new IssueParticipants();
         participants.assignee = assignee;
         return participants;
     }
 
     void assignTo(ProjectMember assignee) {
+        ensureActive(assignee, IssueErrorCode.CANNOT_ASSIGN_INACTIVE_MEMBER);
         reviewers.removeIf(reviewer -> reviewer.getReviewer().equals(assignee));
         this.assignee = assignee;
     }
 
     /**
-     * Self-assign only when the issue is free. If it is already taken by someone else this throws,
-     * giving agents a safe "grab if available" primitive distinct from forceful {@link #assignTo}.
-     * Re-claiming by the current assignee is idempotent. Combined with the issue's {@code @Version},
-     * concurrent claims resolve to exactly one winner (the loser hits this guard or an optimistic-lock 409).
+     * Self-assign only when the issue is free.
      */
     void claimBy(ProjectMember claimer) {
         if (assignee != null && !assignee.equals(claimer)) {
@@ -63,6 +64,7 @@ public class IssueParticipants {
     }
 
     void addReviewer(ProjectMember projectMember, Issue issue) {
+        ensureActive(projectMember, IssueErrorCode.CANNOT_ADD_INACTIVE_REVIEWER);
         if (assignee != null && assignee.equals(projectMember)) {
             throw new BadRequestException(IssueErrorCode.ASSIGNEE_CANNOT_BE_REVIEWER);
         }
@@ -110,5 +112,15 @@ public class IssueParticipants {
 
     boolean isSubscriber(ProjectMember projectMember) {
         return subscribers.stream().anyMatch(s -> s.getSubscriber().equals(projectMember));
+    }
+
+    /**
+     * A LOCKED/DELETED/PURGED member keeps its {@code ProjectMember} row for attribution and can still
+     * be looked up by id, so new work (assignment, review) must be refused for anyone but an ACTIVE member.
+     */
+    private static void ensureActive(ProjectMember member, IssueErrorCode errorCode) {
+        if (!member.isActiveMember()) {
+            throw new BadRequestException(errorCode);
+        }
     }
 }

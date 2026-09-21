@@ -45,6 +45,12 @@ func (m Model) blockingModalOpen() bool {
 		m.picking || m.creating || m.filtering || m.dating || m.peeking
 }
 
+// listReloadBlocked reports whether a silent list reload would disrupt an active interaction, a deep
+// scroll, or an in-flight load. Shared by the debounced reload and the reconnect resync.
+func (m Model) listReloadBlocked() bool {
+	return m.blockingModalOpen() || m.focus == focusDetail || m.morePagesLoaded || m.loading || m.loadingMore
+}
+
 // onRealtimeIssueEvent folds one issue event in. Self-echo is not filtered: the refetch is idempotent.
 func (m Model) onRealtimeIssueEvent(msg RealtimeIssueEventMsg) (Model, tea.Cmd) {
 	switch msg.Type {
@@ -117,12 +123,35 @@ func (m Model) realtimeRemoveIssue(key string) (Model, tea.Cmd) {
 	return m.syncSelection()
 }
 
+// ReconnectedMsg tells the screen the SSE stream came back after a drop. Events missed during the
+// outage are unrecoverable (Last-Event-ID is inert server-side), so the list and any open detail are
+// refetched; the resumed live stream covers everything after this point.
+type ReconnectedMsg struct{}
+
+// onReconnected resyncs after an SSE outage. It reuses the silent-reload guards so it never disrupts
+// an active edit, a deep scroll, or an in-flight load, and refreshes the open detail if one is cached.
+func (m Model) onReconnected() (Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	if !m.listReloadBlocked() {
+		m.reqGen++
+		m.rtRestoreKey = m.viewKey
+		m.rtRestoreGen = m.reqGen
+		cmds = append(cmds, loadIssues(m.deps, m.projectKey, m.filter, m.reqGen, 0, false))
+	}
+	if m.viewKey != "" {
+		if _, cached := m.details[m.viewKey]; cached {
+			cmds = append(cmds, m.startDetailLoad(m.viewKey))
+		}
+	}
+	return m, tea.Batch(cmds...)
+}
+
 // onRealtimeReload performs the debounced silent reload: no loading flash, selection preserved.
 func (m Model) onRealtimeReload(msg realtimeReloadMsg) (Model, tea.Cmd) {
 	if msg.seq != m.rtReloadSeq {
 		return m, nil // a later new-issue event superseded this debounce
 	}
-	if m.blockingModalOpen() || m.focus == focusDetail || m.morePagesLoaded || m.loading || m.loadingMore {
+	if m.listReloadBlocked() {
 		return m, nil // don't disrupt an active interaction, a deep scroll, or an in-flight load
 	}
 	m.reqGen++ // supersede any in-flight load. the landing page replaces the list silently

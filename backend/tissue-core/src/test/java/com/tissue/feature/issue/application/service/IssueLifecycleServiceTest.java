@@ -148,6 +148,7 @@ class IssueLifecycleServiceTest {
             given(issueFinder.getWithProjectByIssueKey(parentKey)).willReturn(parent);
             given(parent.getHierarchy()).willReturn(IssueHierarchy.EPIC);
             given(projectMemberFinder.getBy(project, cmd.assigneeMemberId())).willReturn(assignee);
+            given(assignee.isActiveMember()).willReturn(true);
 
             // when
             sut.create(pid, cmd, actorMemberId);

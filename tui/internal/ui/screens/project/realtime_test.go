@@ -401,3 +401,37 @@ func TestRealtimeSprintIssuesRemoved(t *testing.T) {
 		t.Errorf("the removed issue's row SprintID should be cleared, got %d", m.issues[0].SprintID)
 	}
 }
+
+// A reconnect after an SSE outage silently reloads the list, preserving the selected issue, since
+// events missed while disconnected are unrecoverable.
+func TestReconnectedReloadsList(t *testing.T) {
+	m := threeIssues(t)
+	m, _ = m.Update(press("down")) // cursor -> ENG-2
+	before := m.reqGen
+
+	m, cmd := m.Update(ReconnectedMsg{})
+	if cmd == nil {
+		t.Fatal("a reconnect should fire a list reload")
+	}
+	if m.reqGen != before+1 {
+		t.Errorf("reconnect should bump reqGen to supersede in-flight loads: %d -> %d", before, m.reqGen)
+	}
+	if m.loading {
+		t.Error("the reconnect reload must be silent (no loading flash)")
+	}
+	if m.rtRestoreKey != "ENG-2" {
+		t.Errorf("reconnect should capture the selected key for restore, got %q", m.rtRestoreKey)
+	}
+}
+
+// A reconnect must not disrupt an open editor/modal, matching the debounced-reload guard.
+func TestReconnectedSkipsListReloadUnderModal(t *testing.T) {
+	m := threeIssues(t)
+	m.creating = true // stand in for any blocking modal
+	before := m.reqGen
+
+	m, _ = m.Update(ReconnectedMsg{})
+	if m.reqGen != before {
+		t.Errorf("reconnect must not reload the list while a modal is open: reqGen %d -> %d", before, m.reqGen)
+	}
+}

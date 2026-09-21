@@ -717,6 +717,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.requestCustomFields(msg.typeID)
 	case typeFieldsLoadedMsg:
 		return m.onTypeFieldsLoaded(msg)
+	case ReconnectedMsg:
+		return m.onReconnected()
 	case RealtimeIssueEventMsg:
 		return m.onRealtimeIssueEvent(msg)
 	case realtimeReloadMsg:

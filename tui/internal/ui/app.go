@@ -823,7 +823,27 @@ func (a App) applyRealtime(u realtime.Update) (tea.Model, tea.Cmd) {
 	}
 	switch u.Kind {
 	case realtime.StateUpdate:
+		// A drop-and-recover means events were missed while down (Last-Event-ID is inert
+		// server-side), so the visible screen must refetch rather than trust its stale state.
+		reconnected := u.State == realtime.Connected && a.rtState != realtime.Connected
 		a.rtState = u.State
+		if !reconnected {
+			break
+		}
+		cmds := []tea.Cmd{waitForRealtime(a.rt), pollInboxUnread(a.deps, a.sessionGen, false)}
+		switch a.screen {
+		case screenProject:
+			var cmd tea.Cmd
+			a.project, cmd = a.project.Update(project.ReconnectedMsg{})
+			cmds = append(cmds, cmd)
+		case screenInbox:
+			var cmd tea.Cmd
+			a.inbox, cmd = a.inbox.Update(inbox.RefreshMsg{})
+			cmds = append(cmds, cmd)
+		default:
+			// other screens carry no live-updated data of their own; the badge repoll above suffices
+		}
+		return a, tea.Batch(cmds...)
 	case realtime.EventUpdate:
 		if u.Event.Category == "notification" {
 			cmds := []tea.Cmd{waitForRealtime(a.rt), pollInboxUnread(a.deps, a.sessionGen, false)}

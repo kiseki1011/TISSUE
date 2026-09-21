@@ -3,7 +3,9 @@ package com.tissue.feature.issue.adapter.web.request;
 import com.tissue.feature.issue.application.dto.request.IssueSearchCondition;
 import com.tissue.feature.issue.domain.enums.IssuePriority;
 import com.tissue.feature.issue.domain.enums.ReviewStatus;
+import com.tissue.feature.issue.domain.exception.IssueErrorCode;
 import com.tissue.feature.workflow.domain.enums.StateCategory;
+import com.tissue.shared.exception.base.BadRequestException;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -78,9 +80,17 @@ public record IssueSearchRequest(
             if (ME.equalsIgnoreCase(value.trim())) {
                 resolved.add(currentMemberId);
             } else {
-                resolved.add(Long.valueOf(value.trim()));
+                resolved.add(parseMemberId(value.trim()));
             }
         }
         return resolved.isEmpty() ? null : resolved;
+    }
+
+    private static Long parseMemberId(String value) {
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException(IssueErrorCode.INVALID_MEMBER_ID_FILTER).addContext("value", value);
+        }
     }
 }

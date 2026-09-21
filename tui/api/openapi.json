@@ -8506,7 +8506,7 @@
             "description": "Member assigned"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `CANNOT_ASSIGN_INACTIVE_MEMBER`: Cannot assign the issue to a member whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
@@ -9106,7 +9106,7 @@
     },
     "/api/v1/issues/{issueKey}/detail": {
       "get": {
-        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20).\n\n**Requirements:**\n- Requires project membership",
+        "description": "Get everything the issue detail view needs in one response: common fields, custom fields (with option names resolved), available transitions (with their target state), parent, children, relations, and the first page of comments. Lets a client render the whole detail screen without a separate call per section.\n\n**Pagination:**\n- `commentSize` is how many root comments to embed (default 20, 1-100).\n\n**Requirements:**\n- Requires project membership",
         "operationId": "getIssueDetailView",
         "parameters": [
           {
@@ -9124,6 +9124,8 @@
             "schema": {
               "default": 20,
               "format": "int32",
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -9138,6 +9140,9 @@
               }
             },
             "description": "Issue detail retrieved"
+          },
+          "400": {
+            "description": "Invalid request"
           },
           "404": {
             "description": "Resource not found"
@@ -9466,7 +9471,7 @@
             "description": "Reviewer added"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ASSIGNEE_CANNOT_BE_REVIEWER`: The assignee cannot also be a reviewer of the same issue"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `ASSIGNEE_CANNOT_BE_REVIEWER`: The assignee cannot also be a reviewer of the same issue\n- `CANNOT_ADD_INACTIVE_REVIEWER`: Cannot add a reviewer whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `ISSUE_NOT_FOUND`: Issue not found"
@@ -10113,7 +10118,7 @@
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `INVALID_MEMBER_ID_FILTER`: Member id filter must be 'me' or a numeric member id"
           }
         },
         "summary": "Search issues across my projects",
@@ -11799,7 +11804,7 @@
             "description": "Issue created"
           },
           "400": {
-            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100"
+            "description": "Invalid request\n\n- `PROJECT_ARCHIVED`: Cannot modify archived project and its resources\n- `DUE_DATE_MUST_BE_FUTURE`: Due date must be in the future\n- `STORY_POINT_NOT_ALLOWED`: Story points are not supported for this hierarchy\n- `PARENT_PROJECT_MISMATCH`: Cross project parent-child relations are only allowed when the parent is EPIC hierarchy\n- `ISSUE_SELF_REFERENCE`: An issue cannot reference itself\n- `INVALID_PARENT_HIERARCHY`: Parent hierarchy must be exactly one level above the child issue\n- `CUSTOM_FIELD_REQUIRED`: Required custom field is missing or empty\n- `UNKNOWN_CUSTOM_FIELD_ID`: The provided custom field ID is unknown\n- `CUSTOM_FIELD_TYPE_MISMATCH`: Invalid value format for the custom field\n- `UNKNOWN_ENUM_OPTION`: Unknown enum option for field\n- `DECIMAL_INTEGER_PART_TOO_LONG`: Field value exceeds maximum allowed integer digits\n- `DECIMAL_FRACTION_PART_TOO_LONG`: Field value exceeds maximum allowed fraction digits\n- `INVALID_PERCENTAGE_EXCEPTION`: Percentage must be a value of 0 ~ 100\n- `CANNOT_ASSIGN_INACTIVE_MEMBER`: Cannot assign the issue to a member whose account is not active"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found\n- `PROJECT_NOT_FOUND`: Project not found\n- `ISSUE_NOT_FOUND`: Issue not found\n- `ISSUE_TYPE_NOT_FOUND`: Issue type not found\n- `SPRINT_NOT_FOUND`: Sprint not found"
@@ -12189,7 +12194,7 @@
             "description": "Issues retrieved"
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request\n\n- `INVALID_MEMBER_ID_FILTER`: Member id filter must be 'me' or a numeric member id"
           },
           "404": {
             "description": "Resource not found\n\n- `PROJECT_NOT_FOUND`: Project not found\n- `PROJECT_MEMBER_NOT_FOUND`: Project member not found"
